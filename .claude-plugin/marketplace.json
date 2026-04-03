@@ -1,0 +1,33 @@
+{
+  "name": "med-research-powers",
+  "owner": {
+    "name": "Stefansong"
+  },
+  "metadata": {
+    "description": "Medical research methodology framework with 21 skills, 42 reporting standards, 68 journal templates, 6-gate verification",
+    "version": "6.0.0"
+  },
+  "plugins": [
+    {
+      "name": "med-research-powers",
+      "source": "./",
+      "description": "From hypothesis to publication — an AI-enforced research methodology framework that prevents bad science before it happens. 21 skills covering the full pipeline from question formulation to revision response.",
+      "version": "6.0.0",
+      "author": {
+        "name": "BTCH Uro AI Lab"
+      },
+      "keywords": [
+        "medical-research",
+        "clinical-trials",
+        "statistics",
+        "manuscript",
+        "peer-review",
+        "reporting-standards",
+        "CONSORT",
+        "TRIPOD-AI"
+      ],
+      "category": "research",
+      "strict": false
+    }
+  ]
+}
