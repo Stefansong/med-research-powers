@@ -105,7 +105,7 @@ MRP:  使用 research-question-formulation 定义 PICO + 假设
 
 ![Med-Research-Powers Pipeline](docs/images/architecture-pipeline.png)
 
-跳过任何步骤都会阻塞下游技能。反向链接允许在后续发现问题时返回上游技能。
+4 个硬性检查点锁定不可逆决策（Protocol、SAP、期刊、投稿前验证）。其余步骤遵循推荐顺序，但支持灵活推进和快速通道模式。反向链接允许在后续发现问题时返回上游技能。
 
 ### 流水线流程
 

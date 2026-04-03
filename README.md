@@ -105,7 +105,7 @@ MRP:  Using research-question-formulation to define PICO + hypothesis
 
 ![Med-Research-Powers Pipeline](docs/images/architecture-pipeline.png)
 
-Skipping any step blocks downstream skills. Backward links allow returning to upstream skills when issues are discovered later.
+Four hard checkpoints lock irreversible decisions (protocol, SAP, journal, pre-submission). Other steps follow a recommended sequence but support flexible progression and Fast-Track Mode. Backward links allow returning to upstream skills when issues are discovered later.
 
 ### Pipeline Flow
 

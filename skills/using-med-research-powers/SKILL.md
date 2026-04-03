@@ -196,7 +196,7 @@ revision-strategy → responding-to-reviewers
 - `manuscript-export` — 被 manuscript-writing 完成后自动建议
 - `data-collection-tools` — study-design 完成后自动建议，生成数据收集工具
 
-跳过任何环节 → 下游 skill 的前置依赖会阻止执行。
+4 个 Hard Checkpoint（Protocol / SAP / Journal / Pre-submission）锁定不可逆决策。其余步骤遵循推荐顺序，支持灵活推进和 Fast-Track Mode。
 
 ## Pipeline 回溯（Backward Links）
 

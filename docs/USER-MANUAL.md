@@ -134,7 +134,7 @@ pip install scipy statsmodels matplotlib pandas numpy
 
 ## 4. 完整工作流（Pipeline）
 
-MRP 的设计是一条**强制流水线**——跳过任何环节，下游技能会阻止执行。
+MRP 的设计是一条**推荐流水线**，其中 4 个硬性检查点（Protocol / SAP / 期刊 / 投稿前验证）锁定不可逆决策，其余步骤支持灵活推进和 Fast-Track Mode。
 
 ```
                     ┌─────────────────────┐
