@@ -1,0 +1,189 @@
+# Statistical Method Decision Tree
+
+## Two Groups
+two_groups:
+  continuous:
+    normal:
+      equal_variance:
+        unpaired: "Independent t-test"
+        paired: "Paired t-test"
+      unequal_variance:
+        unpaired: "Welch's t-test"
+        paired: "Paired t-test (robust to variance)"
+    non_normal:
+      unpaired: "Mann-Whitney U test"
+      paired: "Wilcoxon signed-rank test"
+  categorical:
+    expected_freq_ge_5: "Chi-squared test"
+    expected_freq_lt_5: "Fisher's exact test"
+    ordered: "Cochran-Armitage trend test"
+  survival:
+    test: "Log-rank test"
+    model: "Cox proportional hazards regression"
+
+## Multiple Groups (>2)
+multiple_groups:
+  continuous:
+    normal_and_homogeneous:
+      unpaired: "One-way ANOVA + Tukey HSD post-hoc"
+      paired: "Repeated-measures ANOVA"
+    normal_not_homogeneous:
+      unpaired: "Welch's ANOVA + Games-Howell post-hoc"
+    non_normal:
+      unpaired: "Kruskal-Wallis + Dunn's post-hoc"
+      paired: "Friedman test + Nemenyi post-hoc"
+  categorical:
+    test: "Chi-squared test (or Fisher if sparse cells)"
+
+## Association / Correlation
+association:
+  continuous_vs_continuous:
+    normal: "Pearson correlation"
+    non_normal: "Spearman rank correlation"
+  adjust_confounders:
+    continuous_outcome: "Multiple linear regression"
+    binary_outcome: "Multiple logistic regression"
+    survival_outcome: "Cox regression"
+    count_outcome: "Poisson / Negative binomial regression"
+
+## Multiple Comparison Correction
+correction:
+  primary_outcome: "No correction needed (single primary)"
+  multiple_secondary: "Bonferroni (conservative) or Holm (less conservative)"
+  omics_data: "Benjamini-Hochberg FDR"
+  subgroup_analyses: "Pre-specify; report as exploratory if not pre-specified"
+
+## Longitudinal / Repeated Measures
+longitudinal:
+  two_timepoints:
+    normal: "Paired t-test"
+    non_normal: "Wilcoxon signed-rank test"
+  multiple_timepoints:
+    continuous:
+      balanced_complete: "Repeated-measures ANOVA (check sphericity with Mauchly's)"
+      unbalanced_or_missing: "Linear mixed model (LMM, recommended default)"
+    binary_or_count: "Generalized estimating equations (GEE)"
+    note: "LMM handles missing data (MAR) better than RM-ANOVA; prefer LMM unless data is perfectly balanced"
+  population_average_vs_subject_specific:
+    population_average: "GEE (marginal model)"
+    subject_specific: "LMM (conditional model)"
+
+## Survival Analysis (Extended)
+survival_extended:
+  single_event:
+    comparison: "Log-rank test (Kaplan-Meier curves)"
+    model: "Cox proportional hazards regression"
+    assumption_check: "Schoenfeld residuals for proportional hazards assumption"
+    if_ph_violated: "Stratified Cox model or time-varying coefficients"
+  competing_risks:
+    when: "Death from other causes, competing events that preclude outcome"
+    comparison: "Gray's test"
+    model: "Fine-Gray subdistribution hazard model or cause-specific Cox"
+    note: "Standard Kaplan-Meier overestimates risk when competing events exist"
+  time_varying_covariates:
+    model: "Extended Cox model with time-dependent covariates"
+  accelerated_failure_time:
+    when: "Proportional hazards assumption violated"
+    model: "AFT model (Weibull, log-normal, log-logistic)"
+
+## Missing Data
+missing_data:
+  assessment:
+    - "Report % missing per variable"
+    - "Test missingness mechanism: Little's MCAR test"
+    - "Pattern analysis: monotone vs arbitrary"
+  strategy:
+    less_than_5_percent: "Complete case analysis acceptable (report and justify)"
+    5_to_20_percent:
+      mcar_or_mar: "Multiple imputation (MICE, m≥20 imputations)"
+      combine_results: "Rubin's rules for pooling estimates across imputations"
+    more_than_20_percent: "Multiple imputation + sensitivity analysis under MNAR"
+    mnar: "Pattern-mixture models or selection models; consult statistician"
+  sensitivity:
+    - "Compare complete case vs imputed results"
+    - "Vary MNAR assumptions (tipping point analysis)"
+
+## Causal Inference (Observational)
+causal_inference:
+  propensity_score:
+    when: "Observational study estimating treatment/intervention effect"
+    steps:
+      - "Build PS model (logistic regression with pre-treatment covariates)"
+      - "Assess overlap (common support) with PS distribution plots"
+      - "Choose method: matching, stratification, IPTW, or covariate adjustment"
+      - "Diagnose balance: standardized mean differences (Love plot, target SMD<0.1)"
+      - "Estimate treatment effect on matched/weighted sample"
+      - "Sensitivity analysis for unmeasured confounding (E-value)"
+    methods:
+      matching: "1:1 nearest-neighbor with caliper (0.2×SD of logit PS)"
+      iptw: "Inverse probability of treatment weighting (check extreme weights)"
+      stratification: "Divide PS into 5+ strata, estimate within-stratum effects"
+  instrumental_variables:
+    when: "Unmeasured confounding suspected, valid instrument available"
+    method: "Two-stage least squares (2SLS)"
+  difference_in_differences:
+    when: "Pre-post comparison with control group (policy evaluation)"
+    assumption: "Parallel trends assumption"
+
+## Mediation Analysis
+mediation:
+  when: "Testing whether effect of X on Y operates through mediator M"
+  traditional: "Baron-Kenny 4-step approach (for simple mediation)"
+  modern: "Causal mediation analysis (natural direct/indirect effects)"
+  confidence_intervals: "Bootstrap (≥5000 resamples) for indirect effect CI"
+  note: "Requires temporal ordering assumption: X → M → Y"
+
+## Clustered / Hierarchical Data
+clustered_data:
+  when: "Patients nested within clinics/hospitals, multi-center studies"
+  design_phase:
+    icc: "Calculate intraclass correlation coefficient"
+    design_effect: "DE = 1 + (m-1)×ICC, where m = cluster size"
+    sample_size: "Inflate standard sample size by design effect"
+  analysis:
+    random_intercept: "Linear mixed model with random intercept for cluster"
+    random_slope: "LMM with random slope if treatment effect varies by cluster"
+    gee: "GEE for population-average estimates"
+  note: "Ignoring clustering inflates Type I error; always account for it"
+
+## Interaction and Subgroup Analysis
+interaction:
+  test: "Include interaction term (treatment × subgroup) in regression model"
+  power_note: "Interaction tests require ~4× the sample size of main effects"
+  reporting:
+    - "Always report interaction p-value, not just within-subgroup p-values"
+    - "Pre-specified subgroups only; post-hoc subgroups must be labeled exploratory"
+    - "Apply multiple comparison correction if >3 subgroups tested"
+    - "Forest plot for subgroup effects with interaction p-values"
+
+## High-Dimensional / Omics Data
+omics:
+  dimensionality_reduction:
+    unsupervised: "PCA (linear), UMAP/t-SNE (visualization only, not inference)"
+    supervised: "PLS-DA (with permutation testing for significance)"
+  differential_analysis:
+    transcriptomics: "DESeq2 / edgeR (negative binomial models)"
+    proteomics: "limma (moderated t-test)"
+    metabolomics: "t-test or Wilcoxon with FDR correction"
+  multiple_testing: "Benjamini-Hochberg FDR (q<0.05); report both raw and adjusted p"
+  batch_effect: "ComBat or limma::removeBatchEffect before analysis"
+  validation: "Split-sample or independent cohort validation"
+
+## Interrupted Time Series
+time_series:
+  when: "Evaluating policy/intervention effect with before-after time-series data"
+  method: "Segmented regression (intercept + slope change at intervention)"
+  autocorrelation: "Newey-West standard errors or ARIMA models"
+  controls: "Add control series if available (controlled ITS)"
+
+## Assumption Tests (use scripts/assumption_tests.py)
+assumptions:
+  normality:
+    n_lt_50: "Shapiro-Wilk test"
+    n_ge_50: "D'Agostino-Pearson test"
+    visual: "Q-Q plot (supplementary, not standalone)"
+    caution: "With n<50, normality tests have low power; consider pre-specifying non-parametric"
+  homogeneity: "Levene's test (not applicable for paired data — test difference normality instead)"
+  independence: "Study design ensures this (not testable post-hoc)"
+  sphericity: "Mauchly's test (for repeated-measures ANOVA); if violated use Greenhouse-Geisser correction"
+  proportional_hazards: "Schoenfeld residuals test + log-log survival plot"

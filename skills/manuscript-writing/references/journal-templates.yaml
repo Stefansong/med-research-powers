@@ -1,0 +1,1151 @@
+# Journal Formatting Templates Library
+# Comprehensive requirements for major medical journals, organized by specialty.
+# Use journal-selection to determine target journal, then apply the matching template.
+#
+# How to use:
+#   1. Find target journal by id or name
+#   2. Apply word_limit, abstract format, reference style, section structure
+#   3. Check special requirements (Key Points box, Reporting Summary, etc.)
+#   4. If journal not listed → use WebSearch to find "Instructions for Authors"
+#
+# How to contribute:
+#   Add new entries following the same structure. Keep alphabetical within each category.
+#   Fields: id, journal, publisher, IF_approx, word_limit, abstract, references,
+#           figures, tables, sections, special, cover_letter, orcid, system
+
+templates:
+
+  # ═══════════════════════════════════════════════
+  # GENERAL MEDICAL — Top Tier (IF > 30)
+  # ═══════════════════════════════════════════════
+
+  - id: nature
+    journal: Nature
+    publisher: Springer Nature
+    IF_approx: 64
+    word_limit: 3000 (excluding Methods)
+    abstract: unstructured, ≤150 words
+    references: ≤50, Nature style (numbered, superscript)
+    figures: ≤6 main + Extended Data
+    tables: ≤3
+    sections: "Abstract, Introduction (no heading), Results, Discussion, Methods, References"
+    special:
+      - "No Introduction heading — text flows from abstract"
+      - "Extended Data figures/tables (≤10) reviewed but not in main"
+      - "Supplementary Information for additional data"
+      - "Reporting Summary checklist required"
+      - "Data and Code availability statements required"
+    cover_letter: required
+    orcid: required
+    system: Editorial Manager
+
+  - id: nature-medicine
+    journal: Nature Medicine
+    publisher: Springer Nature
+    IF_approx: 82
+    word_limit: 3000 (excluding Methods)
+    abstract: unstructured, ≤150 words
+    references: ≤50, Nature style (numbered, superscript)
+    figures: ≤8 main, unlimited supplementary
+    figure_format: "TIFF/EPS/PDF, ≥300 DPI, max 20MB per file"
+    tables: ≤4
+    sections: "Abstract, Introduction, Results, Discussion, Methods, References"
+    special:
+      - "Reporting Summary checklist required"
+      - "Data availability statement required"
+      - "Code availability statement required"
+      - "Life Sciences Reporting Summary required"
+    cover_letter: required
+    orcid: required
+    system: Editorial Manager
+
+  - id: lancet
+    journal: The Lancet
+    publisher: Elsevier
+    IF_approx: 169
+    word_limit: 3000
+    abstract: structured (Background, Methods, Findings, Interpretation, Funding), ≤300 words
+    references: ≤30, Vancouver (numbered)
+    figures: ≤5 (combined figures + tables)
+    figure_format: "TIFF/EPS, ≥300 DPI"
+    tables: included in figure limit
+    sections: "Summary, Introduction, Methods, Results, Discussion, Contributors, Declaration of interests, Acknowledgments, References"
+    special:
+      - "Research in Context panel required (Evidence before this study, Added value, Implications)"
+      - "Contributors statement (not just Acknowledgments)"
+      - "Appendix for supplementary tables/figures"
+      - "Clinical trial registration number in abstract"
+      - "Funding statement in abstract"
+    cover_letter: required
+    orcid: required
+    system: Editorial Manager
+
+  - id: nejm
+    journal: New England Journal of Medicine
+    publisher: NEJM Group
+    IF_approx: 159
+    word_limit: 2700
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤40, NEJM style (numbered)
+    figures: ≤4
+    figure_format: "EPS/TIFF, ≥1000 DPI for line art"
+    tables: ≤4
+    sections: "Abstract, Introduction (no heading), Methods, Results, Discussion, References"
+    special:
+      - "Disclosure forms for ALL authors (ICMJE)"
+      - "Data sharing statement required"
+      - "Protocol must be available"
+      - "Statistical analysis section in Methods"
+    cover_letter: required
+    orcid: required
+    system: ScholarOne
+
+  - id: jama
+    journal: JAMA
+    publisher: AMA
+    IF_approx: 120
+    word_limit: 3000
+    abstract: structured (Importance, Objective, Design/Setting/Participants, Interventions/Exposures, Main Outcomes and Measures, Results, Conclusions and Relevance), ≤350 words
+    references: ≤40, AMA style (superscript numbered)
+    figures: ≤5
+    figure_format: "TIFF/EPS/PPT, ≥300 DPI"
+    tables: ≤5
+    sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Key Points box required (Question, Findings, Meaning — ≤100 words total)"
+      - "eTable/eFigure for supplementary"
+      - "Mandatory statistical review"
+      - "Structured abstract with 7 headings"
+    cover_letter: required
+    orcid: recommended
+    system: ScholarOne
+
+  - id: bmj
+    journal: BMJ
+    publisher: BMJ Publishing Group
+    IF_approx: 106
+    word_limit: 4000
+    abstract: structured (Objectives, Design, Setting, Participants, Main outcome measures, Results, Conclusions), ≤250 words
+    references: ≤40, Vancouver (numbered)
+    figures: ≤6
+    figure_format: "TIFF/JPEG/EPS, ≥300 DPI"
+    tables: ≤6
+    sections: "Abstract, What is already known, What this study adds, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "What is already known / What this study adds box required"
+      - "Patient and public involvement statement"
+      - "Transparency statement"
+      - "EQUATOR checklist required"
+    cover_letter: required
+    orcid: required
+    system: ScholarOne
+
+  - id: annals-internal-medicine
+    journal: Annals of Internal Medicine
+    publisher: ACP
+    IF_approx: 39
+    word_limit: 3000
+    abstract: structured, ≤250 words
+    references: ≤40, Vancouver
+    figures: ≤5
+    tables: ≤5
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Primary Data Sharing statement"
+      - "Reproducible Research statement"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # GENERAL MEDICAL — Mid Tier (IF 5-30)
+  # ═══════════════════════════════════════════════
+
+  - id: bmc-medicine
+    journal: BMC Medicine
+    publisher: Springer Nature
+    IF_approx: 9
+    word_limit: no strict limit
+    abstract: structured, ≤350 words
+    references: unlimited, Vancouver
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "APC: ~$3590"
+      - "EQUATOR checklist required"
+      - "Data availability mandatory"
+    system: Editorial Manager
+
+  - id: medicine
+    journal: Medicine
+    publisher: Wolters Kluwer
+    IF_approx: 1.6
+    word_limit: no strict limit
+    abstract: structured, ≤250 words
+    references: unlimited, Vancouver
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "APC: ~$1800"
+      - "Rapid review process"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # ONCOLOGY
+  # ═══════════════════════════════════════════════
+
+  - id: jco
+    journal: Journal of Clinical Oncology (JCO)
+    publisher: ASCO
+    IF_approx: 45
+    word_limit: 3000
+    abstract: structured (Purpose, Methods, Results, Conclusion), ≤250 words
+    references: ≤50, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Data Supplement for supplementary (Appendix online only)"
+      - "Author contributions (CRediT)"
+      - "Institutional approval statement"
+    system: ScholarOne
+
+  - id: lancet-oncology
+    journal: Lancet Oncology
+    publisher: Elsevier
+    IF_approx: 52
+    word_limit: 3000
+    abstract: structured (Background, Methods, Findings, Interpretation, Funding), ≤300 words
+    references: ≤30, Vancouver
+    figures: ≤5
+    tables: included in figure limit
+    sections: same as Lancet
+    special:
+      - "Research in Context panel required"
+      - "Lancet formatting rules apply"
+    system: Editorial Manager
+
+  - id: jama-oncology
+    journal: JAMA Oncology
+    publisher: AMA
+    IF_approx: 29
+    word_limit: 3000
+    abstract: structured (same as JAMA), ≤350 words
+    references: ≤40, AMA style
+    figures: ≤5
+    tables: ≤5
+    sections: same as JAMA
+    special:
+      - "Key Points box required"
+      - "JAMA formatting rules apply"
+    system: ScholarOne
+
+  - id: annals-oncology
+    journal: Annals of Oncology
+    publisher: Elsevier / ESMO
+    IF_approx: 51
+    word_limit: 3000
+    abstract: structured, ≤250 words
+    references: ≤50, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods (or Patients and Methods), Results, Discussion, Funding, Disclosure, References"
+    special:
+      - "Key Message box (1-2 sentences)"
+    system: Editorial Manager
+
+  - id: cancer-research
+    journal: Cancer Research
+    publisher: AACR
+    IF_approx: 13
+    word_limit: 5000 (Research Article)
+    abstract: unstructured, ≤250 words
+    references: ≤60
+    figures: ≤7
+    tables: ≤3
+    sections: "Abstract, Significance Statement, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "Significance Statement required (≤100 words)"
+      - "Translational Relevance section (for Clin Cancer Res)"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # SURGERY
+  # ═══════════════════════════════════════════════
+
+  - id: annals-surgery
+    journal: Annals of Surgery
+    publisher: Wolters Kluwer
+    IF_approx: 11
+    word_limit: 3500
+    abstract: structured, ≤250 words
+    references: ≤40, Vancouver
+    figures: ≤6
+    tables: ≤6
+    sections: "Abstract, Mini-Abstract (≤50 words), Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Mini-abstract required (≤50 words)"
+    system: Editorial Manager
+
+  - id: jama-surgery
+    journal: JAMA Surgery
+    publisher: AMA
+    IF_approx: 17
+    word_limit: 3000
+    abstract: structured (same as JAMA), ≤350 words
+    references: ≤40, AMA style
+    figures: ≤5
+    tables: ≤5
+    sections: same as JAMA
+    special:
+      - "Key Points box required"
+    system: ScholarOne
+
+  - id: bjs
+    journal: British Journal of Surgery (BJS)
+    publisher: Oxford University Press
+    IF_approx: 9
+    word_limit: 3000
+    abstract: structured (Background, Methods, Results, Conclusion), ≤250 words
+    references: ≤40, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Collaborative authorship accepted"
+    system: ScholarOne
+
+  - id: surgical-endoscopy
+    journal: Surgical Endoscopy
+    publisher: Springer Nature
+    IF_approx: 3.5
+    word_limit: 3500
+    abstract: structured, ≤250 words
+    references: ≤40, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "Video abstracts encouraged"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # UROLOGY
+  # ═══════════════════════════════════════════════
+
+  - id: european-urology
+    journal: European Urology
+    publisher: Elsevier
+    IF_approx: 25
+    word_limit: 3000
+    abstract: structured (Background, Objective, Design/Setting/Participants, Intervention/Measurements, Results and Limitations, Conclusions), ≤300 words
+    references: ≤40, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Patient Summary, Introduction, Patients and Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Patient Summary required (≤4 sentences in lay language)"
+      - "Take Home Message (≤2 sentences)"
+    system: Editorial Manager
+
+  - id: journal-urology
+    journal: The Journal of Urology
+    publisher: AUA / Wolters Kluwer
+    IF_approx: 7
+    word_limit: 2500
+    abstract: structured (Purpose, Materials and Methods, Results, Conclusions), ≤250 words
+    references: ≤40, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Lay language synopsis for social media"
+    system: ScholarOne
+
+  - id: bju-international
+    journal: BJU International
+    publisher: Wiley
+    IF_approx: 4
+    word_limit: 3000
+    abstract: structured (Objective, Patients and Methods, Results, Conclusion), ≤250 words
+    references: ≤35, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Patients and Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # CARDIOLOGY
+  # ═══════════════════════════════════════════════
+
+  - id: european-heart-journal
+    journal: European Heart Journal
+    publisher: Oxford University Press / ESC
+    IF_approx: 38
+    word_limit: 4500
+    abstract: structured, ≤250 words
+    references: ≤60
+    figures: ≤7
+    tables: ≤5
+    sections: "Abstract, Structured Graphical Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Structured Graphical Abstract required"
+      - "Translational perspective section encouraged"
+    system: ScholarOne
+
+  - id: jacc
+    journal: Journal of the American College of Cardiology (JACC)
+    publisher: Elsevier / ACC
+    IF_approx: 24
+    word_limit: 5000
+    abstract: structured (Background, Objectives, Methods, Results, Conclusions), ≤250 words
+    references: ≤60
+    figures: ≤7 (combined)
+    tables: included in figure limit
+    sections: "Abstract, Condensed Abstract (≤100 words), Introduction, Methods, Results, Discussion, Perspectives, References"
+    special:
+      - "Condensed Abstract required"
+      - "Perspectives section (Competency, Translational outlook)"
+    system: Editorial Manager
+
+  - id: circulation
+    journal: Circulation
+    publisher: AHA
+    IF_approx: 38
+    word_limit: 5000
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤7
+    tables: ≤5
+    sections: "Abstract, Clinical Perspective (What is New, What are the Clinical Implications), Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Clinical Perspective box required (What is New + Clinical Implications)"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # GASTROENTEROLOGY & HEPATOLOGY
+  # ═══════════════════════════════════════════════
+
+  - id: gastroenterology
+    journal: Gastroenterology
+    publisher: Elsevier / AGA
+    IF_approx: 29
+    word_limit: 4000
+    abstract: structured (Background & Aims, Methods, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, What You Need to Know (Background, Findings, Implications for patient care), Introduction, Methods, Results, Discussion, References"
+    special:
+      - "What You Need to Know box required"
+      - "Graphical abstract recommended"
+    system: Editorial Manager
+
+  - id: gut
+    journal: Gut
+    publisher: BMJ
+    IF_approx: 24
+    word_limit: 4000
+    abstract: structured (Objective, Design, Setting, Patients, Main outcome measures, Results, Conclusion), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Significance of this study (What is already known, What are the new findings, How might it impact), Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Significance of this study box required"
+    system: ScholarOne
+
+  - id: hepatology
+    journal: Hepatology
+    publisher: Wolters Kluwer / AASLD
+    IF_approx: 14
+    word_limit: 4000
+    abstract: unstructured, ≤275 words
+    references: ≤60
+    figures: ≤7
+    tables: ≤5
+    sections: "Abstract, Graphical Abstract, Introduction, Patients and Methods, Results, Discussion, References"
+    special:
+      - "Graphical abstract required"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # RESPIRATORY
+  # ═══════════════════════════════════════════════
+
+  - id: lancet-respiratory
+    journal: Lancet Respiratory Medicine
+    publisher: Elsevier
+    IF_approx: 39
+    word_limit: 3000
+    abstract: structured (same as Lancet), ≤300 words
+    references: ≤30, Vancouver
+    figures: ≤5
+    sections: same as Lancet
+    special:
+      - "Research in Context panel required"
+    system: Editorial Manager
+
+  - id: ajrccm
+    journal: American Journal of Respiratory and Critical Care Medicine (AJRCCM)
+    publisher: ATS
+    IF_approx: 24
+    word_limit: 3500
+    abstract: structured (Rationale, Objectives, Methods, Measurements and Main Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, At a Glance Commentary, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "At a Glance Commentary required (Scientific Knowledge, What This Study Adds)"
+    system: ScholarOne
+
+  - id: chest
+    journal: CHEST
+    publisher: Elsevier / ACCP
+    IF_approx: 9
+    word_limit: 3000
+    abstract: structured, ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Key Points (Key Question, Key Findings, Key Message), Introduction, Methods, Results, Discussion, Interpretation, References"
+    special:
+      - "Key Points required (3 items)"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # NEUROLOGY & NEUROSCIENCE
+  # ═══════════════════════════════════════════════
+
+  - id: lancet-neurology
+    journal: Lancet Neurology
+    publisher: Elsevier
+    IF_approx: 48
+    word_limit: 3000
+    abstract: structured (same as Lancet), ≤300 words
+    references: ≤30
+    sections: same as Lancet
+    special:
+      - "Research in Context panel required"
+    system: Editorial Manager
+
+  - id: neurology
+    journal: Neurology
+    publisher: Wolters Kluwer / AAN
+    IF_approx: 10
+    word_limit: 3000
+    abstract: structured (Background and Objectives, Methods, Results, Discussion), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Classification of Evidence scheme required (Class I-IV)"
+      - "Glossary for abbreviations"
+    system: ScholarOne
+
+  - id: jama-neurology
+    journal: JAMA Neurology
+    publisher: AMA
+    IF_approx: 22
+    word_limit: 3000
+    abstract: structured (same as JAMA), ≤350 words
+    references: ≤40, AMA style
+    sections: same as JAMA
+    special:
+      - "Key Points box required"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # RADIOLOGY & IMAGING
+  # ═══════════════════════════════════════════════
+
+  - id: radiology
+    journal: Radiology
+    publisher: RSNA
+    IF_approx: 20
+    word_limit: 3500
+    abstract: structured, ≤300 words
+    references: ≤45
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Summary Statement, Key Results, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "Summary Statement required (1 sentence)"
+      - "Key Results required (≤3 bullet points, quantitative)"
+    system: ScholarOne
+
+  - id: european-radiology
+    journal: European Radiology
+    publisher: Springer Nature
+    IF_approx: 6
+    word_limit: 3500
+    abstract: structured (Objectives, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Key Points (3 bullet), Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "Key Points required (3 bullet points)"
+    system: Editorial Manager
+
+  - id: medical-image-analysis
+    journal: Medical Image Analysis
+    publisher: Elsevier
+    IF_approx: 11
+    word_limit: no strict limit (typically 8000-12000)
+    abstract: unstructured, ≤250 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Highlights (3-5 bullets), Introduction, Related Work, Methods, Experiments, Results, Discussion, Conclusion, References"
+    special:
+      - "Highlights required (3-5 bullet points)"
+      - "Code availability strongly encouraged"
+      - "Graphical abstract optional"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # AI / DIGITAL HEALTH
+  # ═══════════════════════════════════════════════
+
+  - id: npj-digital-medicine
+    journal: npj Digital Medicine
+    publisher: Springer Nature
+    IF_approx: 15
+    word_limit: 3500 (excluding Methods)
+    abstract: unstructured, ≤200 words
+    references: ≤60
+    figures: ≤8
+    tables: ≤4
+    sections: "Abstract, Introduction, Results, Discussion, Methods, References"
+    special:
+      - "Nature journal formatting rules"
+      - "Reporting Summary required"
+      - "Data and Code availability required"
+      - "APC: ~$2990"
+    system: Editorial Manager
+
+  - id: lancet-digital-health
+    journal: Lancet Digital Health
+    publisher: Elsevier
+    IF_approx: 24
+    word_limit: 3000
+    abstract: structured (same as Lancet), ≤300 words
+    references: ≤30
+    sections: same as Lancet
+    special:
+      - "Research in Context panel required"
+      - "Open access"
+    system: Editorial Manager
+
+  - id: jmir
+    journal: Journal of Medical Internet Research (JMIR)
+    publisher: JMIR Publications
+    IF_approx: 7
+    word_limit: no strict limit
+    abstract: structured, ≤300 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Introduction, Methods, Results, Discussion (Principal Findings, Comparison With Prior Work, Limitations, Conclusions), References"
+    special:
+      - "APC: ~$2500"
+      - "Discussion must include Principal Findings subsection"
+    system: JMIR submission system
+
+  - id: ieee-jbhi
+    journal: IEEE Journal of Biomedical and Health Informatics (JBHI)
+    publisher: IEEE
+    IF_approx: 7
+    word_limit: 8 pages (double column, ~5000 words)
+    abstract: unstructured, ≤250 words
+    references: ≤50, IEEE style (numbered brackets)
+    figures: unlimited within page limit
+    tables: unlimited within page limit
+    sections: "Abstract, Index Terms, Introduction, Related Work, Methods, Experiments, Results, Discussion, Conclusion, References"
+    special:
+      - "Index Terms (keywords) required"
+      - "IEEE formatting template (LaTeX/Word)"
+      - "Double-column format"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # PEDIATRICS
+  # ═══════════════════════════════════════════════
+
+  - id: lancet-child
+    journal: Lancet Child & Adolescent Health
+    publisher: Elsevier
+    IF_approx: 20
+    word_limit: 3000
+    abstract: structured (same as Lancet), ≤300 words
+    references: ≤30
+    sections: same as Lancet
+    special:
+      - "Research in Context panel required"
+    system: Editorial Manager
+
+  - id: jama-pediatrics
+    journal: JAMA Pediatrics
+    publisher: AMA
+    IF_approx: 26
+    word_limit: 3000
+    abstract: structured (same as JAMA), ≤350 words
+    references: ≤40, AMA style
+    sections: same as JAMA
+    special:
+      - "Key Points box required"
+    system: ScholarOne
+
+  - id: pediatrics
+    journal: Pediatrics
+    publisher: AAP
+    IF_approx: 8
+    word_limit: 3500
+    abstract: structured (Objective, Methods, Results, Conclusions), ≤250 words
+    references: ≤40, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, What's Known on This Subject, What This Study Adds, Introduction, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "What's Known / What This Study Adds box required"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # ORTHOPEDICS
+  # ═══════════════════════════════════════════════
+
+  - id: jbjs
+    journal: Journal of Bone and Joint Surgery (JBJS)
+    publisher: JBJS Inc
+    IF_approx: 6
+    word_limit: 3500
+    abstract: structured (Background, Methods, Results, Conclusions), ≤300 words
+    references: ≤40, Vancouver
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Appendix, References"
+    special:
+      - "Level of Evidence must be stated"
+    system: ScholarOne
+
+  - id: corr
+    journal: Clinical Orthopaedics and Related Research (CORR)
+    publisher: Wolters Kluwer
+    IF_approx: 4
+    word_limit: 3500
+    abstract: structured, ≤300 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Patients and Methods, Results, Discussion, References"
+    special:
+      - "Level of Evidence (I-V) required"
+      - "Clinical Relevance statement"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # OPHTHALMOLOGY
+  # ═══════════════════════════════════════════════
+
+  - id: ophthalmology
+    journal: Ophthalmology
+    publisher: Elsevier / AAO
+    IF_approx: 14
+    word_limit: 3500
+    abstract: structured (Purpose, Design, Participants, Methods, Main Outcome Measures, Results, Conclusions), ≤350 words
+    references: ≤40
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Précis (1-2 sentences), Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Précis required (1-2 sentence summary)"
+    system: Editorial Manager
+
+  - id: jama-ophthalmology
+    journal: JAMA Ophthalmology
+    publisher: AMA
+    IF_approx: 8
+    word_limit: 3000
+    abstract: structured (same as JAMA), ≤350 words
+    references: ≤40, AMA style
+    sections: same as JAMA
+    special:
+      - "Key Points box required"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # DERMATOLOGY
+  # ═══════════════════════════════════════════════
+
+  - id: jama-dermatology
+    journal: JAMA Dermatology
+    publisher: AMA
+    IF_approx: 12
+    word_limit: 3000
+    abstract: structured (same as JAMA), ≤350 words
+    references: ≤40, AMA style
+    sections: same as JAMA
+    special:
+      - "Key Points box required"
+    system: ScholarOne
+
+  - id: bjd
+    journal: British Journal of Dermatology
+    publisher: Oxford University Press
+    IF_approx: 11
+    word_limit: 3500
+    abstract: structured (Background, Objectives, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, What is already known / What does this study add / What are the clinical implications, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "Summary box required"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # PATHOLOGY
+  # ═══════════════════════════════════════════════
+
+  - id: modern-pathology
+    journal: Modern Pathology
+    publisher: Springer Nature
+    IF_approx: 7
+    word_limit: 4000
+    abstract: unstructured, ≤250 words
+    references: ≤50
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: ajsp
+    journal: American Journal of Surgical Pathology
+    publisher: Wolters Kluwer
+    IF_approx: 5
+    word_limit: 4000
+    abstract: unstructured, ≤250 words
+    references: ≤50
+    figures: ≤10
+    tables: ≤5
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # INFECTIOUS DISEASE
+  # ═══════════════════════════════════════════════
+
+  - id: lancet-id
+    journal: Lancet Infectious Diseases
+    publisher: Elsevier
+    IF_approx: 36
+    word_limit: 3000
+    abstract: structured (same as Lancet), ≤300 words
+    references: ≤30
+    sections: same as Lancet
+    special:
+      - "Research in Context panel required"
+    system: Editorial Manager
+
+  - id: cid
+    journal: Clinical Infectious Diseases
+    publisher: Oxford University Press / IDSA
+    IF_approx: 12
+    word_limit: 3000
+    abstract: structured (Background, Methods, Results, Conclusions), ≤200 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # ENDOCRINOLOGY & METABOLISM
+  # ═══════════════════════════════════════════════
+
+  - id: diabetes-care
+    journal: Diabetes Care
+    publisher: ADA
+    IF_approx: 17
+    word_limit: 4000
+    abstract: structured (Objective, Research Design and Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤5
+    tables: ≤4
+    sections: "Abstract, Introduction, Research Design and Methods, Results, Conclusions, References"
+    special:
+      - "Unique section heading: 'Research Design and Methods' (not 'Methods')"
+      - "Conclusion (not Discussion)"
+    system: ScholarOne
+
+  - id: lancet-diabetes
+    journal: Lancet Diabetes & Endocrinology
+    publisher: Elsevier
+    IF_approx: 44
+    word_limit: 3000
+    abstract: structured (same as Lancet), ≤300 words
+    references: ≤30
+    sections: same as Lancet
+    special:
+      - "Research in Context panel required"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # NEPHROLOGY
+  # ═══════════════════════════════════════════════
+
+  - id: jasn
+    journal: Journal of the American Society of Nephrology (JASN)
+    publisher: ASN / Wolters Kluwer
+    IF_approx: 10
+    word_limit: 4000
+    abstract: structured, ≤250 words
+    references: ≤50
+    figures: ≤8
+    tables: ≤4
+    sections: "Abstract, Significance Statement, Introduction, Methods, Results, Discussion, Disclosures, References"
+    special:
+      - "Significance Statement required (≤100 words)"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # PSYCHIATRY
+  # ═══════════════════════════════════════════════
+
+  - id: lancet-psychiatry
+    journal: Lancet Psychiatry
+    publisher: Elsevier
+    IF_approx: 65
+    word_limit: 3000
+    abstract: structured (same as Lancet), ≤300 words
+    references: ≤30
+    sections: same as Lancet
+    special:
+      - "Research in Context panel required"
+    system: Editorial Manager
+
+  - id: jama-psychiatry
+    journal: JAMA Psychiatry
+    publisher: AMA
+    IF_approx: 25
+    word_limit: 3000
+    abstract: structured (same as JAMA), ≤350 words
+    references: ≤40, AMA style
+    sections: same as JAMA
+    special:
+      - "Key Points box required"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # SYSTEMATIC REVIEW JOURNALS
+  # ═══════════════════════════════════════════════
+
+  - id: cochrane
+    journal: Cochrane Database of Systematic Reviews
+    publisher: Cochrane / Wiley
+    IF_approx: 9
+    word_limit: no strict limit
+    abstract: structured (Background, Objectives, Search methods, Selection criteria, Data collection, Main results, Authors' conclusions), Plain language summary
+    references: unlimited
+    sections: "Background, Objectives, Methods (Criteria, Search, Data collection, Analysis), Results, Discussion (Summary, Strengths and limitations, Applicability, Agreements and disagreements), Authors' conclusions, References"
+    special:
+      - "RevMan software for analysis"
+      - "PRISMA + Cochrane Handbook compliance"
+      - "Plain language summary required"
+      - "Summary of findings tables required"
+    system: Cochrane Editorial system
+
+  - id: systematic-reviews
+    journal: Systematic Reviews
+    publisher: Springer Nature
+    IF_approx: 3
+    word_limit: no strict limit
+    abstract: structured, ≤350 words
+    references: unlimited
+    sections: "Abstract, Background, Methods (incl. PROSPERO registration), Results, Discussion, Conclusions, References"
+    special:
+      - "PRISMA checklist required"
+      - "PROSPERO registration number"
+      - "APC: ~$2090"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # OPEN ACCESS — General
+  # ═══════════════════════════════════════════════
+
+  - id: plos-medicine
+    journal: PLOS Medicine
+    publisher: PLOS
+    IF_approx: 16
+    word_limit: no strict limit (typically 4000-5000)
+    abstract: structured, ≤300 words
+    references: unlimited, Vancouver
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Author Summary, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Author Summary required (≤200 words, no jargon)"
+      - "Data availability: must be deposited in public repository"
+      - "EQUATOR checklist required"
+      - "APC: ~$3500"
+    cover_letter: required
+    system: Editorial Manager
+
+  - id: plos-one
+    journal: PLOS ONE
+    publisher: PLOS
+    IF_approx: 3
+    word_limit: no strict limit
+    abstract: unstructured, ≤300 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions (optional), References"
+    special:
+      - "Judges on technical soundness, NOT novelty/impact"
+      - "Data availability mandatory"
+      - "APC: ~$1805"
+    system: Editorial Manager
+
+  - id: nature-communications
+    journal: Nature Communications
+    publisher: Springer Nature
+    IF_approx: 17
+    word_limit: no strict limit (typically 3000-5000)
+    abstract: unstructured, ≤150 words
+    references: unlimited
+    figures: ≤10
+    tables: ≤5
+    sections: "Abstract, Introduction, Results, Discussion, Methods, References"
+    special:
+      - "Reporting Summary required"
+      - "APC: ~$5790"
+    cover_letter: required
+    system: Editorial Manager
+
+  - id: scientific-reports
+    journal: Scientific Reports
+    publisher: Springer Nature
+    IF_approx: 4
+    word_limit: no strict limit
+    abstract: unstructured, ≤200 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "APC: ~$2090"
+      - "Technical soundness focus"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # CHINESE SCI JOURNALS
+  # ═══════════════════════════════════════════════
+
+  - id: chinese-medical-journal
+    journal: Chinese Medical Journal
+    publisher: Chinese Medical Association / Wolters Kluwer
+    IF_approx: 6
+    word_limit: 5000
+    abstract: structured, ≤300 words
+    references: ≤40, Vancouver
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Chinese and English abstracts"
+      - "ORCID required"
+    system: ScholarOne
+
+  - id: science-bulletin
+    journal: Science Bulletin
+    publisher: Elsevier / Science China Press
+    IF_approx: 19
+    word_limit: 4000 (Article)
+    abstract: unstructured, ≤200 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤3
+    sections: "Abstract, Introduction, Results, Discussion, Materials and Methods, References"
+    special:
+      - "Results before Methods (like Nature)"
+    system: Editorial Manager
+
+  - id: signal-transduction
+    journal: Signal Transduction and Targeted Therapy
+    publisher: Springer Nature
+    IF_approx: 40
+    word_limit: no strict limit
+    abstract: unstructured, ≤200 words
+    references: unlimited
+    figures: ≤10
+    tables: ≤5
+    sections: "Abstract, Introduction, Results, Discussion, Materials and Methods, References"
+    special:
+      - "APC: ~$4380"
+      - "Nature formatting style"
+    system: Editorial Manager
+
+  - id: eclinical-medicine
+    journal: eClinicalMedicine
+    publisher: Elsevier / The Lancet
+    IF_approx: 15
+    word_limit: 3500
+    abstract: structured (same as Lancet), ≤300 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Research in Context panel, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Research in Context panel required"
+      - "Open access (no APC)"
+      - "Lancet family formatting"
+    system: Editorial Manager
+
+# ═══════════════════════════════════════════════
+# FORMATTING DEFAULTS (apply if not overridden)
+# ═══════════════════════════════════════════════
+
+defaults:
+  font: "Times New Roman or Arial, 12pt"
+  spacing: double
+  margins: "2.54 cm (1 inch) all sides"
+  page_numbers: bottom center or bottom right
+  line_numbers: continuous (most journals require for review)
+  title_page:
+    - Title (≤20 words recommended)
+    - Running title (≤50 characters)
+    - Authors (full names, numbered affiliations)
+    - Affiliations
+    - Corresponding author (name, email, address, phone)
+    - ORCID (if required)
+    - Word count (excluding abstract, references, tables, figure legends)
+    - Number of figures and tables
+    - Keywords (3-6, use MeSH terms when possible)
+  reference_formats:
+    vancouver: "Numbered in order of appearance, e.g., [1] Author AB, Author CD. Title. Journal. Year;Vol:Pages."
+    ama: "Superscript numbered, similar to Vancouver but AMA manual style"
+    nature: "Superscript numbered, abbreviated journal names"
+    ieee: "Numbered in brackets [1], IEEE abbreviation style"
+
+# ═══════════════════════════════════════════════
+# JOURNAL FAMILY QUICK REFERENCE
+# ═══════════════════════════════════════════════
+# Lancet family (all require Research in Context):
+#   Lancet, Lancet Oncology, Lancet Infectious Diseases,
+#   Lancet Respiratory Medicine, Lancet Neurology,
+#   Lancet Digital Health, Lancet Child, Lancet Diabetes,
+#   Lancet Psychiatry, eClinicalMedicine
+#
+# JAMA family (all require Key Points box):
+#   JAMA, JAMA Surgery, JAMA Oncology, JAMA Neurology,
+#   JAMA Pediatrics, JAMA Ophthalmology, JAMA Dermatology,
+#   JAMA Psychiatry
+#
+# Nature family (all require Reporting Summary):
+#   Nature, Nature Medicine, Nature Communications,
+#   npj Digital Medicine, Scientific Reports,
+#   Signal Transduction and Targeted Therapy

@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Generated outputs (root-level only, not in commands/ or skills/)
+/results-summary.md
+/analysis-plan.md
+/research-question.md
+/study-protocol.md
+/submission-readiness-report.md
+/peer-review-simulation-report.md
+/revision-tracking.md
+/search-strategy.md
+
+# Node
+node_modules/

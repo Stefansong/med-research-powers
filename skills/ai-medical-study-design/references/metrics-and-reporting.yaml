@@ -1,0 +1,84 @@
+# AI Medical Study: Metrics and Reporting Map
+
+## Performance Metrics by Task Type
+
+classification:
+  primary:
+    - {metric: AUROC, description: "Area under ROC curve + 95% CI", when: "Always for binary/multiclass"}
+    - {metric: AUPRC, description: "Area under Precision-Recall curve", when: "Class imbalance (prevalence <20%)"}
+    - {metric: Sensitivity, description: "True positive rate / Recall", when: "Always"}
+    - {metric: Specificity, description: "True negative rate", when: "Always"}
+  secondary:
+    - {metric: F1 Score, description: "Harmonic mean of precision and recall", when: "Class imbalance"}
+    - {metric: Accuracy, description: "Overall correct rate", when: "Only if classes balanced; MISLEADING with imbalance"}
+    - {metric: PPV/NPV, description: "Positive/Negative predictive value", when: "Clinical utility assessment"}
+    - {metric: Confusion Matrix, description: "Full error breakdown", when: "Always include"}
+
+detection_segmentation:
+  primary:
+    - {metric: IoU / Dice, description: "Intersection over Union / Dice coefficient", when: "Segmentation tasks"}
+    - {metric: mAP, description: "Mean Average Precision", when: "Object detection"}
+  secondary:
+    - {metric: "Sensitivity @ FP rate", description: "Detection sensitivity at fixed false positive rate", when: "Lesion detection"}
+    - {metric: Hausdorff Distance, description: "Max boundary error", when: "Contour accuracy matters"}
+
+llm_vlm_evaluation:
+  primary:
+    - {metric: Accuracy, description: "Per-task-type accuracy (stratified)", when: "Always, stratified by question type"}
+    - {metric: Human Expert Baseline, description: "Same tasks by human experts", when: "Always include comparison"}
+    - {metric: Inter-rater Agreement, description: "Kappa/ICC between evaluators", when: "Subjective grading tasks"}
+  secondary:
+    - {metric: Failure Mode Analysis, description: "Qualitative categorization of errors", when: "Always"}
+    - {metric: Calibration, description: "Confidence vs actual accuracy", when: "If model outputs confidence"}
+
+regression_prediction:
+  primary:
+    - {metric: MAE / RMSE, description: "Mean Absolute Error / Root Mean Square Error"}
+    - {metric: "R²", description: "Coefficient of determination"}
+    - {metric: Calibration Curve, description: "Predicted vs observed"}
+  secondary:
+    - {metric: DCA, description: "Decision Curve Analysis — clinical net benefit", when: "MANDATORY for clinical prediction models"}
+    - {metric: Brier Score, description: "Overall calibration + discrimination"}
+
+fairness_and_bias:
+  metrics:
+    - {metric: Demographic Parity, description: "Equal positive prediction rate across groups", when: "Any model deployed across demographics"}
+    - {metric: Equalized Odds, description: "Equal TPR and FPR across groups", when: "Fairness-critical applications"}
+    - {metric: Calibration by Subgroup, description: "Calibration curves stratified by race/sex/age", when: "Always for clinical deployment"}
+    - {metric: Subgroup AUROC, description: "AUROC stratified by demographic groups", when: "Always — aggregate AUROC hides disparities"}
+  reporting:
+    - "Report performance stratified by sex, age, race/ethnicity at minimum"
+    - "Report dataset composition vs target population demographics"
+    - "Disclose any demographic groups absent from training/test data"
+    - "If model deployed across sites, report cross-site performance variation"
+
+robustness:
+  metrics:
+    - {metric: Cross-site Generalization, description: "Performance on external hospital data", when: "Always for clinical deployment"}
+    - {metric: Temporal Validation, description: "Performance on data from a later time period", when: "When data drift is possible"}
+    - {metric: Domain Shift Analysis, description: "Performance under distribution shift (scanner, protocol, population)", when: "Multi-site or multi-device studies"}
+    - {metric: Uncertainty Quantification, description: "Epistemic vs aleatoric uncertainty estimation", when: "Safety-critical applications"}
+  reporting:
+    - "Report model behavior on out-of-distribution inputs"
+    - "Report failure mode taxonomy (what kinds of errors, not just error rate)"
+    - "If applicable, report adversarial robustness"
+
+calibration_extended:
+  metrics:
+    - {metric: ECE, description: "Expected Calibration Error", when: "Any model outputting probabilities"}
+    - {metric: MCE, description: "Maximum Calibration Error", when: "Safety-critical — worst-case miscalibration"}
+    - {metric: Reliability Diagram, description: "Visual calibration plot (predicted vs observed)", when: "Always include as figure"}
+  note: "A model can have high AUROC but terrible calibration — both must be assessed"
+
+## Study Type → Reporting Standard Map
+
+mapping:
+  - {study: "AI-assisted diagnosis", primary: "STARD + CLAIM", supplement: "MI-CLAIM"}
+  - {study: "AI clinical trial (RCT)", primary: "CONSORT-AI 2020", supplement: "SPIRIT-AI 2020"}
+  - {study: "AI decision support early evaluation", primary: "DECIDE-AI 2022", supplement: "CONSORT-AI if progressing to RCT"}
+  - {study: "Prediction model development", primary: "TRIPOD+AI 2024", supplement: "PROBAST"}
+  - {study: "LLM/VLM medical evaluation", primary: "TRIPOD-LLM 2024", supplement: "Journal-specific"}
+  - {study: "Surgical video AI", primary: "STARD (if applicable)", supplement: "MVAL"}
+  - {study: "Medical device/instrument innovation", primary: "IDEAL framework", supplement: "ISO 14155"}
+  - {study: "AI systematic review", primary: "PRISMA 2020", supplement: "QUADAS-2 / PROBAST / ROBINS-I"}
+  - {study: "Medical imaging AI", primary: "CLAIM 2020", supplement: "MI-CLAIM"}

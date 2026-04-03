@@ -1,0 +1,71 @@
+name: CONSORT 2025
+version: "2025"
+total_items: 30
+supersedes: CONSORT 2010
+reference: "Hopewell et al. BMJ/JAMA/Lancet/Nature Medicine/PLOS Medicine, April 2025"
+key_changes_from_2010:
+  added: 7
+  revised: 3
+  deleted: 1
+  new_section: "Open Science (items 2-5)"
+  integrated_extensions: ["CONSORT-Harms", "CONSORT-Outcomes", "TIDieR"]
+
+sections:
+  - name: Title and Open Science
+    items:
+      - {id: 1, text: "Title identified as a randomised trial", section: Title}
+      - {id: 2, text: "Trial registration number and registry name", section: Open Science, new: true}
+      - {id: 3, text: "Where protocol and SAP can be accessed", section: Open Science, new: true}
+      - {id: 4, text: "Statement on sharing de-identified participant-level data", section: Open Science, new: true}
+      - {id: 5, text: "Sources of funding and role of funders; conflicts of interest", section: Open Science, new: true}
+
+  - name: Abstract
+    items:
+      - {id: 6, text: "Structured summary of trial design, methods, results, and conclusions"}
+
+  - name: Introduction
+    items:
+      - {id: 7, text: "Scientific background and explanation of rationale"}
+      - {id: 8, text: "Specific objectives or hypotheses"}
+
+  - name: Methods
+    items:
+      - {id: 9, text: "Trial design (parallel, factorial, etc.) including allocation ratio"}
+      - {id: 10, text: "Important changes to methods after trial commencement with reasons"}
+      - {id: 11, text: "Eligibility criteria for participants"}
+      - {id: 12, text: "Settings and locations where data were collected"}
+      - {id: 13, text: "Interventions for each group with sufficient details to allow replication (TIDieR integrated)", revised: true}
+      - {id: 14, text: "Completely defined pre-specified primary and secondary outcome measures (CONSORT-Outcomes integrated)", revised: true}
+      - {id: 15, text: "How sample size was determined, including interim analyses and stopping guidelines", revised: true}
+      - {id: 16, text: "Method used to generate the random allocation sequence"}
+      - {id: 17, text: "Type of randomisation; details of any restriction"}
+      - {id: 18, text: "Mechanism used to implement the allocation sequence; concealment"}
+      - {id: 19, text: "Who generated the sequence, who enrolled, who assigned"}
+      - {id: 20, text: "If done, who was blinded after assignment and how"}
+      - {id: 21, text: "Statistical methods used to compare groups; methods for additional analyses"}
+      - {id: 21a, text: "Methods for assessing harms", new: true}
+
+  - name: Results
+    items:
+      - {id: 22, text: "Flow of participants through each stage (CONSORT flow diagram)"}
+      - {id: 23, text: "Dates defining the periods of recruitment and follow-up"}
+      - {id: 24, text: "Why the trial ended or was stopped"}
+      - {id: 25, text: "Baseline demographic and clinical characteristics for each group"}
+      - {id: 26, text: "Number of participants in each group included in each analysis; intention-to-treat"}
+      - {id: 26a, text: "Number of participants for each primary and secondary outcome", new: true}
+      - {id: 27, text: "For each outcome: results, effect size, precision (95% CI)"}
+      - {id: 28, text: "Results of any other analyses, including subgroup and adjusted analyses"}
+      - {id: 28a, text: "All important harms or unintended effects in each group (CONSORT-Harms integrated)", new: true}
+
+  - name: Discussion
+    items:
+      - {id: 29, text: "Trial limitations, sources of potential bias, imprecision"}
+      - {id: 30, text: "Generalisability (external validity, applicability)"}
+      - {id: 31, text: "Interpretation consistent with results, balancing benefits and harms"}
+
+commonly_missed:
+  - "Item 2-5 (Open Science) — entirely new section, easy to forget"
+  - "Item 15 — interim analyses and stopping guidelines"
+  - "Item 21a — methods for assessing harms"
+  - "Item 26a — participant numbers per outcome"
+  - "Item 28a — all important harms"

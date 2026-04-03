@@ -1,0 +1,31 @@
+{
+  "name": "med-research-powers",
+  "version": "6.0.0",
+  "description": "Medical research methodology framework — 21 skills covering the full research pipeline from question formulation to revision response. Enforces CONSORT 2025, STROBE, PRISMA, TRIPOD-AI, DECIDE-AI, IDEAL, AGREE II, MOOSE, and 40+ reporting standards.",
+  "author": "BTCH Uro AI Lab",
+  "homepage": "https://github.com/Stefansong/med-research-powers",
+  "license": "MIT",
+  "commands": {
+    "mrp:research-question": "commands/research-question.md",
+    "mrp:literature-synthesis": "commands/literature-synthesis.md",
+    "mrp:study-design": "commands/study-design.md",
+    "mrp:basic-study-design": "commands/basic-study-design.md",
+    "mrp:ai-study-design": "commands/ai-study-design.md",
+    "mrp:journal-selection": "commands/journal-selection.md",
+    "mrp:analyze-data": "commands/analyze-data.md",
+    "mrp:figure-generation": "commands/figure-generation.md",
+    "mrp:write-manuscript": "commands/write-manuscript.md",
+    "mrp:reporting-standards": "commands/reporting-standards.md",
+    "mrp:research-ethics": "commands/research-ethics.md",
+    "mrp:peer-review": "commands/peer-review.md",
+    "mrp:check-standards": "commands/check-standards.md",
+    "mrp:pre-submission": "commands/pre-submission.md",
+    "mrp:cover-letter": "commands/cover-letter.md",
+    "mrp:submission-guide": "commands/submission-guide.md",
+    "mrp:revision-strategy": "commands/revision-strategy.md",
+    "mrp:responding-to-reviewers": "commands/responding-to-reviewers.md",
+    "mrp:writing-mrp-skills": "commands/writing-mrp-skills.md",
+    "mrp:using-mrp": "commands/using-mrp.md",
+    "mrp:team-collaboration": "commands/team-collaboration.md"
+  }
+}

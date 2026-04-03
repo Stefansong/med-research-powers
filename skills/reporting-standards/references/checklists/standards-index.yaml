@@ -1,0 +1,253 @@
+# Reporting Standards Master Index
+# Load this file to find the right standard for a study type.
+# Detailed checklists are in individual YAML files in this directory.
+
+standards:
+  # === Clinical Trials ===
+  - id: consort-2025
+    name: CONSORT 2025
+    file: consort-2025.yaml
+    items: 30
+    for: "Randomised controlled trials"
+    supersedes: "CONSORT 2010 — do NOT use old version"
+    
+  - id: consort-ai
+    name: CONSORT-AI 2020
+    items: 14 extension items
+    for: "RCTs of AI interventions"
+    use_with: consort-2025
+    
+  - id: spirit-2025
+    name: SPIRIT 2025
+    items: 34
+    for: "RCT protocols"
+    supersedes: "SPIRIT 2013"
+    
+  - id: spirit-ai
+    name: SPIRIT-AI 2020
+    for: "AI intervention RCT protocols"
+    use_with: spirit-2025
+    
+  - id: tidier
+    name: TIDieR 2014
+    items: 12
+    for: "Intervention description and replication"
+    note: "Partially integrated into CONSORT 2025 but standalone useful"
+
+  - id: consort-harms
+    name: CONSORT-Harms 2022
+    for: "Harms reporting in RCTs"
+    note: "Partially integrated into CONSORT 2025"
+
+  # === Observational ===
+  - id: strobe
+    name: STROBE 2007
+    items: 22
+    for: "Cohort, case-control, cross-sectional studies"
+    
+  - id: record
+    name: RECORD 2015
+    items: 13
+    for: "Studies using routinely collected health data (EMR, administrative)"
+    use_with: strobe
+    
+  - id: strocss
+    name: STROCSS 2021
+    items: 17
+    for: "Surgical cohort/cross-sectional/case-control studies"
+
+  # === Systematic Reviews ===
+  - id: prisma-2020
+    name: PRISMA 2020
+    items: 27
+    for: "Systematic reviews and meta-analyses"
+    
+  - id: prisma-p
+    name: PRISMA-P 2015
+    items: 17
+    for: "Systematic review protocols (PROSPERO registration)"
+    
+  - id: prisma-scr
+    name: PRISMA-ScR 2018
+    items: 22
+    for: "Scoping reviews"
+    
+  - id: prisma-s
+    name: PRISMA-S 2021
+    items: 16
+    for: "Search reporting in systematic reviews"
+    
+  - id: prisma-dta
+    name: PRISMA-DTA 2018
+    for: "Diagnostic test accuracy systematic reviews"
+    use_with: quadas-2
+    
+  - id: tripod-srma
+    name: TRIPOD-SRMA 2024
+    for: "Systematic reviews of prediction models"
+
+  - id: amstar-2
+    name: AMSTAR 2 (2017)
+    items: 16
+    for: "Critical appraisal of systematic reviews"
+    
+  - id: grade
+    name: GRADE framework
+    for: "Evidence quality grading (5 dimensions: risk of bias, inconsistency, indirectness, imprecision, publication bias)"
+
+  # === Diagnostic ===
+  - id: stard
+    name: STARD 2015
+    items: 30
+    for: "Diagnostic accuracy studies"
+
+  # === Prediction & AI ===
+  - id: tripod-ai
+    name: TRIPOD+AI 2024
+    items: 27
+    for: "Prediction model development/validation"
+    supersedes: "TRIPOD 2015"
+    
+  - id: tripod-llm
+    name: TRIPOD-LLM 2024
+    for: "LLM/VLM medical evaluation studies"
+    
+  - id: tripod-cluster
+    name: TRIPOD-Cluster 2024
+    for: "Prediction models with clustered data"
+
+  - id: claim
+    name: CLAIM 2020
+    items: 40
+    for: "AI in medical imaging"
+    
+  - id: mi-claim
+    name: MI-CLAIM 2020
+    items: 15
+    for: "Minimum information about clinical AI modeling"
+    
+  - id: decide-ai
+    name: DECIDE-AI 2022
+    items: 17
+    for: "Early-stage clinical evaluation of AI decision support"
+    key_items:
+      - "AI system description (inputs, outputs, intended users, use context)"
+      - "Human-AI interaction workflow"
+      - "Clinical workflow integration"
+      - "Safety monitoring and adverse events"
+      - "Usability and user experience data"
+    
+  - id: probast
+    name: PROBAST 2019
+    items: 20
+    for: "Bias risk in prediction models"
+
+  # === Surgery & Devices ===
+  - id: ideal
+    name: IDEAL 2009/2013
+    type: framework
+    for: "Surgical/device innovation stages"
+    stages:
+      - "Stage 1 (Idea): First-in-human, proof of concept, case reports"
+      - "Stage 2a (Development): Technical refinement, learning curve studies"
+      - "Stage 2b (Exploration): Prospective cohort, feasibility studies"
+      - "Stage 3 (Assessment): RCT or high-quality comparative study"
+      - "Stage 4 (Long-term): Registry, long-term outcome surveillance"
+      
+  - id: mval
+    name: MVAL
+    for: "Surgical video AI reporting"
+    note: "Verify latest version and full title"
+
+  # === Qualitative ===
+  - id: coreq
+    name: COREQ 2007
+    items: 32
+    for: "Qualitative research (interviews, focus groups, observation)"
+    
+  - id: srqr
+    name: SRQR 2014
+    items: 21
+    for: "Qualitative research (alternative to COREQ)"
+
+  # === Preclinical ===
+  - id: arrive
+    name: ARRIVE 2.0 (2020)
+    items: 21
+    for: "Animal experiments"
+
+  # === Other ===
+  - id: care
+    name: CARE 2017
+    items: 13
+    for: "Case reports"
+    
+  - id: squire
+    name: SQUIRE 2.0 (2015)
+    items: 18
+    for: "Quality improvement studies"
+    
+  - id: cheers
+    name: CHEERS 2022
+    items: 28
+    for: "Health economic evaluations"
+
+  # === Guidelines Appraisal ===
+  - id: agree-ii
+    name: AGREE II (2017)
+    items: 23
+    for: "Clinical practice guideline quality appraisal"
+    note: "Use for systematic reviews of clinical guidelines"
+
+  # === Meta-Analysis Extensions ===
+  - id: moose
+    name: MOOSE 2000
+    items: 35
+    for: "Meta-analyses of observational studies"
+    use_with: prisma-2020
+    note: "Required when pooling cohort, case-control, or cross-sectional studies"
+
+  - id: prisma-nma
+    name: PRISMA-NMA 2015
+    items: 32
+    for: "Network meta-analysis (indirect treatment comparisons)"
+    use_with: prisma-2020
+
+  # === Cluster Trials ===
+  - id: consort-cluster
+    name: CONSORT-Cluster 2012
+    items: Extension items
+    for: "Cluster randomized trials (community, hospital, clinic-level randomization)"
+    use_with: consort-2025
+    note: "Required for RCTs where randomization unit differs from analysis unit"
+
+  # === Bias Assessment Tools ===
+  - id: rob-2
+    name: Cochrane RoB 2 (2019)
+    type: bias_tool
+    domains: 5
+    for: "RCT bias risk"
+    
+  - id: robins-i
+    name: ROBINS-I 2016
+    type: bias_tool
+    domains: 7
+    for: "Non-randomized intervention study bias"
+    
+  - id: nos
+    name: Newcastle-Ottawa Scale
+    type: bias_tool
+    max_score: 8
+    for: "Observational study quality"
+    
+  - id: minors
+    name: MINORS 2003
+    type: bias_tool
+    items: 12
+    for: "Non-randomized surgical studies"
+    
+  - id: quadas-2
+    name: QUADAS-2 2011
+    type: bias_tool
+    domains: 4
+    for: "Diagnostic accuracy study bias"
