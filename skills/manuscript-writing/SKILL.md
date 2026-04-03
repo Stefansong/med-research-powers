@@ -292,6 +292,53 @@ manuscript/
 
 ---
 
+## D2. Network Meta-Analysis (NMA)
+
+**在 Meta-Analysis 基础上，增加网络结构和间接比较：**
+
+### 与标准 MA 的关键差异
+
+| 维度 | 标准 Meta-Analysis | 网络 Meta-Analysis |
+|------|-------------------|-------------------|
+| 比较 | 两两直接比较（A vs B） | 多干预网络（A vs B vs C vs D） |
+| 数据 | 直接证据 | 直接 + 间接证据 |
+| 核心图表 | Forest plot | **Network plot** + Forest plot + **League table** |
+| 排序 | 无 | **SUCRA / P-score / Mean rank** |
+| 一致性 | N/A | **全局一致性 + 局部一致性检验** |
+| 模型 | 频率学派为主 | 频率学派（netmeta）或贝叶斯（gemtc/JAGS） |
+| 报告规范 | PRISMA 2020 | **PRISMA-NMA extension** |
+
+### Methods 增加
+
+- Network Geometry（网络结构描述：节点数、边数、连通性）
+- Statistical Model（频率学派 vs 贝叶斯 + 选择理由）
+  - 频率学派：R `netmeta` 包
+  - 贝叶斯：R `gemtc` 或 WinBUGS/OpenBUGS/JAGS
+- Transitivity Assumption（可传递性假设评估——NMA 的核心假设）
+- Consistency Assessment（一致性检验：全局 Design-by-Treatment + 局部 Node-Splitting）
+- Ranking（排序方法：SUCRA / P-score / Mean rank）
+- Comparison-Adjusted Funnel Plot（发表偏倚）
+
+### Results 增加
+
+- **Network Plot（必须）** — 节点大小 = 样本量，边粗细 = 研究数量
+- **League Table（必须）** — 所有两两比较的效应量矩阵
+- Consistency Results（全局 + 局部）
+- **SUCRA / Rankogram** — 干预排序
+- Comparison-Adjusted Funnel Plot
+- 如有不一致 → Sensitivity analysis excluding inconsistent loops
+
+### NMA 特有的 Common Mistakes
+
+| 想法 | 现实 |
+|------|------|
+| "有间接证据就能做 NMA" | 必须评估可传递性假设（各比较的研究人群/干预/时间可比） |
+| "不一致可以忽略" | 统计一致性 + 临床一致性都必须检验并报告 |
+| "SUCRA 最高就是最好" | SUCRA 接近时排序不可靠，必须看 CrI 重叠 |
+| "用 PRISMA 2020 就行" | 必须用 PRISMA-NMA extension |
+
+---
+
 ## E. Scoping Review
 
 ### Section Rules

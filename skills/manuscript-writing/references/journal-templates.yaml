@@ -1105,6 +1105,2339 @@ templates:
       - "Lancet family formatting"
     system: Editorial Manager
 
+  # ═══════════════════════════════════════════════
+  # GENERAL MEDICAL — Additional (IF > 5)
+  # ═══════════════════════════════════════════════
+
+  - id: lancet-global-health
+    journal: The Lancet Global Health
+    publisher: Elsevier
+    IF_approx: 18
+    word_limit: 3000
+    abstract: structured (Background, Methods, Findings, Interpretation, Funding), ≤300 words
+    references: ≤30, Vancouver
+    figures: ≤5
+    tables: included in figure limit
+    sections: "Summary, Introduction, Methods, Results, Discussion, Contributors, References"
+    special:
+      - "Research in Context panel required"
+      - "Focus on global and low-income settings"
+      - "Open access"
+    system: Editorial Manager
+
+  - id: nature-reviews-disease-primers
+    journal: Nature Reviews Disease Primers
+    publisher: Springer Nature
+    IF_approx: 77
+    word_limit: no strict limit (Primer format ~15000 words)
+    abstract: unstructured, ≤200 words
+    references: unlimited
+    figures: ≤10
+    tables: ≤5
+    sections: "Abstract, Introduction, Epidemiology, Mechanisms/pathophysiology, Diagnosis, Management, Quality of life, Outlook, References"
+    special:
+      - "Invited Primer articles (comprehensive reviews)"
+      - "PrimeView summary figure required"
+    system: Editorial Manager
+
+  - id: cmaj
+    journal: Canadian Medical Association Journal (CMAJ)
+    publisher: CMA / Joule
+    IF_approx: 10
+    word_limit: 3500
+    abstract: structured (Background, Methods, Results, Interpretation), ≤250 words
+    references: ≤40, Vancouver
+    figures: ≤5
+    tables: ≤5
+    sections: "Abstract, Introduction, Methods, Results, Interpretation, References"
+    special:
+      - "Bilingual journal (English/French abstracts)"
+    system: ScholarOne
+
+  - id: mja
+    journal: Medical Journal of Australia (MJA)
+    publisher: AMPCo / Wiley
+    IF_approx: 7
+    word_limit: 3000
+    abstract: structured (Objectives, Design, Setting, Participants, Main outcome measures, Results, Conclusions), ≤250 words
+    references: ≤40, Vancouver
+    figures: ≤5
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  - id: jama-internal-medicine
+    journal: JAMA Internal Medicine
+    publisher: AMA
+    IF_approx: 39
+    word_limit: 3000
+    abstract: structured (Importance, Objective, Design/Setting/Participants, Exposures, Main Outcomes and Measures, Results, Conclusions and Relevance), ≤350 words
+    references: ≤40, AMA style
+    figures: ≤5
+    tables: ≤5
+    sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Key Points box required (Question, Findings, Meaning)"
+      - "JAMA family formatting rules apply"
+    system: ScholarOne
+
+  - id: jama-network-open
+    journal: JAMA Network Open
+    publisher: AMA
+    IF_approx: 13
+    word_limit: 3500
+    abstract: structured (Importance, Objective, Design/Setting/Participants, Exposures/Interventions, Main Outcomes and Measures, Results, Conclusions and Relevance), ≤350 words
+    references: ≤60, AMA style
+    figures: ≤5
+    tables: ≤5
+    sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Key Points box required"
+      - "Open access, APC ~$3000"
+      - "JAMA family formatting"
+    system: ScholarOne
+
+  - id: elife
+    journal: eLife
+    publisher: eLife Sciences Publications
+    IF_approx: 7
+    word_limit: no strict limit
+    abstract: unstructured, ≤150 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, eLife Assessment, Introduction, Results, Discussion, Materials and Methods, References"
+    special:
+      - "eLife Assessment and Public Reviews published alongside paper"
+      - "No APC (funded by Wellcome, HHMI, MPDL)"
+      - "Publish-Review-Curate model"
+    system: eLife submission system
+
+  - id: international-journal-surgery
+    journal: International Journal of Surgery
+    publisher: Elsevier / Wolters Kluwer
+    IF_approx: 15
+    word_limit: 4000
+    abstract: structured, ≤250 words
+    references: ≤50, Vancouver
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "STROCSS/PROCESS checklist for case series"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # ONCOLOGY — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: ca-cancer-journal
+    journal: CA - A Cancer Journal for Clinicians
+    publisher: Wiley / ACS
+    IF_approx: 254
+    word_limit: no strict limit (invited reviews)
+    abstract: unstructured, ≤250 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Introduction, [topic-specific sections], Conclusions, References"
+    special:
+      - "Invitation-only reviews and statistics articles"
+      - "Highest IF among all medical journals"
+    system: ScholarOne
+
+  - id: nature-reviews-cancer
+    journal: Nature Reviews Cancer
+    publisher: Springer Nature
+    IF_approx: 78
+    word_limit: no strict limit (reviews)
+    abstract: unstructured, ≤200 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Introduction, [topic-specific sections], Conclusions and perspectives, References"
+    special:
+      - "Invited review journal"
+      - "Key Points box at start of article"
+    system: Editorial Manager
+
+  - id: cancer-cell
+    journal: Cancer Cell
+    publisher: Cell Press / Elsevier
+    IF_approx: 49
+    word_limit: 5000 (excluding STAR Methods)
+    abstract: unstructured, ≤150 words
+    references: ≤80
+    figures: ≤7
+    tables: ≤3
+    sections: "Summary, Introduction, Results, Discussion, STAR Methods, References"
+    special:
+      - "Graphical Abstract required"
+      - "Highlights (≤4 bullet points) required"
+      - "eTOC blurb required (≤70 words)"
+      - "STAR Methods format (KEY RESOURCES TABLE)"
+    system: Editorial Manager
+
+  - id: cancer-discovery
+    journal: Cancer Discovery
+    publisher: AACR
+    IF_approx: 30
+    word_limit: 5000
+    abstract: unstructured, ≤250 words
+    references: ≤60
+    figures: ≤7
+    tables: ≤3
+    sections: "Abstract, Significance, Introduction, Results, Discussion, Methods, References"
+    special:
+      - "Significance Statement required (≤100 words)"
+    system: ScholarOne
+
+  - id: clinical-cancer-research
+    journal: Clinical Cancer Research
+    publisher: AACR
+    IF_approx: 11
+    word_limit: 5000
+    abstract: unstructured, ≤250 words
+    references: ≤60
+    figures: ≤7
+    tables: ≤3
+    sections: "Abstract, Translational Relevance, Introduction, Patients and Methods, Results, Discussion, References"
+    special:
+      - "Translational Relevance statement required (≤150 words)"
+    system: ScholarOne
+
+  - id: nature-reviews-clinical-oncology
+    journal: Nature Reviews Clinical Oncology
+    publisher: Springer Nature
+    IF_approx: 82
+    word_limit: no strict limit (reviews)
+    abstract: unstructured, ≤200 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
+    special:
+      - "Invited review journal"
+      - "Key Points box required"
+    system: Editorial Manager
+
+  - id: jnci
+    journal: Journal of the National Cancer Institute (JNCI)
+    publisher: Oxford University Press
+    IF_approx: 10
+    word_limit: 3000
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤50, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Context and Caveats, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Context and Caveats box (editor-written)"
+    system: ScholarOne
+
+  - id: european-journal-cancer
+    journal: European Journal of Cancer
+    publisher: Elsevier
+    IF_approx: 9
+    word_limit: 3500
+    abstract: structured, ≤250 words
+    references: ≤50, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: breast-cancer-research
+    journal: Breast Cancer Research
+    publisher: Springer Nature
+    IF_approx: 7
+    word_limit: no strict limit
+    abstract: structured, ≤350 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "APC: ~$2990"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # CARDIOLOGY — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: nature-reviews-cardiology
+    journal: Nature Reviews Cardiology
+    publisher: Springer Nature
+    IF_approx: 42
+    word_limit: no strict limit (reviews)
+    abstract: unstructured, ≤200 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
+    special:
+      - "Invited review journal"
+      - "Key Points box required"
+    system: Editorial Manager
+
+  - id: jama-cardiology
+    journal: JAMA Cardiology
+    publisher: AMA
+    IF_approx: 15
+    word_limit: 3000
+    abstract: structured (same as JAMA), ≤350 words
+    references: ≤40, AMA style
+    figures: ≤5
+    tables: ≤5
+    sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Key Points box required (Question, Findings, Meaning)"
+    system: ScholarOne
+
+  - id: european-journal-heart-failure
+    journal: European Journal of Heart Failure
+    publisher: Oxford University Press / ESC
+    IF_approx: 11
+    word_limit: 4000
+    abstract: structured, ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤5
+    sections: "Abstract, Graphical Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Graphical abstract recommended"
+    system: ScholarOne
+
+  - id: cardiovascular-research
+    journal: Cardiovascular Research
+    publisher: Oxford University Press / ESC
+    IF_approx: 13
+    word_limit: 5000
+    abstract: structured, ≤250 words
+    references: ≤60
+    figures: ≤7
+    tables: ≤5
+    sections: "Abstract, Translational Perspective, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Translational perspective section encouraged"
+    system: ScholarOne
+
+  - id: european-heart-journal-cvci
+    journal: European Heart Journal - Cardiovascular Imaging
+    publisher: Oxford University Press / ESC
+    IF_approx: 8
+    word_limit: 3500
+    abstract: structured, ≤250 words
+    references: ≤40
+    figures: ≤8
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Cardiovascular imaging focus"
+    system: ScholarOne
+
+  - id: circulation-research
+    journal: Circulation Research
+    publisher: AHA
+    IF_approx: 17
+    word_limit: 5000
+    abstract: structured, ≤250 words
+    references: ≤60
+    figures: ≤7
+    tables: ≤5
+    sections: "Abstract, Novelty and Significance (What Is Known, What New Information Does This Article Contribute), Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Novelty and Significance box required"
+      - "Major Resources Table for reagents"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # GASTROENTEROLOGY & HEPATOLOGY — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: lancet-gastro-hepatol
+    journal: Lancet Gastroenterology & Hepatology
+    publisher: Elsevier
+    IF_approx: 36
+    word_limit: 3000
+    abstract: structured (same as Lancet), ≤300 words
+    references: ≤30
+    sections: same as Lancet
+    special:
+      - "Research in Context panel required"
+    system: Editorial Manager
+
+  - id: nature-reviews-gastro-hepatol
+    journal: Nature Reviews Gastroenterology & Hepatology
+    publisher: Springer Nature
+    IF_approx: 47
+    word_limit: no strict limit (reviews)
+    abstract: unstructured, ≤200 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
+    special:
+      - "Invited review journal"
+      - "Key Points box required"
+    system: Editorial Manager
+
+  - id: journal-hepatology
+    journal: Journal of Hepatology
+    publisher: Elsevier / EASL
+    IF_approx: 27
+    word_limit: 4000
+    abstract: structured (Background & Aims, Methods, Results, Conclusions), ≤275 words
+    references: ≤60
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Graphical Abstract, Highlights, Introduction, Patients and Methods, Results, Discussion, References"
+    special:
+      - "Graphical abstract required"
+      - "Highlights (3-5 bullet points) required"
+      - "Lay Summary required (≤100 words)"
+    system: Editorial Manager
+
+  - id: clinical-gastro-hepatol
+    journal: Clinical Gastroenterology and Hepatology
+    publisher: Elsevier / AGA
+    IF_approx: 12
+    word_limit: 3500
+    abstract: structured (Background & Aims, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, What You Need to Know, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "What You Need to Know box required"
+    system: Editorial Manager
+
+  - id: gastrointestinal-endoscopy
+    journal: Gastrointestinal Endoscopy
+    publisher: Elsevier / ASGE
+    IF_approx: 7
+    word_limit: 3500
+    abstract: structured (Background and Aims, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Video case reports accepted"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # RESPIRATORY — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: erj
+    journal: European Respiratory Journal
+    publisher: ERS
+    IF_approx: 17
+    word_limit: 3500
+    abstract: structured, ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Take-home message required (1-2 sentences)"
+    system: ScholarOne
+
+  - id: thorax
+    journal: Thorax
+    publisher: BMJ
+    IF_approx: 10
+    word_limit: 3000
+    abstract: structured, ≤250 words
+    references: ≤40
+    figures: ≤5
+    tables: ≤4
+    sections: "Abstract, Key Messages, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Key Messages box required"
+    system: ScholarOne
+
+  - id: respirology
+    journal: Respirology
+    publisher: Wiley / APSR
+    IF_approx: 6
+    word_limit: 3500
+    abstract: structured, ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # NEUROLOGY & NEUROSCIENCE — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: nature-reviews-neurology
+    journal: Nature Reviews Neurology
+    publisher: Springer Nature
+    IF_approx: 38
+    word_limit: no strict limit (reviews)
+    abstract: unstructured, ≤200 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
+    special:
+      - "Invited review journal"
+      - "Key Points box required"
+    system: Editorial Manager
+
+  - id: annals-neurology
+    journal: Annals of Neurology
+    publisher: Wiley / ANA
+    IF_approx: 11
+    word_limit: 4000
+    abstract: structured (Objective, Methods, Results, Interpretation), ≤250 words
+    references: ≤50
+    figures: ≤7
+    tables: ≤5
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  - id: brain
+    journal: Brain
+    publisher: Oxford University Press
+    IF_approx: 14
+    word_limit: 6000
+    abstract: unstructured, ≤250 words
+    references: ≤60
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  - id: jnnp
+    journal: Journal of Neurology, Neurosurgery & Psychiatry (JNNP)
+    publisher: BMJ
+    IF_approx: 11
+    word_limit: 4000
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, What is already known, What this study adds, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Summary box required (What is already known / What this study adds)"
+    system: ScholarOne
+
+  - id: acta-neuropathologica
+    journal: Acta Neuropathologica
+    publisher: Springer Nature
+    IF_approx: 9
+    word_limit: 5000
+    abstract: unstructured, ≤250 words
+    references: ≤60
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # INFECTIOUS DISEASE — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: lancet-microbe
+    journal: The Lancet Microbe
+    publisher: Elsevier
+    IF_approx: 20
+    word_limit: 3000
+    abstract: structured (same as Lancet), ≤300 words
+    references: ≤30
+    sections: same as Lancet
+    special:
+      - "Research in Context panel required"
+    system: Editorial Manager
+
+  - id: journal-infectious-diseases
+    journal: Journal of Infectious Diseases
+    publisher: Oxford University Press / IDSA
+    IF_approx: 6
+    word_limit: 3000
+    abstract: structured (Background, Methods, Results, Conclusions), ≤200 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  - id: emerging-infectious-diseases
+    journal: Emerging Infectious Diseases
+    publisher: CDC
+    IF_approx: 8
+    word_limit: 3500
+    abstract: unstructured, ≤200 words
+    references: ≤40
+    figures: ≤5
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Public health focus"
+      - "Open access (CDC-funded)"
+    system: Editorial Manager
+
+  - id: clinical-microbiology-reviews
+    journal: Clinical Microbiology Reviews
+    publisher: ASM
+    IF_approx: 37
+    word_limit: no strict limit (reviews)
+    abstract: unstructured, ≤250 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Introduction, [topic-specific sections], Conclusions, References"
+    special:
+      - "Invited comprehensive reviews"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # HEMATOLOGY
+  # ═══════════════════════════════════════════════
+
+  - id: blood
+    journal: Blood
+    publisher: ASH
+    IF_approx: 21
+    word_limit: 4000
+    abstract: unstructured, ≤200 words
+    references: ≤60
+    figures: ≤7
+    tables: ≤4
+    sections: "Abstract, Visual Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Visual Abstract required"
+      - "Key Points required (2 bullet points)"
+    system: ScholarOne
+
+  - id: lancet-haematology
+    journal: Lancet Haematology
+    publisher: Elsevier
+    IF_approx: 25
+    word_limit: 3000
+    abstract: structured (same as Lancet), ≤300 words
+    references: ≤30
+    sections: same as Lancet
+    special:
+      - "Research in Context panel required"
+    system: Editorial Manager
+
+  - id: journal-hematology-oncology
+    journal: Journal of Hematology & Oncology
+    publisher: Springer Nature
+    IF_approx: 29
+    word_limit: no strict limit
+    abstract: structured, ≤350 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "APC: ~$4290"
+    system: Editorial Manager
+
+  - id: blood-advances
+    journal: Blood Advances
+    publisher: ASH
+    IF_approx: 7
+    word_limit: 4000
+    abstract: unstructured, ≤200 words
+    references: ≤60
+    figures: ≤7
+    tables: ≤4
+    sections: "Abstract, Visual Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Visual Abstract required"
+      - "Key Points required (2 bullet points)"
+      - "Open access"
+    system: ScholarOne
+
+  - id: american-journal-hematology
+    journal: American Journal of Hematology
+    publisher: Wiley
+    IF_approx: 13
+    word_limit: 3500
+    abstract: unstructured, ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # RHEUMATOLOGY & IMMUNOLOGY
+  # ═══════════════════════════════════════════════
+
+  - id: nature-reviews-rheumatology
+    journal: Nature Reviews Rheumatology
+    publisher: Springer Nature
+    IF_approx: 33
+    word_limit: no strict limit (reviews)
+    abstract: unstructured, ≤200 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
+    special:
+      - "Invited review journal"
+      - "Key Points box required"
+    system: Editorial Manager
+
+  - id: annals-rheumatic-diseases
+    journal: Annals of the Rheumatic Diseases
+    publisher: Elsevier / EULAR
+    IF_approx: 21
+    word_limit: 3000
+    abstract: structured (Objectives, Methods, Results, Conclusions), ≤250 words
+    references: ≤40, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Key Messages, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Key Messages box required (≤3 bullet points)"
+    system: ScholarOne
+
+  - id: arthritis-rheumatology
+    journal: Arthritis & Rheumatology
+    publisher: Wiley / ACR
+    IF_approx: 11
+    word_limit: 4000
+    abstract: structured (Objective, Methods, Results, Conclusion), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Patients and Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  - id: rheumatology
+    journal: Rheumatology
+    publisher: Oxford University Press
+    IF_approx: 5
+    word_limit: 3500
+    abstract: structured (Objective, Methods, Results, Conclusion), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Key Messages, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Key Messages box required"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # NEPHROLOGY — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: nature-reviews-nephrology
+    journal: Nature Reviews Nephrology
+    publisher: Springer Nature
+    IF_approx: 42
+    word_limit: no strict limit (reviews)
+    abstract: unstructured, ≤200 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
+    special:
+      - "Invited review journal"
+      - "Key Points box required"
+    system: Editorial Manager
+
+  - id: kidney-international
+    journal: Kidney International
+    publisher: Elsevier / ISN
+    IF_approx: 15
+    word_limit: 4000
+    abstract: structured (Background, Methods, Results, Conclusion), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Translational Statement, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Translational Statement required"
+    system: Editorial Manager
+
+  - id: cjasn
+    journal: Clinical Journal of the American Society of Nephrology (CJASN)
+    publisher: ASN / Wolters Kluwer
+    IF_approx: 10
+    word_limit: 3500
+    abstract: structured (Background and objectives, Design/setting/participants/measurements, Results, Conclusions), ≤300 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Visual Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "Visual Abstract encouraged"
+    system: ScholarOne
+
+  - id: american-journal-kidney-diseases
+    journal: American Journal of Kidney Diseases (AJKD)
+    publisher: Elsevier / NKF
+    IF_approx: 9
+    word_limit: 3500
+    abstract: structured (Rationale & Objective, Study Design, Setting & Participants, Predictors/Exposure/Treatment, Outcomes, Analytical Approach, Results, Limitations, Conclusions), ≤300 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Plain-Language Summary, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Plain-Language Summary required"
+      - "Structured abstract with extended headings"
+    system: Editorial Manager
+
+  - id: nephrology-dialysis-transplantation
+    journal: Nephrology Dialysis Transplantation
+    publisher: Oxford University Press / ERA
+    IF_approx: 5
+    word_limit: 4000
+    abstract: structured (Background, Methods, Results, Conclusion), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # ENDOCRINOLOGY & METABOLISM — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: nature-reviews-endocrinology
+    journal: Nature Reviews Endocrinology
+    publisher: Springer Nature
+    IF_approx: 29
+    word_limit: no strict limit (reviews)
+    abstract: unstructured, ≤200 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
+    special:
+      - "Invited review journal"
+      - "Key Points box required"
+    system: Editorial Manager
+
+  - id: diabetes
+    journal: Diabetes
+    publisher: ADA
+    IF_approx: 8
+    word_limit: 5000
+    abstract: unstructured, ≤200 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Research Design and Methods, Results, Discussion, References"
+    special:
+      - "Uses 'Research Design and Methods' heading"
+    system: ScholarOne
+
+  - id: diabetologia
+    journal: Diabetologia
+    publisher: Springer Nature / EASD
+    IF_approx: 10
+    word_limit: 4000
+    abstract: structured (Aims/hypothesis, Methods, Results, Conclusions/interpretation), ≤250 words
+    references: ≤50
+    figures: ≤7
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Data availability statement required"
+    system: Editorial Manager
+
+  - id: jcem
+    journal: Journal of Clinical Endocrinology & Metabolism (JCEM)
+    publisher: Endocrine Society / Oxford University Press
+    IF_approx: 9
+    word_limit: 4000
+    abstract: structured (Context, Objective, Design, Setting, Patients, Intervention, Main Outcome Measures, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Significance Statement, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "Significance Statement required"
+    system: ScholarOne
+
+  - id: thyroid
+    journal: Thyroid
+    publisher: Mary Ann Liebert
+    IF_approx: 6
+    word_limit: 4000
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # PSYCHIATRY — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: world-psychiatry
+    journal: World Psychiatry
+    publisher: Wiley / WPA
+    IF_approx: 73
+    word_limit: 3000
+    abstract: unstructured, ≤200 words
+    references: ≤40
+    figures: ≤4
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Highest IF among psychiatry journals"
+      - "Invited commentaries accompany articles"
+    system: ScholarOne
+
+  - id: molecular-psychiatry
+    journal: Molecular Psychiatry
+    publisher: Springer Nature
+    IF_approx: 11
+    word_limit: 4000
+    abstract: unstructured, ≤200 words
+    references: ≤60
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: american-journal-psychiatry
+    journal: American Journal of Psychiatry
+    publisher: APA
+    IF_approx: 18
+    word_limit: 3500
+    abstract: structured (Objective, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤5
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  - id: biological-psychiatry
+    journal: Biological Psychiatry
+    publisher: Elsevier / SOBP
+    IF_approx: 10
+    word_limit: 4000
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods and Materials, Results, Discussion, References"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # SURGERY — Additional (General, Thoracic, Cardiac, Neuro, Plastic, Transplant)
+  # ═══════════════════════════════════════════════
+
+  - id: surgery
+    journal: Surgery
+    publisher: Elsevier
+    IF_approx: 4
+    word_limit: 3500
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤40, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: journal-surgical-research
+    journal: Journal of Surgical Research
+    publisher: Elsevier
+    IF_approx: 2
+    word_limit: 3500
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: world-journal-surgery
+    journal: World Journal of Surgery
+    publisher: Springer Nature
+    IF_approx: 3
+    word_limit: 3500
+    abstract: unstructured, ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: jtcvs
+    journal: Journal of Thoracic and Cardiovascular Surgery
+    publisher: Elsevier / AATS
+    IF_approx: 5
+    word_limit: 4500
+    abstract: structured (Objective, Methods, Results, Conclusions), ≤250 words
+    references: ≤40, Vancouver
+    figures: ≤7
+    tables: ≤5
+    sections: "Abstract, Central Message, Perspective Statement, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Central Message required (1-2 sentences)"
+      - "Perspective Statement required"
+    system: Editorial Manager
+
+  - id: annals-thoracic-surgery
+    journal: Annals of Thoracic Surgery
+    publisher: Elsevier / STS
+    IF_approx: 4
+    word_limit: 3500
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤35, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Central Message, Central Picture, Introduction, Material and Methods, Results, Comment, References"
+    special:
+      - "Central Message required (≤25 words)"
+      - "Central Picture required"
+    system: Editorial Manager
+
+  - id: journal-neurosurgery
+    journal: Journal of Neurosurgery
+    publisher: AANS
+    IF_approx: 5
+    word_limit: 4000
+    abstract: structured (Objective, Methods, Results, Conclusions), ≤300 words
+    references: ≤50
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Video abstracts accepted"
+    system: ScholarOne
+
+  - id: neurosurgery
+    journal: Neurosurgery
+    publisher: Wolters Kluwer / CNS
+    IF_approx: 5
+    word_limit: 4000
+    abstract: structured (Background and Objectives, Methods, Results, Conclusion), ≤250 words
+    references: ≤50
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  - id: acta-neurochirurgica
+    journal: Acta Neurochirurgica
+    publisher: Springer Nature
+    IF_approx: 2
+    word_limit: 3500
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
+    system: Editorial Manager
+
+  - id: plastic-reconstructive-surgery
+    journal: Plastic and Reconstructive Surgery
+    publisher: Wolters Kluwer / ASPS
+    IF_approx: 5
+    word_limit: 3500
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤40, Vancouver
+    figures: ≤8
+    tables: ≤4
+    sections: "Abstract, Introduction, Patients and Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Video content accepted"
+    system: ScholarOne
+
+  - id: aesthetic-surgery-journal
+    journal: Aesthetic Surgery Journal
+    publisher: Oxford University Press / ASAPS
+    IF_approx: 4
+    word_limit: 3500
+    abstract: structured (Background, Objectives, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤8
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Level of Evidence required"
+    system: ScholarOne
+
+  - id: american-journal-transplantation
+    journal: American Journal of Transplantation
+    publisher: Elsevier / AST / ASTS
+    IF_approx: 8
+    word_limit: 4000
+    abstract: structured, ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  - id: transplantation
+    journal: Transplantation
+    publisher: Wolters Kluwer / TTS
+    IF_approx: 5
+    word_limit: 3500
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # UROLOGY — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: european-urology-focus
+    journal: European Urology Focus
+    publisher: Elsevier / EAU
+    IF_approx: 6
+    word_limit: 2500
+    abstract: structured (Background, Objective, Design/Setting/Participants, Intervention/Measurements, Results and Limitations, Conclusions, Patient Summary), ≤300 words
+    references: ≤30
+    figures: ≤4
+    tables: ≤3
+    sections: "Abstract, Patient Summary, Introduction, Patients and Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Patient Summary required"
+    system: Editorial Manager
+
+  - id: european-urology-oncology
+    journal: European Urology Oncology
+    publisher: Elsevier / EAU
+    IF_approx: 9
+    word_limit: 3000
+    abstract: structured (same as European Urology), ≤300 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Patient Summary, Introduction, Patients and Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Patient Summary required"
+      - "Take Home Message required"
+    system: Editorial Manager
+
+  - id: world-journal-urology
+    journal: World Journal of Urology
+    publisher: Springer Nature
+    IF_approx: 3
+    word_limit: 3500
+    abstract: structured (Purpose, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: urology
+    journal: Urology
+    publisher: Elsevier
+    IF_approx: 3
+    word_limit: 3000
+    abstract: structured (Objective, Methods, Results, Conclusion), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
+    system: Editorial Manager
+
+  - id: prostate-cancer-prostatic-diseases
+    journal: Prostate Cancer and Prostatic Diseases
+    publisher: Springer Nature
+    IF_approx: 6
+    word_limit: 3500
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: neurourology-urodynamics
+    journal: Neurourology and Urodynamics
+    publisher: Wiley
+    IF_approx: 3
+    word_limit: 3500
+    abstract: structured (Aims, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # RADIOLOGY & IMAGING — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: investigative-radiology
+    journal: Investigative Radiology
+    publisher: Wolters Kluwer
+    IF_approx: 7
+    word_limit: 3500
+    abstract: structured (Objectives, Materials and Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: ajr
+    journal: American Journal of Roentgenology (AJR)
+    publisher: AJR / ARRS
+    IF_approx: 5
+    word_limit: 3500
+    abstract: structured (Background, Objective, Methods, Results, Conclusion), ≤250 words
+    references: ≤40
+    figures: ≤8
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  - id: jnm
+    journal: Journal of Nuclear Medicine
+    publisher: SNMMI
+    IF_approx: 10
+    word_limit: 4000
+    abstract: unstructured, ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusion, References"
+    special:
+      - "Visual Abstract encouraged"
+    system: ScholarOne
+
+  - id: academic-radiology
+    journal: Academic Radiology
+    publisher: Elsevier / AUR
+    IF_approx: 4
+    word_limit: 3500
+    abstract: structured (Rationale and Objectives, Materials and Methods, Results, Conclusion), ≤250 words
+    references: ≤40
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # AI / DIGITAL HEALTH — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: artificial-intelligence-medicine
+    journal: Artificial Intelligence in Medicine
+    publisher: Elsevier
+    IF_approx: 8
+    word_limit: no strict limit (typically 8000-10000)
+    abstract: unstructured, ≤250 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Highlights, Introduction, Related Work, Methods, Experiments, Results, Discussion, Conclusion, References"
+    special:
+      - "Highlights required (3-5 bullet points)"
+    system: Editorial Manager
+
+  - id: jmir-mhealth
+    journal: JMIR mHealth and uHealth
+    publisher: JMIR Publications
+    IF_approx: 6
+    word_limit: no strict limit
+    abstract: structured, ≤300 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Introduction, Methods, Results, Discussion (Principal Findings, Limitations, Comparison With Prior Work, Conclusions), References"
+    special:
+      - "APC: ~$2200"
+      - "Mobile/wearable health focus"
+    system: JMIR submission system
+
+  - id: computers-in-biology-medicine
+    journal: Computers in Biology and Medicine
+    publisher: Elsevier
+    IF_approx: 7
+    word_limit: no strict limit
+    abstract: unstructured, ≤250 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Highlights, Introduction, Methods, Results, Discussion, Conclusion, References"
+    special:
+      - "Highlights required"
+      - "Code availability encouraged"
+    system: Editorial Manager
+
+  - id: ieee-tmi
+    journal: IEEE Transactions on Medical Imaging (TMI)
+    publisher: IEEE
+    IF_approx: 11
+    word_limit: 12 pages (double column)
+    abstract: unstructured, ≤250 words
+    references: unlimited, IEEE style (numbered brackets)
+    figures: unlimited within page limit
+    tables: unlimited within page limit
+    sections: "Abstract, Index Terms, Introduction, Related Work, Methods, Experiments, Results, Discussion, Conclusion, References"
+    special:
+      - "IEEE formatting template required"
+      - "Index Terms required"
+      - "Double-column format"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # PEDIATRICS — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: journal-pediatrics
+    journal: Journal of Pediatrics
+    publisher: Elsevier
+    IF_approx: 5
+    word_limit: 3000
+    abstract: structured (Objective, Study design, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: archives-disease-childhood
+    journal: Archives of Disease in Childhood
+    publisher: BMJ
+    IF_approx: 5
+    word_limit: 3000
+    abstract: structured, ≤250 words
+    references: ≤30
+    figures: ≤4
+    tables: ≤4
+    sections: "Abstract, What is already known, What this study adds, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Summary box required"
+    system: ScholarOne
+
+  - id: pediatric-research
+    journal: Pediatric Research
+    publisher: Springer Nature
+    IF_approx: 3
+    word_limit: 4000
+    abstract: structured (Background, Methods, Results, Conclusion), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Impact Statement, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Impact Statement required (≤50 words)"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # OBSTETRICS & GYNECOLOGY
+  # ═══════════════════════════════════════════════
+
+  - id: ajog
+    journal: American Journal of Obstetrics and Gynecology (AJOG)
+    publisher: Elsevier
+    IF_approx: 9
+    word_limit: 3500
+    abstract: structured (Objective, Study Design, Results, Conclusion), ≤250 words
+    references: ≤40, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Comment, References"
+    special:
+      - "'Comment' instead of 'Discussion'"
+      - "AJOG at a Glance box required"
+    system: Editorial Manager
+
+  - id: obstetrics-gynecology
+    journal: Obstetrics & Gynecology
+    publisher: Wolters Kluwer / ACOG
+    IF_approx: 7
+    word_limit: 3000
+    abstract: structured (Objective, Methods, Results, Conclusion), ≤250 words
+    references: ≤40, Vancouver
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Précis, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Précis required (≤25 words, 1 sentence)"
+    system: Editorial Manager
+
+  - id: bjog
+    journal: BJOG - An International Journal of Obstetrics and Gynaecology
+    publisher: Wiley / RCOG
+    IF_approx: 6
+    word_limit: 3500
+    abstract: structured (Objective, Design, Setting, Population, Methods, Main Outcome Measures, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Tweetable Abstract, Introduction, Methods, Results, Discussion, Conclusion, References"
+    special:
+      - "Tweetable Abstract required (≤140 characters)"
+    system: ScholarOne
+
+  - id: human-reproduction
+    journal: Human Reproduction
+    publisher: Oxford University Press / ESHRE
+    IF_approx: 6
+    word_limit: 5000
+    abstract: structured (Study Question, Summary Answer, What Is Known Already, Study Design/Subjects/Duration, Main Results and the Role of Chance, Limitations, Wider Implications), ≤300 words
+    references: ≤60
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "Extended structured abstract with unique headings"
+    system: ScholarOne
+
+  - id: fertility-sterility
+    journal: Fertility and Sterility
+    publisher: Elsevier / ASRM
+    IF_approx: 6
+    word_limit: 3500
+    abstract: structured (Objective, Design, Setting, Patient(s), Intervention(s), Main Outcome Measure(s), Result(s), Conclusion(s)), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: gynecologic-oncology
+    journal: Gynecologic Oncology
+    publisher: Elsevier / SGO
+    IF_approx: 5
+    word_limit: 3500
+    abstract: structured (Objective, Methods, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Highlights, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Highlights required (3-5 bullet points)"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # EMERGENCY MEDICINE & CRITICAL CARE
+  # ═══════════════════════════════════════════════
+
+  - id: critical-care
+    journal: Critical Care
+    publisher: Springer Nature
+    IF_approx: 15
+    word_limit: no strict limit
+    abstract: structured, ≤350 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "APC: ~$3290"
+      - "Open access"
+    system: Editorial Manager
+
+  - id: critical-care-medicine
+    journal: Critical Care Medicine
+    publisher: Wolters Kluwer / SCCM
+    IF_approx: 8
+    word_limit: 3000
+    abstract: structured (Objectives, Design, Setting, Patients, Interventions, Measurements and Main Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: intensive-care-medicine
+    journal: Intensive Care Medicine
+    publisher: Springer Nature / ESICM
+    IF_approx: 27
+    word_limit: 3000
+    abstract: structured (Purpose, Methods, Results, Conclusion), ≤250 words
+    references: ≤40
+    figures: ≤5
+    tables: ≤3
+    sections: "Abstract, Take-home message, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Take-home message required (≤3 sentences)"
+    system: Editorial Manager
+
+  - id: annals-emergency-medicine
+    journal: Annals of Emergency Medicine
+    publisher: Elsevier / ACEP
+    IF_approx: 7
+    word_limit: 3000
+    abstract: structured (Study objective, Methods, Results, Conclusion), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Editor's Capsule Summary, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Editor's Capsule Summary (What is already known/What question this study addressed/What this study adds/How this is relevant)"
+    system: Editorial Manager
+
+  - id: resuscitation
+    journal: Resuscitation
+    publisher: Elsevier / ERC
+    IF_approx: 7
+    word_limit: 3000
+    abstract: structured (Aim, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # ANESTHESIOLOGY
+  # ═══════════════════════════════════════════════
+
+  - id: anesthesiology
+    journal: Anesthesiology
+    publisher: Wolters Kluwer / ASA
+    IF_approx: 9
+    word_limit: 4000
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Editor's Perspective (What We Already Know, What This Article Tells Us That Is New), Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "Editor's Perspective box (editor-written)"
+    system: ScholarOne
+
+  - id: british-journal-anaesthesia
+    journal: British Journal of Anaesthesia
+    publisher: Elsevier / RCoA
+    IF_approx: 10
+    word_limit: 3500
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Editor's Key Points, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Editor's Key Points required (3-5 bullet points)"
+    system: Editorial Manager
+
+  - id: european-journal-anaesthesiology
+    journal: European Journal of Anaesthesiology
+    publisher: Wolters Kluwer / ESAIC
+    IF_approx: 7
+    word_limit: 3000
+    abstract: structured (Background, Objective, Design, Setting, Patients, Interventions, Main Outcome Measures, Results, Conclusion), ≤350 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: anesthesia-analgesia
+    journal: Anesthesia & Analgesia
+    publisher: Wolters Kluwer / IARS
+    IF_approx: 5
+    word_limit: 3000
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Key Points box required"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # GENERAL PRACTICE / FAMILY MEDICINE
+  # ═══════════════════════════════════════════════
+
+  - id: annals-family-medicine
+    journal: Annals of Family Medicine
+    publisher: AAFP / ACP / ABFM / NAPCRG
+    IF_approx: 5
+    word_limit: 3500
+    abstract: structured (Purpose, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤5
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  - id: bjgp
+    journal: British Journal of General Practice (BJGP)
+    publisher: RCGP
+    IF_approx: 5
+    word_limit: 3000
+    abstract: structured (Background, Aim, Design and setting, Method, Results, Conclusion), ≤250 words
+    references: ≤35
+    figures: ≤4
+    tables: ≤4
+    sections: "Abstract, How this fits in, Introduction, Method, Results, Discussion, References"
+    special:
+      - "How this fits in box required"
+    system: ScholarOne
+
+  - id: family-medicine-community-health
+    journal: Family Medicine and Community Health
+    publisher: BMJ
+    IF_approx: 4
+    word_limit: 3500
+    abstract: structured, ≤300 words
+    references: ≤40
+    figures: ≤5
+    tables: ≤4
+    sections: "Abstract, Key Messages, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Open access"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # REHABILITATION & PHYSICAL THERAPY
+  # ═══════════════════════════════════════════════
+
+  - id: physical-therapy
+    journal: Physical Therapy
+    publisher: Oxford University Press / APTA
+    IF_approx: 7
+    word_limit: 4000
+    abstract: structured (Objective, Methods, Results, Conclusion, Impact), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Impact Statement required in abstract"
+    system: ScholarOne
+
+  - id: archives-pmr
+    journal: Archives of Physical Medicine and Rehabilitation
+    publisher: Elsevier / ACRM
+    IF_approx: 4
+    word_limit: 3500
+    abstract: structured (Objective, Design, Setting, Participants, Interventions, Main Outcome Measures, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
+    system: Editorial Manager
+
+  - id: journal-rehabilitation-medicine
+    journal: Journal of Rehabilitation Medicine
+    publisher: MJS Publishing
+    IF_approx: 3
+    word_limit: 3500
+    abstract: structured (Objective, Design, Participants, Methods, Results, Conclusion), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Lay Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Lay Abstract required"
+      - "Open access"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # PHARMACOLOGY & PHARMACY
+  # ═══════════════════════════════════════════════
+
+  - id: clinical-pharmacology-therapeutics
+    journal: Clinical Pharmacology & Therapeutics
+    publisher: Wiley / ASCPT
+    IF_approx: 7
+    word_limit: 4000
+    abstract: structured, ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Study Highlights, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Study Highlights box required (What is the current knowledge/What question did this study address/What does this study add)"
+    system: ScholarOne
+
+  - id: british-journal-pharmacology
+    journal: British Journal of Pharmacology
+    publisher: Wiley / BPS
+    IF_approx: 7
+    word_limit: 5000
+    abstract: structured (Background and Purpose, Experimental Approach, Key Results, Conclusions and Implications), ≤250 words
+    references: ≤60
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, What is already known, What does this study add, What is the clinical significance, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Bullet point boxes required"
+      - "Nomenclature follows BJP guidelines"
+    system: ScholarOne
+
+  - id: clinical-pharmacokinetics
+    journal: Clinical Pharmacokinetics
+    publisher: Springer Nature
+    IF_approx: 5
+    word_limit: 4000
+    abstract: unstructured, ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤5
+    sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
+    system: Editorial Manager
+
+  - id: european-journal-clinical-pharmacology
+    journal: European Journal of Clinical Pharmacology
+    publisher: Springer Nature
+    IF_approx: 3
+    word_limit: 4000
+    abstract: structured (Purpose, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # NURSING
+  # ═══════════════════════════════════════════════
+
+  - id: international-journal-nursing-studies
+    journal: International Journal of Nursing Studies
+    publisher: Elsevier
+    IF_approx: 8
+    word_limit: 5000
+    abstract: structured (Background, Objectives, Design, Participants, Methods, Results, Conclusions, Registration), ≤350 words
+    references: ≤60
+    figures: ≤6
+    tables: ≤5
+    sections: "Abstract, What is already known, What this paper adds, Introduction, Background, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "What is already known / What this paper adds box required"
+    system: Editorial Manager
+
+  - id: journal-clinical-nursing
+    journal: Journal of Clinical Nursing
+    publisher: Wiley
+    IF_approx: 4
+    word_limit: 5000
+    abstract: structured (Aim, Background, Design, Methods, Results, Conclusion), ≤350 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤5
+    sections: "Abstract, What does this paper contribute to the wider global clinical community?, Introduction, Background, Methods, Results, Discussion, Conclusion, Relevance to clinical practice, References"
+    special:
+      - "Impact statement required"
+    system: ScholarOne
+
+  - id: nursing-research
+    journal: Nursing Research
+    publisher: Wolters Kluwer
+    IF_approx: 3
+    word_limit: 4000
+    abstract: structured (Background, Objectives, Methods, Results, Discussion), ≤250 words
+    references: ≤40
+    figures: ≤5
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: journal-advanced-nursing
+    journal: Journal of Advanced Nursing
+    publisher: Wiley
+    IF_approx: 4
+    word_limit: 5000
+    abstract: structured (Aim, Design, Methods, Results, Conclusion), ≤350 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤5
+    sections: "Abstract, Impact Statement, Introduction, Background, The Study (Aim, Design, Sample, Data Collection, Analysis, Rigour, Ethical Considerations), Results, Discussion, Conclusion, References"
+    special:
+      - "Impact Statement required"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # PUBLIC HEALTH & EPIDEMIOLOGY
+  # ═══════════════════════════════════════════════
+
+  - id: lancet-public-health
+    journal: Lancet Public Health
+    publisher: Elsevier
+    IF_approx: 25
+    word_limit: 3000
+    abstract: structured (same as Lancet), ≤300 words
+    references: ≤30
+    sections: same as Lancet
+    special:
+      - "Research in Context panel required"
+      - "Open access"
+    system: Editorial Manager
+
+  - id: bmj-global-health
+    journal: BMJ Global Health
+    publisher: BMJ
+    IF_approx: 9
+    word_limit: 4000
+    abstract: structured, ≤300 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤5
+    sections: "Abstract, Key Questions (What is already known, What are the new findings, What do the new findings imply), Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Key Questions box required"
+      - "Open access"
+    system: ScholarOne
+
+  - id: american-journal-epidemiology
+    journal: American Journal of Epidemiology
+    publisher: Oxford University Press
+    IF_approx: 5
+    word_limit: 3500
+    abstract: structured, ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤5
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  - id: international-journal-epidemiology
+    journal: International Journal of Epidemiology
+    publisher: Oxford University Press
+    IF_approx: 7
+    word_limit: 3500
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤5
+    sections: "Abstract, Key Messages, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Key Messages box required (3-5 bullet points)"
+    system: ScholarOne
+
+  - id: american-journal-preventive-medicine
+    journal: American Journal of Preventive Medicine
+    publisher: Elsevier / ACPM
+    IF_approx: 5
+    word_limit: 3500
+    abstract: structured (Introduction, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤5
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
+    system: Editorial Manager
+
+  - id: environmental-health-perspectives
+    journal: Environmental Health Perspectives
+    publisher: NIEHS / NIH
+    IF_approx: 11
+    word_limit: 5000
+    abstract: structured (Background, Objectives, Methods, Results, Discussion, Conclusions), ≤300 words
+    references: ≤60
+    figures: ≤6
+    tables: ≤5
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Open access (NIH-funded)"
+      - "No APC"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # ORTHOPEDICS — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: ajsm
+    journal: American Journal of Sports Medicine (AJSM)
+    publisher: SAGE / AOSSM
+    IF_approx: 5
+    word_limit: 3500
+    abstract: structured (Background, Purpose/Hypothesis, Study Design, Methods, Results, Conclusion), ≤300 words
+    references: ≤40
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusion, References"
+    special:
+      - "Level of Evidence required"
+    system: ScholarOne
+
+  - id: arthroscopy
+    journal: Arthroscopy - The Journal of Arthroscopic and Related Surgery
+    publisher: Elsevier / AANA
+    IF_approx: 5
+    word_limit: 3500
+    abstract: structured (Purpose, Methods, Results, Conclusions, Level of Evidence), ≤300 words
+    references: ≤40
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Level of Evidence required"
+      - "Video abstracts accepted"
+    system: Editorial Manager
+
+  - id: spine
+    journal: Spine
+    publisher: Wolters Kluwer
+    IF_approx: 4
+    word_limit: 3500
+    abstract: structured (Study Design, Objective, Summary of Background Data, Methods, Results, Conclusion), ≤300 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Key Points, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "Key Points box required"
+      - "Level of Evidence required"
+    system: ScholarOne
+
+  - id: bone-joint-journal
+    journal: Bone & Joint Journal (BJJ)
+    publisher: British Editorial Society of Bone & Joint Surgery
+    IF_approx: 5
+    word_limit: 3500
+    abstract: structured (Aims, Methods, Results, Conclusion), ≤250 words
+    references: ≤40
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Take home message, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Take home message required"
+      - "Level of Evidence required"
+    system: ScholarOne
+
+  - id: journal-orthopaedic-research
+    journal: Journal of Orthopaedic Research
+    publisher: Wiley / ORS
+    IF_approx: 3
+    word_limit: 4000
+    abstract: unstructured, ≤250 words
+    references: ≤50
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  # ═══════════════════════════════════════════════
+  # OPHTHALMOLOGY — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: ophthalmology-retina
+    journal: Ophthalmology Retina
+    publisher: Elsevier / AAO
+    IF_approx: 5
+    word_limit: 3000
+    abstract: structured (Purpose, Design, Participants, Methods, Main Outcome Measures, Results, Conclusions), ≤350 words
+    references: ≤40
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Précis, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Précis required"
+    system: Editorial Manager
+
+  - id: iovs
+    journal: Investigative Ophthalmology & Visual Science (IOVS)
+    publisher: ARVO
+    IF_approx: 5
+    word_limit: 5000
+    abstract: structured (Purpose, Methods, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  - id: progress-retinal-eye-research
+    journal: Progress in Retinal and Eye Research
+    publisher: Elsevier
+    IF_approx: 18
+    word_limit: no strict limit (reviews)
+    abstract: unstructured, ≤300 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Introduction, [topic-specific sections], Conclusions, References"
+    special:
+      - "Invited comprehensive reviews"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # DERMATOLOGY — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: jaad
+    journal: Journal of the American Academy of Dermatology (JAAD)
+    publisher: Elsevier / AAD
+    IF_approx: 12
+    word_limit: 3500
+    abstract: structured (Background, Objective, Methods, Results, Limitations, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Capsule Summary, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Capsule Summary required (What is known / What is new)"
+    system: Editorial Manager
+
+  - id: jid
+    journal: Journal of Investigative Dermatology
+    publisher: Elsevier / SID
+    IF_approx: 7
+    word_limit: 4000
+    abstract: unstructured, ≤200 words
+    references: ≤50
+    figures: ≤7
+    tables: ≤4
+    sections: "Abstract, Introduction, Results, Discussion, Materials and Methods, References"
+    special:
+      - "Results before Methods (Cell Press style)"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # PATHOLOGY — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: journal-pathology
+    journal: Journal of Pathology
+    publisher: Wiley / Pathological Society
+    IF_approx: 6
+    word_limit: 4000
+    abstract: unstructured, ≤250 words
+    references: ≤50
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  - id: laboratory-investigation
+    journal: Laboratory Investigation
+    publisher: Springer Nature
+    IF_approx: 5
+    word_limit: 4000
+    abstract: unstructured, ≤250 words
+    references: ≤50
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: virchows-archiv
+    journal: Virchows Archiv
+    publisher: Springer Nature
+    IF_approx: 4
+    word_limit: 4000
+    abstract: unstructured, ≤250 words
+    references: ≤50
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # ENT / OTOLARYNGOLOGY
+  # ═══════════════════════════════════════════════
+
+  - id: jama-otolaryngology
+    journal: JAMA Otolaryngology - Head & Neck Surgery
+    publisher: AMA
+    IF_approx: 6
+    word_limit: 3000
+    abstract: structured (same as JAMA), ≤350 words
+    references: ≤40, AMA style
+    figures: ≤5
+    tables: ≤5
+    sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Key Points box required (Question, Findings, Meaning)"
+    system: ScholarOne
+
+  - id: laryngoscope
+    journal: The Laryngoscope
+    publisher: Wiley
+    IF_approx: 3
+    word_limit: 3000
+    abstract: structured (Objective, Methods, Results, Conclusion), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusion, References"
+    special:
+      - "Level of Evidence encouraged"
+    system: ScholarOne
+
+  - id: head-neck
+    journal: Head & Neck
+    publisher: Wiley
+    IF_approx: 3
+    word_limit: 3000
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    system: ScholarOne
+
+  - id: otology-neurotology
+    journal: Otology & Neurotology
+    publisher: Wolters Kluwer
+    IF_approx: 3
+    word_limit: 3000
+    abstract: structured (Objective, Study Design, Setting, Patients, Intervention, Main Outcome Measures, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusion, References"
+    system: Editorial Manager
+
+  - id: rhinology
+    journal: Rhinology
+    publisher: International Rhinologic Society
+    IF_approx: 5
+    word_limit: 3000
+    abstract: structured (Background, Methodology, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Key Points, Introduction, Materials and Methods, Results, Discussion, Conclusion, References"
+    special:
+      - "Key Points required"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # ORAL & DENTAL
+  # ═══════════════════════════════════════════════
+
+  - id: journal-dental-research
+    journal: Journal of Dental Research
+    publisher: SAGE / IADR
+    IF_approx: 7
+    word_limit: 3500
+    abstract: unstructured, ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Knowledge Transfer Statement, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "Knowledge Transfer Statement required"
+    system: ScholarOne
+
+  - id: journal-oral-maxillofacial-surgery
+    journal: Journal of Oral and Maxillofacial Surgery
+    publisher: Elsevier / AAOMS
+    IF_approx: 3
+    word_limit: 3500
+    abstract: structured (Purpose, Patients and Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Patients and Methods, Results, Discussion, References"
+    system: Editorial Manager
+
+  - id: journal-periodontology
+    journal: Journal of Periodontology
+    publisher: Wiley / AAP
+    IF_approx: 5
+    word_limit: 3500
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
+    system: ScholarOne
+
+  - id: oral-oncology
+    journal: Oral Oncology
+    publisher: Elsevier
+    IF_approx: 5
+    word_limit: 3500
+    abstract: structured (Objectives, Materials and Methods, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # DERMATOLOGY — Additional (Skin / Allergy)
+  # ═══════════════════════════════════════════════
+
+  - id: allergy
+    journal: Allergy
+    publisher: Wiley / EAACI
+    IF_approx: 13
+    word_limit: 4000
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Key Messages box required"
+    system: ScholarOne
+
+  - id: jaci
+    journal: Journal of Allergy and Clinical Immunology (JACI)
+    publisher: Elsevier / AAAAI
+    IF_approx: 14
+    word_limit: 3500
+    abstract: structured (Background, Objective, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Key Messages, Capsule Summary, Introduction, Methods, Results, Discussion, References"
+    special:
+      - "Capsule Summary required"
+      - "Key Messages required"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # OPEN ACCESS — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: bmc-public-health
+    journal: BMC Public Health
+    publisher: Springer Nature
+    IF_approx: 4
+    word_limit: no strict limit
+    abstract: structured, ≤350 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "APC: ~$2790"
+    system: Editorial Manager
+
+  - id: frontiers-medicine
+    journal: Frontiers in Medicine
+    publisher: Frontiers Media
+    IF_approx: 3
+    word_limit: 12000 (Original Research)
+    abstract: unstructured, ≤350 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "APC: ~$2950"
+      - "Interactive peer review"
+    system: Frontiers submission system
+
+  - id: frontiers-oncology
+    journal: Frontiers in Oncology
+    publisher: Frontiers Media
+    IF_approx: 4
+    word_limit: 12000 (Original Research)
+    abstract: unstructured, ≤350 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "APC: ~$2950"
+    system: Frontiers submission system
+
+  - id: frontiers-immunology
+    journal: Frontiers in Immunology
+    publisher: Frontiers Media
+    IF_approx: 6
+    word_limit: 12000 (Original Research)
+    abstract: unstructured, ≤350 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "APC: ~$2950"
+    system: Frontiers submission system
+
+  - id: bmc-surgery
+    journal: BMC Surgery
+    publisher: Springer Nature
+    IF_approx: 2
+    word_limit: no strict limit
+    abstract: structured, ≤350 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "APC: ~$2490"
+    system: Editorial Manager
+
+  # ═══════════════════════════════════════════════
+  # CHINESE SCI JOURNALS — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: military-medical-research
+    journal: Military Medical Research
+    publisher: Springer Nature / PLA General Hospital
+    IF_approx: 21
+    word_limit: no strict limit
+    abstract: structured, ≤350 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Open access"
+      - "APC: ~$3290"
+    system: Editorial Manager
+
+  - id: cell-research
+    journal: Cell Research
+    publisher: Springer Nature / CAS
+    IF_approx: 44
+    word_limit: 5000 (excluding Methods)
+    abstract: unstructured, ≤150 words
+    references: ≤60
+    figures: ≤7
+    tables: ≤3
+    sections: "Abstract, Introduction, Results, Discussion, Materials and Methods, References"
+    special:
+      - "Nature/Cell Press hybrid style"
+    system: Editorial Manager
+
+  - id: national-science-review
+    journal: National Science Review
+    publisher: Oxford University Press / CAS
+    IF_approx: 17
+    word_limit: 4000 (Research Article)
+    abstract: unstructured, ≤200 words
+    references: ≤50
+    figures: ≤6
+    tables: ≤3
+    sections: "Abstract, Introduction, Results, Discussion, Methods, References"
+    special:
+      - "Results before Methods"
+    system: ScholarOne
+
+  - id: bone-research
+    journal: Bone Research
+    publisher: Springer Nature / Sichuan University
+    IF_approx: 14
+    word_limit: no strict limit
+    abstract: unstructured, ≤200 words
+    references: unlimited
+    figures: ≤10
+    tables: ≤5
+    sections: "Abstract, Introduction, Results, Discussion, Materials and Methods, References"
+    special:
+      - "Nature family formatting"
+      - "APC: ~$4180"
+    system: Editorial Manager
+
+  - id: journal-advanced-research
+    journal: Journal of Advanced Research
+    publisher: Elsevier / Cairo University
+    IF_approx: 12
+    word_limit: 5000
+    abstract: structured, ≤250 words
+    references: ≤60
+    figures: ≤8
+    tables: ≤5
+    sections: "Abstract, Highlights, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Highlights required"
+      - "Graphical abstract required"
+    system: Editorial Manager
+
 # ═══════════════════════════════════════════════
 # FORMATTING DEFAULTS (apply if not overridden)
 # ═══════════════════════════════════════════════
@@ -1138,14 +3471,70 @@ defaults:
 #   Lancet, Lancet Oncology, Lancet Infectious Diseases,
 #   Lancet Respiratory Medicine, Lancet Neurology,
 #   Lancet Digital Health, Lancet Child, Lancet Diabetes,
-#   Lancet Psychiatry, eClinicalMedicine
+#   Lancet Psychiatry, Lancet Haematology, Lancet Microbe,
+#   Lancet Global Health, Lancet Public Health,
+#   Lancet Gastroenterology & Hepatology, eClinicalMedicine
 #
 # JAMA family (all require Key Points box):
-#   JAMA, JAMA Surgery, JAMA Oncology, JAMA Neurology,
+#   JAMA, JAMA Internal Medicine, JAMA Network Open,
+#   JAMA Surgery, JAMA Oncology, JAMA Neurology,
 #   JAMA Pediatrics, JAMA Ophthalmology, JAMA Dermatology,
-#   JAMA Psychiatry
+#   JAMA Psychiatry, JAMA Cardiology, JAMA Otolaryngology
 #
 # Nature family (all require Reporting Summary):
 #   Nature, Nature Medicine, Nature Communications,
 #   npj Digital Medicine, Scientific Reports,
-#   Signal Transduction and Targeted Therapy
+#   Signal Transduction and Targeted Therapy, Bone Research
+#
+# Nature Reviews family (invited reviews, Key Points box):
+#   Nature Reviews Disease Primers, Nature Reviews Cancer,
+#   Nature Reviews Clinical Oncology, Nature Reviews Cardiology,
+#   Nature Reviews Gastroenterology & Hepatology,
+#   Nature Reviews Neurology, Nature Reviews Rheumatology,
+#   Nature Reviews Nephrology, Nature Reviews Endocrinology
+#
+# Frontiers family (interactive peer review, APC ~$2950):
+#   Frontiers in Medicine, Frontiers in Oncology,
+#   Frontiers in Immunology
+#
+# BMC family (open access, structured abstract):
+#   BMC Medicine, BMC Public Health, BMC Surgery
+#
+# ═══════════════════════════════════════════════
+# SPECIALTY COVERAGE SUMMARY (v6.1 — 229 journals total)
+# ═══════════════════════════════════════════════
+# General Medical (top+mid+additional): 16 journals
+# Oncology:                             14 journals
+# Cardiology:                            9 journals
+# Gastroenterology & Hepatology:         7 journals
+# Respiratory:                           6 journals
+# Neurology & Neuroscience:              8 journals
+# Infectious Disease:                    6 journals
+# Hematology:                            5 journals
+# Rheumatology & Immunology:             4 journals
+# Nephrology:                            6 journals
+# Endocrinology & Metabolism:            7 journals
+# Psychiatry:                            6 journals
+# Surgery (General/Thoracic/Cardiac/
+#   Neuro/Plastic/Transplant):          15 journals
+# Urology:                               9 journals
+# Radiology & Imaging:                   7 journals
+# AI / Digital Health:                    7 journals
+# Pediatrics:                            6 journals
+# Obstetrics & Gynecology:               6 journals
+# Emergency & Critical Care:             5 journals
+# Anesthesiology:                        4 journals
+# General Practice / Family Medicine:    3 journals
+# Rehabilitation & Physical Therapy:     3 journals
+# Pharmacology & Pharmacy:               4 journals
+# Nursing:                               4 journals
+# Public Health & Epidemiology:          6 journals
+# Orthopedics:                           7 journals
+# Ophthalmology:                         5 journals
+# Dermatology & Allergy:                 8 journals
+# Pathology:                             5 journals
+# ENT / Otolaryngology:                  5 journals
+# Oral & Dental:                         4 journals
+# Systematic Review:                     2 journals
+# Open Access General:                   9 journals
+# Chinese SCI:                           8 journals

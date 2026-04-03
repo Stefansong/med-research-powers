@@ -153,31 +153,31 @@ submission-system-guide
 |-------|---------|
 | research-question-formulation | 模糊研究想法、需要明确假设 |
 | literature-synthesis | 查文献、research gap、综述 |
-| study-design | 临床研究设计（RCT、队列、横断面） |
-| basic-medical-study-design | 细胞/动物/分子/蛋白实验 |
-| ai-medical-study-design | AI/ML、影像、手术视频、LLM 评估、器械创新 |
+| study-design | 所有研究设计（临床/基础/AI/定性/调查，内置 type router） |
 | journal-selection | 选刊策略、影响因子、投哪个期刊 |
 | data-analysis-planning | 制定分析策略 |
+| data-collection-tools | 根据 protocol 生成标注表、推理脚本、CRF、数据目录 |
 | statistical-analysis | 执行统计分析 |
 | figure-generation | 出版级图表 |
-| manuscript-writing | 写论文各章节 |
+| manuscript-writing | 写论文各章节（原始研究 + 5 种综述，内置 type router） |
+| manuscript-export | Markdown → .docx 导出、期刊排版、格式检查 |
 | reporting-standards | 报告规范检查 |
 | peer-review-simulation | 模拟审稿（4 审稿人含 Devil's Advocate + 期刊校准评分） |
 | research-ethics | 伦理、隐私、知情同意 |
 | **pre-submission-verification** | **论文完成后强制检查（6 Gate 含 PubMed MCP Claim Verification），不通过不能投稿** |
-| cover-letter-writing | Cover Letter 写作、投稿信 |
-| submission-system-guide | 投稿系统操作指南 |
-| revision-strategy | 修稿策略、审稿意见优先级排序 |
-| responding-to-reviewers | 回复审稿意见 |
-| data-collection-tools | 根据 protocol 生成标注表、推理脚本、CRF、数据目录 |
+| submission-preparation | Cover Letter 写作 + 投稿系统操作指南 |
+| revision-response | 修稿策略 + 逐条回复审稿意见 |
 | pubmed-search | PubMed MCP 深度检索、引用验证、批量元数据、引用格式化 |
-| manuscript-export | Markdown → .docx 导出、期刊排版、格式检查 |
+| team-collaboration | 多 agent 并行协作 |
+| using-med-research-powers | Orchestrator：路由、检查点、用户记忆、pipeline 状态 |
 | writing-mrp-skills | 创建/改进 MRP skill |
 
-**研究类型路由：**
-- 临床 → `study-design`
-- 基础 → `basic-medical-study-design`
-- AI/ML → `ai-medical-study-design`
+**研究类型路由（全部在 `study-design` 内部）：**
+- 临床（RCT/队列/横断面/交叉/非劣效/适应性/真实世界/注册研究）→ Type A
+- 基础（细胞/动物/分子）→ Type B
+- AI/ML（影像/视频/LLM/器械）→ Type C
+- 定性（访谈/焦点小组/扎根理论/混合方法）→ Type D
+- 问卷/调查/Delphi → Type E
 - 多类型 → 叠加使用
 
 ## Mandatory Pipeline
@@ -187,8 +187,7 @@ research-question → literature-synthesis → study-design → journal-selectio
 data-analysis-planning → data-collection-tools → [用户执行数据收集] →
 statistical-analysis → figure-generation →
 manuscript-writing → manuscript-export → pre-submission-verification →
-cover-letter-writing → submission-system-guide → [投稿] →
-revision-strategy → responding-to-reviewers
+submission-preparation → [投稿] → revision-response
 ```
 
 **辅助 skill（随时可调用，不在主线上）：**
