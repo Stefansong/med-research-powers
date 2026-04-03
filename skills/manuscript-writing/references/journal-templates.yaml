@@ -1640,6 +1640,82 @@ templates:
     system: Editorial Manager
 
   # ═══════════════════════════════════════════════
+  # NEURO-ONCOLOGY & NEUROIMAGING — Additional
+  # ═══════════════════════════════════════════════
+
+  - id: neuro-oncology
+    journal: Neuro-Oncology
+    publisher: Oxford University Press / SNO
+    IF_approx: 16
+    word_limit: 5000
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤50
+    figures: ≤7
+    tables: ≤5
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "Key Points box required (≤3 bullet points)"
+      - "Importance of the Study section required"
+    system: ScholarOne
+
+  - id: neuroimage
+    journal: NeuroImage
+    publisher: Elsevier
+    IF_approx: 6
+    word_limit: no strict limit (typically 6000-10000)
+    abstract: unstructured, ≤300 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Highlights, Introduction, Methods, Results, Discussion, Conclusion, References"
+    special:
+      - "Highlights required (3-5 bullet points, max 85 chars each)"
+      - "Graphical abstract optional"
+      - "Data/Code sharing strongly encouraged"
+    system: Editorial Manager
+
+  - id: world-neurosurgery
+    journal: World Neurosurgery
+    publisher: Elsevier
+    IF_approx: 2
+    word_limit: 4000
+    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
+    system: Editorial Manager
+
+  - id: neurosurgical-focus
+    journal: Neurosurgical Focus
+    publisher: AANS / JNS Publishing Group
+    IF_approx: 3
+    word_limit: 4000
+    abstract: unstructured, ≤250 words
+    references: ≤40
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Topical issue — check current call for papers"
+    system: ScholarOne
+
+  - id: frontiers-neuroscience
+    journal: Frontiers in Neuroscience
+    publisher: Frontiers
+    IF_approx: 4
+    word_limit: 12000
+    abstract: unstructured, ≤350 words
+    references: unlimited
+    figures: unlimited
+    tables: unlimited
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "Open access, APC ~$2950"
+      - "Interactive review process"
+    system: Frontiers submission system
+
+  # ═══════════════════════════════════════════════
   # INFECTIOUS DISEASE — Additional
   # ═══════════════════════════════════════════════
 

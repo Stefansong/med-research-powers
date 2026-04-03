@@ -206,4 +206,4 @@ Key changes needed: [字数/格式/重点调整]
 - 用户说"投哪个期刊" → 自动触发
 
 ### 可选衔接
-- 被拒后 → 触发 `cover-letter-writing`（改写 Cover Letter 适配新期刊）
+- 被拒后 → 触发 `submission-preparation`（改写 Cover Letter 适配新期刊）

@@ -277,7 +277,7 @@ if config.get('key_points'):
 
 ### 被上层 skill 调用
 - `manuscript-writing` 完成后 → 自动建议触发本 skill
-- `revision-strategy` 修改后 → 重新导出
+- `revision-response` 修改后 → 重新导出
 
 ### 强制衔接
 - 导出完成后 → 建议 `pre-submission-verification`

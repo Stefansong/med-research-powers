@@ -187,3 +187,82 @@ assumptions:
   independence: "Study design ensures this (not testable post-hoc)"
   sphericity: "Mauchly's test (for repeated-measures ANOVA); if violated use Greenhouse-Geisser correction"
   proportional_hazards: "Schoenfeld residuals test + log-log survival plot"
+
+## AI/ML Model Development and Evaluation
+
+deep_learning_classification:
+  task: "Image/signal classification"
+  metrics:
+    primary: [AUROC, AUPRC, Sensitivity, Specificity]
+    secondary: [F1, Accuracy (only if balanced), Confusion Matrix]
+  comparison:
+    - {method: DeLong test, when: "Compare two ROC curves"}
+    - {method: Bootstrap CI, when: "Confidence interval for any metric (B=2000)"}
+    - {method: McNemar test, when: "Compare error patterns of two classifiers"}
+  calibration: [ECE, MCE, Reliability Diagram]
+  clinical: [DCA, NRI, IDI]
+
+deep_learning_segmentation:
+  task: "Image segmentation (organ/lesion delineation)"
+  metrics:
+    primary: [Dice coefficient, IoU (Jaccard)]
+    secondary: [Hausdorff distance (95th percentile), Average surface distance]
+    volumetric: [Volume correlation, Bland-Altman for volume]
+  comparison:
+    - {method: Paired Wilcoxon, when: "Compare two models on same test set"}
+    - {method: Bootstrap CI, when: "Confidence interval for Dice/IoU"}
+
+deep_learning_detection:
+  task: "Object detection (lesion/instrument localization)"
+  metrics:
+    primary: [mAP, Sensitivity at fixed FP rate]
+    secondary: [Precision-Recall curve, FROC]
+  comparison:
+    - {method: Bootstrap CI, when: "Confidence interval for detection metrics"}
+
+deep_learning_training:
+  hyperparameter_reporting:
+    required: [optimizer, learning_rate, lr_schedule, batch_size, epochs, early_stopping, weight_decay, dropout]
+    recommended: [warmup_steps, gradient_clipping, mixed_precision, seed]
+  data_split:
+    - {condition: "n > 1000", method: "Hold-out (60/20/20)", note: "Patient-level split"}
+    - {condition: "200 < n < 1000", method: "5-fold CV", note: "Patient-level folds"}
+    - {condition: "n < 200", method: "Nested CV or LOOCV + transfer learning"}
+  augmentation:
+    geometric: [rotation, flip, scale, elastic_deformation, crop]
+    intensity: [brightness, contrast, noise, blur, gamma]
+    advanced: [CutMix, MixUp, mosaic]
+  class_imbalance:
+    data_level: [oversampling, undersampling, SMOTE]
+    loss_level: [weighted_CE, focal_loss, dice_loss, combo_loss]
+    evaluation: "Never use accuracy alone; use AUROC/AUPRC/F1"
+
+model_comparison:
+  human_vs_ai:
+    design: "Same test set, same information, blinded evaluation"
+    groups: ["AI alone", "Human alone", "AI-assisted Human"]
+    washout: "≥2 weeks between unaided and AI-assisted reading"
+  multi_model:
+    method: "Bootstrap or permutation test on paired predictions"
+    report: "Point estimate + 95% CI for each model"
+
+uncertainty_quantification:
+  methods:
+    - {name: MC Dropout, description: "Keep dropout at inference, N=30+ forward passes, compute prediction variance"}
+    - {name: Deep Ensembles, description: "Train M=5 independent models, use prediction disagreement"}
+    - {name: TTA, description: "Apply augmentations at inference, use prediction variability"}
+  calibration:
+    - {metric: ECE, description: "Expected Calibration Error — gap between confidence and accuracy"}
+    - {metric: MCE, description: "Maximum Calibration Error — worst-case miscalibration"}
+    - {visualization: "Reliability diagram (predicted probability vs observed frequency)"}
+  when: "Safety-critical applications (surgical guidance, diagnosis, treatment planning)"
+
+explainability:
+  classification:
+    - {method: Grad-CAM, when: "CNN-based models"}
+    - {method: SHAP, when: "Any model, feature-level importance"}
+    - {method: Attention maps, when: "Transformer-based models"}
+  segmentation:
+    - {method: Uncertainty maps, when: "Visualize prediction confidence per pixel"}
+    - {method: Attention maps, when: "Transformer-based segmentation"}
+  reporting: "Include ≥3 representative examples (typical, best, worst cases)"

@@ -273,7 +273,7 @@ WebSearch(query="site:biorxiv.org [主题]")
 - **Additional results:** [N] articles
 ```
 
-### 文件 2: `literature-references.md`（结构化文献清单）
+### 文件 3: `literature-references.md`（结构化文献清单）
 
 **每篇纳入的文献必须保存以下字段：**
 
@@ -309,7 +309,7 @@ WebSearch(query="site:biorxiv.org [主题]")
 ...
 ```
 
-### 文件 3: `literature-synthesis-summary.md`（证据综合）
+### 文件 4: `literature-synthesis-summary.md`（证据综合）
 
 ```markdown
 # Literature Synthesis Summary

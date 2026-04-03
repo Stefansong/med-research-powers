@@ -140,11 +140,8 @@ peer-review-simulation
 pre-submission-verification
   └─ 报告: 6-Gate 结果 → ⚠️ Hard Checkpoint: 用户必须确认全部通过
       │
-cover-letter-writing
-  └─ 报告: Cover Letter 草稿 → 用户确认 ✓
-      │
-submission-system-guide
-  └─ 报告: 投稿 Checklist → 用户确认 ✓
+submission-preparation
+  └─ 报告: Cover Letter + 投稿 Checklist → 用户确认 ✓
 ```
 
 ## Skill Routing
@@ -209,7 +206,7 @@ submission-preparation → [投稿] → revision-response
 | pre-submission-verification | 报告规范不合规 | → manuscript-writing |
 | pre-submission-verification | 统计不完整 | → statistical-analysis |
 | peer-review-simulation | 方法学有 Critical 问题 | → study-design |
-| revision-strategy | 审稿人要求补充分析 | → statistical-analysis |
+| revision-response | 审稿人要求补充分析 | → statistical-analysis |
 
 **回溯规则：** 回溯后修改的 artifact 必须标注修改原因和日期，下游依赖 skill 需要重新验证。
 

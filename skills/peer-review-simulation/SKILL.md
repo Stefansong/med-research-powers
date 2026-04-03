@@ -16,7 +16,7 @@ description: Use when simulating peer review to identify problems before submiss
 
 ## When NOT to Use
 
-- 收到真实审稿意见 → `responding-to-reviewers`
+- 收到真实审稿意见 → `revision-response`
 - 检查报告规范 → `reporting-standards`
 
 ## Workflow

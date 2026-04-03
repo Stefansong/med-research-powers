@@ -18,7 +18,7 @@ description: Use when checking manuscript compliance with reporting guidelines b
 ## When NOT to Use
 
 - 论文仍在早期起草阶段（等各章节完成后再查）
-- 选择研究设计阶段（→ 用 `study-design` 或 `ai-medical-study-design`）
+- 选择研究设计阶段（→ 用 `study-design`）
 
 ## Workflow
 

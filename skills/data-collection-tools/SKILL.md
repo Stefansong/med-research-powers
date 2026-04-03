@@ -1,6 +1,6 @@
 ---
 name: data-collection-tools
-description: Use when generating data collection instruments, scripts, and templates based on a study protocol. Triggers on "生成标注表"、"做个数据收集表"、"写推理脚本"、"annotation template"、"CRF"、"数据录入表"、"REDCap"、"inference script"、"帮我准备数据收集工具". Auto-triggers after study-design / ai-medical-study-design completes.
+description: Use when generating data collection instruments, scripts, and templates based on a study protocol. Triggers on "生成标注表"、"做个数据收集表"、"写推理脚本"、"annotation template"、"CRF"、"数据录入表"、"REDCap"、"inference script"、"帮我准备数据收集工具". Auto-triggers after study-design completes.
 ---
 
 # Data Collection Tools

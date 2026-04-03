@@ -24,11 +24,21 @@ description: Use when a user has a vague research idea and needs to define a cle
 
 每轮不超过 2-3 个问题，逐步收敛：
 
-### Round 1: PICO
+### Round 1: PICO / PIRD
+
+**干预性研究 → 使用 PICO：**
 - **P** (Population) — 研究对象？纳入/排除标准？
 - **I** (Intervention/Exposure) — 干预/暴露因素？
 - **C** (Comparison) — 对照是什么？
 - **O** (Outcome) — 主要结局指标？次要结局？
+
+**AI 诊断准确性研究 → 使用 PIRD：**
+- **P** (Population) — 目标患者群？
+- **I** (Index test) — 被评估的诊断方法（如"深度学习分析术中超声"）？
+- **R** (Reference standard) — 参考标准/金标准（如"术后病理"）？
+- **D** (Diagnosis of interest) — 目标诊断（如"胶质瘤切除边界残留"）？
+
+**判断标准：** 如果研究核心是"某种方法能否准确诊断/检测/分割某种疾病"→ 用 PIRD；如果研究核心是"某种干预是否改善结局"→ 用 PICO。
 
 ### Round 2: FINER
 - **F** (Feasible) — 数据/样本可获得？资源够？
@@ -66,7 +76,7 @@ description: Use when a user has a vague research idea and needs to define a cle
 ## 衔接规则
 
 ### 强制衔接
-- 完成后 → 建议 `literature-synthesis`（了解现状）或 `study-design` / `ai-medical-study-design`（设计研究）
+- 完成后 → 建议 `literature-synthesis`（了解现状）或 `study-design`（设计研究，内置 type router 自动路由）
 
 ### 被其他 skill 调用
 - `data-analysis-planning` 发现没有明确假设 → 触发本 skill
