@@ -1,32 +1,53 @@
 {
   "name": "med-research-powers",
   "owner": {
-    "name": "Stefansong"
+    "name": "Stefansong",
+    "email": "stefan@btch-uro-ai-lab.com"
   },
   "metadata": {
-    "description": "Medical research methodology framework with 21 skills, 42 reporting standards, 68 journal templates, 6-gate verification",
-    "version": "6.0.0"
+    "description": "Medical research methodology framework with 20 skills, 42 reporting standards, 234 journal templates, 6-gate verification, selective constraints",
+    "version": "6.2.1"
   },
   "plugins": [
     {
       "name": "med-research-powers",
       "source": "./",
-      "description": "From hypothesis to publication — an AI-enforced research methodology framework that prevents bad science before it happens. 21 skills covering the full pipeline from question formulation to revision response.",
-      "version": "6.0.0",
+      "description": "From hypothesis to publication — an AI-enforced research methodology framework. 20 skills with type routers (clinical/basic/AI-ML/qualitative/survey study design + 6 article types), 234 journal templates, selective constraints with 4 hard checkpoints, PubMed MCP integration, and one-click .docx export.",
+      "version": "6.2.1",
       "author": {
         "name": "BTCH Uro AI Lab"
       },
+      "homepage": "https://github.com/Stefansong/med-research-powers",
+      "repository": "https://github.com/Stefansong/med-research-powers",
+      "license": "MIT",
       "keywords": [
         "medical-research",
         "clinical-trials",
+        "AI-medical",
         "statistics",
         "manuscript",
+        "review-article",
         "peer-review",
         "reporting-standards",
-        "CONSORT",
-        "TRIPOD-AI"
+        "CONSORT-2025",
+        "TRIPOD-AI",
+        "PubMed",
+        "journal-templates",
+        "qualitative-research",
+        "survey-design",
+        "meta-analysis",
+        "systematic-review"
       ],
       "category": "research",
+      "tags": [
+        "medical",
+        "research",
+        "science",
+        "clinical",
+        "AI",
+        "publication",
+        "methodology"
+      ],
       "strict": false
     }
   ]

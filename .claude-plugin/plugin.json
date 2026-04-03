@@ -1,10 +1,10 @@
 {
   "name": "med-research-powers",
-  "description": "Medical research methodology framework — 21 skills covering the full research pipeline from question formulation to revision response. Enforces CONSORT 2025, STROBE, PRISMA, TRIPOD-AI, DECIDE-AI, IDEAL, AGREE II, MOOSE, and 40+ reporting standards.",
-  "version": "6.0.0",
+  "description": "Medical research methodology framework — 20 skills with selective constraints covering the full research pipeline. Supports clinical, basic science, AI/ML, qualitative, and survey research design. 234 journal templates, 42+ reporting standards (CONSORT 2025, STROBE, PRISMA, TRIPOD-AI, DECIDE-AI, IDEAL), PubMed MCP integration, one-click .docx export.",
+  "version": "6.2.1",
   "author": {
     "name": "BTCH Uro AI Lab"
   },
   "license": "MIT",
-  "keywords": ["medical-research", "clinical-trials", "statistics", "manuscript", "peer-review", "reporting-standards", "CONSORT", "TRIPOD-AI"]
+  "keywords": ["medical-research", "clinical-trials", "AI-medical", "statistics", "manuscript", "review-article", "peer-review", "reporting-standards", "CONSORT-2025", "TRIPOD-AI", "PubMed", "qualitative", "survey", "meta-analysis"]
 }
