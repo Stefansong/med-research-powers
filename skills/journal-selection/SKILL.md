@@ -73,6 +73,50 @@ description: Use when a manuscript is nearing completion and the user needs to c
 - [ ] 是否要求 ORCID
 - [ ] 特殊要求（如 Nature Medicine 要求 Reporting Summary）
 
+### Step 4b: Unknown Journal Auto-Collection（未知期刊信息自动采集）
+
+当推荐的期刊不在 `journal-templates.yaml` 模板库中时（如新创刊期刊），执行以下自动采集流程：
+
+```
+1. WebSearch("[期刊名] instructions for authors submission guidelines")
+   → 定位期刊的 "Instructions for Authors" / "Guide for Authors" 页面
+
+2. WebFetch(URL) 或从搜索结果提取以下关键字段:
+   → journal: [全名]
+   → publisher: [出版社]
+   → IF_approx: [影响因子，如新刊则标注"新刊"]
+   → word_limit: [字数限制]
+   → abstract: [结构化/非结构化, 字数限制]
+   → references: [上限, 格式]
+   → figures: [数量限制]
+   → tables: [数量限制]
+   → sections: [章节要求和顺序]
+   → special: [特殊要求列表]
+   → system: [投稿系统名称]
+   → apc: [OA 费用]
+   → review_time: [平均审稿周期]
+
+3. 将采集结果格式化为 YAML 条目:
+   - id: [kebab-case-id]
+     journal: [全名]
+     publisher: [出版社]
+     IF_approx: [IF]
+     word_limit: [限制]
+     ...
+
+4. 追加到 journal-templates.yaml（如用户同意永久保存）
+   或仅在当前项目的 journal-selection-report.md 中记录（临时使用）
+
+5. 向用户确认采集的信息是否准确
+```
+
+**触发条件:** 在 Step 2-3 评分过程中，如果候选期刊的 ID 不在 `journal-templates.yaml` 中，自动触发 Step 4b。
+
+**采集失败处理:**
+- 如 WebSearch 无法找到 Instructions for Authors → 标记为"需手动查阅"
+- 如信息不完整 → 填入已获取的字段，缺失字段标注 "[未确认]"
+- 向用户报告哪些字段需要手动确认
+
 ## Output
 
 生成 `journal-selection-report.md`：

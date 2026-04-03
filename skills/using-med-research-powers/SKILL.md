@@ -20,10 +20,22 @@ Any research-related task. If there is even 1% chance a skill applies, invoke it
 ## Workflow
 
 ```
+对话开始时:
+  → 检查 .mrp-state.json 是否存在
+  → 如存在 → 显示: "上次完成到 [current_stage]，下一步是 [next_steps[0]]。继续？"
+  → 如不存在 → 正常路由
+
 User message → Research-related? 
   → YES → Check skill table → Invoke skill → Announce "Using [skill] to [purpose]"
   → NO → Respond directly
 ```
+
+## Fast-Track Mode（快速模式）
+
+当用户明确表示不需要逐步确认时（如"一直做到最后"、"按你的想法来"、"不用问我"），进入 fast-track 模式：
+- **仅在 Hard Checkpoint 暂停**（protocol / SAP / journal / pre-submission）
+- **Soft Checkpoint 自动跳过**（文献综述、图表、各章节等）
+- 在 `.mrp-user-profile.json` 记录用户偏好
 
 ## Checkpoint Protocol（每步完成后的报告与确认）
 
@@ -107,6 +119,9 @@ journal-selection
 data-analysis-planning
   └─ 报告: SAP 全文 → ⚠️ Hard Checkpoint: 用户必须确认分析计划
       │
+data-collection-tools
+  └─ 报告: 生成的工具清单 → 用户确认 ✓ → [用户执行数据收集]
+      │
 statistical-analysis
   └─ 报告: 清洗日志 + 关键结果 + 脚本 → 用户确认 ✓
       │
@@ -115,6 +130,9 @@ figure-generation
       │
 manuscript-writing
   └─ 报告: 各章节完成状态 → 用户确认 ✓
+      │
+manuscript-export
+  └─ 报告: .docx 生成 + 格式检查 + 字数统计 → 用户确认 ✓
       │
 peer-review-simulation
   └─ 报告: 评分 + Critical 问题列表 → 用户确认 ✓
@@ -151,6 +169,9 @@ submission-system-guide
 | submission-system-guide | 投稿系统操作指南 |
 | revision-strategy | 修稿策略、审稿意见优先级排序 |
 | responding-to-reviewers | 回复审稿意见 |
+| data-collection-tools | 根据 protocol 生成标注表、推理脚本、CRF、数据目录 |
+| pubmed-search | PubMed MCP 深度检索、引用验证、批量元数据、引用格式化 |
+| manuscript-export | Markdown → .docx 导出、期刊排版、格式检查 |
 | writing-mrp-skills | 创建/改进 MRP skill |
 
 **研究类型路由：**
@@ -163,10 +184,17 @@ submission-system-guide
 
 ```
 research-question → literature-synthesis → study-design → journal-selection →
-data-analysis-planning → statistical-analysis → figure-generation →
-manuscript-writing → pre-submission-verification → cover-letter-writing →
-submission-system-guide → [投稿] → revision-strategy → responding-to-reviewers
+data-analysis-planning → data-collection-tools → [用户执行数据收集] →
+statistical-analysis → figure-generation →
+manuscript-writing → manuscript-export → pre-submission-verification →
+cover-letter-writing → submission-system-guide → [投稿] →
+revision-strategy → responding-to-reviewers
 ```
+
+**辅助 skill（随时可调用，不在主线上）：**
+- `pubmed-search` — 被 literature-synthesis / pre-submission-verification / manuscript-writing 调用
+- `manuscript-export` — 被 manuscript-writing 完成后自动建议
+- `data-collection-tools` — study-design 完成后自动建议，生成数据收集工具
 
 跳过任何环节 → 下游 skill 的前置依赖会阻止执行。
 
