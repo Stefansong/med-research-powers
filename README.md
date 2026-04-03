@@ -1,5 +1,7 @@
 # Med-Research-Powers
 
+[English](README.md) | [中文](README_CN.md)
+
 **From hypothesis to publication — an AI-enforced research methodology framework that prevents bad science before it happens.**
 
 Med-Research-Powers (MRP) is a [Claude Code](https://claude.ai/code) plugin that transforms AI coding agents into rigorous research assistants. Instead of letting AI skip literature reviews, misuse statistics, ignore reporting standards, or hallucinate references, MRP enforces a mandatory pipeline with hard checkpoints, 6-gate pre-submission verification, and 4-reviewer peer review simulation — so every manuscript that leaves your desk is audit-ready.
@@ -12,8 +14,8 @@ Inspired by [Superpowers](https://github.com/obra/superpowers) (software enginee
 
 | | |
 |---|---|
-| **Skills** | 21 skills covering the full research pipeline |
-| **Slash Commands** | 21 commands for direct invocation |
+| **Skills** | 24 skills covering the full research pipeline |
+| **Slash Commands** | 24 commands for direct invocation |
 | **Reporting Standards** | ~42 standards including CONSORT 2025, STROBE, PRISMA, TRIPOD-AI, DECIDE-AI |
 | **Journal Templates** | 68 journals across 22 specialties |
 | **Statistical Methods** | 15+ method categories with decision tree |
@@ -105,6 +107,23 @@ MRP:  Using research-question-formulation to define PICO + hypothesis
 
 Skipping any step blocks downstream skills. Backward links allow returning to upstream skills when issues are discovered later.
 
+### Pipeline Flow
+
+```
+research-question → literature-synthesis → study-design → journal-selection →
+data-analysis-planning → data-collection-tools → [user collects data] →
+statistical-analysis → figure-generation →
+manuscript-writing → manuscript-export → pre-submission-verification →
+cover-letter-writing → submission-system-guide → [submit] →
+revision-strategy → responding-to-reviewers
+```
+
+**Utility skills** (callable at any point): `pubmed-search`, `research-ethics`, `reporting-standards`
+
+### Fast-Track Mode
+
+For experienced users: say "go all the way" or "don't ask me" to skip soft checkpoints. Only the 4 hard checkpoints (protocol, SAP, journal, pre-submission) will pause for confirmation.
+
 ### System Architecture
 
 ![System Architecture](docs/images/system-architecture.png)
@@ -128,18 +147,20 @@ Commands are grouped by pipeline phase. Use `/mrp:<command>` to invoke directly.
 | `/mrp:ai-study-design` | AI/ML medical research design (imaging, NLP, LLM evaluation) |
 | `/mrp:journal-selection` | Target journal matching with 4-step scoring + 3-tier ranking |
 
-### Phase 2 -- Analysis Engine
+### Phase 2 -- Analysis & Data Collection
 
 | Command | Purpose |
 |---|---|
 | `/mrp:analyze-data` | Plan and execute statistical analysis with reproducible scripts |
+| `/mrp:data-tools` | Generate data collection tools (inference scripts, CRFs, annotation templates) |
 | `/mrp:figure-generation` | Publication-quality figures with journal-specific palettes |
 
 ### Phase 3 -- Manuscript & QA
 
 | Command | Purpose |
 |---|---|
-| `/mrp:write-manuscript` | Write manuscript in IMRaD structure with journal template |
+| `/mrp:write-manuscript` | Write manuscript (original research IMRaD or review articles) with journal template |
+| `/mrp:export-manuscript` | Export manuscript Markdown to .docx with journal-specific formatting |
 | `/mrp:reporting-standards` | Match study type to reporting guideline (~42 standards) |
 | `/mrp:research-ethics` | Ethics compliance: IRB, IACUC, informed consent, COI |
 | `/mrp:peer-review` | Simulate 4-reviewer peer review with quantitative scoring |
@@ -160,12 +181,13 @@ Commands are grouped by pipeline phase. Use `/mrp:<command>` to invoke directly.
 | Command | Purpose |
 |---|---|
 | `/mrp:using-mrp` | Meta-skill: routing, checkpoints, user memory, pipeline state |
+| `/mrp:pubmed-search` | Deep PubMed search: interactive query building, citation verification, reference formatting |
 | `/mrp:team-collaboration` | Multi-agent parallel research tasks |
 | `/mrp:writing-mrp-skills` | How to create new MRP skills |
 
 ---
 
-## Skills (21)
+## Skills (24)
 
 Skills are auto-triggered based on natural language intent. You do not need to memorize commands -- just describe what you need.
 
@@ -180,19 +202,21 @@ Skills are auto-triggered based on natural language intent. You do not need to m
 | `ai-medical-study-design` | AI, ML, imaging, surgical video, LLM | `study-protocol.md` |
 | `journal-selection` | which journal, impact factor, journal fit | `journal-selection-report.md` |
 
-### Analysis Layer (3 skills)
+### Analysis Layer (4 skills)
 
 | Skill | Auto-triggers on | Output |
 |---|---|---|
 | `data-analysis-planning` | analysis strategy, SAP, which test to use | `analysis-plan.md` |
+| `data-collection-tools` | generate scripts, CRF, annotation template | `tools/` directory with scripts, templates, README |
 | `statistical-analysis` | run analysis, regression, survival analysis | 4 files: cleaning log, script, analysis log, results summary |
 | `figure-generation` | figures, charts, visualization | Publication-ready TIFF files |
 
-### Manuscript Layer (5 skills)
+### Manuscript Layer (6 skills)
 
 | Skill | Auto-triggers on | Output |
 |---|---|---|
-| `manuscript-writing` | write manuscript, Introduction, Methods | `manuscript/` directory with IMRaD sections |
+| `manuscript-writing` | write manuscript, Introduction, Methods, review article | `manuscript/` directory (IMRaD or review structure) |
+| `manuscript-export` | export to Word, docx, format for submission | `manuscript.docx` with journal-specific formatting |
 | `reporting-standards` | CONSORT, STROBE, PRISMA, checklist | Matched checklist with compliance status |
 | `research-ethics` | IRB, ethics, informed consent | Ethics compliance reminder |
 | `peer-review-simulation` | review my paper, what would reviewers say | `peer-review-simulation-report.md` |
@@ -207,11 +231,17 @@ Skills are auto-triggered based on natural language intent. You do not need to m
 | `revision-strategy` | revision, major/minor, reviewer comments | `revision-plan.md` |
 | `responding-to-reviewers` | reviewer response, point-by-point | `response-letter.md` |
 
+### Utility Layer (1 skill)
+
+| Skill | Auto-triggers on | Output |
+|---|---|---|
+| `pubmed-search` | PubMed search, verify citation, PMID, format references | Search results, verification reports, formatted references |
+
 ### Meta Layer (3 skills)
 
 | Skill | Auto-triggers on | Output |
 |---|---|---|
-| `using-med-research-powers` | Any research-related task (orchestrator) | Routing + checkpoint management |
+| `using-med-research-powers` | Any research-related task (orchestrator) | Routing + checkpoint management + session resume |
 | `team-collaboration` | parallel, team, simultaneous tasks | Coordinated multi-agent output |
 | `writing-mrp-skills` | create new skill, modify skill | Skill template |
 
@@ -644,12 +674,12 @@ MRP adapts the Superpowers methodology framework from software engineering to me
 ```
 med-research-powers/
 |-- .claude-plugin/
-|   +-- plugin.json                    # Plugin metadata (v6.0.0, 21 commands)
+|   +-- plugin.json                    # Plugin metadata (v6.1.0, 24 commands)
 |-- hooks/
 |   +-- session-start.sh              # Auto-injects routing table on session start
-|-- commands/                          # 21 slash command definitions
+|-- commands/                          # 24 slash command definitions
 |   +-- *.md
-|-- skills/                            # 21 skill definitions
+|-- skills/                            # 24 skill definitions
 |   |-- */SKILL.md                     # Skill logic (triggers, workflow, output)
 |   |-- */scripts/                     # Bundled Python scripts
 |   +-- */references/                  # On-demand reference data (YAML/MD)
@@ -678,9 +708,10 @@ med-research-powers/
 | **Clinical** | RCT, cohort, case-control, cross-sectional, diagnostic accuracy |
 | **AI/ML** | Medical imaging AI, surgical video AI, LLM/VLM evaluation, prediction models, clinical NLP, wearable/sensor AI |
 | **Basic Science** | Cell biology, animal models, molecular biology, histopathology, Western blot, qPCR |
+| **Evidence Synthesis** | Narrative review, systematic review, meta-analysis, scoping review, mini-review |
 | **Omics** | Metabolomics, proteomics, genomics, multi-omics integration |
 | **Devices** | Smart instruments, wearables, human factors, sensor systems, IDEAL framework staging |
-| **Evidence Synthesis** | Systematic reviews, meta-analysis, network meta-analysis, scoping reviews, clinical guidelines |
+| **Evidence Synthesis** | Systematic reviews, meta-analysis, network meta-analysis, scoping reviews, narrative reviews, clinical guidelines |
 | **Other** | Medical education, quality improvement, case reports, health economics |
 
 ---
