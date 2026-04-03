@@ -14,10 +14,10 @@ Inspired by [Superpowers](https://github.com/obra/superpowers) (software enginee
 
 | | |
 |---|---|
-| **Skills** | 24 skills covering the full research pipeline |
-| **Slash Commands** | 24 commands for direct invocation |
+| **Skills** | 20 skills covering the full research pipeline |
+| **Slash Commands** | 20 commands for direct invocation |
 | **Reporting Standards** | ~42 standards including CONSORT 2025, STROBE, PRISMA, TRIPOD-AI, DECIDE-AI |
-| **Journal Templates** | 68 journals across 22 specialties |
+| **Journal Templates** | 229 journals across 30+ specialties |
 | **Statistical Methods** | 15+ method categories with decision tree |
 | **Python Scripts** | 3 bundled scripts (assumptions, power analysis, figure styling) |
 | **Pre-Submission** | 6-gate mandatory verification with PubMed MCP claim checking |
@@ -187,7 +187,7 @@ Commands are grouped by pipeline phase. Use `/mrp:<command>` to invoke directly.
 
 ---
 
-## Skills (24)
+## Skills (20)
 
 Skills are auto-triggered based on natural language intent. You do not need to memorize commands -- just describe what you need.
 
@@ -451,7 +451,7 @@ The statistical analysis pipeline flows through 6 steps: Load -> Clean (missing 
 
 ## Journal Template Library
 
-68 journals across 22 specialties, each with complete formatting specifications.
+229 journals across 30+ specialties, each with complete formatting specifications.
 
 | Specialty | Journals |
 |---|---|
@@ -674,12 +674,12 @@ MRP adapts the Superpowers methodology framework from software engineering to me
 ```
 med-research-powers/
 |-- .claude-plugin/
-|   +-- plugin.json                    # Plugin metadata (v6.1.0, 24 commands)
+|   +-- plugin.json                    # Plugin metadata (v6.2.0, 20 commands)
 |-- hooks/
 |   +-- session-start.sh              # Auto-injects routing table on session start
-|-- commands/                          # 24 slash command definitions
+|-- commands/                          # 20 slash command definitions
 |   +-- *.md
-|-- skills/                            # 24 skill definitions
+|-- skills/                            # 20 skill definitions
 |   |-- */SKILL.md                     # Skill logic (triggers, workflow, output)
 |   |-- */scripts/                     # Bundled Python scripts
 |   +-- */references/                  # On-demand reference data (YAML/MD)
@@ -705,13 +705,14 @@ med-research-powers/
 
 | Domain | Study Types |
 |---|---|
-| **Clinical** | RCT, cohort, case-control, cross-sectional, diagnostic accuracy |
-| **AI/ML** | Medical imaging AI, surgical video AI, LLM/VLM evaluation, prediction models, clinical NLP, wearable/sensor AI |
-| **Basic Science** | Cell biology, animal models, molecular biology, histopathology, Western blot, qPCR |
-| **Evidence Synthesis** | Narrative review, systematic review, meta-analysis, scoping review, mini-review |
+| **Clinical** | RCT (parallel, crossover, non-inferiority, adaptive, platform, pragmatic, N-of-1), cohort, case-control, nested case-control, cross-sectional, diagnostic accuracy, real-world evidence, registry studies |
+| **AI/ML** | Medical imaging AI, surgical video AI, LLM/VLM evaluation, prediction models, clinical NLP, wearable/sensor AI, digital therapeutics |
+| **Basic Science** | Cell biology, animal models, molecular biology, histopathology, Western blot, qPCR, tissue/organ culture |
+| **Qualitative** | Interviews, focus groups, grounded theory, phenomenology, ethnography, thematic analysis, mixed methods |
+| **Survey** | Cross-sectional surveys (KAP), questionnaire development/validation, Delphi consensus, needs assessment |
+| **Evidence Synthesis** | Narrative review, systematic review, meta-analysis, network meta-analysis (NMA), scoping review, mini-review |
 | **Omics** | Metabolomics, proteomics, genomics, multi-omics integration |
 | **Devices** | Smart instruments, wearables, human factors, sensor systems, IDEAL framework staging |
-| **Evidence Synthesis** | Systematic reviews, meta-analysis, network meta-analysis, scoping reviews, narrative reviews, clinical guidelines |
 | **Other** | Medical education, quality improvement, case reports, health economics |
 
 ---
