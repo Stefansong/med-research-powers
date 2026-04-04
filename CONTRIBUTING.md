@@ -26,14 +26,13 @@ PR 说明需包含：
 - 没有它时 Claude 的典型错误
 - 有了它后的改善
 
-### 贡献专科扩展包
+### 贡献期刊模板
 
-如果你是某个专科的医生/研究者，欢迎贡献专科特定的内容：
-- 专科期刊配置（字数限制、参考文献格式）
-- 专科特定的检索词和 MeSH terms
-- 专科特定的评估工具或量表
+如果你发现某个期刊不在 `skills/manuscript-writing/references/journal-templates.yaml` 中：
 
-放在 `packs/your-specialty/` 下。
+1. 从期刊官网的 "Instructions for Authors" 提取关键规范
+2. 按现有 YAML 格式添加条目（字数限制、摘要格式、参考文献样式、特殊要求）
+3. 提交 PR，说明期刊名、IF、所属专科
 
 ## SKILL.md 规范速查
 

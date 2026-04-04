@@ -15,7 +15,7 @@ NC='\033[0m'
 
 echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}║     Med-Research-Powers v5 Installer         ║${NC}"
+echo -e "${BOLD}║     Med-Research-Powers v6.2.1 Installer     ║${NC}"
 echo -e "${BOLD}║     医学科研方法论框架                        ║${NC}"
 echo -e "${BOLD}╚══════════════════════════════════════════════╝${NC}"
 echo ""
@@ -140,6 +140,7 @@ check_python_pkg() {
 
 if command -v python3 &>/dev/null; then
     echo -e "${GREEN}✓ Python3 found: $(python3 --version 2>&1)${NC}"
+    check_python_pkg "docx"
     check_python_pkg "scipy"
     check_python_pkg "statsmodels"
     check_python_pkg "matplotlib"
@@ -164,8 +165,10 @@ echo -e "  4. Or just say: ${CYAN}\"帮我设计一个 AI 辅助诊断的研究\
 echo ""
 echo -e "  ${BOLD}Available commands:${NC}"
 echo -e "  /mrp:research-question  — 构建研究问题（PICO/FINER）"
+echo -e "  /mrp:study-design       — 研究设计（临床/基础/AI-ML/定性/问卷）"
 echo -e "  /mrp:analyze-data       — 制定分析计划并执行统计"
 echo -e "  /mrp:write-manuscript   — 按 IMRaD 写论文"
+echo -e "  /mrp:manuscript-export  — 导出 .docx（按期刊格式排版）"
 echo -e "  /mrp:check-standards    — 检查报告规范（投稿前必做）"
 echo -e "  /mrp:peer-review        — 模拟同行评审"
 echo ""

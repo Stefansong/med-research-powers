@@ -1,5 +1,65 @@
 # Changelog
 
+## v6.2.1 (2026-04-03)
+
+### Bug Fixes
+- Fixed 6 stale commands pointing to merged/deleted skills
+- Fixed `session-start.sh` referencing old skill names (basic-medical-study-design, ai-medical-study-design, responding-to-reviewers, etc.)
+- Fixed README_CN.md journal count (229 → 234)
+- Registered `session-start.sh` hook in `plugin.json` (was present but never executed)
+- Fixed `settings.local.json` python3 permission rule syntax
+
+### Commands
+- Removed 6 stale commands: `ai-study-design`, `basic-study-design`, `cover-letter`, `responding-to-reviewers`, `revision-strategy`, `submission-guide`
+- Added 3 missing commands: `pubmed-search`, `manuscript-export`, `data-collection-tools`
+- Updated `study-design` command to reflect unified type router (A/B/C/D/E)
+
+### Infrastructure
+- `session-start.sh` rewritten as dynamic hook: raw JSON dump of `.mrp-state.json` and `.mrp-user-profile.json`; routing table suppressed for ongoing projects; ACTION REQUIRED prompt when no user profile found
+
+---
+
+## v6.2.0 (2026-04-03)
+
+### New Skills (4, from v6.0.0 → v6.2.0)
+- `pubmed-search` — PubMed MCP deep integration (6 modes: interactive search, batch metadata, citation verification, snowball search, full-text extraction, reference formatting)
+- `manuscript-export` — Export Markdown manuscript to journal-formatted .docx via python-docx
+- `data-collection-tools` — Auto-generate data collection instruments from study protocol (CRF, inference scripts, annotation templates, PRISMA tables)
+- `team-collaboration` — Multi-agent parallel research workflow coordination
+
+### Skill Consolidation (26 → 20 skills)
+- `study-design` — Unified type router replacing 3 separate skills (clinical/basic/AI-ML) + added qualitative and survey types (Type A–E)
+- `revision-response` — Merged `revision-strategy` + `responding-to-reviewers`
+- `submission-preparation` — Merged `cover-letter-writing` + `submission-system-guide`
+- Removed standalone: `ai-medical-study-design`, `basic-medical-study-design`, `qualitative-study-design`, `survey-design`
+
+### Improvements
+- Journal templates: 68 → 234 journals across 30+ specialties
+- Reporting standards: 40 → 42+ (added TRIPOD-LLM 2024, CONSORT-AI 2020)
+- `data-analysis-planning`: Added AI/ML SAP Extension (sections 8–16)
+- `research-question-formulation`: Added PIRD framework for AI diagnostic accuracy studies
+- `manuscript-writing`: Added NMA (network meta-analysis) support
+- All skills: selective constraints replacing blanket downstream blocking; 4 hard checkpoints preserved
+
+---
+
+## v6.0.0 (2026-03-30)
+
+### Architecture Rewrite
+- Migrated from skills-only to full Claude Code plugin (`.claude-plugin/`)
+- Added `marketplace.json` for plugin marketplace listing
+- Added `.mrp-state.json` session persistence specification
+- Added `.mrp-user-profile.json` cross-session user memory specification
+- Added `using-med-research-powers` orchestrator skill with full pipeline map, checkpoint protocol, and backward link rules
+- Added `pre-submission-verification` upgraded to 6-Gate (added Gate 6: PubMed MCP claim verification)
+
+### Reporting Standards
+- Updated CONSORT 2010 → **CONSORT 2025** (30 items)
+- Updated SPIRIT 2013 → **SPIRIT 2025**
+- Total coverage: 40+ reporting standards
+
+---
+
 ## v5.0.0 (2026-03-29)
 
 ### Architecture
