@@ -17,7 +17,7 @@ Med-Research-Powers (MRP) 是一个 [Claude Code](https://claude.ai/code) 插件
 | **技能** | 20 个技能，覆盖完整科研流程 |
 | **斜杠命令** | 20 个命令，可直接调用 |
 | **报告规范** | 约 42 项标准，包括 CONSORT 2025、STROBE、PRISMA、TRIPOD-AI、DECIDE-AI |
-| **期刊模板** | 68 本期刊，横跨 22 个专科 |
+| **期刊模板** | 234 本期刊，横跨 30+ 个专科 |
 | **统计方法** | 15+ 类方法，含决策树 |
 | **Python 脚本** | 3 个内置脚本（假设检验、样本量计算、图表样式） |
 | **预提交验证** | 6 道强制验证关卡，含 PubMed MCP 引用核查 |
@@ -91,7 +91,7 @@ cd med-research-powers
 
 MRP:  使用 research-question-formulation 定义 PICO + 假设
       → literature-synthesis 检索 PubMed + arXiv
-      → ai-medical-study-design 设计验证研究
+      → study-design 设计验证研究（Type C：AI/ML）
       → journal-selection 选择目标期刊
       → data-analysis-planning 制定 SAP
       → ...（完整流水线，每一步都有检查点）
@@ -114,8 +114,8 @@ research-question → literature-synthesis → study-design → journal-selectio
 data-analysis-planning → data-collection-tools → [用户采集数据] →
 statistical-analysis → figure-generation →
 manuscript-writing → manuscript-export → pre-submission-verification →
-cover-letter-writing → submission-system-guide → [提交] →
-revision-strategy → responding-to-reviewers
+submission-preparation → [提交] →
+revision-response
 ```
 
 **工具类技能**（可在任何阶段调用）：`pubmed-search`、`research-ethics`、`reporting-standards`
@@ -128,11 +128,11 @@ revision-strategy → responding-to-reviewers
 
 ![System Architecture](docs/images/system-architecture.png)
 
-元技能 `using-med-research-powers` 作为中央调度器，将任务路由到 5 个集群中的 21 个技能。基础设施组件（`session-start.sh` 钩子、`.mrp-state.json` 会话持久化、`.mrp-user-profile.json` 用户记忆、`plugin.json` 命令注册）和外部集成（PubMed MCP）构成外围环。
+元技能 `using-med-research-powers` 作为中央调度器，将任务路由到 5 个集群中的 20 个技能。基础设施组件（`session-start.sh` 钩子、`.mrp-state.json` 会话持久化、`.mrp-user-profile.json` 用户记忆、`plugin.json` 命令注册）和外部集成（PubMed MCP）构成外围环。
 
 ---
 
-## 斜杠命令（21 个）
+## 斜杠命令（20 个）
 
 命令按流水线阶段分组。使用 `/mrp:<command>` 直接调用。
 
@@ -142,9 +142,7 @@ revision-strategy → responding-to-reviewers
 |---|---|
 | `/mrp:research-question` | 使用 PICO/FINER 框架构建研究问题 |
 | `/mrp:literature-synthesis` | 多数据库文献检索 + PRISMA 筛选 |
-| `/mrp:study-design` | 临床研究方案设计（RCT、队列、横断面） |
-| `/mrp:basic-study-design` | 基础实验设计（细胞、动物、分子） |
-| `/mrp:ai-study-design` | AI/ML 医学研究设计（影像、NLP、LLM 评估） |
+| `/mrp:study-design` | 统一研究设计入口：临床 / 基础 / AI-ML / 定性 / 问卷（内置类型路由） |
 | `/mrp:journal-selection` | 目标期刊匹配，4 步评分 + 3 级排名 |
 
 ### 阶段 2 -- 分析与数据采集
@@ -152,7 +150,7 @@ revision-strategy → responding-to-reviewers
 | 命令 | 用途 |
 |---|---|
 | `/mrp:analyze-data` | 制定并执行统计分析，生成可复现脚本 |
-| `/mrp:data-tools` | 生成数据采集工具（推理脚本、CRF、标注模板） |
+| `/mrp:data-collection-tools` | 生成数据采集工具（推理脚本、CRF、标注模板） |
 | `/mrp:figure-generation` | 生成出版级质量图表，含期刊专属配色 |
 
 ### 阶段 3 -- 稿件与质控
@@ -160,21 +158,19 @@ revision-strategy → responding-to-reviewers
 | 命令 | 用途 |
 |---|---|
 | `/mrp:write-manuscript` | 撰写稿件（原始研究 IMRaD 或综述），使用期刊模板 |
-| `/mrp:export-manuscript` | 将 Markdown 稿件导出为 .docx，含期刊专属格式 |
+| `/mrp:manuscript-export` | 将 Markdown 稿件导出为 .docx，含期刊专属格式 |
 | `/mrp:reporting-standards` | 根据研究类型匹配报告规范（约 42 项标准） |
+| `/mrp:check-standards` | 组合命令：报告规范检查 + 6 道验证（投稿前快捷入口） |
 | `/mrp:research-ethics` | 伦理合规：IRB、IACUC、知情同意、利益冲突 |
 | `/mrp:peer-review` | 模拟 4 位审稿人的同行评审，含量化评分 |
-| `/mrp:check-standards` | 检查报告规范合规性 |
 | `/mrp:pre-submission` | 6 道强制预提交验证 |
 
 ### 阶段 4 -- 投稿与修回
 
 | 命令 | 用途 |
 |---|---|
-| `/mrp:cover-letter` | 撰写投稿信，支持级联改写以适配不同期刊 |
-| `/mrp:submission-guide` | 投稿系统操作指南（ScholarOne、Editorial Manager） |
-| `/mrp:revision-strategy` | 修回策略规划 + 审稿意见分流 |
-| `/mrp:responding-to-reviewers` | 逐条回复信 |
+| `/mrp:submission-preparation` | 撰写投稿信 + 投稿系统操作指南（ScholarOne、Editorial Manager） |
+| `/mrp:revision-response` | 修回策略规划 + 逐条回复信 |
 
 ### 元命令
 
@@ -191,15 +187,13 @@ revision-strategy → responding-to-reviewers
 
 技能根据自然语言意图自动触发。你无需记住命令 —— 只需描述你的需求即可。
 
-### 基础层（6 个技能）
+### 基础层（4 个技能）
 
 | 技能 | 自动触发条件 | 输出 |
 |---|---|---|
 | `research-question-formulation` | "我想研究..."、研究思路、PICO | `research-question.md` |
 | `literature-synthesis` | 文献综述、研究空白、背景 | 4 个文件：检索策略、筛选日志、参考文献、综合摘要 |
-| `study-design` | 临床研究设计、RCT、队列 | `study-protocol.md` |
-| `basic-medical-study-design` | 细胞、动物、分子、WB、qPCR | `study-protocol.md` |
-| `ai-medical-study-design` | AI、ML、影像、手术视频、LLM | `study-protocol.md` |
+| `study-design` | 任何研究设计：临床 / 基础 / AI-ML / 定性 / 问卷 | `study-protocol.md` |
 | `journal-selection` | 选哪个期刊、影响因子、期刊匹配 | `journal-selection-report.md` |
 
 ### 分析层（4 个技能）
@@ -222,14 +216,12 @@ revision-strategy → responding-to-reviewers
 | `peer-review-simulation` | 审一下我的论文、审稿人会怎么说 | `peer-review-simulation-report.md` |
 | `pre-submission-verification` | "完成了"、"可以投了"、定稿 | `submission-readiness-report.md` |
 
-### 投稿层（4 个技能）
+### 投稿层（2 个技能）
 
 | 技能 | 自动触发条件 | 输出 |
 |---|---|---|
-| `cover-letter-writing` | 投稿信、cover letter | `cover-letter.md` |
-| `submission-system-guide` | 怎么投、上传、ScholarOne | 投稿清单 |
-| `revision-strategy` | 修回、大修/小修、审稿意见 | `revision-plan.md` |
-| `responding-to-reviewers` | 回复审稿人、逐条回复 | `response-letter.md` |
+| `submission-preparation` | 投稿信、cover letter、ScholarOne、怎么投稿 | `cover-letter.md` + `submission-checklist.md` |
+| `revision-response` | 修回、大修/小修、审稿意见、回复审稿人 | `revision-plan.md` + `response-letter.md` |
 
 ### 工具层（1 个技能）
 
@@ -247,12 +239,15 @@ revision-strategy → responding-to-reviewers
 
 ### 研究类型路由
 
+所有类型统一进入 `study-design`，内置类型路由器自动选择工作流：
+
 ```
 研究类型？
-+-- 临床试验 / 观察性研究     --> study-design
-+-- 基础 / 细胞 / 动物        --> basic-medical-study-design
-+-- AI / ML / 影像 / 设备     --> ai-medical-study-design
-+-- 多种类型                  --> 按需组合
++-- 临床试验 / 观察性研究 / 诊断研究   --> study-design（Type A）
++-- 基础实验 / 细胞 / 动物 / 分子      --> study-design（Type B）
++-- AI / ML / 影像 / LLM / VLM        --> study-design（Type C）
++-- 定性研究 / 访谈 / 扎根理论         --> study-design（Type D）
++-- 问卷调查 / 横断面调查              --> study-design（Type E）
 ```
 
 ---

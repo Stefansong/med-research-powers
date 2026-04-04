@@ -17,7 +17,7 @@ Inspired by [Superpowers](https://github.com/obra/superpowers) (software enginee
 | **Skills** | 20 skills covering the full research pipeline |
 | **Slash Commands** | 20 commands for direct invocation |
 | **Reporting Standards** | ~42 standards including CONSORT 2025, STROBE, PRISMA, TRIPOD-AI, DECIDE-AI |
-| **Journal Templates** | 229 journals across 30+ specialties |
+| **Journal Templates** | 234 journals across 30+ specialties |
 | **Statistical Methods** | 15+ method categories with decision tree |
 | **Python Scripts** | 3 bundled scripts (assumptions, power analysis, figure styling) |
 | **Pre-Submission** | 6-gate mandatory verification with PubMed MCP claim checking |
@@ -91,7 +91,7 @@ You:  "I want to study whether AI can improve bladder cancer detection on CT"
 
 MRP:  Using research-question-formulation to define PICO + hypothesis
       → literature-synthesis to search PubMed + arXiv
-      → ai-medical-study-design to design the validation study
+      → study-design to design the validation study (Type C: AI/ML)
       → journal-selection to pick target journal
       → data-analysis-planning to create SAP
       → ... (full pipeline with checkpoints at every step)
@@ -114,8 +114,8 @@ research-question → literature-synthesis → study-design → journal-selectio
 data-analysis-planning → data-collection-tools → [user collects data] →
 statistical-analysis → figure-generation →
 manuscript-writing → manuscript-export → pre-submission-verification →
-cover-letter-writing → submission-system-guide → [submit] →
-revision-strategy → responding-to-reviewers
+submission-preparation → [submit] →
+revision-response
 ```
 
 **Utility skills** (callable at any point): `pubmed-search`, `research-ethics`, `reporting-standards`
@@ -128,11 +128,11 @@ For experienced users: say "go all the way" or "don't ask me" to skip soft check
 
 ![System Architecture](docs/images/system-architecture.png)
 
-The meta-skill `using-med-research-powers` acts as the central orchestrator, routing tasks to 21 skills across 5 clusters. Infrastructure components (`session-start.sh` hook, `.mrp-state.json` session persistence, `.mrp-user-profile.json` user memory, `plugin.json` command registration) and external integrations (PubMed MCP) form the outer ring.
+The meta-skill `using-med-research-powers` acts as the central orchestrator, routing tasks to 20 skills across 5 clusters. Infrastructure components (`session-start.sh` hook, `.mrp-state.json` session persistence, `.mrp-user-profile.json` user memory, `plugin.json` command registration) and external integrations (PubMed MCP) form the outer ring.
 
 ---
 
-## Slash Commands (21)
+## Slash Commands (20)
 
 Commands are grouped by pipeline phase. Use `/mrp:<command>` to invoke directly.
 
@@ -142,9 +142,7 @@ Commands are grouped by pipeline phase. Use `/mrp:<command>` to invoke directly.
 |---|---|
 | `/mrp:research-question` | Formulate research question using PICO/FINER framework |
 | `/mrp:literature-synthesis` | Multi-database literature search + PRISMA screening |
-| `/mrp:study-design` | Clinical research protocol design (RCT, cohort, cross-sectional) |
-| `/mrp:basic-study-design` | Bench science experiment design (cell, animal, molecular) |
-| `/mrp:ai-study-design` | AI/ML medical research design (imaging, NLP, LLM evaluation) |
+| `/mrp:study-design` | Unified study design: clinical / bench / AI-ML / qualitative / survey (type router) |
 | `/mrp:journal-selection` | Target journal matching with 4-step scoring + 3-tier ranking |
 
 ### Phase 2 -- Analysis & Data Collection
@@ -152,7 +150,7 @@ Commands are grouped by pipeline phase. Use `/mrp:<command>` to invoke directly.
 | Command | Purpose |
 |---|---|
 | `/mrp:analyze-data` | Plan and execute statistical analysis with reproducible scripts |
-| `/mrp:data-tools` | Generate data collection tools (inference scripts, CRFs, annotation templates) |
+| `/mrp:data-collection-tools` | Generate data collection tools (inference scripts, CRFs, annotation templates) |
 | `/mrp:figure-generation` | Publication-quality figures with journal-specific palettes |
 
 ### Phase 3 -- Manuscript & QA
@@ -160,21 +158,19 @@ Commands are grouped by pipeline phase. Use `/mrp:<command>` to invoke directly.
 | Command | Purpose |
 |---|---|
 | `/mrp:write-manuscript` | Write manuscript (original research IMRaD or review articles) with journal template |
-| `/mrp:export-manuscript` | Export manuscript Markdown to .docx with journal-specific formatting |
+| `/mrp:manuscript-export` | Export manuscript Markdown to .docx with journal-specific formatting |
 | `/mrp:reporting-standards` | Match study type to reporting guideline (~42 standards) |
+| `/mrp:check-standards` | Combined: reporting standards check + 6-Gate verification (pre-submission shortcut) |
 | `/mrp:research-ethics` | Ethics compliance: IRB, IACUC, informed consent, COI |
 | `/mrp:peer-review` | Simulate 4-reviewer peer review with quantitative scoring |
-| `/mrp:check-standards` | Check reporting standard compliance |
 | `/mrp:pre-submission` | 6-Gate mandatory pre-submission verification |
 
 ### Phase 4 -- Submission & Revision
 
 | Command | Purpose |
 |---|---|
-| `/mrp:cover-letter` | Cover letter writing with cascade rewrite for different journals |
-| `/mrp:submission-guide` | Submission system operation guide (ScholarOne, Editorial Manager) |
-| `/mrp:revision-strategy` | Revision planning + reviewer comment triage |
-| `/mrp:responding-to-reviewers` | Point-by-point response letter |
+| `/mrp:submission-preparation` | Cover letter writing + submission system guide (ScholarOne, Editorial Manager) |
+| `/mrp:revision-response` | Revision strategy planning + point-by-point response letter |
 
 ### Meta
 
@@ -191,15 +187,13 @@ Commands are grouped by pipeline phase. Use `/mrp:<command>` to invoke directly.
 
 Skills are auto-triggered based on natural language intent. You do not need to memorize commands -- just describe what you need.
 
-### Foundation Layer (6 skills)
+### Foundation Layer (4 skills)
 
 | Skill | Auto-triggers on | Output |
 |---|---|---|
 | `research-question-formulation` | "I want to study...", research ideas, PICO | `research-question.md` |
 | `literature-synthesis` | literature review, research gap, background | 4 files: search strategy, screening log, references, synthesis summary |
-| `study-design` | clinical study design, RCT, cohort | `study-protocol.md` |
-| `basic-medical-study-design` | cell, animal, molecular, WB, qPCR | `study-protocol.md` |
-| `ai-medical-study-design` | AI, ML, imaging, surgical video, LLM | `study-protocol.md` |
+| `study-design` | any study design: clinical / bench / AI-ML / qualitative / survey | `study-protocol.md` |
 | `journal-selection` | which journal, impact factor, journal fit | `journal-selection-report.md` |
 
 ### Analysis Layer (4 skills)
@@ -222,14 +216,12 @@ Skills are auto-triggered based on natural language intent. You do not need to m
 | `peer-review-simulation` | review my paper, what would reviewers say | `peer-review-simulation-report.md` |
 | `pre-submission-verification` | "done", "ready to submit", finalized | `submission-readiness-report.md` |
 
-### Submission Layer (4 skills)
+### Submission Layer (2 skills)
 
 | Skill | Auto-triggers on | Output |
 |---|---|---|
-| `cover-letter-writing` | cover letter, submission letter | `cover-letter.md` |
-| `submission-system-guide` | how to submit, upload, ScholarOne | Submission checklist |
-| `revision-strategy` | revision, major/minor, reviewer comments | `revision-plan.md` |
-| `responding-to-reviewers` | reviewer response, point-by-point | `response-letter.md` |
+| `submission-preparation` | cover letter, submission letter, ScholarOne, how to upload | `cover-letter.md` + `submission-checklist.md` |
+| `revision-response` | revision, major/minor, reviewer comments, rebuttal | `revision-plan.md` + `response-letter.md` |
 
 ### Utility Layer (1 skill)
 
@@ -247,12 +239,15 @@ Skills are auto-triggered based on natural language intent. You do not need to m
 
 ### Study Type Routing
 
+All types route to `study-design` — the built-in type router selects the correct workflow:
+
 ```
 Research type?
-+-- Clinical trial / observational  --> study-design
-+-- Bench / cell / animal           --> basic-medical-study-design
-+-- AI / ML / imaging / devices     --> ai-medical-study-design
-+-- Multiple types                  --> combine as needed
++-- Clinical trial / observational / diagnostic  --> study-design (Type A)
++-- Bench / cell / animal / molecular            --> study-design (Type B)
++-- AI / ML / imaging / LLM / VLM               --> study-design (Type C)
++-- Qualitative / interviews / grounded theory   --> study-design (Type D)
++-- Survey / cross-sectional survey              --> study-design (Type E)
 ```
 
 ---
