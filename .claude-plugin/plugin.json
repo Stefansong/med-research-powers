@@ -6,5 +6,8 @@
     "name": "BTCH Uro AI Lab"
   },
   "license": "MIT",
-  "keywords": ["medical-research", "clinical-trials", "AI-medical", "statistics", "manuscript", "review-article", "peer-review", "reporting-standards", "CONSORT-2025", "TRIPOD-AI", "PubMed", "qualitative", "survey", "meta-analysis"]
+  "keywords": ["medical-research", "clinical-trials", "AI-medical", "statistics", "manuscript", "review-article", "peer-review", "reporting-standards", "CONSORT-2025", "TRIPOD-AI", "PubMed", "qualitative", "survey", "meta-analysis"],
+  "hooks": {
+    "session-start": "hooks/session-start.sh"
+  }
 }
