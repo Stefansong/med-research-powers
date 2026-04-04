@@ -48,31 +48,17 @@ description: Use when systematically searching and synthesizing research literat
 
 **🔀 Auto-Parallel：** 当目标数据库 ≥ 2 时，自动启动多个子 agent 并行检索各数据库（参考 `team-collaboration` skill）。每个子 agent 负责一个数据库，检索完成后主 agent 合并去重。
 
-#### 数据库 A — PubMed（PubMed MCP，优先使用）
+#### 数据库 A — PubMed（调用 `pubmed-search` skill）
 
-7 个 MCP 函数及使用场景：
+→ **调用 `pubmed-search` Mode 1**（Interactive Search Building）：PICO → MeSH → Boolean 构建检索式并执行。
 
-| 函数 | 用途 | 使用时机 |
-|------|------|---------|
-| `search_articles` | 关键词/MeSH/Boolean 检索 | **主检索**——Step 3 核心步骤 |
-| `get_article_metadata` | 获取文献详细元数据（作者、摘要、DOI） | 筛选后获取纳入文献的完整信息 |
-| `get_full_text_article` | 获取 PMC 全文 | 全文筛选、提取关键数据、验证结论 |
-| `find_related_articles` | 查找相似文献（基于标题/摘要/MeSH 相似度） | **滚雪球检索**——从核心文献扩展 |
-| `convert_article_ids` | PMID ↔ PMCID ↔ DOI 互转 | 确认全文可用性、统一引用格式 |
-| `lookup_article_by_citation` | 根据引用信息（作者+期刊+年份）查找 PMID | 已知引用但缺 PMID 时反查 |
-| `get_copyright_status` | 查询文章版权和开放获取状态 | 系统综述中确认可引用/可复用的文献 |
+→ **调用 `pubmed-search` Mode 4**（Snowball Search）：从核心文献出发滚雪球扩展。
 
-**PubMed 检索式示例：**
-```
-# RCT 检索
-"pancreatic cancer"[MeSH] AND "artificial intelligence"[Title/Abstract] AND "Clinical Trial"[Publication Type]
+→ **调用 `pubmed-search` Mode 2**（Batch Metadata）：筛选后批量获取纳入文献完整元数据。
 
-# 系统综述检索
-("deep learning" OR "machine learning") AND "diagnostic accuracy"[Title/Abstract] AND "systematic review"[Publication Type]
+→ **调用 `pubmed-search` Mode 5**（Full Text）：全文筛选时获取 PMC 全文。
 
-# 时间限制
-search_articles(query="...", date_from="2020", date_to="2026", sort="pub_date")
-```
+MCP 函数详情、检索式构建规则和多义词处理规范见 `pubmed-search` SKILL.md。
 
 **PubMed 覆盖范围：** 医学、临床研究、公共卫生、生物学、遗传学、药学、免疫学、神经科学、生物医学工程。
 
@@ -141,14 +127,14 @@ WebSearch(query="site:biorxiv.org [主题]")
 - 记录：筛选数量、排除数量（按原因分类）
 
 #### Phase 3 — 全文筛选
-- 用 `convert_article_ids` 查 PMCID → 用 `get_full_text_article` 获取全文
+- 调用 `pubmed-search` Mode 5 获取 PMC 全文（内部执行 convert_article_ids → get_full_text_article）
 - 无法获取全文的尝试 WebFetch 获取或标记为 "full text unavailable"
 - 逐篇按纳入/排除标准审阅全文
 - 每篇排除的文献记录排除原因
 - 记录：全文获取数量、排除数量（按原因分类）、最终纳入数量
 
 #### Phase 4 — 补充检索
-- 对纳入文献用 `find_related_articles` 滚雪球
+- 对纳入文献调用 `pubmed-search` Mode 4 滚雪球
 - 手动检查纳入文献的参考文献列表
 - 新发现的文献重复 Phase 2-3 流程
 - 记录：补充检索来源和新增纳入数量
