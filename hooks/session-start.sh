@@ -16,18 +16,19 @@ You have Med-Research-Powers (MRP) — a medical research methodology framework.
 |-------------|--------|
 | 模糊的研究想法 / "我想研究..." | → research-question-formulation |
 | 查文献 / 文献综述 / research gap | → literature-synthesis |
-| 研究设计 / 样本量 / protocol | → study-design (clinical) or basic-medical-study-design (bench) or ai-medical-study-design (AI/ML) |
+| 研究设计 / 样本量 / protocol | → study-design (clinical/bench/AI-ML/qualitative/survey 统一入口) |
+| 数据收集工具 / CRF / 标注表 / 推理脚本 | → data-collection-tools |
 | 分析数据 / 用什么统计方法 | → data-analysis-planning THEN statistical-analysis |
 | 画图 / Figure / 可视化 | → figure-generation |
 | 写论文 / manuscript / Introduction | → manuscript-writing |
+| 导出Word / 排版 / docx / 投稿格式 | → manuscript-export |
+| 查PubMed / 检索文献 / 引用验证 / PMID | → pubmed-search |
 | 检查规范 / CONSORT / checklist | → reporting-standards |
 | 模拟审稿 / reviewer | → peer-review-simulation |
-| 审稿意见 / revision / 大修小修 | → responding-to-reviewers |
+| 审稿意见 / 修稿 / 大修小修 / revision | → revision-response |
 | 伦理 / IRB / 知情同意 | → research-ethics |
 | 投哪个期刊 / 选刊 / impact factor | → journal-selection |
-| cover letter / 投稿信 | → cover-letter-writing |
-| 投稿系统 / 怎么投稿 / 上传 | → submission-system-guide |
-| 怎么改 / 大修 / 小修 / revision | → revision-strategy THEN responding-to-reviewers |
+| cover letter / 投稿信 / 投稿系统 / 怎么投稿 | → submission-preparation |
 | 并行 / 团队协作 / agent team | → team-collaboration |
 | 写完了 / 可以投了 / 定稿 | → **pre-submission-verification (MANDATORY, 6-Gate)** |
 
