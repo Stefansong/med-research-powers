@@ -678,7 +678,7 @@ med-research-powers/
 |   |-- */SKILL.md                     # 技能逻辑（触发条件、工作流、输出）
 |   |-- */scripts/                     # 内置 Python 脚本
 |   +-- */references/                  # 按需加载的参考数据 (YAML/MD)
-|       |-- journal-templates.yaml     # 229 个期刊格式模板
+|       |-- journal-templates.yaml     # 234 个期刊格式模板
 |       |-- standards-index.yaml       # 约 42 项报告规范索引
 |       |-- stat-method-decision-tree.yaml  # 统计方法选择决策树
 |       |-- consort-2025.yaml          # 完整 30 条目 CONSORT 2025 清单
