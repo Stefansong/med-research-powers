@@ -1,6 +1,6 @@
 ---
 name: research-ethics
-description: Use when checking ethical compliance of research involving human subjects, animals, or patient data. Auto-triggers when study-design or manuscript-writing involves human data. Triggers on "伦理"、"IRB"、"知情同意"、"数据隐私"、"IACUC"、"利益冲突".
+description: Use when checking ethical compliance of research involving human subjects, animals, or patient data. Triggers on "伦理"、"IRB"、"知情同意"、"数据隐私"、"IACUC"、"利益冲突".
 ---
 
 # Research Ethics
@@ -21,50 +21,41 @@ description: Use when checking ethical compliance of research involving human su
 - 纯计算/模拟研究，不涉及人体或动物数据
 - 公开数据集（但仍需确认原始数据已获伦理批准）
 
-## Checklist
+## Workflow
 
-### 1. 伦理审查（IRB / EC）
-- [ ] 已获机构伦理委员会批准
-- [ ] 批准编号已记录
-- [ ] 方案在批准范围内
-- [ ] 回顾性研究：已获知情同意豁免（需理由）
+### Step 1: 判断适用范围
 
-### 2. 动物实验伦理（IACUC）
-- [ ] IACUC 批准
-- [ ] 3R 原则（Replacement, Reduction, Refinement）
-- [ ] 人道终点标准
-- [ ] 麻醉/镇痛/安乐死方案（AVMA 指南）
-- [ ] 操作人员资格证
+确认研究是否涉及人体、患者数据、动物实验或数据隐私。纯计算/模拟且不触及上述数据 → 见 When NOT to Use；否则继续。
 
-### 3. 知情同意
-- [ ] 前瞻性：书面知情同意
-- [ ] 回顾性：豁免及理由
-- [ ] 特殊群体：未成年人（监护人同意）/ 无法自主同意者
-- [ ] 同意书含退出权利
+### Step 2: 加载并逐条核对 checklist
 
-### 4. 数据隐私
-- [ ] 去标识化完成
-- [ ] 符合法规（中国：个人信息保护法 / EU：GDPR / US：HIPAA）
-- [ ] 数据存储安全（加密、访问控制）
-- [ ] 跨境传输限制评估
-- [ ] AI 平台使用限制：禁止上传含患者信息的原始数据
+加载 `references/ethics-checklist.yaml`，逐条核对 6 个章节：
+1. 伦理审查（IRB / EC）
+2. 动物实验伦理（IACUC）
+3. 知情同意
+4. 数据隐私
+5. 研究注册
+6. 利益冲突与数据共享
 
-### 5. 研究注册
-- [ ] 临床试验：已注册（ClinicalTrials.gov / ChiCTR），在首例入组前
-- [ ] 系统综述：已注册（PROSPERO）
+每条标记状态（已满足 / 缺失 / N/A 并说明原因）。涉及人体取 1/3/4/5/6，涉及动物取 2，公开数据集仍需确认原始数据已获伦理批准。
 
-### 6. 利益冲突与数据共享
-- [ ] 资金来源声明
-- [ ] 利益冲突声明
-- [ ] 数据共享计划（期刊日益要求）
+### Step 3: 撰写 Methods 伦理声明
 
-## Methods 模板
+用 `references/ethics-checklist.yaml` 中的 `methods_statement_template` 生成伦理声明，填入真实批准号与知情同意/豁免表述，写入论文 Methods。
 
-```
-本研究经[机构名称]伦理委员会批准（批准号：xxx），
-符合赫尔辛基宣言原则。[所有参与者签署了书面知情同意书 /
-经伦理委员会批准，本回顾性研究免除知情同意要求]。
-```
+### Step 4: 生成输出并提醒
+
+汇总核对结果，生成 `ethics-statement.md`（见 Output）。缺失项以**提醒**形式告知用户（不阻断流程）。
+
+## Output
+
+生成 `ethics-statement.md`，包含：
+- 6 章节逐条核对状态（已满足 / 缺失 / N/A）
+- 伦理审批号与知情同意/豁免状态
+- 数据隐私合规结论
+- 利益冲突、资金来源、数据共享声明
+- 可直接粘贴进论文 Methods 的伦理声明段落
+- 缺失项清单（标注为需用户在投稿前补齐的提醒）
 
 ## Common Mistakes
 
@@ -85,17 +76,22 @@ description: Use when checking ethical compliance of research involving human su
 4. 利益冲突声明已准备
 5. 论文 Methods 中已写入伦理声明
 
-## Red Flags — 提醒
+## Red Flags — STOP
 
 - 没有伦理批准 → **提醒**用户在投稿前获得批准（不阻断流程）
 - 数据含可识别患者信息 → 提醒用户注意隐私保护
-- 禁止编造伦理审查批准信息
+- 禁止编造伦理审查批准信息 → 绝不虚构批准号或委员会名称
 
 ## 衔接规则
 
-### 强制衔接
-- 检查结果传入 `pre-submission-verification` 的 Gate 4
+### 前置依赖
+- 研究确实涉及人体/患者数据/动物，或处于 `study-design` / `manuscript-writing` 阶段（被动触发）
 
-### 被动触发
-- `study-design` 涉及人体/动物 → 自动触发
-- `manuscript-writing` 的 Methods → 自动检查
+### 强制衔接
+- 检查结果传入 `pre-submission-verification` 的 **Gate 5**（伦理与合规）
+- `study-design` 涉及人体/动物 → 自动触发本 skill
+- `manuscript-writing` 的 Methods → 自动检查伦理声明
+
+### 可选衔接
+- 需把伦理声明并入投稿材料 → `submission-preparation`
+- 临床试验/系统综述未注册 → 提醒在 `study-design` 阶段先注册（ClinicalTrials.gov / ChiCTR / PROSPERO）

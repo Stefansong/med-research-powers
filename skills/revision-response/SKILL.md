@@ -1,6 +1,6 @@
 ---
 name: revision-response
-description: Use when the user receives a revision decision and needs to plan strategy + draft point-by-point responses. Triggers on "怎么改"、"修改策略"、"大修"、"小修"、"revision plan"、"reviewer要求太多"、"审稿意见"、"revision"、"reviewer comments"、"回复审稿人"、"rebuttal"、"response letter".
+description: Use when the user receives a journal revision or reject decision. Triggers on "怎么改"、"修改策略"、"大修"、"小修"、"审稿意见"、"revision"、"reviewer comments"、"回复审稿人"、"rebuttal"、"response letter".
 ---
 
 # Revision Response
@@ -32,42 +32,21 @@ description: Use when the user receives a revision decision and needs to plan st
 
 ### Step 1: 审稿意见分类
 
-将所有审稿意见逐条分为 4 类：
-
-| 类别 | 定义 | 策略 |
-|------|------|------|
-| **Critical** | 关乎论文核心有效性（设计缺陷、统计错误、数据问题） | **必须修复**，否则一定被拒 |
-| **Major** | 重要但可协商（增加分析、补充数据、修改解释） | **强烈建议修复**，但修复方式可以讨论 |
-| **Minor** | 格式、表述、小的补充 | **快速修复**，展示认真态度 |
-| **Disagreeable** | 审稿人要求不合理或基于误解 | **礼貌反驳**，提供证据 |
+将所有审稿意见逐条分为 4 类：**Critical**（关乎核心有效性，必须修复）、**Major**（重要但可
+协商修复方式）、**Minor**（格式/表述，快速修复）、**Disagreeable**（要求不合理，礼貌反驳）。
+完整定义与策略见 `references/revision-strategy.yaml`（`comment_classification`）。
 
 ### Step 2: 修改优先级排序
 
-按"影响力 x 难度"矩阵排序：
-
-```
-              Low Difficulty    High Difficulty
-High Impact   ★★★ DO FIRST     ★★ PLAN CAREFULLY
-Low Impact    ★★ DO QUICKLY    ★ CONSIDER COST
-```
-
-**排序原则：**
-1. 先修 Critical（不修 = 拒稿）
-2. 再修 High Impact + Low Difficulty（最大性价比）
-3. 然后 Minor（展示态度）
-4. 最后处理 Disagreeable（需要精心措辞）
+按"影响力 x 难度"矩阵排序。**核心原则：** 先 Critical（不修 = 拒稿）→ 再 High Impact +
+Low Difficulty（最大性价比）→ 然后 Minor（展示态度）→ 最后 Disagreeable（精心措辞）。
+完整矩阵见 `references/revision-strategy.yaml`（`priority_matrix` / `priority_order`）。
 
 ### Step 3: Response Letter 策略
 
-**总原则：** Collaborative, not defensive.
-
-| 情况 | Response 策略 |
-|------|-------------|
-| 审稿人完全正确 | "We thank the reviewer... We have revised..." |
-| 审稿人大致正确但要求过度 | "We agree with the concern... We have addressed it by [less extensive but sufficient approach]..." |
-| 审稿人基于误解 | "We appreciate the comment. We may not have been clear enough. [Clarify]... We have revised the text to be more explicit." |
-| 审稿人明确错误 | "We respectfully note that [factual correction with reference]. However, we have added [X] to address the underlying concern." |
-| 审稿人要求不可能的实验 | "We agree this would strengthen the study. Unfortunately, [reason]. We have added this as a limitation and future direction." |
+**总原则：** Collaborative, not defensive. 即使审稿人明确错误，也用证据礼貌说明，绝不对抗；
+要求不可能的实验时承认价值、说明原因、写入 limitation/future direction。按情况选择措辞模板，
+见 `references/revision-strategy.yaml`（`response_strategy`）。
 
 ### Step 4: 修改后自检
 
@@ -80,63 +59,25 @@ Low Impact    ★★ DO QUICKLY    ★ CONSIDER COST
 - [ ] Response Letter 语气 professional（无 defensive/aggressive 措辞）
 - [ ] 修改后的字数仍在期刊限制内
 
-### 改投策略（被拒后）
+### 改投策略（被拒后）——只做决策
 
-如果收到 Reject 决策：
+本 skill 只负责**改投决策**：是 Appeal 还是改投。Cover-letter 重写/cascade-rewrite 的具体
+机制属于 `submission-preparation`（owner），不在此重复。
 
 #### 评估是否值得 Appeal
-| 条件 | 建议 |
-|------|------|
-| 编辑同意但审稿人意见分歧大 | 可以 Appeal |
-| 审稿人有明显的事实性错误 | 可以 Appeal，附上证据 |
-| 审稿人全部认为方法有严重问题 | 不建议 Appeal，改投 |
-| Desk reject（未送审） | 不建议 Appeal，改投 |
+判断标准（编辑分歧大 / 审稿人事实错误 → 可 Appeal；方法被全盘否定 / desk reject → 改投）
+见 `references/revision-strategy.yaml`（`appeal_decision`）。
 
-#### 改投流程
+#### 决定改投后的流程
 1. 根据审稿意见改进论文（免费的专家建议，不要浪费）
 2. 回到 `journal-selection` → 选择下一梯队期刊
-3. `submission-preparation` → 重写 Cover Letter（适配新期刊）
-4. **可选**在 Cover Letter 中提及："This manuscript has been improved based on peer review feedback from [不点名期刊]."
+3. `submission-preparation` → 由其负责重写 Cover Letter（cascade rewrite，含"已据同行评审
+   改进"的可选措辞）。**本 skill 不重述 cover-letter 模板。**
 
 ### Phase 1 Output
 
-生成 `revision-plan.md`：
-
-```markdown
-# Revision Plan
-
-**Journal:** [期刊名]
-**Decision:** Major Revision / Minor Revision
-**Deadline:** [修改截止日期]
-**Date:** [日期]
-
-## Summary
-- Total comments: [N]
-- Critical: [N] | Major: [N] | Minor: [N] | Disagreeable: [N]
-
-## Priority Action List
-
-| # | Reviewer | Category | Comment Summary | Difficulty | Action |
-|---|----------|----------|----------------|------------|--------|
-| 1 | R1 | Critical | [摘要] | High | [具体修改] |
-| 2 | R2 | Critical | [摘要] | Medium | [具体修改] |
-| 3 | R1 | Major | [摘要] | Low | [具体修改] |
-...
-
-## Disagreeable Items (needs careful response)
-1. R2 Comment 5: [问题] → Strategy: [反驳方式]
-2. R3 Comment 3: [问题] → Strategy: [反驳方式]
-
-## New Analyses/Experiments Required
-- [ ] [分析1] — estimated time: [X days]
-- [ ] [分析2] — estimated time: [X days]
-
-## Timeline
-- Week 1: Critical fixes + new analyses
-- Week 2: Major revisions + rewrite
-- Week 3: Minor fixes + Response Letter
-- Week 4: Re-run pre-submission-verification + submit
-```
+生成 `revision-plan.md`（Summary + Priority Action List + Disagreeable Items + New
+Analyses + Timeline）。完整模板见 `references/revision-templates.md`。
 
 ---
 
@@ -146,49 +87,19 @@ Low Impact    ★★ DO QUICKLY    ★ CONSIDER COST
 
 ### Step 1: 意见细分类
 
-对每条审稿意见进一步细分类：
-
-| 类型 | 策略 | 示例 |
-|------|------|------|
-| 方法学质疑 | 感谢 → 补充分析/解释 → 展示证据 | "请解释为什么不用 X 方法" |
-| 要求补充分析 | 评估可行性 → 执行或解释不可行原因 | "请增加亚组分析" |
-| 文字改进 | 接受 → 修改 → 标注位置 | "第3段表述不清" |
-| 参考文献 | 补充或解释已有引用充分 | "请引用 Smith 2024" |
-| 不合理要求 | 礼貌解释 → 引用文献支持 | "请将队列改为 RCT" |
-| 相互矛盾的意见 | 说明矛盾 → 采取平衡方案 → 请编辑裁决 | R1 要缩短 vs R2 要扩展 |
+对每条审稿意见进一步细分类（方法学质疑 / 要求补充分析 / 文字改进 / 参考文献 / 不合理要求 /
+相互矛盾的意见），每类有对应的应对策略。完整对照表见
+`references/revision-strategy.yaml`（`sub_classification`）。
 
 ### Step 2: 逐条起草回复
 
-对每条意见使用以下模板：
-
-```
-## Reviewer [X], Comment [Y]
-
-**Original comment:**
-> [引用审稿人原文]
-
-**Response:**
-[回应内容——感谢/解释/同意/礼貌反驳]
-
-**Changes made:**
-[具体修改描述]
-- Page X, Line Y: [修改内容]
-- Page X, Paragraph Z: [新增内容]
-（或 "No changes made — see explanation above."）
-```
+对每条意见生成"Original comment → Response → Changes made（含页码/行号）"结构。**关键：每条
+都必须有 response，每个修改都必须指出具体位置。** 模板见 `references/revision-templates.md`。
 
 ### Step 3: 修改追踪
 
-生成 `revision-tracking.md`：
-
-```markdown
-| Reviewer | Comment # | Type | Action | Manuscript Location | Status |
-|----------|-----------|------|--------|-------------------|--------|
-| R1 | 1 | 方法学 | Added sensitivity analysis | Methods ¶3, Results ¶5 | ✅ |
-| R1 | 2 | 文字 | Revised wording | Discussion ¶2 | ✅ |
-| R2 | 1 | 补充分析 | Added subgroup analysis | Results Table 3 | ✅ |
-| R2 | 3 | 不合理 | Rebutted with evidence | Response letter only | ✅ |
-```
+生成 `revision-tracking.md`（Reviewer / Comment # / Type / Action / Manuscript Location /
+Status 表）。模板见 `references/revision-templates.md`。
 
 ### Step 4: 补充分析（如需要）
 
@@ -200,33 +111,8 @@ Low Impact    ★★ DO QUICKLY    ★ CONSIDER COST
 
 ### Step 5: 生成 Response Letter
 
-```markdown
-# Response to Reviewers
-
-Dear Editor,
-
-Thank you for the opportunity to revise our manuscript [ID]. We appreciate the constructive comments from the reviewers. Below is our point-by-point response. All changes in the revised manuscript are highlighted in [red/track changes].
-
----
-
-## Response to Reviewer 1
-
-[逐条回复]
-
-## Response to Reviewer 2
-
-[逐条回复]
-
-## Response to Reviewer 3 (if applicable)
-
-[逐条回复]
-
----
-
-## Summary of Changes
-
-[主要修改的概括性描述]
-```
+生成 `response-letter.md`（Dear Editor 开头 + 分 Reviewer 逐条回复 + Summary of Changes）。
+模板见 `references/revision-templates.md`。
 
 ---
 
@@ -245,6 +131,27 @@ Thank you for the opportunity to revise our manuscript [ID]. We appreciate the c
 | "补充分析太多做不了" | 与编辑沟通哪些可行，不要沉默 |
 | "Response letter 简短写写就行" | 详细、有理有据的回复大幅提高接收概率 |
 | "改了就行不用标注位置" | 审稿人需要快速找到修改处 |
+
+## Output
+
+| 文件 | 内容 | 来源 |
+|------|------|------|
+| `revision-plan.md` | 意见分类汇总、优先级行动表、Disagreeable 应对、新增分析、时间表 | Phase 1 |
+| `revision-tracking.md` | 逐条修改追踪表（含 manuscript 位置和状态） | Phase 2 Step 3 |
+| `response-letter.md` | 分 Reviewer 的逐条 point-by-point 回复 + Summary of Changes | Phase 2 Step 5 |
+
+模板见 `references/revision-templates.md`。改投时的 cover-letter 由 `submission-preparation`
+生成（非本 skill 输出）。
+
+## Red Flags — STOP
+
+- 有审稿意见没有对应 response（遗漏）→ STOP，每条都必须回复，忽略 = 拒稿
+- response 没有指出具体修改位置（页码/行号）→ 补充，审稿人需要快速定位
+- 语气 defensive/aggressive、直接说"审稿人错了"→ 改为有证据的礼貌措辞
+- 修改后未重新跑 `pre-submission-verification` → STOP，修改可能引入新的不一致
+- 修改后字数超出期刊限制 → 精简
+- 拖到截止日当天才提交 → 提前 3-5 天，留检查时间
+- 改投时只改期刊名重投 / 在此重写 cover-letter → 交由 `submission-preparation` 做 cascade rewrite
 
 ## Convergence
 
@@ -276,4 +183,4 @@ Thank you for the opportunity to revise our manuscript [ID]. We appreciate the c
 
 ### 可选衔接
 - 改投 → `journal-selection`（重新选刊）
-- 改投 → `submission-preparation`（重写 Cover Letter + 投稿）
+- 改投 → `submission-preparation`（由其负责 cover-letter cascade rewrite + 投稿；本 skill 只做改投决策）

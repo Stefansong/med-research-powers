@@ -1,6 +1,6 @@
 ---
 name: team-collaboration
-description: Use when a research project benefits from multi-agent parallel work. Triggers on "多人协作"、"并行分析"、"分工"、"同时做". Spawns multiple sub-agents to work on independent tasks simultaneously.
+description: Use when a research project benefits from multi-agent parallel work on independent subtasks. Triggers on "多人协作"、"并行分析"、"分工"、"同时做"、"parallel".
 ---
 
 # Team Collaboration
@@ -36,7 +36,7 @@ description: Use when a research project benefits from multi-agent parallel work
 
 | 触发时机 | 并行内容 | 需要确认的原因 |
 |---------|---------|---------------|
-| `revision-strategy` 发现多个审稿人意见互相独立 | 每位审稿人的意见由一个子 agent 处理 | 不同审稿人可能要求修改同一段落 |
+| `revision-response` 发现多个审稿人意见互相独立 | 每位审稿人的意见由一个子 agent 处理 | 不同审稿人可能要求修改同一段落 |
 | `study-design` 完成后需要多专家评审 | 统计 + 方法学 + AI 专家并行评审 | 评审意见可能需要协调 |
 
 **建议话术：**
@@ -70,20 +70,16 @@ description: Use when a research project benefits from multi-agent parallel work
 
 ### Step 2: 启动子 agent
 
-使用 Agent tool 并行启动多个子 agent：
+用 **Task 工具**并行派发多个 subagent —— 在同一轮里发起 N 个独立的 Task 调用，它们会并行执行。每个 Task 携带一段聚焦的 prompt，描述该 subagent 的角色和任务。例如：一个 Task 让生物统计专家完成 [具体任务]，另一个 Task 让医学写作专家完成 [具体任务]，再一个 Task 让审稿人模拟器完成 [具体任务]，三者同时运行。
 
-```
-Agent(name="statistician", prompt="你是生物统计专家。任务：[具体任务]。读取 [具体文件]，输出 [具体文件]。")
-Agent(name="writer", prompt="你是医学写作专家。任务：[具体任务]。读取 [具体文件]，输出 [具体文件]。")
-Agent(name="reviewer", prompt="你是审稿人模拟器。任务：[具体任务]。读取 [具体文件]，输出 [具体文件]。")
-```
-
-**每个子 agent 的 prompt 必须包含：**
+**每个 Task 的 prompt 必须包含：**
 1. 明确的角色定位
 2. 具体的任务描述
 3. 需要读取的输入文件
 4. 需要生成的输出文件
 5. 需要遵守的 SKILL.md 路径
+
+> 注意：Claude Code 的子 agent 工具就是 **Task 工具**，没有 `Agent(...)` 这种 API。派发并行子任务一律通过 Task 工具。
 
 ### Step 3: 等待 + 合并
 
@@ -95,96 +91,9 @@ Agent(name="reviewer", prompt="你是审稿人模拟器。任务：[具体任务
 
 ## 场景模板
 
-### 场景 1：并行文献检索
+四个常用并行场景的 Task 派发模板（① 并行文献检索 ② 多审稿人模拟 4-Reviewer Panel ③ 并行修稿 ④ 多专家方案评审）见 `references/parallel-scenarios.md`。每个场景都用 Task 工具派发并行 subagent，并说明主 agent 如何合并结果。
 
-```
-主 Agent:
-  "需要检索 3 个数据库，互相独立，可并行"
-
-Agent(name="pubmed-search", prompt="
-  检索 PubMed，使用 PubMed MCP search_articles。
-  检索式：[具体检索式]
-  输出：pubmed-results.md（标题、PMID、摘要）")
-
-Agent(name="arxiv-search", prompt="
-  检索 arXiv，使用 WebSearch site:arxiv.org。
-  关键词：[具体关键词]
-  输出：arxiv-results.md")
-
-Agent(name="cochrane-search", prompt="
-  检索 Cochrane，使用 WebSearch site:cochranelibrary.com。
-  关键词：[具体关键词]
-  输出：cochrane-results.md")
-
-→ 主 Agent: 合并去重 → 统一格式 → screening-log.md
-```
-
-### 场景 2：多审稿人模拟
-
-```
-主 Agent (= Editor):
-
-Agent(name="reviewer-methods", prompt="
-  你是方法学审稿人。读取 manuscript/*.md。
-  重点审查：研究设计、统计方法、样本量、偏倚控制。
-  按 skills/peer-review-simulation/SKILL.md 的 8 维度评分（0-100）。
-  输出：review-methods.md")
-
-Agent(name="reviewer-clinical", prompt="
-  你是临床专家审稿人。读取 manuscript/*.md。
-  重点审查：临床意义、可操作性、外推性。
-  输出：review-clinical.md")
-
-Agent(name="reviewer-devil", prompt="
-  你是 Devil's Advocate。读取 manuscript/*.md。
-  挑战最强结论，寻找盲点，提出最不利解释。
-  输出：review-devil.md")
-
-→ 主 Agent: 综合 3 份评审 → Editor Summary → 评分矩阵
-```
-
-### 场景 3：并行修稿
-
-```
-主 Agent:
-  "3 位审稿人的意见互相独立，可并行处理"
-
-Agent(name="fix-reviewer1", prompt="
-  处理 Reviewer 1 的全部意见（attached）。
-  修改对应论文段落，生成 response。
-  输出：reviewer1-response.md + 修改后的段落")
-
-Agent(name="fix-reviewer2", prompt="
-  处理 Reviewer 2 的全部意见（attached）。
-  输出：reviewer2-response.md + 修改后的段落")
-
-Agent(name="new-analysis", prompt="
-  Reviewer 3 要求补充 [具体分析]。
-  读取 data_clean.csv，执行分析。
-  输出：supplementary-analysis.md + 脚本")
-
-→ 主 Agent: 合并修改 → 检查无冲突 → 组装 Response Letter
-```
-
-### 场景 4：多专家方案评审
-
-```
-主 Agent:
-
-Agent(name="stats-reviewer", prompt="
-  你是生物统计教授。审查 study-protocol.md 的样本量计算和分析计划。
-  输出：protocol-review-stats.md")
-
-Agent(name="methods-reviewer", prompt="
-  你是方法学专家。审查 study-protocol.md 的研究设计和偏倚控制。
-  输出：protocol-review-methods.md")
-
-Agent(name="ai-reviewer", prompt="
-  你是 AI 医学专家。审查 study-protocol.md 的 AI 模型设计和指标选择。
-  输出：protocol-review-ai.md")
-
-→ 主 Agent: 综合三方意见 → 修改方案 → Hard Checkpoint 确认
-```
+> 多审稿人模拟（场景 2）固定派发 **4 个 subagent**：R1 方法学、R2 临床/领域、R3 学术编辑、R4 Devil's Advocate，与 `peer-review-simulation` 的 4-Reviewer Panel 一致。
 
 ## 合并规则
 
@@ -204,21 +113,36 @@ Agent(name="ai-reviewer", prompt="
 | "并行完直接合并就行" | 必须检查输出一致性再合并 |
 | "agent 越多越好" | 2-4 个最高效，过多增加协调成本 |
 
+## Output
+
+主 agent 合并所有 subagent 的结果后生成 `team-collaboration-merge.md`，记录：每个 subagent 的任务与产出文件、一致性检查结论（数字是否对得上、有无冲突）、合并到主项目的内容、以及给用户的报告。各 subagent 自身的产出文件（如 `review-methods.md`、`pubmed-results.md` 等）由对应场景定义。
+
 ## Convergence
 
 当以下条件满足时完成：
-1. 所有子 agent 已返回结果
+1. 所有子 agent（Task）已返回结果
 2. 主 agent 已审查每个输出
 3. 输出之间无不一致
 4. 合并文件已生成
 5. 向用户报告合并结果
 
+## Red Flags — STOP
+
+- 任务之间存在顺序依赖却强行并行 → 停止，改为顺序执行
+- subagent 产出数字互相矛盾 → 不得直接合并，以 `analysis_script.py` 实际运行结果为准后再合并
+- 试图跨 Hard Checkpoint 并行 → 阻止，必须先确认再继续
+- 出现 `Agent(name=..., prompt=...)` 之类调用 → 错误，Claude Code 只有 Task 工具，立即改用 Task 派发
+
 ## 衔接规则
 
-### 触发方式
-- 用户主动请求"并行/分工/同时做"
-- 主 agent 识别当前阶段有可并行的独立子任务并建议
+### 前置依赖
+- 当前阶段必须已分解出**互不依赖**的子任务（无严格顺序依赖）
 
-### 限制
-- 不能跨 Hard Checkpoint 并行（必须先确认再继续）
-- 并行完成后回到主 pipeline 的 Checkpoint 报告流程
+### 强制衔接
+- `peer-review-simulation` 进入 4-Reviewer Panel → 自动用 Task 并行派发 4 个审稿人 subagent
+- `literature-synthesis` 检索 ≥ 2 个数据库 → 自动用 Task 每库一个 subagent 并行检索
+- 并行完成后 → 回到主 pipeline 的 Checkpoint 报告流程（不能跨 Hard Checkpoint 并行）
+
+### 可选衔接
+- `revision-response` 多审稿人意见互相独立 → 建议并行处理（需用户确认，可能改同段落）
+- `study-design` 完成后需多专家评审 → 建议统计/方法学/AI 专家并行评审（需用户确认）

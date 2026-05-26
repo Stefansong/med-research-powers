@@ -1,6 +1,6 @@
 ---
 name: pre-submission-verification
-description: Use when a manuscript is declared complete or ready for submission. Triggers on "写完了"、"可以投了"、"定稿"、"差不多了"、"投稿"、"submission"、"cover letter". Also auto-triggers when manuscript-writing completes. MANDATORY — cannot be skipped.
+description: Use when a manuscript is declared complete or ready for submission (MANDATORY gate). Triggers on "写完了"、"可以投了"、"定稿"、"差不多了"、"投稿"、"submission"、"cover letter".
 ---
 
 # Pre-Submission Verification
@@ -25,117 +25,20 @@ description: Use when a manuscript is declared complete or ready for submission.
 
 **全部通过才能投稿。任何 Gate 失败 → 阻止投稿 → 列出修改项。**
 
-### Gate 1: 报告规范合规
+六个 Gate 的逐条检查清单见 `references/gates-checklist.yaml`。逐 Gate 加载并核对，每条标 ✅ / ⚠️ / ❌。各 Gate 概览与路由判断：
 
-调用 `reporting-standards` skill：
-- 确定研究类型 → 选择对应规范
-- 逐条检查（✅ / ⚠️ / ❌）
-- **合格标准：0 个 ❌ Critical 项**
+- **Gate 1 — 报告规范合规**：调用 `reporting-standards` skill，确定研究类型选对应规范，合格标准 = 0 个 ❌ Critical 项。
+- **Gate 2 — 统计完整性**：效应量+95%CI、精确 p 值、多重比较校正、敏感性分析、先验样本量、脚本与 Results 逐项一致等。失败 → 回 `statistical-analysis`。
+- **Gate 3 — Claim Verification（内容真实性验证）**：6 个 Phase（A 参考文献真实性 / B 数据一致性 / C Claims-Evidence 对应 / D 方法-结果匹配 / E 预定 vs 探索性 / F AI 生成内容标记）。Phase A **优先使用 PubMed MCP 自动验证**：`mcp__claude_ai_PubMed__search_articles`、`mcp__claude_ai_PubMed__get_article_metadata`、`mcp__claude_ai_PubMed__get_full_text_article`、`mcp__claude_ai_PubMed__convert_article_ids`；查无结果的引用标记为 ❌ SUSPICIOUS。这是防 AI 幻觉的核心 Gate。
+- **Gate 4 — 图表质量**：字体、字号、DPI、坐标轴标签、色盲友好、Figure Legend。失败 → 回 `figure-generation`。
+- **Gate 5 — 伦理与合规**：调用 `research-ethics` skill，核对伦理批准号、知情同意/豁免、利益冲突、资金来源、数据可用性、试验注册号。失败 → 回 `research-ethics`。
+- **Gate 6 — 形式检查**：字数限制、Running title、关键词、缩写、作者信息、页码等。
 
-### Gate 2: 统计完整性
-
-- [ ] 所有主要结局报告了效应量 + 95% CI（不只 p 值）
-- [ ] p 值报告精确值（不只 p < 0.05）
-- [ ] 多重比较已做校正（Bonferroni / Holm / FDR），且在 Methods 和 Results 中明确说明
-- [ ] 敏感性分析已完成并报告（缺失数据假设、异常值影响、替代分析方法）
-- [ ] 样本量计算依据已写入 Methods（先验计算，非事后）
-- [ ] 统计软件及版本已标注
-- [ ] 完整的分析脚本（Python/R）已生成，包含版本、随机种子、参数注释
-- [ ] 脚本输出数字与论文 Results 逐项核对一致
-- [ ] 与 SAP 的任何偏差已在 Methods 中说明理由
-- [ ] 探索性分析已明确标注为"exploratory"，与预定分析区分
-
-### Gate 3: Claim Verification（内容真实性验证）
-
-**验证论文中的每个事实断言都有数据支撑，防止 AI 幻觉和数据不一致。**
-
-Phase A — 参考文献真实性（**优先使用 PubMed MCP 自动验证**）：
-- [ ] 每篇引用的文献确实存在 → 用 PubMed MCP `search_articles` 或 `get_article_metadata` 验证 PMID/DOI
-- [ ] 引用的结论与原文一致 → 用 PubMed MCP `get_full_text_article` 交叉核对关键结论
-- [ ] 无编造的文献 → PubMed MCP 查无结果的引用标记为 ❌ SUSPICIOUS
-- [ ] 用 `convert_article_ids` 统一 PMID/DOI 格式，确保引用一致性
-
-Phase B — 数据一致性：
-- [ ] Abstract 中的数字与 Results 一致
-- [ ] 正文中的数字与 Tables/Figures 一致
-- [ ] Results 中的数字与 `results-summary.md` 一致
-- [ ] 同一数据在不同位置引用时数值相同
-
-Phase C — Claims-Evidence 对应：
-- [ ] 每个 "我们发现..."/"结果表明..." 断言都有对应的统计结果
-- [ ] Conclusion 中的每个结论都有 Results 支撑
-- [ ] 没有过度推断（如观察性研究推因果）
-
-Phase D — 方法-结果匹配：
-- [ ] Methods 中描述的每个分析在 Results 中都有结果
-- [ ] Results 中没有 Methods 未描述的分析（后加的需标注）
-- [ ] SAP 中预定的分析与实际报告的分析一致，偏差已说明
-
-Phase E — 预定 vs 探索性分析区分：
-- [ ] Methods 明确区分"预定分析"和"探索性分析"
-- [ ] 每个探索性结论标注为 "exploratory"
-- [ ] 未预先计划的"显著"结果未作为主要结论呈现
-
-Phase F — AI 生成内容标记：
-- [ ] 检查是否有典型的 AI 幻觉模式（过于对称的数据、编造的 p 值、不存在的引用）
-- [ ] 确认所有数据来自实际分析，非 AI 生成
-
-### Gate 4: 图表质量
-
-- [ ] 字体 Arial / Helvetica
-- [ ] 最小字号 ≥ 6pt（缩放后）
-- [ ] 分辨率 ≥ 300 DPI（线条图 ≥ 600 DPI）
-- [ ] 所有坐标轴有标签和单位
-- [ ] 图例清晰完整
-- [ ] 色盲友好配色
-- [ ] 每张图有对应的 Figure Legend
-
-### Gate 5: 伦理与合规
-
-调用 `research-ethics` skill：
-- [ ] 伦理审查批准号已写入 Methods
-- [ ] 知情同意声明或豁免说明
-- [ ] 利益冲突声明
-- [ ] 资金来源声明
-- [ ] 数据可用性声明
-- [ ] 临床试验注册号（如适用）
-
-### Gate 6: 形式检查
-
-- [ ] 正文字数在目标期刊限制内
-- [ ] 摘要字数在限制内
-- [ ] 参考文献数量在限制内
-- [ ] Running title / Short title ≤ 50 字符
-- [ ] 关键词 3-6 个
-- [ ] 所有缩写首次出现已展开
-- [ ] 作者信息完整（单位、通讯作者、ORCID）
-- [ ] 页码连续
+> 路由原则：Gate 失败时不要自行修补深层问题，而是路由回对应的专责 skill（统计→`statistical-analysis`、图表→`figure-generation`、伦理→`research-ethics`、规范→`reporting-standards`），修复后回到本 skill 重新验证。
 
 ## Output
 
-生成 `submission-readiness-report.md`：
-
-```markdown
-# Submission Readiness Report
-
-**Target Journal:** [期刊名]
-**Date:** [日期]
-**Overall Status:** ✅ READY / ❌ NOT READY
-
-| Gate | Status | Critical Issues | Action Items |
-|------|--------|----------------|--------------|
-| 1. Reporting standards | ✅/❌ | [数量] | [列表] |
-| 2. Statistical completeness | ✅/❌ | [数量] | [列表] |
-| 3. Claim verification | ✅/❌ | [数量] | [列表] |
-| 4. Figure quality | ✅/❌ | [数量] | [列表] |
-| 5. Ethics compliance | ✅/❌ | [数量] | [列表] |
-| 6. Formal requirements | ✅/❌ | [数量] | [列表] |
-
-## Fix List (Priority Order)
-1. [最紧急]
-2. [次紧急]
-...
-```
+生成 `submission-readiness-report.md`：6 个 Gate 的状态表（✅/❌ + Critical 数量 + Action Items）与优先级修改清单。完整报告模板见 `references/readiness-report-template.md`。
 
 ## Common Mistakes
 
@@ -171,7 +74,13 @@ Phase F — AI 生成内容标记：
 - 用户说"写完了/可以投了/定稿" → 自动触发
 
 ### 强制衔接
-- Gate 失败涉及统计 → 回 `statistical-analysis`
-- Gate 失败涉及图表 → 回 `figure-generation`
-- Gate 失败涉及伦理 → 回 `research-ethics`
+- Gate 1 失败涉及报告规范 → 回 `reporting-standards`
+- Gate 2 失败涉及统计 → 回 `statistical-analysis`
+- Gate 4 失败涉及图表 → 回 `figure-generation`
+- Gate 5 失败涉及伦理 → 回 `research-ethics`
 - 全部通过 → 可以进入投稿流程
+
+### 可选衔接
+- 全部 Gate 通过 → `submission-preparation`（Cover Letter + 投稿系统指引）
+- 投稿前想预判审稿人反应 → `peer-review-simulation`
+- Gate 3 发现 claim/数据问题需多任务并行修复 → `team-collaboration`

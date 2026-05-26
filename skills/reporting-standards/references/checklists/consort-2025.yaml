@@ -1,6 +1,8 @@
 name: CONSORT 2025
 version: "2025"
-total_items: 30
+total_items: 34   # 31 numbered items (1-31) + 3 sub-items (21a, 26a, 28a) = 34 rows
+numbered_items: 31
+sub_items: 3       # 21a, 26a, 28a
 supersedes: CONSORT 2010
 reference: "Hopewell et al. BMJ/JAMA/Lancet/Nature Medicine/PLOS Medicine, April 2025"
 key_changes_from_2010:

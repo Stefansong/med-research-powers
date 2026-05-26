@@ -1,0 +1,74 @@
+# Revision Strategy Lookup Tables
+# Loaded on demand by revision-response. Keep judgment/reasoning in SKILL.md;
+# this file holds the static classification/strategy tables only.
+
+# Phase 1 Step 1 — classify every reviewer comment into 4 categories.
+comment_classification:
+  - category: "Critical"
+    definition: "关乎论文核心有效性（设计缺陷、统计错误、数据问题）"
+    strategy: "必须修复，否则一定被拒"
+  - category: "Major"
+    definition: "重要但可协商（增加分析、补充数据、修改解释）"
+    strategy: "强烈建议修复，但修复方式可以讨论"
+  - category: "Minor"
+    definition: "格式、表述、小的补充"
+    strategy: "快速修复，展示认真态度"
+  - category: "Disagreeable"
+    definition: "审稿人要求不合理或基于误解"
+    strategy: "礼貌反驳，提供证据"
+
+# Phase 1 Step 2 — priority matrix (Impact x Difficulty).
+priority_matrix: |
+  (Impact \ Difficulty)   Low Difficulty     High Difficulty
+  High Impact             ★★★ DO FIRST       ★★ PLAN CAREFULLY
+  Low Impact              ★★ DO QUICKLY      ★ CONSIDER COST
+priority_order:
+  - "先修 Critical（不修 = 拒稿）"
+  - "再修 High Impact + Low Difficulty（最大性价比）"
+  - "然后 Minor（展示态度）"
+  - "最后处理 Disagreeable（需要精心措辞）"
+
+# Phase 1 Step 3 — response-letter tone strategy by situation.
+response_strategy:
+  - situation: "审稿人完全正确"
+    response: "We thank the reviewer... We have revised..."
+  - situation: "审稿人大致正确但要求过度"
+    response: "We agree with the concern... We have addressed it by [less extensive but sufficient approach]..."
+  - situation: "审稿人基于误解"
+    response: "We appreciate the comment. We may not have been clear enough. [Clarify]... We have revised the text to be more explicit."
+  - situation: "审稿人明确错误"
+    response: "We respectfully note that [factual correction with reference]. However, we have added [X] to address the underlying concern."
+  - situation: "审稿人要求不可能的实验"
+    response: "We agree this would strengthen the study. Unfortunately, [reason]. We have added this as a limitation and future direction."
+
+# Phase 2 Step 1 — per-comment sub-classification.
+sub_classification:
+  - type: "方法学质疑"
+    strategy: "感谢 → 补充分析/解释 → 展示证据"
+    example: "请解释为什么不用 X 方法"
+  - type: "要求补充分析"
+    strategy: "评估可行性 → 执行或解释不可行原因"
+    example: "请增加亚组分析"
+  - type: "文字改进"
+    strategy: "接受 → 修改 → 标注位置"
+    example: "第3段表述不清"
+  - type: "参考文献"
+    strategy: "补充或解释已有引用充分"
+    example: "请引用 Smith 2024"
+  - type: "不合理要求"
+    strategy: "礼貌解释 → 引用文献支持"
+    example: "请将队列改为 RCT"
+  - type: "相互矛盾的意见"
+    strategy: "说明矛盾 → 采取平衡方案 → 请编辑裁决"
+    example: "R1 要缩短 vs R2 要扩展"
+
+# 改投策略 — appeal-vs-resubmit decision after a Reject.
+appeal_decision:
+  - condition: "编辑同意但审稿人意见分歧大"
+    recommendation: "可以 Appeal"
+  - condition: "审稿人有明显的事实性错误"
+    recommendation: "可以 Appeal，附上证据"
+  - condition: "审稿人全部认为方法有严重问题"
+    recommendation: "不建议 Appeal，改投"
+  - condition: "Desk reject（未送审）"
+    recommendation: "不建议 Appeal，改投"

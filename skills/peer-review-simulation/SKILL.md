@@ -46,28 +46,9 @@ description: Use when simulating peer review to identify problems before submiss
 
 ### Step 2: 0-100 量化评分
 
-每位 Reviewer 对以下 8 个维度打分（0-100）：
+每位 Reviewer 对 8 个维度打分（0-100），综合分 = 加权平均。
 
-| 维度 | 权重 | 评分标准 |
-|------|------|---------|
-| **Originality** 创新性 | 15% | 0-30: 重复已知 / 31-60: 增量贡献 / 61-80: 有意义创新 / 81-100: 领域突破 |
-| **Methodology** 方法学 | 20% | 0-30: 严重缺陷 / 31-60: 可改进 / 61-80: 规范 / 81-100: 方法学创新 |
-| **Results** 结果可靠性 | 15% | 0-30: 不可信 / 31-60: 部分可信 / 61-80: 可靠 / 81-100: 强有力 |
-| **Clinical Impact** 临床意义 | 15% | 0-30: 无意义 / 31-60: 有限 / 61-80: 有意义 / 81-100: 改变实践 |
-| **Writing Quality** 写作质量 | 10% | 0-30: 难以理解 / 31-60: 需要润色 / 61-80: 清晰 / 81-100: 优美精确 |
-| **Figures & Tables** 图表 | 10% | 0-30: 不达标 / 31-60: 基本可用 / 61-80: 专业 / 81-100: 出版级 |
-| **References** 参考文献 | 5% | 0-30: 不足/过时 / 31-60: 基本覆盖 / 61-80: 全面 / 81-100: 权威 |
-| **Reproducibility** 可复现性 | 10% | 0-30: 不可复现 / 31-60: 部分可复现 / 61-80: 可复现 / 81-100: 完全透明 |
-
-**综合分 = 加权平均。** 决策映射：
-
-| 综合分 | 预判 |
-|--------|------|
-| 80-100 | Accept / Minor Revision |
-| 65-79 | Minor Revision |
-| 50-64 | Major Revision |
-| 30-49 | Major Revision (risky) |
-| 0-29 | Reject |
+8 维度权重与评分标准、综合分→决策映射见 `references/scoring-rubric.yaml`。打分时加载该文件逐维度判定。
 
 ### Step 3: Editor Summary（编辑综合决策）
 
@@ -86,14 +67,7 @@ description: Use when simulating peer review to identify problems before submiss
 
 ### Step 3b: 期刊校准（如已指定目标期刊）
 
-同一篇论文投不同期刊，审稿标准不同：
-
-| 期刊层级 | 校准说明 |
-|---------|---------|
-| **Top (IF>30)** | Nature/Lancet/JAMA — 标准极高，同样论文得分应下调 10-15 分 |
-| **High (IF 10-30)** | 专科顶刊 — 标准高，得分下调 5-10 分 |
-| **Mid (IF 5-10)** | 主流期刊 — 标准适中，得分不调整 |
-| **Entry (IF <5)** | 入门期刊 — 标准较宽松，得分上调 5 分 |
+同一篇论文投不同期刊，审稿标准不同。期刊层级校准表（Top/High/Mid/Entry 各档分数调整）见 `references/scoring-rubric.yaml` 的 `journal_calibration`。
 
 如果用户指定了 Target Journal，在评分矩阵后添加：
 - **Raw Score:** [未校准分数]
@@ -102,76 +76,11 @@ description: Use when simulating peer review to identify problems before submiss
 
 ### Step 4: 问题严重程度分级
 
-每条具体意见仍按严重程度分级：
-
-| 级别 | 含义 | 处理 |
-|------|------|------|
-| **Critical** | 致命缺陷，直接拒稿 | **必须修复** |
-| **Major** | 审稿人会要求修改 | 强烈建议修复 |
-| **Minor** | 不影响接收但需完善 | 建议修复 |
-| **Suggestion** | 改进建议 | 可选 |
+每条具体意见仍按严重程度分级（Critical / Major / Minor / Suggestion）。各级别含义与处理方式见 `references/scoring-rubric.yaml` 的 `severity_grading`。
 
 ## Output
 
-生成 `peer-review-simulation-report.md`：
-
-```markdown
-# Peer Review Simulation Report
-
-**Target Journal:** [期刊名]
-**Date:** [日期]
-**Overall Score:** [加权平均分]/100
-**Decision Prediction:** [Accept/Minor/Major/Reject]
-
-## Scoring Matrix
-
-| Dimension | R1 (Methods) | R2 (Clinical) | R3 (Editor) | R4 (Devil's Adv.) | Avg |
-|-----------|:---:|:---:|:---:|:---:|:---:|
-| Originality | /100 | /100 | /100 | /100 | /100 |
-| Methodology | /100 | /100 | /100 | /100 | /100 |
-| Results | /100 | /100 | /100 | /100 | /100 |
-| Clinical Impact | /100 | /100 | /100 | /100 | /100 |
-| Writing Quality | /100 | /100 | /100 | /100 | /100 |
-| Figures & Tables | /100 | /100 | /100 | /100 | /100 |
-| References | /100 | /100 | /100 | /100 | /100 |
-| Reproducibility | /100 | /100 | /100 | /100 | /100 |
-| **Weighted Total** | **X** | **X** | **X** | **X** | **X** |
-
-## Reviewer 1 — Methodologist
-### Critical Issues
-1. [问题 + 修改建议]
-### Major Issues
-...
-### Minor Issues
-...
-
-## Reviewer 2 — Clinical Expert
-...
-
-## Reviewer 3 — Editor
-...
-
-## Reviewer 4 — Devil's Advocate
-### Key Challenges
-1. [最强的反面论点 + 建议的防御策略]
-2. [最弱的方法学环节 + 加强建议]
-3. [最可能被质疑的结论 + 证据补强方案]
-
-## Editor Summary
-**Editor's Recommendation:** [Accept/Minor/Major/Reject]
-**Rationale:** [综合判断，不是简单平均——说明为什么]
-**Predicted Review Rounds:** [1轮/2轮/Reject]
-**Calibrated Score (for [期刊名]):** [校准后分数]/100
-
-## Priority Fix List
-1. [最紧急] (Critical, from R1)
-2. [次紧急] (Critical, from R4)
-...
-
-## Weakest Dimensions (lowest scores)
-1. [维度名]: [平均分]/100 — [改进建议]
-2. [维度名]: [平均分]/100 — [改进建议]
-```
+生成 `peer-review-simulation-report.md`，含 4×8 评分矩阵、4 位 Reviewer 的分级意见、Editor Summary、优先修改清单、最弱维度。完整报告模板见 `references/report-template.md`。
 
 ## Common Mistakes
 
@@ -207,3 +116,8 @@ description: Use when simulating peer review to identify problems before submiss
 - 发现 Critical 问题 → 回到对应 skill 修复
 - Devil's Advocate 发现 claim 问题 → 触发 `pre-submission-verification` Gate 3
 - 全部修复后 → `pre-submission-verification` 做最终检查
+
+### 可选衔接
+- 需要 4 位审稿人并行评审 → `team-collaboration`（4-Reviewer Panel 并行）
+- 修复后想确认得分提升 → 再次运行本 skill 复评
+- 涉及报告规范缺陷 → `reporting-standards` 逐条核对

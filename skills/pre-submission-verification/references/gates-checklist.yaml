@@ -1,0 +1,100 @@
+# Pre-Submission Verification — 6-Gate Checklists
+# Loaded by pre-submission-verification/SKILL.md Workflow.
+# 全部通过才能投稿。任何 Gate 失败 → 阻止投稿 → 列出修改项。
+
+gate_1:
+  name: 报告规范合规
+  via: "调用 reporting-standards skill"
+  steps:
+    - 确定研究类型 → 选择对应规范
+    - "逐条检查（✅ / ⚠️ / ❌）"
+  pass_criterion: "0 个 ❌ Critical 项"
+
+gate_2:
+  name: 统计完整性
+  items:
+    - 所有主要结局报告了效应量 + 95% CI（不只 p 值）
+    - p 值报告精确值（不只 p < 0.05）
+    - 多重比较已做校正（Bonferroni / Holm / FDR），且在 Methods 和 Results 中明确说明
+    - 敏感性分析已完成并报告（缺失数据假设、异常值影响、替代分析方法）
+    - 样本量计算依据已写入 Methods（先验计算，非事后）
+    - 统计软件及版本已标注
+    - 完整的分析脚本（Python/R）已生成，包含版本、随机种子、参数注释
+    - 脚本输出数字与论文 Results 逐项核对一致
+    - 与 SAP 的任何偏差已在 Methods 中说明理由
+    - 探索性分析已明确标注为 "exploratory"，与预定分析区分
+
+gate_3:
+  name: Claim Verification（内容真实性验证）
+  purpose: "验证论文中的每个事实断言都有数据支撑，防止 AI 幻觉和数据不一致。"
+  phase_A:
+    name: 参考文献真实性（优先使用 PubMed MCP 自动验证）
+    items:
+      - 每篇引用的文献确实存在 → 用 mcp__claude_ai_PubMed__search_articles 或 mcp__claude_ai_PubMed__get_article_metadata 验证 PMID/DOI
+      - 引用的结论与原文一致 → 用 mcp__claude_ai_PubMed__get_full_text_article 交叉核对关键结论
+      - 无编造的文献 → PubMed MCP 查无结果的引用标记为 ❌ SUSPICIOUS
+      - 用 mcp__claude_ai_PubMed__convert_article_ids 统一 PMID/DOI 格式，确保引用一致性
+  phase_B:
+    name: 数据一致性
+    items:
+      - Abstract 中的数字与 Results 一致
+      - 正文中的数字与 Tables/Figures 一致
+      - Results 中的数字与 results-summary.md 一致
+      - 同一数据在不同位置引用时数值相同
+  phase_C:
+    name: Claims-Evidence 对应
+    items:
+      - 每个 "我们发现..."/"结果表明..." 断言都有对应的统计结果
+      - Conclusion 中的每个结论都有 Results 支撑
+      - 没有过度推断（如观察性研究推因果）
+  phase_D:
+    name: 方法-结果匹配
+    items:
+      - Methods 中描述的每个分析在 Results 中都有结果
+      - Results 中没有 Methods 未描述的分析（后加的需标注）
+      - SAP 中预定的分析与实际报告的分析一致，偏差已说明
+  phase_E:
+    name: 预定 vs 探索性分析区分
+    items:
+      - Methods 明确区分"预定分析"和"探索性分析"
+      - 每个探索性结论标注为 "exploratory"
+      - 未预先计划的"显著"结果未作为主要结论呈现
+  phase_F:
+    name: AI 生成内容标记
+    items:
+      - 检查是否有典型的 AI 幻觉模式（过于对称的数据、编造的 p 值、不存在的引用）
+      - 确认所有数据来自实际分析，非 AI 生成
+
+gate_4:
+  name: 图表质量
+  items:
+    - 字体 Arial / Helvetica
+    - 最小字号 ≥ 6pt（缩放后）
+    - 分辨率 ≥ 300 DPI（线条图 ≥ 600 DPI）
+    - 所有坐标轴有标签和单位
+    - 图例清晰完整
+    - 色盲友好配色
+    - 每张图有对应的 Figure Legend
+
+gate_5:
+  name: 伦理与合规
+  via: "调用 research-ethics skill"
+  items:
+    - 伦理审查批准号已写入 Methods
+    - 知情同意声明或豁免说明
+    - 利益冲突声明
+    - 资金来源声明
+    - 数据可用性声明
+    - 临床试验注册号（如适用）
+
+gate_6:
+  name: 形式检查
+  items:
+    - 正文字数在目标期刊限制内
+    - 摘要字数在限制内
+    - 参考文献数量在限制内
+    - Running title / Short title ≤ 50 字符
+    - 关键词 3-6 个
+    - 所有缩写首次出现已展开
+    - 作者信息完整（单位、通讯作者、ORCID）
+    - 页码连续

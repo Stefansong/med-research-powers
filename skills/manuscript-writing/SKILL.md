@@ -1,6 +1,6 @@
 ---
 name: manuscript-writing
-description: Use when drafting a medical research manuscript (original research or review articles). Triggers on "写论文"、"写稿子"、"写Introduction"、"写Methods"、"写Discussion"、"manuscript"、"投稿"、"写综述"、"review article"、"systematic review"、"meta-analysis"、"narrative review"、"scoping review"、"mini-review".
+description: Use when drafting a medical research manuscript (original research or review). Triggers on "写论文"、"写稿子"、"写Methods"、"写综述"、"manuscript"、"投稿"、"systematic review"、"meta-analysis"、"narrative review".
 ---
 
 # Manuscript Writing
@@ -105,36 +105,11 @@ description: Use when drafting a medical research manuscript (original research 
 4. 写作过程中实时检查是否超限
 ```
 
-**模板库覆盖 40+ 期刊，按专科分类（持续扩充）：**
+**模板库覆盖 234 个期刊，按专科分类（综合顶刊 / 肿瘤 / 外科 / 泌尿 / 心血管 / 消化肝病 / 呼吸 / 神经 / 影像 / AI 数字健康 / 儿科 / 骨科 / 眼科皮肤病理 / 感染内分泌肾脏精神 / 系统综述 / 开放获取 / 中国 SCI 等）。**
 
-| 类别 | 期刊 |
-|------|------|
-| **综合顶刊** | Nature, Nature Medicine, Lancet, NEJM, JAMA, BMJ, Annals of Internal Medicine |
-| **肿瘤** | JCO, Lancet Oncology, JAMA Oncology, Annals of Oncology, Cancer Research |
-| **外科** | Annals of Surgery, JAMA Surgery, BJS, Surgical Endoscopy |
-| **泌尿** | European Urology, Journal of Urology, BJU International |
-| **心血管** | European Heart Journal, JACC, Circulation |
-| **消化/肝病** | Gastroenterology, Gut, Hepatology |
-| **呼吸** | Lancet Respiratory, AJRCCM, CHEST |
-| **神经** | Lancet Neurology, Neurology, JAMA Neurology |
-| **影像** | Radiology, European Radiology, Medical Image Analysis |
-| **AI/数字健康** | npj Digital Medicine, Lancet Digital Health, JMIR, IEEE JBHI |
-| **儿科** | Lancet Child, JAMA Pediatrics, Pediatrics |
-| **骨科** | JBJS, CORR |
-| **眼科/皮肤/病理** | Ophthalmology, JAMA Dermatology, Modern Pathology 等 |
-| **感染/内分泌/肾脏/精神** | Lancet ID, Diabetes Care, JASN, Lancet Psychiatry 等 |
-| **系统综述** | Cochrane Database, Systematic Reviews |
-| **开放获取** | PLOS Medicine, PLOS ONE, Nature Communications, Scientific Reports |
-| **中国 SCI** | Chinese Medical Journal, Science Bulletin, Signal Transduction, eClinicalMedicine |
+**不要在本文件中重复期刊清单——所有期刊的字数、摘要格式、参考文献样式、特殊要求、投稿系统、期刊家族信息（如 Lancet 家族的 Research in Context panel、JAMA 家族的 Key Points box、Nature 家族的 Reporting Summary）均以 `references/journal-templates.yaml` 为唯一数据源（top-level key `templates:`）。按 journal id / name 查找即可。**
 
-**期刊家族速查：**
-- **Lancet 家族**（均要求 Research in Context panel）：10 个子刊
-- **JAMA 家族**（均要求 Key Points box）：8 个子刊
-- **Nature 家族**（均要求 Reporting Summary）：6 个子刊
-
-详见 `references/journal-templates.yaml`（含每个期刊的字数、摘要格式、参考文献样式、特殊要求、投稿系统）。
-
-**如果目标期刊不在模板库中：** 用 WebSearch 检索期刊的 "Instructions for Authors" 页面，提取关键规范并补充到 `journal-templates.yaml`。
+**如果目标期刊不在模板库中：** 用 WebSearch 检索期刊的 "Instructions for Authors" 页面，提取关键规范并补充到 `references/journal-templates.yaml`。
 
 ---
 
@@ -443,6 +418,14 @@ with pd.ExcelWriter('manuscript_tables.xlsx', engine='openpyxl') as writer:
 6. 期刊特殊要求已满足（如 Key Points box、Research in Context panel）
 7. 综述类：PRISMA Checklist 已完成（如适用）
 
+## Red Flags — STOP
+
+- 在 Results 中没有的数字出现在 Discussion / Abstract → 停，禁止引入未分析的数据
+- 虚构数据、结果或参考文献 → 绝对禁止，立即停止
+- Systematic Review / Meta-Analysis 没有 PROSPERO 注册号 → 停，先注册（PRISMA 2020 要求）
+- 缺少必须的前置文件（按类型见 Prerequisites）就开始写对应章节 → 停，先补齐
+- "significantly" 用于非统计学语境 / "prove" 表述 → 停，改为规范措辞
+
 ## 衔接规则
 
 ### 前置依赖（按类型拆分，见 Prerequisites 章节）
@@ -453,7 +436,7 @@ with pd.ExcelWriter('manuscript_tables.xlsx', engine='openpyxl') as writer:
 - 完成后 → 建议触发 `manuscript-export`（.docx 导出）
 - 导出后 → **必须**触发 `pre-submission-verification`（不可跳过）
 
-### 可选
+### 可选衔接
 - 写综述 Introduction 时 → 可调用 `pubmed-search` Mode 6 格式化引用
 - 写 Methods 检索策略时 → 可调用 `pubmed-search` Mode 1 构建检索式
 - 需要数据表格 → 导出 `manuscript_tables.xlsx`（使用 openpyxl）

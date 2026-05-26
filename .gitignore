@@ -19,10 +19,15 @@ Thumbs.db
 /analysis-plan.md
 /research-question.md
 /study-protocol.md
+/journal-selection-report.md
 /submission-readiness-report.md
 /peer-review-simulation-report.md
 /revision-tracking.md
 /search-strategy.md
+
+# MRP local state (never committed)
+/.mrp-state.json
+/.mrp-user-profile.json
 
 # Node
 node_modules/

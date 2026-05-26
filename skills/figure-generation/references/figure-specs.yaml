@@ -1,0 +1,34 @@
+# Journal Figure Requirements
+# Generic publication-quality figure specifications for medical journals.
+# Most major journals fall within these ranges; verify against the target
+# journal's "Instructions for Authors" for exceptions.
+
+figure_specs:
+  format:
+    preferred: TIFF
+    alternative: PDF        # vector, for line art
+    rejected: PNG/JPG       # raster-with-loss, generally not accepted
+
+  resolution_dpi:
+    halftone_or_color: 300  # photos, heatmaps
+    line_art: 600           # plots with thin lines / text
+    combination: 500        # mixed line + halftone
+
+  font:
+    family: [Arial, Helvetica]
+    min_size_pt: 6          # minimum size AFTER scaling to final width
+
+  width:
+    single_column_mm: 85    # ~3.35 inch
+    one_and_half_mm: 127    # ~5.0 inch
+    double_column_mm: 170   # ~6.7 inch
+
+  color:
+    print: CMYK
+    online: RGB
+    recommendation: colorblind-safe (Okabe-Ito); see COLORBLIND_SAFE in pub_style.py
+
+  notes:
+    - 线条图（含细线/文字）建议 ≥ 600 DPI 以保证清晰度
+    - 最小字号指最终缩放到目标栏宽后的字号，不是绘图时的字号
+    - 每张图必须同时保存 TIFF + PDF（见 save_figure 默认行为）

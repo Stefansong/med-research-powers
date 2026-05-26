@@ -1,0 +1,57 @@
+# Research Ethics — Compliance Checklist
+# Loaded by research-ethics/SKILL.md Workflow Step 2.
+# Six sections + Methods statement template.
+
+sections:
+  - id: 1
+    name: 伦理审查 (IRB / EC)
+    items:
+      - 已获机构伦理委员会批准
+      - 批准编号已记录
+      - 方案在批准范围内
+      - "回顾性研究：已获知情同意豁免（需理由）"
+
+  - id: 2
+    name: 动物实验伦理 (IACUC)
+    items:
+      - IACUC 批准
+      - 3R 原则（Replacement, Reduction, Refinement）
+      - 人道终点标准
+      - 麻醉/镇痛/安乐死方案（AVMA 指南）
+      - 操作人员资格证
+
+  - id: 3
+    name: 知情同意
+    items:
+      - "前瞻性：书面知情同意"
+      - "回顾性：豁免及理由"
+      - "特殊群体：未成年人（监护人同意）/ 无法自主同意者"
+      - 同意书含退出权利
+
+  - id: 4
+    name: 数据隐私
+    items:
+      - 去标识化完成
+      - 符合法规（中国：个人信息保护法 / EU：GDPR / US：HIPAA）
+      - 数据存储安全（加密、访问控制）
+      - 跨境传输限制评估
+      - "AI 平台使用限制：禁止上传含患者信息的原始数据"
+
+  - id: 5
+    name: 研究注册
+    items:
+      - "临床试验：已注册（ClinicalTrials.gov / ChiCTR），在首例入组前"
+      - "系统综述：已注册（PROSPERO）"
+
+  - id: 6
+    name: 利益冲突与数据共享
+    items:
+      - 资金来源声明
+      - 利益冲突声明
+      - 数据共享计划（期刊日益要求）
+
+# Methods 伦理声明模板
+methods_statement_template: |
+  本研究经[机构名称]伦理委员会批准（批准号：xxx），
+  符合赫尔辛基宣言原则。[所有参与者签署了书面知情同意书 /
+  经伦理委员会批准，本回顾性研究免除知情同意要求]。

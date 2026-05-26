@@ -1,20 +1,17 @@
+---
+description: MANDATORY 6-gate pre-submission verification — all gates must pass to submit
+argument-hint: [manuscript path]
+---
+
 # Pre-Submission Verification
 
-Invoke the `pre-submission-verification` skill — **MANDATORY before any submission.**
+The canonical **MANDATORY** check before any manuscript submission. This is the authoritative 6-gate verification — it cannot be skipped.
 
-## 6-Gate Verification (ALL must pass)
+Invoke the `pre-submission-verification` skill, which contains the authoritative 6-gate table and per-gate pass/fail criteria. Pass through the user's manuscript: $ARGUMENTS
 
-| Gate | Checks | Fail → |
-|------|--------|--------|
-| 1. Reporting Standards | CONSORT/STROBE/PRISMA/TRIPOD-AI... 0 Critical ❌ | → manuscript-writing |
-| 2. Statistical Completeness | Effect sizes + 95% CI, exact p-values, scripts reproducible, SAP deviations documented | → statistical-analysis |
-| 3. Claim Verification | PubMed MCP verifies references, data consistency (Abstract=Results=Tables), no over-interpretation | → fix references/claims |
-| 4. Figure Quality | Arial, ≥300 DPI, colorblind-safe, axis labels, legends | → figure-generation |
-| 5. Ethics Compliance | IRB number, consent statement, COI, funding, data availability | → research-ethics |
-| 6. Formal Requirements | Word count, reference count, running title, keywords, abbreviations | → adjust formatting |
+The 6 gates (all must pass): (1) Reporting standards, (2) Statistical completeness, (3) Claim verification, (4) Figure quality, (5) Ethics compliance, (6) Formal requirements. Any gate FAIL blocks submission and routes back to the responsible skill.
 
 ## Hard Checkpoint
-**User must explicitly confirm all 6 gates pass before proceeding to cover letter and submission.**
+The user must explicitly confirm all 6 gates pass before proceeding to cover letter and submission. The skill produces `submission-readiness-report.md` (pass/fail per gate + fix list).
 
-## Output
-`submission-readiness-report.md` — pass/fail per gate + fix list.
+For a lighter reporting-guideline-only check, use `/check-standards`. For the next step after passing, use `/submission-preparation`.

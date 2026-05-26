@@ -76,9 +76,9 @@ mapping:
   - {study: "AI-assisted diagnosis", primary: "STARD + CLAIM", supplement: "MI-CLAIM"}
   - {study: "AI clinical trial (RCT)", primary: "CONSORT-AI 2020", supplement: "SPIRIT-AI 2020"}
   - {study: "AI decision support early evaluation", primary: "DECIDE-AI 2022", supplement: "CONSORT-AI if progressing to RCT"}
-  - {study: "Prediction model development", primary: "TRIPOD+AI 2024", supplement: "PROBAST"}
+  - {study: "Prediction model development", primary: "TRIPOD+AI (2024)", supplement: "PROBAST"}
   - {study: "LLM/VLM medical evaluation", primary: "TRIPOD-LLM 2024", supplement: "Journal-specific"}
-  - {study: "Surgical video AI", primary: "STARD (if applicable)", supplement: "MVAL"}
+  - {study: "Surgical video AI", primary: "STARD (if applicable)", supplement: "CLAIM 2024 (no dedicated surgical-video standard exists; apply imaging-AI reporting + DECIDE-AI if decision support)"}
   - {study: "Medical device/instrument innovation", primary: "IDEAL framework", supplement: "ISO 14155"}
   - {study: "AI systematic review", primary: "PRISMA 2020", supplement: "QUADAS-2 / PROBAST / ROBINS-I"}
   - {study: "Medical imaging AI", primary: "CLAIM 2020", supplement: "MI-CLAIM"}

@@ -1,28 +1,13 @@
+---
+description: Search PubMed, verify citations, or fetch article metadata via PubMed MCP
+argument-hint: [topic, PMIDs, or citation to verify]
+---
+
 # PubMed Search
 
-Invoke the `pubmed-search` skill to search PubMed, verify citations, or retrieve article metadata using PubMed MCP tools.
+Search PubMed, verify citations (anti-hallucination), or retrieve article metadata via PubMed MCP tools.
 
-## Modes
-
-| Mode | When to use |
-|------|-------------|
-| **Mode 1: Interactive Search** | Build a complex PubMed query from a research topic (PICO → MeSH → Boolean) |
-| **Mode 2: Batch Metadata** | Retrieve full metadata for a list of PMIDs |
-| **Mode 3: Citation Verification** | Verify references exist and match (anti-hallucination) |
-| **Mode 4: Snowball Search** | Discover related articles from 1-5 seed PMIDs |
-| **Mode 5: Full Text** | Retrieve PMC full text for data extraction |
-| **Mode 6: Reference Formatting** | Format references in Vancouver / AMA / Nature / APA / IEEE |
-
-## MCP Tools Used
-
-`search_articles` · `get_article_metadata` · `get_full_text_article` · `find_related_articles` · `convert_article_ids` · `lookup_article_by_citation` · `get_copyright_status`
-
-## Output
-
-- `search-strategy.md` — reproducible search query + result count
-- Citation verification report (✅ Verified / ⚠️ Not found / ❌ Mismatch)
-- Formatted reference list (target journal style)
+Invoke the `pubmed-search` skill, which contains the authoritative mode router (interactive search, batch metadata, citation verification, snowball, full text, reference formatting) and the PubMed MCP tool list. Pass through the user's topic / PMIDs / citation: $ARGUMENTS
 
 ## Called by
-
-`literature-synthesis` · `pre-submission-verification` (Gate 3 claim verification) · `manuscript-writing` (reference formatting)
+`/literature-synthesis`, `/pre-submission` (Gate 3 claim verification), and `/write-manuscript` (reference formatting).

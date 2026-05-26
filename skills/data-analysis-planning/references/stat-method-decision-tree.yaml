@@ -176,7 +176,7 @@ time_series:
   autocorrelation: "Newey-West standard errors or ARIMA models"
   controls: "Add control series if available (controlled ITS)"
 
-## Assumption Tests (use scripts/assumption_tests.py)
+## Assumption Tests (use skills/statistical-analysis/scripts/assumption_tests.py)
 assumptions:
   normality:
     n_lt_50: "Shapiro-Wilk test"
@@ -226,8 +226,9 @@ deep_learning_training:
     recommended: [warmup_steps, gradient_clipping, mixed_precision, seed]
   data_split:
     - {condition: "n > 1000", method: "Hold-out (60/20/20)", note: "Patient-level split"}
-    - {condition: "200 < n < 1000", method: "5-fold CV", note: "Patient-level folds"}
-    - {condition: "n < 200", method: "Nested CV or LOOCV + transfer learning"}
+    - {condition: "200 <= n <= 1000", method: "5-fold CV", note: "Patient-level folds; report mean±SD"}
+    - {condition: "50 <= n < 200", method: "Transfer learning + nested CV", note: "Pretrained ImageNet/domain weights"}
+    - {condition: "n < 50", method: "LOOCV or classical ML (insufficient for deep learning)", note: "Strong warning; external validation MANDATORY"}
   augmentation:
     geometric: [rotation, flip, scale, elastic_deformation, crop]
     intensity: [brightness, contrast, noise, blur, gamma]

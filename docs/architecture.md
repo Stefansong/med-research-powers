@@ -1,4 +1,4 @@
-# Med-Research-Powers v6.0.0 Architecture
+# Med-Research-Powers v6.2.1 Architecture
 
 ## 1. Full Pipeline Flow
 
@@ -10,9 +10,10 @@ flowchart TD
         RQ[research-question-formulation<br/>PICO + FINER + Hypothesis]
         LS[literature-synthesis<br/>Multi-DB Search + PRISMA Screening]
         SD{Study Type?}
-        SD_C[study-design<br/>Clinical: RCT/Cohort/Cross-sectional]
-        SD_B[basic-medical-study-design<br/>Cell/Animal/Molecular]
-        SD_A[ai-medical-study-design<br/>AI/ML/Imaging/NLP/LLM]
+        SD_C[study-design Type A<br/>Clinical: RCT/Cohort/Cross-sectional]
+        SD_B[study-design Type B<br/>Basic: Cell/Animal/Molecular]
+        SD_A[study-design Type C<br/>AI/ML/Imaging/NLP/LLM]
+        SD_D[study-design Type D/E<br/>Qualitative / Survey / Delphi]
         JS[journal-selection<br/>4-Step Matching + 3-Tier Ranking]
     end
 
@@ -23,29 +24,29 @@ flowchart TD
     end
 
     subgraph PHASE3["Phase 3: Manuscript & QA"]
-        MW[manuscript-writing<br/>IMRaD + Journal Templates 40+]
-        RS[reporting-standards<br/>~45 Standards Matching]
+        MW[manuscript-writing<br/>IMRaD + 5 Review Types + 234 Journal Templates]
+        RS[reporting-standards<br/>42+ Standards Matching]
         RE[research-ethics<br/>IRB / IACUC / Privacy]
         PRS[peer-review-simulation<br/>4 Reviewers + Editor Summary]
         PSV[pre-submission-verification<br/>6-Gate Mandatory Check]
     end
 
     subgraph PHASE4["Phase 4: Submission & Revision"]
-        CL[cover-letter-writing<br/>4-Paragraph + Journal Fit]
-        SSG[submission-system-guide<br/>ScholarOne/Editorial Manager]
+        SP[submission-preparation<br/>Cover Letter + ScholarOne/Editorial Manager]
         SUB([Submit to Journal])
-        RVS[revision-strategy<br/>Comment Triage + Priority Matrix]
-        RTR[responding-to-reviewers<br/>Response Letter]
+        RVR[revision-response<br/>Comment Triage + Point-by-Point Response]
     end
 
     RQ -->|research-question.md| LS
     LS -->|literature-synthesis-summary.md<br/>screening-log.md| SD
-    SD -->|Clinical| SD_C
-    SD -->|Basic Science| SD_B
-    SD -->|AI/ML| SD_A
+    SD -->|Type A: Clinical| SD_C
+    SD -->|Type B: Basic Science| SD_B
+    SD -->|Type C: AI/ML| SD_A
+    SD -->|Type D/E: Qualitative/Survey| SD_D
     SD_C -->|study-protocol.md| HC1
     SD_B -->|study-protocol.md| HC1
     SD_A -->|study-protocol.md| HC1
+    SD_D -->|study-protocol.md| HC1
 
     HC1{{"HC #1: Protocol Approval<br/>Research type + Primary outcome LOCKED"}}
     HC1 --> JS
@@ -65,12 +66,10 @@ flowchart TD
     PRS -->|peer-review-report.md| PSV
     PSV -->|submission-readiness-report.md| HC4
     HC4{{"HC #4: 6-Gate ALL PASS<br/>Must confirm to proceed"}}
-    HC4 --> CL
-    CL -->|cover-letter.md| SSG
-    SSG --> SUB
-    SUB -->|Major/Minor Revision| RVS
-    RVS -->|revision-plan.md| RTR
-    RTR -->|response-letter.md| PSV2[Re-verify & Resubmit]
+    HC4 --> SP
+    SP -->|cover-letter.md| SUB
+    SUB -->|Major/Minor Revision| RVR
+    RVR -->|revision-plan.md + response-letter.md| PSV2[Re-verify & Resubmit]
 
     SUB -->|Reject| RESUBMIT[Reformat & Resubmit]
     RESUBMIT --> JS
@@ -227,8 +226,7 @@ flowchart TD
         S4["figure-generation<br/>Report figures + confirm"]
         S5["manuscript-writing<br/>Report sections + confirm"]
         S6["peer-review-simulation<br/>Report scores + confirm"]
-        S7["cover-letter-writing<br/>Report draft + confirm"]
-        S8["submission-system-guide<br/>Report checklist + confirm"]
+        S7["submission-preparation<br/>Report cover letter + checklist + confirm"]
     end
 
     subgraph HARD["Hard Checkpoint (MUST confirm, locks content)"]
@@ -241,7 +239,7 @@ flowchart TD
     S1 --> S2 --> H1
     H1 --> H3 --> H2
     H2 --> S3 --> S4 --> S5 --> S6 --> H4
-    H4 --> S7 --> S8
+    H4 --> S7
 
     style HARD fill:#ffe0e0,stroke:#e74c3c
     style SOFT fill:#e0f0ff,stroke:#3498db
@@ -256,24 +254,25 @@ flowchart TD
 ```mermaid
 flowchart TD
     subgraph PLUGIN["med-research-powers (Plugin)"]
-        PJ[".claude-plugin/plugin.json<br/>v6.0.0 | 5 commands registered"]
+        PJ[".claude-plugin/plugin.json<br/>v6.2.1 | 20 commands registered"]
         HOOK["hooks/session-start.sh<br/>Injects routing table on startup"]
         META["skills/using-med-research-powers<br/>Orchestrator: 1% Rule + Checkpoints"]
     end
 
-    subgraph COMMANDS["Slash Commands (/mrp:*)"]
+    subgraph COMMANDS["20 Slash Commands (/mrp:*) — sample"]
         CMD1["/mrp:research-question"]
-        CMD2["/mrp:analyze-data"]
-        CMD3["/mrp:write-manuscript"]
-        CMD4["/mrp:check-standards"]
-        CMD5["/mrp:peer-review"]
+        CMD2["/mrp:study-design"]
+        CMD3["/mrp:analyze-data"]
+        CMD4["/mrp:write-manuscript"]
+        CMD5["/mrp:pre-submission"]
     end
 
     subgraph SKILLS["20 Skills"]
-        SK_F["Foundation (6)<br/>research-question, literature-synthesis,<br/>study-design, basic-study, ai-study,<br/>journal-selection"]
-        SK_A["Analysis (3)<br/>data-analysis-planning,<br/>statistical-analysis,<br/>figure-generation"]
-        SK_M["Manuscript & QA (5)<br/>manuscript-writing, reporting-standards,<br/>research-ethics, peer-review-simulation,<br/>pre-submission-verification"]
-        SK_S["Submission (4)<br/>cover-letter-writing,<br/>submission-system-guide,<br/>revision-strategy,<br/>responding-to-reviewers"]
+        SK_F["Foundation (4)<br/>research-question-formulation,<br/>literature-synthesis,<br/>study-design (Type A–E router),<br/>journal-selection"]
+        SK_A["Analysis (4)<br/>data-analysis-planning, data-collection-tools,<br/>statistical-analysis,<br/>figure-generation"]
+        SK_M["Manuscript & QA (6)<br/>manuscript-writing, manuscript-export,<br/>reporting-standards, research-ethics,<br/>peer-review-simulation,<br/>pre-submission-verification"]
+        SK_S["Submission (2)<br/>submission-preparation,<br/>revision-response"]
+        SK_U["Utility (2)<br/>pubmed-search,<br/>team-collaboration"]
         SK_X["Meta (2)<br/>using-med-research-powers,<br/>writing-mrp-skills"]
     end
 
@@ -285,9 +284,9 @@ flowchart TD
 
     subgraph REFS["Reference Data"]
         R1["stat-method-decision-tree.yaml<br/>15+ method categories"]
-        R2["standards-index.yaml<br/>~45 reporting standards"]
+        R2["standards-index.yaml<br/>42+ reporting standards"]
         R3["consort-2025.yaml<br/>30-item checklist"]
-        R4["journal-templates.yaml<br/>40+ journals, 16 specialties"]
+        R4["journal-templates.yaml<br/>234 journals, 30+ specialties"]
         R5["metrics-and-reporting.yaml<br/>AI metrics + fairness + robustness"]
         R6["Experiment templates<br/>WB, qPCR, Animal (ARRIVE 2.0)"]
     end
@@ -316,7 +315,7 @@ flowchart TD
 
 ```mermaid
 mindmap
-  root(("~45 Reporting<br/>Standards"))
+  root(("42+ Reporting<br/>Standards"))
     Clinical Trials
       CONSORT 2025
       CONSORT-AI

@@ -1,6 +1,6 @@
 ---
 name: manuscript-export
-description: Use when exporting manuscript markdown files to .docx format for journal submission. Triggers on "导出Word"、"生成docx"、"投稿格式"、"排版"、"Word文件"、"docx"、"格式化论文"、"export manuscript". Auto-triggers when manuscript-writing completes.
+description: Use when exporting manuscript markdown into journal-formatted .docx for submission. Triggers on "导出Word"、"生成docx"、"投稿格式"、"排版"、"格式化论文"、"export manuscript"、"docx". Auto-triggers after writing.
 ---
 
 # Manuscript Export
@@ -34,7 +34,7 @@ description: Use when exporting manuscript markdown files to .docx format for jo
 
 ```
 1. 读取 journal-selection-report.md → 获取首选期刊
-2. 从 references/journal-templates.yaml 加载期刊模板
+2. 从 ../manuscript-writing/references/journal-templates.yaml 加载期刊模板
 3. 如期刊不在模板库 → 用 WebSearch 检索 "Instructions for Authors"
    → 提取关键规范 → 临时构建格式配置
 4. 向用户确认格式配置
@@ -61,36 +61,28 @@ description: Use when exporting manuscript markdown files to .docx format for jo
 
 ### Step 3: 生成 .docx
 
-使用 `scripts/export_docx.py` 执行导出。核心逻辑：
+调用现成脚本 `scripts/export_docx.py` 完成导出，**不要手写转换代码**：
 
-#### 3.1 文档初始化
-
-```python
-from docx import Document
-from docx.shared import Pt, Cm
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-
-doc = Document()
-
-# 从期刊配置加载格式
-config = load_journal_config(journal_id)
-
-# 默认样式
-style = doc.styles['Normal']
-style.font.name = config['font']        # Times New Roman / Arial
-style.font.size = Pt(config['font_size']) # 12
-style.paragraph_format.line_spacing = config['line_spacing']  # 2.0
-style.paragraph_format.space_after = Pt(0)
-
-# 页边距
-for section in doc.sections:
-    section.top_margin = Cm(config['margin_cm'])
-    section.bottom_margin = Cm(config['margin_cm'])
-    section.left_margin = Cm(config['margin_cm'])
-    section.right_margin = Cm(config['margin_cm'])
+```bash
+python3 scripts/export_docx.py \
+  --manuscript-dir ./manuscript \
+  --journal <journal-id> \
+  --yaml ../manuscript-writing/references/journal-templates.yaml \
+  --output manuscript/manuscript.docx \
+  --report export-report.md
 ```
 
-#### 3.2 章节顺序（按期刊要求）
+脚本自动完成：
+- 按期刊家族（Nature / Lancet / JAMA / IEEE / 标准 IMRaD）设置字体、字号、行距、页边距
+- 按期刊要求排列章节顺序（见下表）
+- Markdown → docx 元素转换（见转换规则表）
+- 表格格式化（表头加粗 + 灰底）、Nature/Lancet/JAMA 特殊要素
+- 统计字数 / 参考文献 / 表格、Placeholder 检测、生成导出报告
+
+> 期刊 ID 必须存在于 `../manuscript-writing/references/journal-templates.yaml`；
+> 未知期刊先走 Step 1 的 WebSearch 流程补全模板，再导出。
+
+#### 章节顺序（按期刊要求）
 
 | 期刊家族 | 章节顺序 |
 |---------|---------|
@@ -99,7 +91,7 @@ for section in doc.sections:
 | **JAMA 系** | Title → Key Points → Abstract → Introduction → Methods → Results → Discussion → References |
 | **标准 IMRaD** | Title → Abstract → Introduction → Methods → Results → Discussion → References |
 
-#### 3.3 Markdown → docx 转换规则
+#### Markdown → docx 转换规则
 
 | Markdown | docx 元素 |
 |---------|----------|
@@ -116,64 +108,6 @@ for section in doc.sections:
 | `<!-- comment -->` | 过滤掉，不输出 |
 | 空行 | 段落分隔 |
 | `\| table \|` | docx Table (带边框) |
-
-#### 3.4 表格格式化
-
-```python
-def add_table(doc, headers, rows, config):
-    table = doc.add_table(rows=1+len(rows), cols=len(headers))
-    table.style = 'Table Grid'
-
-    # 表头（加粗 + 灰色背景）
-    for i, header in enumerate(headers):
-        cell = table.rows[0].cells[i]
-        cell.text = header
-        cell.paragraphs[0].runs[0].bold = True
-        set_cell_shading(cell, "D9D9D9")
-
-    # 数据行
-    for row_idx, row_data in enumerate(rows):
-        for col_idx, value in enumerate(row_data):
-            table.rows[row_idx+1].cells[col_idx].text = str(value)
-
-    # 设置字体（表格通常比正文小 1pt）
-    for row in table.rows:
-        for cell in row.cells:
-            for paragraph in cell.paragraphs:
-                for run in paragraph.runs:
-                    run.font.size = Pt(config['font_size'] - 1)
-```
-
-#### 3.5 特殊期刊要素
-
-**Nature Reporting Summary:**
-```python
-if config.get('reporting_summary'):
-    doc.add_page_break()
-    doc.add_heading('Reporting Summary', level=1)
-    doc.add_paragraph('[Reporting Summary checklist to be completed separately]')
-```
-
-**Lancet Research in Context:**
-```python
-if config.get('research_in_context'):
-    doc.add_heading('Research in Context', level=2)
-    doc.add_heading('Evidence before this study', level=3)
-    doc.add_paragraph('[Evidence text]')
-    doc.add_heading('Added value of this study', level=3)
-    doc.add_paragraph('[Added value text]')
-    doc.add_heading('Implications of all the available evidence', level=3)
-    doc.add_paragraph('[Implications text]')
-```
-
-**JAMA Key Points:**
-```python
-if config.get('key_points'):
-    doc.add_heading('Key Points', level=2)
-    doc.add_paragraph('Question: [研究问题]')
-    doc.add_paragraph('Findings: [主要发现]')
-    doc.add_paragraph('Meaning: [临床意义]')
-```
 
 ### Step 4: 质量检查
 
@@ -282,6 +216,6 @@ if config.get('key_points'):
 ### 强制衔接
 - 导出完成后 → 建议 `pre-submission-verification`
 
-### 可选
+### 可选衔接
 - 需要切换目标期刊 → 重新加载模板 → 重新导出
 - 需要格式化参考文献 → 调用 `pubmed-search` Mode 6

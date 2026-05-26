@@ -1,34 +1,14 @@
+---
+description: Match study type to its reporting guideline (CONSORT/STROBE/PRISMA/TRIPOD-AI...)
+argument-hint: [study type or manuscript path]
+---
+
 # Reporting Standards
 
-Invoke the `reporting-standards` skill to match your study type with the correct reporting guideline.
+Match the study type to the correct reporting guideline and check item-by-item compliance.
 
-## Quick Match Table
+Invoke the `reporting-standards` skill, which contains the authoritative study-type → standard mapping table and the full checklist index. Pass through the user's study type / manuscript: $ARGUMENTS
 
-| Study Type | Standard |
-|-----------|---------|
-| RCT | CONSORT 2025 (NOT 2010) |
-| RCT protocol | SPIRIT 2025 |
-| AI intervention RCT | CONSORT-AI |
-| Cluster RCT | CONSORT-Cluster |
-| Cohort / Case-control | STROBE |
-| Systematic review | PRISMA 2020 |
-| Network meta-analysis | PRISMA-NMA |
-| Obs. study meta-analysis | MOOSE |
-| Guideline appraisal | AGREE II |
-| Diagnostic accuracy | STARD 2015 |
-| Prediction model | TRIPOD+AI 2024 |
-| LLM evaluation | TRIPOD-LLM 2024 |
-| AI decision support | DECIDE-AI 2022 |
-| Medical imaging AI | CLAIM 2020 |
-| Surgical innovation | IDEAL framework |
-| Animal study | ARRIVE 2.0 |
-| Case report | CARE 2017 |
-| Quality improvement | SQUIRE 2.0 |
-| Qualitative | COREQ / SRQR |
+The skill selects the right standard(s) — e.g. CONSORT 2025 for RCTs (never the superseded 2010 version), STROBE for observational, PRISMA 2020 for systematic reviews, TRIPOD+AI for prediction models — and checks every item as ✅ / ⚠️ / ❌ / N/A. Zero Critical ❌ items are required to pass.
 
-Full index: `reporting-standards/references/checklists/standards-index.yaml`
-
-## Workflow
-1. Identify study type → select standard(s)
-2. Check every item: ✅ / ⚠️ / ❌ / N/A
-3. 0 Critical ❌ items required to pass
+For the full MANDATORY submission gate (not just reporting compliance), use `/pre-submission`.

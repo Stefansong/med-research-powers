@@ -1,5 +1,33 @@
 # Changelog
 
+## v6.2.2 (2026-05-26)
+
+Consistency & bug-fix pass (multi-agent audit + re-verification). No behavioural changes to the dynamic `session-start.sh` hook or `install.sh` (already current).
+
+### Bug Fixes
+- **`manuscript-export/scripts/export_docx.py`**: read the journal list from the `templates:` key (was `journals:`, which never matched) — the 234-journal formatting library now actually loads per-journal word/reference limits. Removed 3 non-existent IDs from `JOURNAL_FAMILY_MAP`, and removed `[N]` from placeholder detection (caused false positives in template tables).
+- **`journal-selection`**: corrected the scoring denominator (25 → 45, matching the weighted formula) and rescaled tier thresholds (≥36 / ≥29 / ≥22) and report columns to `/45`.
+- Reconciled the AI data-split bands into a single identical 4-band table (`n>1000 / 200-1000 / 50-200 / <50`) across `study-design`, `data-analysis-planning`, and `stat-method-decision-tree.yaml`.
+- Fixed broken/relative reference paths (cross-skill `journal-templates.yaml`, `assumption_tests.py`, etc.) and stale skill names (`ai-medical-study-design` → `study-design`).
+
+### Skill Quality (writing-mrp-skills compliance)
+- Trimmed all over-length `description` fields to ≤200 chars (e.g. `study-design` 622 → 192).
+- Added missing `## Output` / `## Red Flags — STOP` sections and normalized `衔接规则` to the three canonical tiers across skills.
+- Content layering: moved lookup tables, templates, and checklists into `references/`, and reusable code into `scripts/` (new `analysis_template.py`), to keep `SKILL.md` lean. Removed ~115 lines of inline Python in `manuscript-export` that duplicated `export_docx.py`.
+- `team-collaboration`: removed the fabricated `Agent(name=…, prompt=…)` API; dispatch is now via the Task tool. Reconciled the reviewer panel to 4 (methods/clinical/editor/devil's-advocate).
+- Ethics standardized as Gate 5; PubMed MCP tools fully prefixed `mcp__claude_ai_PubMed__`.
+- `reporting-standards`: CONSORT 2025 count corrected to 31 numbered items / 34 rows; unified "TRIPOD+AI 2024" naming; added CLAIM routing for AI imaging; removed an unverified `mval` entry.
+- De-duplicated the cover-letter / cascade-rewrite mechanics into `submission-preparation` (single owner).
+
+### Commands
+- Added slash-menu `description:` frontmatter to all 20 commands; converted them to thin routers that name their target skill.
+- De-duplicated the study-type→standard and 6-gate tables (now defer to the skills); split `check-standards` (reporting-guideline check) vs `pre-submission` (mandatory 6-gate).
+
+### Docs
+- Rewrote `README.md` and `README_CN.md`: corrected and internally consistent counts (20 skills / 20 commands / 234 journals / 42+ standards / 6 gates), removed stale pre-6.x architecture; corrected counts in `docs/`.
+
+---
+
 ## v6.2.1 (2026-04-03)
 
 ### Bug Fixes
