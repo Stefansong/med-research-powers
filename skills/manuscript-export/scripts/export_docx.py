@@ -100,7 +100,6 @@ JOURNAL_FAMILIES = {
 # Map journal IDs to families
 JOURNAL_FAMILY_MAP = {
     # Nature family
-    "npj-digital-surgery": "nature",
     "npj-digital-medicine": "nature",
     "nature-medicine": "nature",
     "nature-communications": "nature",
@@ -117,10 +116,8 @@ JOURNAL_FAMILY_MAP = {
     "european-urology": "standard",
     "journal-urology": "standard",
     "bju-international": "standard",
-    "annals-of-surgery": "standard",
     "surgical-endoscopy": "standard",
     "international-journal-surgery": "standard",
-    "journal-endourology": "standard",
     # AI/Tech
     "medical-image-analysis": "standard",
     "jmir": "standard",
@@ -135,7 +132,7 @@ def get_journal_config(journal_id: str, yaml_path: str = None) -> dict:
     if yaml_path and os.path.exists(yaml_path):
         with open(yaml_path, "r") as f:
             templates = yaml.safe_load(f)
-        for entry in templates.get("journals", []):
+        for entry in templates.get("templates", []):
             if entry.get("id") == journal_id:
                 family = JOURNAL_FAMILY_MAP.get(journal_id, "standard")
                 config = JOURNAL_FAMILIES[family].copy()
@@ -345,7 +342,7 @@ def build_docx(manuscript_dir: str, config: dict, output_path: str) -> dict:
                 add_formatted_text(p, parsed["text"], config)
                 stats["word_count"] += len(parsed["text"].split())
                 # Check for placeholders
-                for marker in ["[pending]", "[TBD]", "[TODO]", "PLACEHOLDER", "[N]"]:
+                for marker in ["[pending]", "[TBD]", "[TODO]", "PLACEHOLDER"]:
                     if marker.lower() in parsed["text"].lower():
                         stats["placeholders"].append(f"{filename}: {parsed['text'][:80]}")
 

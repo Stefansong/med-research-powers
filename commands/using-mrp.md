@@ -1,26 +1,11 @@
+---
+description: Orchestrator for all MRP skills — routing rules, pipeline, and checkpoints
+---
+
 # Using Med-Research-Powers
 
-Invoke the `using-med-research-powers` meta-skill — the orchestrator for all MRP skills.
+The orchestrator entry point for the whole med-research-powers pipeline.
 
-## Core Rules
-1. **1% Rule** — even 1% chance a skill applies → invoke it
-2. **Read before acting** — read full SKILL.md, not just description
-3. **Checkpoint** — report + ask after every skill completion
-4. **Hard Checkpoints** — 4 nodes require explicit user confirmation:
-   - Protocol approval (study-design)
-   - SAP approval (data-analysis-planning)
-   - Journal confirmation (journal-selection)
-   - 6-Gate pass (pre-submission-verification)
-5. **User Memory** — load `.mrp-user-profile.json` on startup; create if missing
+Invoke the `using-med-research-powers` meta-skill, which contains the authoritative routing rules, full skill pipeline, hard-checkpoint nodes, and state/memory files. Pass through any user context: $ARGUMENTS
 
-## Pipeline
-```
-research-question → literature-synthesis → study-design → journal-selection →
-data-analysis-planning → statistical-analysis → figure-generation →
-manuscript-writing → pre-submission-verification → cover-letter-writing →
-submission-system-guide → [submit] → revision-strategy → responding-to-reviewers
-```
-
-## State
-- `.mrp-state.json` — tracks pipeline progress (resume across sessions)
-- `.mrp-user-profile.json` — user preferences and history
+Key points the skill enforces: the 1% rule (even a 1% chance a skill applies → invoke it), read full SKILL.md before acting, report + ask after every skill, and 4 hard checkpoints requiring explicit user confirmation — protocol approval (study-design), SAP approval (data-analysis-planning), journal confirmation (journal-selection), and 6-gate pass (pre-submission-verification). State persists in `.mrp-state.json`; user preferences in `.mrp-user-profile.json`.

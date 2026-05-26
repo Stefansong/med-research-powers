@@ -1,6 +1,6 @@
 ---
 name: study-design
-description: Use when designing any research study protocol. Triggers on "怎么设计研究"、"样本量"、"研究类型"、"写protocol"、"研究方案"、"RCT设计"、"队列设计"、"交叉试验"、"非劣效"、"适应性试验"、"真实世界"、"注册研究"、"crossover"、"non-inferiority"、"adaptive"、"real-world"、"registry"、"Western blot"、"PCR"、"ELISA"、"流式"、"免疫荧光"、"转染"、"敲除"、"动物模型"、"细胞培养"、"体外实验"、"体内实验"、"模型评估"、"benchmark"、"ground truth"、"标注"、"AUROC"、"TRIPOD-AI"、"CLAIM"、"DECIDE-AI"、"IDEAL"、"手术创新"、"器械开发"、"定性研究"、"访谈"、"焦点小组"、"扎根理论"、"现象学"、"主题分析"、"qualitative"、"interview"、"focus group"、"thematic analysis"、"grounded theory"、"mixed methods"、"问卷"、"调查研究"、"survey"、"questionnaire"、"Delphi"、"Likert"、"量表开发"、"量表验证"、"信效度"、"CHERRIES"、"共识研究".
+description: Use when designing any research study protocol (clinical/basic/AI-ML/qualitative/survey). Triggers on "研究类型"、"样本量"、"写protocol"、"RCT设计"、"动物模型"、"定性研究"、"问卷"、"Delphi"、"study design"、"sample size".
 ---
 
 # Study Design
@@ -32,7 +32,7 @@ description: Use when designing any research study protocol. Triggers on "怎么
 |------|------|-----------|-------------|
 | Clinical Research | `clinical` | Power analysis | CONSORT / STROBE / STARD / TRIPOD |
 | Basic Science | `basic` | 生物学重复 >= 3 | ARRIVE 2.0 |
-| AI/ML Medical | `ai-ml` | 数据集划分 + 外部验证 | TRIPOD-AI / CLAIM / CONSORT-AI |
+| AI/ML Medical | `ai-ml` | 数据集划分 + 外部验证 | TRIPOD+AI (2024) / CLAIM / CONSORT-AI |
 | Qualitative | `qualitative` | 信息饱和 | COREQ / SRQR |
 | Survey/Delphi | `survey` | 公式计算 / 专家数 | CHERRIES / STROBE / COSMIN |
 
@@ -40,6 +40,19 @@ description: Use when designing any research study protocol. Triggers on "怎么
 
 - **必须**有明确的研究问题（`research-question-formulation`）
 - **推荐**已有初步文献综述（`literature-synthesis`）
+
+## When to Use
+
+- 需要为任意类型研究（临床/基础/AI-ML/定性/问卷）撰写方案时
+- 需要确定研究类型、样本量逻辑或核心报告规范时
+- 审稿人/伦理委员会要求补充正式 protocol 时
+
+## When NOT to Use
+
+- 还没有明确的研究问题 → 先做 `research-question-formulation`
+- 已确定方案、要制定详细统计分析计划 → `data-analysis-planning`
+- 要执行统计分析 → `statistical-analysis`
+- 仅需检查某个报告规范条目 → `reporting-standards`
 
 ---
 
@@ -91,27 +104,11 @@ RCT（含交叉、非劣效、适应性、平台、实效性试验）、队列�
 
 ### Protocol 模板 (`study-protocol.md`)
 
-#### 1. 研究概要
-标题、研究类型、注册号（ClinicalTrials.gov / ChiCTR）
+模板大纲（7 个部分：研究概要 / 研究对象 / 样本量计算 MANDATORY / 变量定义 / 数据收集 / SAP 概要 / 伦理合规）→ 加载 `references/protocol-templates.md` 的 "A. Clinical" 部分。
 
-#### 2. 研究对象
-纳入标准（具体可操作）、排除标准、招募方式
-
-#### 3. 样本量计算（MANDATORY）
-使用 `statistical-analysis/scripts/power_analysis.py` 或 G*Power。
-必须确认：预期效应量来源（文献/预实验）、α、β、脱落率。
-
-#### 4. 变量定义
-自变量、因变量、混杂变量、协变量——每个都要有定义、测量方式、单位。
-
-#### 5. 数据收集
-时间点、方式（EMR/量表/检验/影像）、质控措施、缺失数据预案
-
-#### 6. SAP 概要
-详细 SAP → `data-analysis-planning`
-
-#### 7. 伦理合规
-→ `research-ethics`
+关键判断（保留在此）：
+- 样本量计算用 `skills/statistical-analysis/scripts/power_analysis.py` 或 G*Power，必须确认效应量来源、α、β、脱落率。
+- 详细 SAP → `data-analysis-planning`；伦理合规 → `research-ethics`。
 
 ---
 
@@ -225,14 +222,14 @@ RCT（含交叉、非劣效、适应性、平台、实效性试验）、队列�
 - 优先外部验证（不同中心/时间段）
 - 必须报告：来源、时间范围、纳入排除标准、数据量、类别分布、去标识化方式
 
-#### 小样本策略（n < 500）
+#### 数据划分策略（按样本量分档）
 
 | 数据量 | 推荐方案 | 关键策略 |
 |--------|---------|---------|
 | n > 1000 | 标准 train/val/test (60/20/20) | 按患者级别划分 |
 | n = 200-1000 | K-fold cross-validation (K=5) | 每折按患者划分，报告均值±SD |
 | n = 50-200 | 迁移学习 + nested CV | 使用预训练权重（ImageNet/领域预训练）|
-| n < 50 | Few-shot learning / 外部数据合并 | 需在 Limitations 中充分讨论 |
+| n < 50 | **强警告**：深度学习样本不足；改用 leave-one-out CV 或经典 ML，外部验证为**强制**项 | 在 Limitations 中充分讨论 |
 
 注意：
 - K-fold 中同一患者的所有数据必须在同一折
@@ -397,52 +394,7 @@ RCT（含交叉、非劣效、适应性、平台、实效性试验）、队列�
 
 ### Output: `qualitative-protocol.md`
 
-```markdown
-# Qualitative Study Protocol
-
-## Research Question
-[描述性/解释性问题，不是假设检验]
-
-## Methodology
-[选择的方法论及理由]
-
-## Philosophical Stance
-[范式及认识论立场]
-
-## Participants
-- Target population: [描述]
-- Sampling strategy: [目的性抽样类型]
-- Estimated sample size: [范围] (until saturation)
-- Inclusion/exclusion criteria: [列表]
-- Recruitment method: [描述]
-
-## Data Collection
-- Method: [访谈/焦点小组/观察/...]
-- Interview guide / Discussion guide: [附录]
-- Duration: [预计时长]
-- Recording: [音频/视频/笔记]
-- Transcription: [逐字/摘要]
-
-## Data Analysis
-- Method: [主题分析/扎根理论/IPA/...]
-- Coding approach: [归纳/演绎/混合]
-- Software: [NVivo/ATLAS.ti/...]
-- Number of coders: [N] + inter-coder reliability method
-
-## Trustworthiness
-- Credibility: [成员检核/三角验证/...]
-- Transferability: [厚描述]
-- Dependability: [审计轨迹]
-- Confirmability: [反思日志]
-
-## Ethics
-- Informed consent process
-- Confidentiality and anonymization
-- IRB approval: [pending]
-
-## Reporting Standard
-- [COREQ (interviews/focus groups) / SRQR (alternative)]
-```
+完整模板（Research Question / Methodology / Philosophical Stance / Participants / Data Collection / Data Analysis / Trustworthiness / Ethics / Reporting Standard）→ 加载 `references/protocol-templates.md` 的 "D. Qualitative" 部分。
 
 ---
 
@@ -511,128 +463,33 @@ RCT（含交叉、非劣效、适应性、平台、实效性试验）、队列�
 
 #### Step 2: 测量属性（量表验证）
 
-| 属性 | 方法 | 标准 |
-|------|------|------|
-| **内容效度** | 专家评审 + I-CVI/S-CVI | I-CVI >= 0.78 |
-| **结构效度** | EFA → CFA | EFA: KMO > 0.7, 因子载荷 > 0.4; CFA: CFI > 0.90, RMSEA < 0.08 |
-| **收敛效度** | AVE | AVE > 0.50 |
-| **区分效度** | sqrt(AVE) > 因子间相关 | Fornell-Larcker 准则 |
-| **效标效度** | 与金标准/已验证量表相关 | Pearson/Spearman r |
-| **内部一致性** | Cronbach's alpha / McDonald's omega | alpha >= 0.70 |
-| **重测信度** | ICC (test-retest, 2-4 周) | ICC >= 0.70 |
-| **反应度** | SRM / Effect Size (干预前后) | 如适用 |
+8 项测量属性（内容/结构/收敛/区分/效标效度 + 内部一致性/重测信度/反应度）的方法和判定标准表 → 加载 `references/survey-qualitative.yaml` 的 `psychometric_properties`。
 
-**样本量：** EFA 至少条目数 x 5-10；CFA 至少 200 人
+**样本量关键判断：** EFA 至少条目数 x 5-10；CFA 至少 200 人。
 
 #### Step 3: 抽样策略
 
-| 策略 | 适用 | 优缺点 |
-|------|------|--------|
-| 简单随机 | 有完整名册 | 最无偏但需要抽样框 |
-| 分层随机 | 确保亚组代表性 | 需要分层变量信息 |
-| 整群 | 以机构/科室为单位 | 方便但设计效应增大 |
-| 便利 | 难以随机 | 最常见但偏倚最大，必须讨论 |
-| 配额 | 确保特定比例 | 类似分层但非随机 |
-| 滚雪球 | 难以接触的群体 | 偏倚大，适合探索性 |
+6 种抽样策略（简单随机/分层/整群/便利/配额/滚雪球）的适用与优缺点表 → 加载 `references/survey-qualitative.yaml` 的 `sampling_strategies`。
 
 #### Step 4: 样本量计算
 
-**横断面调查：**
-```
-n = Z^2 x p x (1-p) / d^2
-  Z = 1.96 (95% CI)
-  p = 预期比例 (不确定时用 0.5)
-  d = 精度 (通常 0.05)
-  → 修正有限总体: n_adj = n / (1 + n/N)
-  → 修正应答率: n_final = n_adj / expected_response_rate
-```
-
-**量表验证：** 条目数 x 5-10（EFA）; >= 200（CFA）
-
-**Delphi：** 通常 15-30 位专家，无统一公式
+公式与参数（横断面 n = Z²·p·(1-p)/d²、有限总体与应答率修正、量表验证、Delphi）→ 加载 `references/survey-qualitative.yaml` 的 `sample_size`。
 
 #### Step 5: Delphi 方法（如适用）
 
-```
-Round 1: 开放式问题 → 收集意见
-  |
-Round 2: 结构化问卷 → Likert 评分 + 排序
-  | (反馈汇总结果)
-Round 3: 修改后再评 → 检查共识
-  | (如未达标)
-Round 4: 最终确认（通常不超过 4 轮）
+轮次流程、共识标准（>= 70-80% 同意率 / IQR <= 1 / 中位数 >= 7/9）、报告要求 → 加载 `references/survey-qualitative.yaml` 的 `delphi`。
 
-共识标准:
-  → >= 70-80% 同意率（没有统一标准，需预先定义）
-  → 或 IQR <= 1（Likert 1-9）
-  → 或 中位数 >= 7/9
-
-报告: 需说明轮数、专家数、退出率、共识定义
-```
+关键判断（保留在此）：通常 3 轮（最多 4 轮），共识标准必须**预先定义**。
 
 #### Step 6: 数据收集
 
-| 方式 | 工具 | 优势 | 劣势 |
-|------|------|------|------|
-| 在线 | REDCap, 问卷星, SurveyMonkey, Google Forms | 快速、低成本、自动录入 | 覆盖偏倚、低应答率 |
-| 纸质 | 打印问卷 | 高应答率、无数字鸿沟 | 数据录入工作量大 |
-| 电话 | 电话访问 | 适合老年人群 | 成本高、社会赞许偏倚 |
-| 面对面 | 现场填写 | 最高应答率 | 成本最高 |
+4 种采集方式（在线/纸质/电话/面对面）的工具与优劣表 → 加载 `references/survey-qualitative.yaml` 的 `data_collection_modes`。
 
 **在线调查报告规范: CHERRIES checklist**
 
 ### Output: `survey-protocol.md`
 
-```markdown
-# Survey Study Protocol
-
-## Research Question
-[描述性问题]
-
-## Survey Type
-[Cross-sectional / Questionnaire development / Validation / Delphi]
-
-## Questionnaire
-- Name: [量表名称]
-- Dimensions: [维度列表]
-- Items: [条目数]
-- Response format: [Likert 5/7 点 / 二分类 / VAS / ...]
-- Development process: [新开发流程 / 已有量表引用]
-
-## Target Population
-[描述]
-
-## Sampling
-- Strategy: [抽样方法]
-- Inclusion/exclusion criteria
-- Sample size: [N] (计算依据: [公式和参数])
-- Expected response rate: [%]
-
-## Psychometric Properties (if validation)
-- Content validity: [方法]
-- Construct validity: [EFA → CFA]
-- Reliability: [Cronbach's alpha, test-retest ICC]
-
-## Data Collection
-- Method: [在线/纸质/混合]
-- Platform: [REDCap/问卷星/...]
-- Period: [时间范围]
-- Reminders: [策略]
-
-## Analysis Plan
-- Descriptive: 频数(%)、均值±SD
-- Factor analysis: EFA (principal axis, oblimin rotation) → CFA
-- Reliability: Cronbach's alpha, ICC
-- Group comparisons: [如适用]
-
-## Ethics
-- IRB approval: [pending]
-- Informed consent: [在线同意/纸质签名]
-- Anonymity: [匿名/保密]
-
-## Reporting Standard
-- [CHERRIES (web-based) / STROBE (cross-sectional) / COSMIN (validation)]
-```
+完整模板（Research Question / Survey Type / Questionnaire / Target Population / Sampling / Psychometric Properties / Data Collection / Analysis Plan / Ethics / Reporting Standard）→ 加载 `references/protocol-templates.md` 的 "E. Survey" 部分。
 
 ---
 
@@ -675,10 +532,8 @@ Round 4: 最终确认（通常不超过 4 轮）
 | "AUROC 高就有临床价值" | 必须做 DCA 评估临床净获益 |
 | "这是 AI 研究不需要临床规范" | 需要同时满足技术和临床两套规范 |
 | "我的器械直接做 RCT" | 先用 IDEAL 定位阶段，Stage 1-2 不适合 RCT |
-| "AI 评估不用报告可用性" | DECIDE-AI 要求报告人机交互和用户体验 |
+| "黑箱模型也能发表 / AI 评估不用报告可用性" | DECIDE-AI 要求报告可解释性、人机交互和用户体验 |
 | "数据增强不需要报告" | 增强策略和参数必须完整报告，可复现 |
-| "Accuracy 高就没问题" | 类别不平衡时 Accuracy 毫无意义 |
-| "黑箱模型也能发表" | DECIDE-AI 要求报告可解释性和人机交互 |
 | "200 例够 train/val/test 三分了" | 200 例应考虑 5-fold CV + 迁移学习 |
 
 ### D. Qualitative
@@ -827,7 +682,7 @@ LOCK 确认后，研究方案将锁定。后续偏差需在 analysis-log.md 中�
 ### 强制衔接（按类型）
 - **A. Clinical**: 涉及人体/患者数据 → **提醒**用户检查伦理合规（`research-ethics`），不强制阻断流程
 - **B. Basic**: 涉及动物实验 → **必须**检查 ARRIVE 2.0（`reporting-standards`）；涉及临床样本 → **提醒**伦理审查
-- **C. AI/ML**: 模型评估完成后 → **必须**触发 `reporting-standards` 检查 TRIPOD-AI / CLAIM / DECIDE-AI；涉及手术/器械创新 → **必须**按 IDEAL 框架定位阶段
+- **C. AI/ML**: 模型评估完成后 → **必须**触发 `reporting-standards` 检查 TRIPOD+AI (2024) / CLAIM / DECIDE-AI；涉及手术/器械创新 → **必须**按 IDEAL 框架定位阶段
 - **D. Qualitative**: 完成后 → `manuscript-writing`（定性研究的论文结构不是标准 IMRaD）；混合方法 → 定量部分路由回 A. Clinical
 - **E. Survey**: 完成后 → `data-analysis-planning`（确定统计方法）
 

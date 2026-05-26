@@ -1,6 +1,6 @@
 ---
 name: journal-selection
-description: Use when a manuscript is nearing completion and the user needs to choose a target journal. Triggers on "投哪个期刊"、"选刊"、"journal selection"、"impact factor"、"哪个杂志合适"、"投稿目标". Also auto-triggers when study-design completes (early selection recommended).
+description: Use when choosing a target journal as a manuscript nears completion. Triggers on "投哪个期刊"、"选刊"、"journal selection"、"impact factor"、"哪个杂志合适"、"投稿目标". Auto-triggers after study-design (early selection).
 ---
 
 # Journal Selection
@@ -43,17 +43,19 @@ description: Use when a manuscript is nearing completion and the user needs to c
 | **Format Match** | 论文类型（original article / letter / brief communication）是否被接受 |
 | **Timeline Match** | 期刊审稿速度是否满足时间需求（毕业/基金结题/抢发） |
 
-**总分 = Scope×3 + Impact×2 + Audience×2 + Format×1 + Timeline×1**（加权 25 分满分）
+**总分 = Scope×3 + Impact×2 + Audience×2 + Format×1 + Timeline×1**（加权满分 45 分）
+
+> 满分推导：5×3 + 5×2 + 5×2 + 5×1 + 5×1 = 15 + 10 + 10 + 5 + 5 = **45**
 
 ### Step 3: 期刊推荐排序
 
 生成 3 梯队推荐：
 
-| 梯队 | 策略 | 匹配分 |
+| 梯队 | 策略 | 匹配分（满分 45） |
 |------|------|--------|
-| **Tier 1: Reach** | 冲刺高影响因子期刊 | ≥20 |
-| **Tier 2: Target** | 最匹配的期刊（推荐首投） | ≥16 |
-| **Tier 3: Safety** | 接收率高、审稿快的期刊 | ≥12 |
+| **Tier 1: Reach** | 冲刺高影响因子期刊 | ≥36 |
+| **Tier 2: Target** | 最匹配的期刊（推荐首投） | ≥29 |
+| **Tier 3: Safety** | 接收率高、审稿快的期刊 | ≥22 |
 
 每个梯队推荐 1-2 个期刊，共 3-6 个候选。
 
@@ -75,7 +77,7 @@ description: Use when a manuscript is nearing completion and the user needs to c
 
 ### Step 4b: Unknown Journal Auto-Collection（未知期刊信息自动采集）
 
-当推荐的期刊不在 `journal-templates.yaml` 模板库中时（如新创刊期刊），执行以下自动采集流程：
+当推荐的期刊不在 `../manuscript-writing/references/journal-templates.yaml` 模板库中时（如新创刊期刊），执行以下自动采集流程：
 
 ```
 1. WebSearch("[期刊名] instructions for authors submission guidelines")
@@ -104,13 +106,13 @@ description: Use when a manuscript is nearing completion and the user needs to c
      word_limit: [限制]
      ...
 
-4. 追加到 journal-templates.yaml（如用户同意永久保存）
+4. 追加到 ../manuscript-writing/references/journal-templates.yaml（如用户同意永久保存）
    或仅在当前项目的 journal-selection-report.md 中记录（临时使用）
 
 5. 向用户确认采集的信息是否准确
 ```
 
-**触发条件:** 在 Step 2-3 评分过程中，如果候选期刊的 ID 不在 `journal-templates.yaml` 中，自动触发 Step 4b。
+**触发条件:** 在 Step 2-3 评分过程中，如果候选期刊的 ID 不在 `../manuscript-writing/references/journal-templates.yaml` 中，自动触发 Step 4b。
 
 **采集失败处理:**
 - 如 WebSearch 无法找到 Instructions for Authors → 标记为"需手动查阅"
@@ -138,17 +140,17 @@ description: Use when a manuscript is nearing completion and the user needs to c
 ### Tier 1 — Reach
 | Journal | IF | Acceptance Rate | Review Time | Score |
 |---------|---:|----------------:|------------:|------:|
-| [期刊1] | X.X | ~X% | X months | XX/25 |
+| [期刊1] | X.X | ~X% | X months | XX/45 |
 
 ### Tier 2 — Target (recommended first submission)
 | Journal | IF | Acceptance Rate | Review Time | Score |
 |---------|---:|----------------:|------------:|------:|
-| [期刊2] | X.X | ~X% | X months | XX/25 |
+| [期刊2] | X.X | ~X% | X months | XX/45 |
 
 ### Tier 3 — Safety
 | Journal | IF | Acceptance Rate | Review Time | Score |
 |---------|---:|----------------:|------------:|------:|
-| [期刊3] | X.X | ~X% | X months | XX/25 |
+| [期刊3] | X.X | ~X% | X months | XX/45 |
 
 ## Submission Specs (Top 3)
 

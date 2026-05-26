@@ -1,0 +1,66 @@
+# Data Collection Tool Catalog
+# Lookup tables: which tools to generate per study type, plus the standard
+# project directory structure. Generation LOGIC stays in SKILL.md (Step 2).
+
+study_type_tools:
+
+  ai_ml_benchmark:        # VLM/LLM evaluation
+    label: "AI/ML Benchmark 研究"
+    tools:
+      - { tool: "Prompt 模板",  file: "tools/prompts.json",            note: "标准化 Prompt，每个任务维度一套" }
+      - { tool: "推理脚本",      file: "tools/vlm_inference.py",        note: "API 调用、批量推理、结果保存" }
+      - { tool: "标注模板",      file: "tools/annotation_template.csv", note: "专家标注 Ground Truth 用" }
+      - { tool: "评分模板",      file: "tools/scoring_template.csv",    note: "开放题专家评分用" }
+      - { tool: "分析脚本",      file: "tools/analysis_pipeline.py",    note: "统计分析全流程" }
+      - { tool: "数据目录",      file: "data/ 目录结构",                note: "标准化文件组织" }
+
+  ai_diagnostic_prediction:
+    label: "AI 诊断/预测模型"
+    tools:
+      - { tool: "数据提取表", file: "tools/data_extraction.csv",     note: "从病历/影像系统提取变量" }
+      - { tool: "标注模板",   file: "tools/annotation_template.csv", note: "Ground Truth 标注" }
+      - { tool: "标注指南",   file: "tools/annotation_guide.md",     note: "标注标准、示例、争议处理" }
+      - { tool: "数据划分脚本", file: "tools/data_split.py",         note: "训练/验证/测试集划分（患者级别）" }
+      - { tool: "评估脚本",   file: "tools/evaluation.py",           note: "AUROC/AUPRC/混淆矩阵/DCA" }
+
+  clinical:
+    label: "临床研究（RCT / 队列 / 横断面）"
+    tools:
+      - { tool: "病例报告表",   file: "tools/CRF.xlsx 或 tools/CRF.csv", note: "每个变量一列，含数据字典" }
+      - { tool: "数据字典",     file: "tools/data_dictionary.md",        note: "变量名、类型、取值范围、编码规则" }
+      - { tool: "筛选表",       file: "tools/screening_log.csv",         note: "纳入/排除标准逐条判定" }
+      - { tool: "随机分组脚本", file: "tools/randomization.py",          note: "区组随机、分层随机（仅 RCT）" }
+      - { tool: "样本量计算",   file: "tools/sample_size.py",            note: "基于 analysis-plan.md 的 power analysis" }
+
+  basic_experiment:
+    label: "基础实验"
+    tools:
+      - { tool: "实验记录表",   file: "tools/experiment_log.xlsx",  note: "实验条件、日期、操作者、结果" }
+      - { tool: "图像采集规范", file: "tools/image_acquisition.md", note: "显微镜/WB/荧光拍摄参数标准化" }
+      - { tool: "数据录入模板", file: "tools/data_entry.csv",       note: "定量数据录入（OD 值、灰度值等）" }
+
+  systematic_review_meta:
+    label: "系统综述 / Meta 分析"
+    tools:
+      - { tool: "数据提取表",   file: "tools/sr_data_extraction.xlsx", note: "每篇纳入研究提取的变量" }
+      - { tool: "偏倚评估表",   file: "tools/risk_of_bias.xlsx",       note: "RoB 2 / NOS / ROBINS-I 评估表" }
+      - { tool: "PRISMA 模板",  file: "tools/prisma_template.md",      note: "PRISMA 流程图数据录入" }
+      - { tool: "双人筛选记录", file: "tools/dual_screening.csv",      note: "两位筛选者的独立判定 + 不一致记录" }
+
+# Standard project directory structure (Step 3)
+project_directory_structure: |
+  project/
+  ├── data/
+  │   ├── raw/                  ← 原始数据（不修改）
+  │   ├── processed/            ← 预处理后数据
+  │   ├── annotations/          ← 标注结果
+  │   │   ├── annotator_1/
+  │   │   ├── annotator_2/
+  │   │   ├── annotator_3/
+  │   │   └── consensus/
+  │   └── splits/               ← 训练/验证/测试划分
+  ├── tools/                    ← 本 skill 生成的工具
+  ├── results/                  ← 模型输出 / 分析结果
+  ├── analysis/                 ← 统计分析脚本和输出
+  ├── manuscript/               ← 论文文稿
+  └── .mrp-state.json           ← 项目状态

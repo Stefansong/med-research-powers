@@ -1,30 +1,16 @@
+---
+description: Plan then run statistical analysis (data-analysis-planning → statistical-analysis)
+argument-hint: [data file or research context]
+---
+
 # Data Analysis
 
-Invoke `data-analysis-planning` first, then `statistical-analysis` to execute.
+This command invokes TWO skills in sequence: first the `data-analysis-planning` skill, then the `statistical-analysis` skill. Pass through the user's data / context: $ARGUMENTS
 
-## Workflow
+1. Invoke the `data-analysis-planning` skill to produce `analysis-plan.md` (data overview, preprocessing, primary method + justification, sensitivity analyses). The user must confirm the plan before execution.
+2. Then invoke the `statistical-analysis` skill to execute against the confirmed plan, test assumptions before any parametric test, report statistic + p-value + effect size + 95% CI per test, and produce `results-summary.md`.
 
-### Phase 1: Plan (data-analysis-planning)
-1. Document data overview (source, sample size, variables)
-2. Define preprocessing strategy (missing data, outliers, transformations)
-3. Specify primary analysis method with justification
-4. Plan sensitivity analyses
-5. **Generate `analysis-plan.md`** — user must confirm before execution
-
-### Phase 2: Execute (statistical-analysis)
-1. Load data and verify against plan
-2. **Test assumptions BEFORE running any parametric test** (use `scripts/assumption_tests.py` if available)
-3. Execute each planned analysis, generating reproducible Python/R scripts
-4. Report: statistic + p-value + effect size + 95% CI for every test
-5. Run sensitivity analyses
-6. **Generate `results-summary.md`**
-
-## Blocking rules
-
-- **No analysis-plan.md → block execution.** Plan first.
-- **No assumption testing → block parametric tests.** Test first.
-- **No effect sizes → block results reporting.** p-value alone is insufficient.
+These skills hold the authoritative blocking rules (no plan → no execution; no assumption test → no parametric test; no effect size → no results report).
 
 ## Mandatory next step
-
-After completion → **must** trigger `figure-generation` for data visualization.
+After completion, trigger `/figure-generation` for visualization.

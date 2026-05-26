@@ -1,6 +1,6 @@
 # Med-Research-Powers 用户手册
 
-> **版本**: v5.0.0 | **更新日期**: 2026-03-29 | **仓库**: https://github.com/Stefansong/med-research-powers
+> **版本**: v6.2.1 | **仓库**: https://github.com/Stefansong/med-research-powers
 
 ---
 
@@ -10,11 +10,11 @@
 2. [安装](#2-安装)
 3. [快速开始](#3-快速开始)
 4. [完整工作流](#4-完整工作流pipeline)
-5. [16 个技能详解](#5-16-个技能详解)
-6. [5 个斜杠命令](#6-5-个斜杠命令)
+5. [20 个技能详解](#5-20-个技能详解)
+6. [20 个斜杠命令](#6-20-个斜杠命令)
 7. [6-Gate 投稿前验证](#7-6-gate-投稿前验证)
 8. [4 审稿人模拟评审](#8-4-审稿人模拟评审)
-9. [报告规范速查（~40 个）](#9-报告规范速查40-个)
+9. [报告规范速查（42+ 个）](#9-报告规范速查42-个)
 10. [内置脚本和参考文件](#10-内置脚本和参考文件)
 11. [常见场景示例](#11-常见场景示例)
 12. [常见问题 FAQ](#12-常见问题-faq)
@@ -27,18 +27,18 @@ Med-Research-Powers（MRP）是一套**医学科研方法论框架**，以 Claud
 
 > AI 辅助写代码时会跳步骤、不测试、不规划。AI 辅助做科研时也一样——跳过文献调研、用错统计方法、忽略报告规范、生成不可复现的分析。
 
-MRP 用 **16 个技能**覆盖从"我想研究一个课题"到"论文投出去"的完整流程，并在关键节点设置**强制门控**——比如没有分析计划就不能跑统计，论文没过 6-Gate 验证就不能说"可以投了"。
+MRP 用 **20 个技能**覆盖从"我想研究一个课题"到"论文投出去"的完整流程，并在关键节点设置**强制门控**——比如没有分析计划就不能跑统计，论文没过 6-Gate 验证就不能说"可以投了"。
 
 ### 与其他工具的区别
 
 | 特性 | 通用学术框架 | Med-Research-Powers |
 |------|------------|-------------------|
-| 报告规范 | 不覆盖或仅提 APA | ~40 个医学规范（CONSORT 2025、DECIDE-AI、IDEAL...） |
+| 报告规范 | 不覆盖或仅提 APA | 42+ 个医学规范（CONSORT 2025、DECIDE-AI、IDEAL...） |
 | 伦理审查 | 不涉及 | 强制检查 IRB/IACUC、知情同意、数据隐私 |
 | 实验设计 | 不涉及 | WB/qPCR/动物实验设计模板 |
 | 样本量计算 | 不涉及 | 内置 5 种场景的 Python 脚本 |
 | 统计假设检验 | 不涉及 | 内置自动检验 + 方法推荐脚本 |
-| 研究类型路由 | 通用 | 区分临床 / 基础 / AI-ML / 手术创新 |
+| 研究类型路由 | 通用 | 统一 study-design 路由：临床 / 基础 / AI-ML / 定性 / 问卷 |
 | 投稿验证 | 基本检查 | 6-Gate（含 Claim Verification 防 AI 幻觉） |
 | 审稿模拟 | 基本 | 4 审稿人（含 Devil's Advocate）+ 0-100 评分 |
 
@@ -118,7 +118,7 @@ pip install scipy statsmodels matplotlib pandas numpy
 1. 在 Claude Code 中说：**"我想研究 AI 辅助前列腺 MRI 诊断的准确性"**
 2. Claude 会自动调用 `research-question-formulation`，按 PICO 框架逐步追问
 3. 追问完成后生成 `research-question.md`
-4. Claude 会建议下一步：查文献（`literature-synthesis`）或设计研究（`ai-medical-study-design`）
+4. Claude 会建议下一步：查文献（`literature-synthesis`）或设计研究（`study-design`，自动路由到 Type C: AI/ML）
 
 ### 最常用的 5 个命令
 
@@ -147,13 +147,11 @@ MRP 的设计是一条**推荐流水线**，其中 4 个硬性检查点（Protoc
                     │ (系统检索 + gap 分析) │
                     └──────────┬──────────┘
                                │
-              ┌────────────────┼────────────────┐
-              ▼                ▼                ▼
-    ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-    │ 3a. 临床     │  │ 3b. 基础     │  │ 3c. AI/ML   │ ← 按类型路由
-    │ study-design │  │ basic-design │  │ ai-design   │
-    └──────┬──────┘  └──────┬──────┘  └──────┬──────┘
-           └────────────────┼────────────────┘
+                 ┌──────────▼──────────┐
+                 │ 3. 研究设计          │ ← 统一 study-design 路由
+                 │ study-design         │   Type A 临床 / B 基础 /
+                 │ (Type A–E 自动路由)  │   C AI-ML / D 定性 / E 问卷
+                 └──────────┬──────────┘
                             │
                  ┌──────────▼──────────┐
                  │ 4. 分析计划          │ ← "用什么统计方法？"
@@ -208,7 +206,7 @@ MRP 的设计是一条**推荐流水线**，其中 4 个硬性检查点（Protoc
 
 ---
 
-## 5. 16 个技能详解
+## 5. 20 个技能详解
 
 ### 流水线技能（按顺序）
 
@@ -239,15 +237,17 @@ MRP 的设计是一条**推荐流水线**，其中 4 个硬性检查点（Protoc
 
 ---
 
-#### 5.3 study-design / basic-medical-study-design / ai-medical-study-design（研究设计三件套）
+#### 5.3 study-design（统一研究设计路由）
 
-根据研究类型自动路由：
+单个 `study-design` 技能自动识别研究类型，内部路由到 Type A–E：
 
-| 研究类型 | 用哪个 skill | 关键特点 |
+| 研究类型 | 路由到 | 关键特点 |
 |---------|-------------|---------|
-| RCT、队列、横断面、诊断准确性 | `study-design` | CONSORT 2025、STARD、STROBE |
-| 细胞/动物/分子/蛋白实验 | `basic-medical-study-design` | 对照设置、生物学重复 vs 技术重复、ARRIVE 2.0 |
-| AI 影像/手术视频/LLM 评估/器械 | `ai-medical-study-design` | TRIPOD-AI、DECIDE-AI、IDEAL 框架、data leakage 防控 |
+| RCT、队列、横断面、诊断准确性 | Type A（临床） | CONSORT 2025、STARD、STROBE |
+| 细胞/动物/分子/蛋白实验 | Type B（基础/实验） | 对照设置、生物学重复 vs 技术重复、ARRIVE 2.0 |
+| AI 影像/手术视频/LLM 评估/器械 | Type C（AI/ML） | TRIPOD-AI、DECIDE-AI、IDEAL 框架、data leakage 防控 |
+| 访谈/焦点小组/扎根理论/现象学 | Type D（定性） | COREQ、SRQR、主题分析、饱和度 |
+| 问卷/量表开发/Delphi/KAP | Type E（问卷/Delphi） | CHERRIES、信效度、共识阈值 |
 
 **输出**：`study-protocol.md`
 
@@ -312,7 +312,7 @@ MRP 的设计是一条**推荐流水线**，其中 4 个硬性检查点（Protoc
 
 #### 5.8 reporting-standards（报告规范检查）
 
-覆盖 ~40 个报告规范。核心路由：
+覆盖 42+ 个报告规范。核心路由：
 
 | 研究类型 | 用哪个规范 |
 |---------|----------|
@@ -327,7 +327,7 @@ MRP 的设计是一条**推荐流水线**，其中 4 个硬性检查点（Protoc
 | 医学影像 AI | CLAIM 2020 |
 | 动物实验 | ARRIVE 2.0 |
 
-完整的 ~40 个规范主索引在 `references/checklists/standards-index.yaml`。
+完整的 42+ 个规范主索引在 `skills/reporting-standards/references/standards-index.yaml`。
 
 **输出**：逐条检查报告（✅/⚠️/❌） + 格式化的投稿 checklist
 
@@ -395,39 +395,69 @@ MRP 的设计是一条**推荐流水线**，其中 4 个硬性检查点（Protoc
 
 ---
 
-### 响应型技能
+### 投稿与修回技能
 
-#### 5.12 responding-to-reviewers（回复审稿意见）
+#### 5.12 submission-preparation（投稿准备）
 
-**触发词**："审稿意见"、"revision"、"大修/小修"
+**触发词**："投稿信"、"cover letter"、"怎么投"、"ScholarOne"、"上传论文"
 
-对每条审稿意见：分类（方法学/补充分析/文字改进/不合理要求）→ 逐条回复（感谢→回应→标注修改位置）→ 生成修改追踪表 → 修改后强制再跑 `pre-submission-verification`
+撰写投稿信（4 段式 + 期刊匹配论证）+ 投稿系统操作指南（ScholarOne、Editorial Manager）。
+
+**输出**：`cover-letter.md` + 投稿清单
 
 ---
 
-#### 5.13 writing-mrp-skills（元技能）
+#### 5.13 revision-response（修回回复）
+
+**触发词**："审稿意见"、"revision"、"大修/小修"、"回复审稿人"
+
+修回策略规划 + 审稿意见分流。对每条审稿意见：分类（方法学/补充分析/文字改进/不合理要求）→ 逐条回复（感谢→回应→标注修改位置）→ 生成修改追踪表 → 修改后强制再跑 `pre-submission-verification`。
+
+**输出**：`revision-plan.md` + `response-letter.md`
+
+---
+
+### 其他技能
+
+- **journal-selection（期刊选择）**：4 步评分 + 3 级排名，从 234 本期刊模板库匹配目标期刊。输出 `journal-selection-report.md`。
+- **data-collection-tools（数据采集工具）**：生成推理脚本、CRF、标注模板。输出 `tools/` 目录。
+- **manuscript-export（稿件导出）**：将 Markdown 稿件一键导出为期刊专属格式的 .docx。
+- **pubmed-search（PubMed 深度检索）**：交互式查询构建、引用验证、参考文献格式化（使用 `mcp__claude_ai_PubMed__` 前缀的 MCP 工具）。
+- **team-collaboration（多智能体协作）**：并行化独立科研任务。
+
+---
+
+### 元技能
+
+#### 5.14 writing-mrp-skills（元技能）
 
 教你如何为 MRP 创建新的技能。包含 SKILL.md 写作规范、内容分层规则、测试方法。
 
 ---
 
-#### 5.14 using-med-research-powers（编排器）
+#### 5.15 using-med-research-powers（编排器）
 
-元技能——所有其他技能的路由中心。包含完整的触发场景表、红旗清单（22 条"想法→现实"对照）、5 个质量门控。
+元技能——所有其他技能的路由中心。包含完整的触发场景表、红旗清单（"想法→现实"对照）、质量门控（含 6-Gate 投稿前验证）。
 
 ---
 
-## 6. 5 个斜杠命令
+## 6. 20 个斜杠命令
 
-在 Claude Code 中直接输入：
+在 Claude Code 中直接输入 `/mrp:<command>`。部分命令名与其调用的技能名不同。最常用的核心命令：
 
 | 命令 | 功能 | 调用的技能 |
 |------|------|----------|
 | `/mrp:research-question` | 构建研究问题 | research-question-formulation |
+| `/mrp:study-design` | 统一研究设计路由（Type A–E） | study-design |
 | `/mrp:analyze-data` | 制定分析计划 + 执行统计 | data-analysis-planning → statistical-analysis |
 | `/mrp:write-manuscript` | 按 IMRaD 写论文 | manuscript-writing |
-| `/mrp:check-standards` | 报告规范检查 + 6-Gate 验证 | reporting-standards + pre-submission-verification |
+| `/mrp:check-standards` | 报告规范检查 | reporting-standards |
+| `/mrp:pre-submission` | 6-Gate 投稿前验证 | pre-submission-verification |
 | `/mrp:peer-review` | 4 人模拟审稿 + 评分 | peer-review-simulation |
+| `/mrp:submission-preparation` | 投稿信 + 投稿系统指南 | submission-preparation |
+| `/mrp:revision-response` | 修回策略 + 逐条回复 | revision-response |
+
+完整的 20 个命令清单（含 `literature-synthesis`、`journal-selection`、`data-collection-tools`、`figure-generation`、`manuscript-export`、`reporting-standards`、`research-ethics`、`pubmed-search`、`team-collaboration`、`using-mrp`、`writing-mrp-skills`）见 README。
 
 ---
 
@@ -456,7 +486,7 @@ AI 辅助写论文时最大的风险不是格式问题，而是内容不真实�
 
 ---
 
-## 9. 报告规范速查（~40 个）
+## 9. 报告规范速查（42+ 个）
 
 ### 最常用的 10 个
 
@@ -540,18 +570,20 @@ r = survival(hazard_ratio=0.7, event_rate=0.4)
 # → events_needed=494, n_total=1373
 ```
 
-### 参考文件（8 个）
+### 主要参考文件
 
 | 文件 | 位置 | 内容 |
 |------|------|------|
-| `consort-2025.yaml` | reporting-standards/references/ | 完整 30 项清单（含 2025 新增标记） |
-| `standards-index.yaml` | reporting-standards/references/ | ~40 个规范的主索引 |
+| `consort-2025.yaml` | reporting-standards/references/checklists/ | 完整 30 项清单（含 2025 新增标记） |
+| `standards-index.yaml` | reporting-standards/references/checklists/ | 42+ 个规范的主索引 |
 | `stat-method-decision-tree.yaml` | data-analysis-planning/references/ | 统计方法选择指南 |
-| `metrics-and-reporting.yaml` | ai-medical-study-design/references/ | AI 研究指标 + 规范映射 |
-| `western-blot.md` | basic-medical-study-design/references/ | WB 实验设计模板 |
-| `qpcr.md` | basic-medical-study-design/references/ | qPCR 实验设计模板 |
-| `animal-study.md` | basic-medical-study-design/references/ | 动物实验设计模板 |
+| `metrics-and-reporting.yaml` | study-design/references/ | AI 研究指标 + 规范映射 |
+| `survey-qualitative.yaml` | study-design/references/ | 问卷/定性研究设计参考（Type D/E） |
+| `western-blot.md` | study-design/references/experiment-templates/ | WB 实验设计模板 |
+| `qpcr.md` | study-design/references/experiment-templates/ | qPCR 实验设计模板 |
+| `animal-study.md` | study-design/references/experiment-templates/ | 动物实验设计模板 |
 | `omics-methods.md` | data-analysis-planning/references/ | 组学分析流程 |
+| `journal-templates.yaml` | manuscript-writing/references/ | 234 本期刊格式模板 |
 
 ---
 
@@ -565,7 +597,7 @@ r = survival(hazard_ratio=0.7, event_rate=0.4)
 
 MRP 会依次触发：
 1. `research-question-formulation` → PICO 追问 → 生成 `research-question.md`
-2. `ai-medical-study-design` → 识别为"AI 辅助诊断" → 推荐 STARD + CLAIM → 讨论 ground truth 标注方案
+2. `study-design`（路由到 Type C: AI/ML）→ 识别为"AI 辅助诊断" → 推荐 STARD + CLAIM → 讨论 ground truth 标注方案
 3. `data-analysis-planning` → SAP：AUROC + DCA + 亚组分析
 4. ...后续跟着 pipeline 走
 
@@ -589,7 +621,7 @@ MRP 自动触发 `pre-submission-verification`：
 你："收到 BJU Int 的大修意见，审稿人要我补亚组分析和解释样本量偏小的问题"
 ```
 
-MRP 触发 `responding-to-reviewers`：
+MRP 触发 `revision-response`：
 - 逐条分类意见
 - 补充亚组分析 → 调用 `statistical-analysis`
 - 生成 response letter（逐条回复 + 修改位置标注）
@@ -601,7 +633,7 @@ MRP 触发 `responding-to-reviewers`：
 你："我想发表智能 PCNL 穿刺针的概念验证数据"
 ```
 
-MRP 识别为器械创新 → `ai-medical-study-design` → IDEAL 框架 → 定位为 Stage 1 (Idea) → 建议写 case report/case series 格式 → 参考 CARE 2017 规范
+MRP 识别为器械创新 → `study-design`（路由到 Type C: AI/ML，含器械/IDEAL 路径）→ IDEAL 框架 → 定位为 Stage 1 (Idea) → 建议写 case report/case series 格式 → 参考 CARE 2017 规范
 
 ---
 
@@ -621,11 +653,11 @@ MRP 不会替你写论文。它帮你确保**方法学正确、规范合规、�
 
 ### Q: 我做基础研究不做临床，MRP 对我有用吗？
 
-有用。`basic-medical-study-design` 覆盖细胞/动物/分子实验的设计规范（对照设置、生物学重复 vs 技术重复、盲法、随机化）。内置 Western blot、qPCR、动物实验的设计模板。还有 ARRIVE 2.0 报告规范检查。
+有用。`study-design` 的 Type B（基础/实验）路径覆盖细胞/动物/分子实验的设计规范（对照设置、生物学重复 vs 技术重复、盲法、随机化）。内置 Western blot、qPCR、动物实验的设计模板。还有 ARRIVE 2.0 报告规范检查。
 
 ### Q: 我的研究跨了多个类型（比如 AI 分析病理切片 + 动物实验验证），怎么办？
 
-叠加使用。涉及 AI 的部分用 `ai-medical-study-design`（CLAIM + TRIPOD-AI），涉及动物的部分用 `basic-medical-study-design`（ARRIVE 2.0）。两个 skill 可以在同一个研究中同时生效。
+`study-design` 是统一路由技能，可在同一研究中叠加多个 Type：涉及 AI 的部分走 Type C（CLAIM + TRIPOD-AI），涉及动物的部分走 Type B（ARRIVE 2.0）。两个路径可在同一个研究中同时生效。
 
 ### Q: Python 脚本是必须的吗？
 
@@ -641,36 +673,39 @@ MRP 不会替你写论文。它帮你确保**方法学正确、规范合规、�
 
 ```
 med-research-powers/
-├── .claude-plugin/plugin.json        # 插件元数据
+├── .claude-plugin/plugin.json        # 插件元数据 (v6.2.1)
 ├── hooks/session-start.sh            # 启动时自动注入上下文
-├── commands/ (5)                     # 斜杠命令
-│   ├── research-question.md
-│   ├── analyze-data.md
-│   ├── write-manuscript.md
-│   ├── check-standards.md
-│   └── peer-review.md
-├── skills/ (16)                      # 技能
+├── commands/ (20)                    # 斜杠命令（命令名见 README）
+│   └── *.md
+├── skills/ (20)                      # 技能
 │   ├── using-med-research-powers/    # 编排器
 │   ├── research-question-formulation/
 │   ├── literature-synthesis/
-│   ├── study-design/
-│   ├── basic-medical-study-design/
-│   │   └── references/experiment-templates/ (WB, qPCR, animal)
-│   ├── ai-medical-study-design/
-│   │   └── references/ (metrics, reporting map)
+│   ├── study-design/                 # 统一 Type A–E 路由
+│   │   └── references/
+│   │       ├── metrics-and-reporting.yaml      # AI 指标 + 规范映射 (Type C)
+│   │       ├── survey-qualitative.yaml         # 问卷/定性参考 (Type D/E)
+│   │       └── experiment-templates/ (WB, qPCR, animal)  # Type B
+│   ├── journal-selection/
 │   ├── data-analysis-planning/
 │   │   └── references/ (decision tree, omics)
+│   ├── data-collection-tools/
 │   ├── statistical-analysis/
 │   │   └── scripts/ (assumption_tests.py, power_analysis.py)
 │   ├── figure-generation/
 │   │   └── scripts/ (pub_style.py)
 │   ├── manuscript-writing/
+│   │   └── references/journal-templates.yaml   # 234 本期刊模板
+│   ├── manuscript-export/
 │   ├── reporting-standards/
 │   │   └── references/checklists/ (consort-2025, standards-index)
 │   ├── peer-review-simulation/
 │   ├── research-ethics/
 │   ├── pre-submission-verification/
-│   ├── responding-to-reviewers/
+│   ├── submission-preparation/
+│   ├── revision-response/
+│   ├── pubmed-search/
+│   ├── team-collaboration/
 │   └── writing-mrp-skills/
 ├── examples/showcase/                # 真实 pipeline 产出物
 ├── install.sh                        # 交互式安装

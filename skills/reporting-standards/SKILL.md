@@ -32,6 +32,7 @@ description: Use when checking manuscript compliance with reporting guidelines b
 - 系统综述 → PRISMA 2020
 - 诊断 → STARD 2015
 - AI 预测 → TRIPOD+AI 2024
+- AI 医学影像 → CLAIM 2020
 - AI 决策支持 → DECIDE-AI 2022
 - 手术创新 → IDEAL
 - 动物实验 → ARRIVE 2.0
@@ -59,10 +60,10 @@ description: Use when checking manuscript compliance with reporting guidelines b
 
 | 想法 | 现实 |
 |------|------|
-| "用 CONSORT 2010 就行" | 2025 已正式取代 2010，期刊要求新版（30 项） |
+| "用 CONSORT 2010 就行" | 2025 已正式取代 2010，期刊要求新版（31 项编号、含子项共 34 行） |
 | "报告规范投稿后再查" | 不合规直接 desk reject，返工成本是现在的 10 倍 |
 | "STROBE 和 CONSORT 差不多" | 完全不同的规范，用错等于没用 |
-| "AI 研究不需要临床报告规范" | CLAIM/DECIDE-AI/TRIPOD-AI 专门为 AI 医学研究设计 |
+| "AI 研究不需要临床报告规范" | CLAIM/DECIDE-AI/TRIPOD+AI 2024 专门为 AI 医学研究设计 |
 | "Checklist 打勾就行" | 必须标注论文中的具体位置（页码/段落），否则编辑退回 |
 
 ## Convergence
@@ -89,3 +90,8 @@ description: Use when checking manuscript compliance with reporting guidelines b
 - 发现 ❌ 涉及统计 → **必须**回 `statistical-analysis` 补充
 - 发现 ❌ 涉及图表 → **必须**回 `figure-generation` 补充
 - 本 skill 完成后 → 结果传入 `pre-submission-verification` 的 Gate 1
+
+### 可选衔接
+- 研究类型/规范不确定 → 先回 `study-design` 确认设计
+- 需把 checklist 随稿提交 → `submission-preparation` 一并打包
+- AI 研究需配套规范 → 同时参照 CLAIM / DECIDE-AI / TRIPOD+AI（见 standards-index.yaml）

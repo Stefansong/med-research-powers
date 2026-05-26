@@ -1,0 +1,60 @@
+# Survey / Questionnaire / Delphi — Static Reference Tables
+# Lookup tables for Module E (Survey). Router logic and step sequencing stay in SKILL.md.
+
+# Psychometric Properties (量表验证) — Step 2
+psychometric_properties:
+  attributes:
+    - {attribute: "内容效度 Content validity", method: "专家评审 + I-CVI/S-CVI", criterion: "I-CVI >= 0.78"}
+    - {attribute: "结构效度 Construct validity", method: "EFA -> CFA", criterion: "EFA: KMO > 0.7, 因子载荷 > 0.4; CFA: CFI > 0.90, RMSEA < 0.08"}
+    - {attribute: "收敛效度 Convergent validity", method: "AVE", criterion: "AVE > 0.50"}
+    - {attribute: "区分效度 Discriminant validity", method: "sqrt(AVE) > 因子间相关", criterion: "Fornell-Larcker 准则"}
+    - {attribute: "效标效度 Criterion validity", method: "与金标准/已验证量表相关", criterion: "Pearson/Spearman r"}
+    - {attribute: "内部一致性 Internal consistency", method: "Cronbach's alpha / McDonald's omega", criterion: "alpha >= 0.70"}
+    - {attribute: "重测信度 Test-retest", method: "ICC (test-retest, 2-4 周)", criterion: "ICC >= 0.70"}
+    - {attribute: "反应度 Responsiveness", method: "SRM / Effect Size (干预前后)", criterion: "如适用"}
+  sample_size_note: "EFA 至少条目数 x 5-10；CFA 至少 200 人"
+
+## Sampling Strategies — Step 3
+sampling_strategies:
+  - {strategy: "简单随机 Simple random", use: "有完整名册", tradeoff: "最无偏但需要抽样框"}
+  - {strategy: "分层随机 Stratified", use: "确保亚组代表性", tradeoff: "需要分层变量信息"}
+  - {strategy: "整群 Cluster", use: "以机构/科室为单位", tradeoff: "方便但设计效应增大"}
+  - {strategy: "便利 Convenience", use: "难以随机", tradeoff: "最常见但偏倚最大，必须讨论"}
+  - {strategy: "配额 Quota", use: "确保特定比例", tradeoff: "类似分层但非随机"}
+  - {strategy: "滚雪球 Snowball", use: "难以接触的群体", tradeoff: "偏倚大，适合探索性"}
+
+## Sample Size Calculation — Step 4
+sample_size:
+  cross_sectional:
+    formula: "n = Z^2 x p x (1-p) / d^2"
+    parameters:
+      Z: "1.96 (95% CI)"
+      p: "预期比例 (不确定时用 0.5)"
+      d: "精度 (通常 0.05)"
+    corrections:
+      finite_population: "n_adj = n / (1 + n/N)"
+      response_rate: "n_final = n_adj / expected_response_rate"
+  scale_validation: "条目数 x 5-10（EFA）; >= 200（CFA）"
+  delphi: "通常 15-30 位专家，无统一公式"
+
+## Delphi Method — Step 5
+delphi:
+  rounds:
+    - "Round 1: 开放式问题 → 收集意见"
+    - "Round 2: 结构化问卷 → Likert 评分 + 排序（反馈汇总结果）"
+    - "Round 3: 修改后再评 → 检查共识（如未达标继续）"
+    - "Round 4: 最终确认（通常不超过 4 轮）"
+  consensus_criteria:
+    - ">= 70-80% 同意率（没有统一标准，需预先定义）"
+    - "或 IQR <= 1（Likert 1-9）"
+    - "或 中位数 >= 7/9"
+  reporting: "需说明轮数、专家数、退出率、共识定义"
+
+# Data Collection Modes — Step 6
+data_collection_modes:
+  modes:
+    - {mode: "在线 Online", tools: "REDCap, 问卷星, SurveyMonkey, Google Forms", pros: "快速、低成本、自动录入", cons: "覆盖偏倚、低应答率"}
+    - {mode: "纸质 Paper", tools: "打印问卷", pros: "高应答率、无数字鸿沟", cons: "数据录入工作量大"}
+    - {mode: "电话 Phone", tools: "电话访问", pros: "适合老年人群", cons: "成本高、社会赞许偏倚"}
+    - {mode: "面对面 In-person", tools: "现场填写", pros: "最高应答率", cons: "成本最高"}
+  online_reporting_standard: "CHERRIES checklist"

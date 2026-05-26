@@ -1,0 +1,72 @@
+# Peer Review Simulation — Scoring Rubric
+# Loaded by peer-review-simulation/SKILL.md Steps 2, 3b, 4.
+
+# --- Step 2: 8-dimension 0-100 scoring (weighted) ---
+dimensions:
+  - name: Originality 创新性
+    weight: 0.15
+    bands: "0-30: 重复已知 / 31-60: 增量贡献 / 61-80: 有意义创新 / 81-100: 领域突破"
+  - name: Methodology 方法学
+    weight: 0.20
+    bands: "0-30: 严重缺陷 / 31-60: 可改进 / 61-80: 规范 / 81-100: 方法学创新"
+  - name: Results 结果可靠性
+    weight: 0.15
+    bands: "0-30: 不可信 / 31-60: 部分可信 / 61-80: 可靠 / 81-100: 强有力"
+  - name: Clinical Impact 临床意义
+    weight: 0.15
+    bands: "0-30: 无意义 / 31-60: 有限 / 61-80: 有意义 / 81-100: 改变实践"
+  - name: Writing Quality 写作质量
+    weight: 0.10
+    bands: "0-30: 难以理解 / 31-60: 需要润色 / 61-80: 清晰 / 81-100: 优美精确"
+  - name: Figures & Tables 图表
+    weight: 0.10
+    bands: "0-30: 不达标 / 31-60: 基本可用 / 61-80: 专业 / 81-100: 出版级"
+  - name: References 参考文献
+    weight: 0.05
+    bands: "0-30: 不足/过时 / 31-60: 基本覆盖 / 61-80: 全面 / 81-100: 权威"
+  - name: Reproducibility 可复现性
+    weight: 0.10
+    bands: "0-30: 不可复现 / 31-60: 部分可复现 / 61-80: 可复现 / 81-100: 完全透明"
+
+# 综合分 = 加权平均
+
+# --- Step 2: score → decision mapping ---
+score_to_decision:
+  - range: "80-100"
+    decision: "Accept / Minor Revision"
+  - range: "65-79"
+    decision: "Minor Revision"
+  - range: "50-64"
+    decision: "Major Revision"
+  - range: "30-49"
+    decision: "Major Revision (risky)"
+  - range: "0-29"
+    decision: "Reject"
+
+# --- Step 3b: journal calibration tiers ---
+# 同一篇论文投不同期刊，审稿标准不同。
+journal_calibration:
+  - tier: "Top (IF>30)"
+    note: "Nature/Lancet/JAMA — 标准极高，同样论文得分应下调 10-15 分"
+  - tier: "High (IF 10-30)"
+    note: "专科顶刊 — 标准高，得分下调 5-10 分"
+  - tier: "Mid (IF 5-10)"
+    note: "主流期刊 — 标准适中，得分不调整"
+  - tier: "Entry (IF <5)"
+    note: "入门期刊 — 标准较宽松，得分上调 5 分"
+# 若用户指定 Target Journal，在评分矩阵后添加 Raw Score / Calibrated Score / Calibration note。
+
+# --- Step 4: issue severity grading ---
+severity_grading:
+  - level: Critical
+    meaning: "致命缺陷，直接拒稿"
+    action: "必须修复"
+  - level: Major
+    meaning: "审稿人会要求修改"
+    action: "强烈建议修复"
+  - level: Minor
+    meaning: "不影响接收但需完善"
+    action: "建议修复"
+  - level: Suggestion
+    meaning: "改进建议"
+    action: "可选"

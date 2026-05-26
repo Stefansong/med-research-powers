@@ -1,34 +1,13 @@
+---
+description: Write the cover letter and get submission-system guidance (ScholarOne/EM)
+argument-hint: [target journal or manuscript]
+---
+
 # Submission Preparation
 
-Invoke the `submission-preparation` skill to write a cover letter and complete submission system steps.
+Prepare the manuscript for submission: cover letter + submission-system guidance.
 
-## Two Steps
-
-### Step 1: Cover Letter
-- Opening: hook that captures editor attention (1-2 sentences on novelty)
-- Study summary: key finding + clinical impact (3-4 sentences)
-- Journal fit: why this journal specifically
-- Author statement: conflicts, ethics, no simultaneous submission
-- Suggested reviewers (optional but recommended)
-
-Cascade rewrite: say "rewrite for [journal name]" to adapt for a different journal.
-
-### Step 2: Submission System Guide
-System-specific instructions for: ScholarOne, Editorial Manager, JournalSubmit, eJournalPress
-
-Covers:
-- File format and naming requirements
-- Figure upload specs (TIFF, EPS, resolution)
-- Metadata entry (author order, ORCID, CRediT)
-- Cover page / blinded manuscript separation
-- Ethical compliance fields (IRB, trial registration, data availability)
-
-## Output
-
-| File | Description |
-|------|-------------|
-| `cover-letter.md` | Submission cover letter |
-| `submission-checklist.md` | Step-by-step upload checklist for target journal |
+Invoke the `submission-preparation` skill, which contains the authoritative cover-letter template/structure and step-by-step submission-portal guidance (ScholarOne, Editorial Manager, and similar systems). Pass through the user's target journal / manuscript: $ARGUMENTS
 
 ## Prerequisite
-`pre-submission-verification` must pass (6-Gate) before this step.
+Run `/pre-submission` first — all 6 gates must pass before preparing the cover letter and submitting.

@@ -54,7 +54,7 @@ description: Use when a user has a vague research idea and needs to define a cle
 
 ## Output
 
-生成 `research-question.md`：科学问题（一句话）→ PICO 分解 → 研究假设（H0/H1）→ FINER 评分（1-5）→ 预期结果 → 潜在局限性
+生成 `research-question.md`：科学问题（一句话）→ 框架分解（PICO / PIRD / PECO，按研究类型选用）→ 研究假设（H0/H1）→ FINER 评分（1-5）→ 预期结果 → 潜在局限性
 
 ## Common Mistakes
 
@@ -66,18 +66,30 @@ description: Use when a user has a vague research idea and needs to define a cle
 | "结局指标以后再定" | 事后选择结局 = 结果偏倚 |
 | "FINER 评估不重要" | 可行性低的完美问题等于零 |
 
+## Red Flags — STOP
+
+- 用户说"先跑数据看看" / 没有假设就要分析 → STOP，先定义研究问题
+- 框架要素缺失（PICO 缺 C，或 PIRD 缺 Reference standard）→ 继续追问，不要凑数
+- 结局指标含糊或"以后再定" → STOP，事后选结局 = 结果偏倚
+- 研究问题大而空（如"AI 在医学的应用"）→ 收窄到可检验的具体问题
+- 用错框架（干预性研究套 PIRD，诊断准确性研究套 PICO）→ 重新判断研究类型
+
 ## Convergence
 
 当以下 3 个条件**全部**满足时停止追问：
-1. PICO 四要素全部明确
+1. 研究框架要素全部明确——干预性研究用 **PICO** 四要素，诊断准确性研究用 **PIRD** 四要素
+   （暴露/病因研究可用 **PECO**）；按研究类型选对框架且无缺项
 2. 研究假设可以用统计语言表述
 3. 用户确认问题定义准确
 
 ## 衔接规则
 
-### 强制衔接
+### 强制衔接（不可跳过）
 - 完成后 → 建议 `literature-synthesis`（了解现状）或 `study-design`（设计研究，内置 type router 自动路由）
 
-### 被其他 skill 调用
+### 前置依赖（不满足则阻止）
+- 无——本 skill 是流程起点，可独立运行
+
+### 可选衔接
 - `data-analysis-planning` 发现没有明确假设 → 触发本 skill
 - `manuscript-writing` 发现没有 `research-question.md` → 触发本 skill

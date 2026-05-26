@@ -1,31 +1,15 @@
+---
+description: Systematically search and synthesize research literature (PRISMA flow + gap map)
+argument-hint: [research topic or PICO]
+---
+
 # Literature Synthesis
 
-Invoke the `literature-synthesis` skill to systematically search and synthesize research literature.
+Systematically search and synthesize research literature.
 
-## Workflow
+Invoke the `literature-synthesis` skill, which contains the authoritative database-selection rules, search-strategy build (PICO → MeSH → Boolean), PRISMA screening flow, and thematic evidence synthesis. Pass through the user's topic: $ARGUMENTS
 
-### Step 1: Select databases
-Based on research type, choose database combination (minimum 2; systematic reviews minimum 3):
-- **PubMed** (PubMed MCP) — biomedical core
-- **arXiv** (WebSearch) — AI/ML algorithms
-- **Cochrane** (WebSearch) — systematic reviews
-- **IEEE/ACM** (WebSearch) — engineering/CS
-- **medRxiv/bioRxiv** (WebSearch) — preprints
-
-### Step 2: Build search strategy
-PICO → keywords → MeSH + free text + Boolean operators → execute per database.
-
-### Step 3: Screen (PRISMA flow)
-Deduplicate → title/abstract screening → full-text screening → snowball search → final inclusion.
-
-### Step 4: Evidence synthesis
-Organize by theme (not chronology): Known → Unknown → Controversial → Research gap.
-
-## Output (4 files)
-- `search-strategy.md` — reproducible search queries per database
-- `screening-log.md` — PRISMA flow diagram data (counts + exclusion reasons)
-- `literature-references.md` — structured record per included study
-- `literature-synthesis-summary.md` — evidence map + gap analysis
+The skill produces 4 files: `search-strategy.md`, `screening-log.md`, `literature-references.md`, and `literature-synthesis-summary.md` (evidence map + gap analysis).
 
 ## Mandatory next step
-After completion → `study-design` or `manuscript-writing` (Introduction).
+After completion, proceed to `/study-design` or `/write-manuscript` (Introduction).

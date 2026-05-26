@@ -1,0 +1,92 @@
+# Submission System Lookup Tables
+# Loaded on demand by submission-preparation Step 2.
+# Keep judgment/reasoning in SKILL.md; this file holds static lookup data only.
+
+# 2.1 — Identify the submission system by publisher/journal family.
+# NOTE: PLOS uses Editorial Manager (Aries), NOT the legacy Bench>Press.
+submission_systems:
+  - system: "ScholarOne / Manuscript Central"
+    journals: "Lancet 系列、JAMA 系列、BMJ、Nature 系列、多数 Wiley/T&F 期刊"
+  - system: "Editorial Manager (Aries)"
+    journals: "Cell 系列、Science、Elsevier 部分期刊、Springer Nature 部分、PLOS 系列"
+  - system: "eJManager"
+    journals: "部分中文 SCI 期刊"
+  - system: "OJS (Open Journal Systems)"
+    journals: "部分开源/学术期刊"
+
+# 2.2 — File preparation checklist.
+file_preparation:
+  required:
+    - "Main manuscript（.docx 优先，部分期刊接受 .pdf 或 LaTeX）"
+    - "Cover Letter（通常粘贴到系统文本框，非上传文件）"
+    - "Figures（单独上传，TIFF/EPS/PDF 格式，≥300 DPI）"
+    - "Tables（嵌入正文或单独上传，取决于期刊）"
+    - "Title Page（部分期刊要求单独上传，含所有作者信息）"
+  may_be_required:
+    - "Supplementary Materials（附录、扩展数据）"
+    - "Reporting Checklist（CONSORT/STROBE/PRISMA 填好的 checklist）"
+    - "Conflict of Interest forms（某些期刊要求 ICMJE COI 表格）"
+    - "Ethics approval certificate（伦理批准扫描件）"
+    - "Data Availability Statement"
+    - "Author contribution statement（CRediT taxonomy）"
+  naming_rules:
+    - "避免空格和特殊字符"
+    - "推荐格式：Figure1.tiff、Table1.docx、SupplementaryMethods.pdf"
+    - "某些系统自动重命名，无需担心"
+
+# 2.3 — Metadata fields the submission system commonly requires.
+metadata_fields:
+  - field: "Article type"
+    note: "Original Article / Review / Letter / Brief Communication — 选错会被退"
+  - field: "Title"
+    note: "与正文标题完全一致"
+  - field: "Running title"
+    note: "≤50 字符，某些系统必填"
+  - field: "Abstract"
+    note: "粘贴全文，检查字数限制"
+  - field: "Keywords"
+    note: "3-6 个，用 MeSH 术语优先"
+  - field: "Author list"
+    note: "顺序、单位、邮箱必须准确；通讯作者标注"
+  - field: "ORCID"
+    note: "越来越多期刊强制要求通讯作者 ORCID"
+  - field: "Funding"
+    note: "基金号、资助机构全称"
+  - field: "COI"
+    note: "所有作者的利益冲突声明"
+  - field: "Suggested reviewers"
+    note: "2-4 位，避免同单位或合作者"
+  - field: "Excluded reviewers"
+    note: "有利益冲突的审稿人"
+  - field: "Trial registration"
+    note: "临床试验注册号（如适用）"
+
+# 2.4 — Upload & submit order and pre-submit checks.
+upload_and_submit:
+  upload_order: "通常 manuscript → figures → tables → supplementary → cover letter"
+  pdf_preview_must_check:
+    - "图表是否正确嵌入"
+    - "公式是否正常显示"
+    - "页码是否连续"
+    - "作者信息是否完整"
+  final_submit: "点击 Submit 后会收到确认邮件"
+  save_confirmation: "截图或保存确认邮件中的 manuscript ID"
+
+# 2.5 — Post-submission status meanings.
+post_submission_status:
+  - status: "Submitted"
+    meaning: "已提交，等待编辑初审"
+    eta: "—"
+  - status: "With Editor"
+    meaning: "编辑在看"
+    eta: "1-2 周"
+  - status: "Under Review"
+    meaning: "已送审"
+    eta: "2-8 周"
+  - status: "Decision Made"
+    meaning: "有结果了"
+    eta: "—"
+  - status: "Revise"
+    meaning: "修改后重投"
+    eta: "—"
+# 正常审稿周期：4-12 周。超过 12 周可发礼貌催稿邮件。

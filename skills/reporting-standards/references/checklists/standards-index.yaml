@@ -7,7 +7,7 @@ standards:
   - id: consort-2025
     name: CONSORT 2025
     file: consort-2025.yaml
-    items: 30
+    items: 34   # 31 numbered (1-31) + 3 sub-items (21a, 26a, 28a)
     for: "Randomised controlled trials"
     supersedes: "CONSORT 2010 — do NOT use old version"
     
@@ -153,11 +153,6 @@ standards:
       - "Stage 2b (Exploration): Prospective cohort, feasibility studies"
       - "Stage 3 (Assessment): RCT or high-quality comparative study"
       - "Stage 4 (Long-term): Registry, long-term outcome surveillance"
-      
-  - id: mval
-    name: MVAL
-    for: "Surgical video AI reporting"
-    note: "Verify latest version and full title"
 
   # === Qualitative ===
   - id: coreq
