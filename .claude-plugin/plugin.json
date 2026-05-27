@@ -1,7 +1,7 @@
 {
   "name": "med-research-powers",
   "description": "Medical research methodology framework — 20 skills with selective constraints covering the full research pipeline. Supports clinical, basic science, AI/ML, qualitative, and survey research design. 234 journal templates, 42+ reporting standards (CONSORT 2025, STROBE, PRISMA, TRIPOD-AI, DECIDE-AI, IDEAL), PubMed MCP integration, one-click .docx export.",
-  "version": "6.2.1",
+  "version": "6.2.2",
   "author": {
     "name": "BTCH Uro AI Lab"
   },

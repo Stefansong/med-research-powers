@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Medical research methodology framework with 20 skills, 42+ reporting standards, 234 journal templates, 6-gate verification, selective constraints",
-    "version": "6.2.1"
+    "version": "6.2.2"
   },
   "plugins": [
     {
       "name": "med-research-powers",
       "source": "./",
       "description": "From hypothesis to publication — an AI-enforced research methodology framework. 20 skills with type routers (clinical/basic/AI-ML/qualitative/survey study design + 6 article types), 234 journal templates, selective constraints with 4 hard checkpoints, PubMed MCP integration, and one-click .docx export.",
-      "version": "6.2.1",
+      "version": "6.2.2",
       "author": {
         "name": "BTCH Uro AI Lab"
       },
