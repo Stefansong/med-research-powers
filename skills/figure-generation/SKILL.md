@@ -7,7 +7,7 @@ description: Use when creating publication-quality figures for journal submissio
 
 ## Overview
 
-每张图必须达到直接投稿的质量。使用 `scripts/pub_style.py` 设置全局样式。
+每张图必须达到直接投稿的质量。使用 `${CLAUDE_PLUGIN_ROOT}/skills/figure-generation/scripts/pub_style.py` 设置全局样式（运行目录是用户项目，不是插件目录，必须用 `${CLAUDE_PLUGIN_ROOT}` 定位）。
 
 ## When to Use
 

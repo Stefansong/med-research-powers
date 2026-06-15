@@ -1,4 +1,4 @@
-# Med-Research-Powers v6.2.1 Architecture
+# Med-Research-Powers v6.2.3 Architecture
 
 ## 1. Full Pipeline Flow
 
@@ -25,7 +25,7 @@ flowchart TD
 
     subgraph PHASE3["Phase 3: Manuscript & QA"]
         MW[manuscript-writing<br/>IMRaD + 5 Review Types + 234 Journal Templates]
-        RS[reporting-standards<br/>42+ Standards Matching]
+        RS[reporting-standards<br/>41 Standards Matching]
         RE[research-ethics<br/>IRB / IACUC / Privacy]
         PRS[peer-review-simulation<br/>4 Reviewers + Editor Summary]
         PSV[pre-submission-verification<br/>6-Gate Mandatory Check]
@@ -254,7 +254,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     subgraph PLUGIN["med-research-powers (Plugin)"]
-        PJ[".claude-plugin/plugin.json<br/>v6.2.1 | 20 commands registered"]
+        PJ[".claude-plugin/plugin.json<br/>v6.2.3 | 20 commands registered"]
         HOOK["hooks/session-start.sh<br/>Injects routing table on startup"]
         META["skills/using-med-research-powers<br/>Orchestrator: 1% Rule + Checkpoints"]
     end
@@ -284,7 +284,7 @@ flowchart TD
 
     subgraph REFS["Reference Data"]
         R1["stat-method-decision-tree.yaml<br/>15+ method categories"]
-        R2["standards-index.yaml<br/>42+ reporting standards"]
+        R2["standards-index.yaml<br/>41 reporting standards"]
         R3["consort-2025.yaml<br/>30-item checklist"]
         R4["journal-templates.yaml<br/>234 journals, 30+ specialties"]
         R5["metrics-and-reporting.yaml<br/>AI metrics + fairness + robustness"]
@@ -315,7 +315,7 @@ flowchart TD
 
 ```mermaid
 mindmap
-  root(("42+ Reporting<br/>Standards"))
+  root(("41 Reporting<br/>Standards"))
     Clinical Trials
       CONSORT 2025
       CONSORT-AI

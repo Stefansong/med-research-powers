@@ -162,7 +162,7 @@ result = two_groups(effect_size=0.5, power=0.80, dropout=0.15)
 
 **必须满足：** 任何人拿到数据文件 + 这个脚本，可以一键复现所有结果。
 
-以 `scripts/analysis_template.py` 为起点（含环境打印、随机种子、分段结构）。该模板加载 `data_clean.csv`（Step 2.4 产出），**绝不**重新加载原始 `data.csv` 做分析。
+以 `${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/analysis_template.py` 为起点（含环境打印、随机种子、分段结构；运行目录是用户项目，用 `${CLAUDE_PLUGIN_ROOT}` 定位插件脚本）。该模板加载 `data_clean.csv`（Step 2.4 产出），**绝不**重新加载原始 `data.csv` 做分析。
 
 **脚本结构要求：**
 - 数据加载段读取 `data_clean.csv`（清洗后数据集），与 Step 2.4 一致

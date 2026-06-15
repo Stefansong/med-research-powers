@@ -5,7 +5,7 @@
 
 echo "<session-start-hook>"
 echo "<EXTREMELY_IMPORTANT>"
-echo "You have Med-Research-Powers (MRP) v6.2.1 — medical research methodology framework."
+echo "You have Med-Research-Powers (MRP) v6.2.3 — medical research methodology framework."
 echo "**Before ANY research-related task, check if a MRP skill applies (1% Rule).**"
 
 # ── Project state: raw dump so Claude sees everything ─────────────────────────
@@ -35,7 +35,6 @@ else
 fi
 
 # ── Environment check ─────────────────────────────────────────────────────────
-python3 -c "import docx" 2>/dev/null || echo ""
 python3 -c "import docx" 2>/dev/null || echo "⚠️  python-docx not installed — manuscript-export unavailable (pip install python-docx)"
 
 # ── Routing table: only for new projects ─────────────────────────────────────
@@ -75,7 +74,7 @@ cat <<'RULES'
 3. **Never skip pre-submission-verification** before declaring a manuscript complete
 4. **Checkpoint** — report after each skill; ask before next step; no silent transitions
 5. **Hard Checkpoints** — study protocol / SAP / target journal / pre-submission: explicit user confirmation required
-6. **CONSORT 2025** (not 2010) — 30 items, officially supersedes 2010
+6. **CONSORT 2025** (not 2010) — 31 numbered items / 34 rows, officially supersedes 2010
 </EXTREMELY_IMPORTANT>
 </session-start-hook>
 RULES

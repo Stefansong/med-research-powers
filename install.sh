@@ -15,7 +15,7 @@ NC='\033[0m'
 
 echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}║     Med-Research-Powers v6.2.1 Installer     ║${NC}"
+echo -e "${BOLD}║     Med-Research-Powers v6.2.3 Installer     ║${NC}"
 echo -e "${BOLD}║     医学科研方法论框架                        ║${NC}"
 echo -e "${BOLD}╚══════════════════════════════════════════════╝${NC}"
 echo ""

@@ -1,13 +1,23 @@
 {
   "name": "med-research-powers",
-  "description": "Medical research methodology framework — 20 skills with selective constraints covering the full research pipeline. Supports clinical, basic science, AI/ML, qualitative, and survey research design. 234 journal templates, 42+ reporting standards (CONSORT 2025, STROBE, PRISMA, TRIPOD-AI, DECIDE-AI, IDEAL), PubMed MCP integration, one-click .docx export.",
-  "version": "6.2.2",
+  "description": "Medical research methodology framework — 20 skills with selective constraints covering the full research pipeline. Supports clinical, basic science, AI/ML, qualitative, and survey research design. 234 journal templates, 41 reporting standards (CONSORT 2025, STROBE, PRISMA, TRIPOD-AI, DECIDE-AI, IDEAL), PubMed MCP integration, one-click .docx export.",
+  "version": "6.2.3",
   "author": {
     "name": "BTCH Uro AI Lab"
   },
   "license": "MIT",
   "keywords": ["medical-research", "clinical-trials", "AI-medical", "statistics", "manuscript", "review-article", "peer-review", "reporting-standards", "CONSORT-2025", "TRIPOD-AI", "PubMed", "qualitative", "survey", "meta-analysis"],
   "hooks": {
-    "session-start": "hooks/session-start.sh"
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"
+          }
+        ]
+      }
+    ]
   }
 }

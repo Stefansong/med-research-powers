@@ -14,6 +14,11 @@ Thumbs.db
 *.swp
 *.swo
 
+# Backups / scratch
+*.bak
+*.bak.*
+*.orig
+
 # Generated outputs (root-level only, not in commands/ or skills/)
 /results-summary.md
 /analysis-plan.md

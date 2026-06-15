@@ -8,7 +8,7 @@ Med-Research-Powers（MRP）是一个 [Claude Code](https://claude.ai/code) 插�
 
 灵感来自 [Superpowers](https://github.com/obra/superpowers)（软件工程方法论），针对临床与生物医学研究做了改造。
 
-> **版本 6.2.1** · 20 个 skill · 20 个斜杠命令 · MIT 许可 · 作者 BTCH Uro AI Lab
+> **版本 6.2.3** · 20 个 skill · 20 个斜杠命令 · MIT 许可 · 作者 BTCH Uro AI Lab
 
 ---
 
@@ -19,7 +19,7 @@ Med-Research-Powers（MRP）是一个 [Claude Code](https://claude.ai/code) 插�
 | **Skills** | 20 个 skill，覆盖完整科研流程 |
 | **斜杠命令** | 20 个命令，可直接调用 |
 | **研究类型** | 临床、基础/实验、AI/ML、定性、问卷/Delphi（统一入口路由） |
-| **报告规范** | 42+ 项 —— CONSORT 2025、SPIRIT 2025、STROBE、PRISMA、TRIPOD+AI 2024、DECIDE-AI、CLAIM、IDEAL、ARRIVE 2.0、COREQ、CHERRIES …… |
+| **报告规范** | 41 项 —— CONSORT 2025、SPIRIT 2025、STROBE、PRISMA、TRIPOD+AI 2024、DECIDE-AI、CLAIM、IDEAL、ARRIVE 2.0、COREQ、CHERRIES …… |
 | **期刊模板** | 234 本期刊，覆盖 30+ 专科 |
 | **统计方法** | 15+ 类方法，配前提假设驱动的决策树 |
 | **Python 脚本** | 5 个内置脚本（前提检验、效能分析、分析脚手架、绘图样式、.docx 导出） |
@@ -42,7 +42,7 @@ AI 科研智能体每次都会犯同样的错。MRP 用强制流程取代“凭�
 | 写完稿子就说“完成” | 6 道关卡不合规就不让投 |
 | 自信地编造参考文献 | PubMed MCP 自动核验每一条引用 |
 | 只报 `p < 0.05`，没有效应量 | 必须给效应量 + 95% CI + 精确 p 值 |
-| 忽视报告规范 | 从 42+ 项里匹配研究类型对应的规范 |
+| 忽视报告规范 | 从 41 项里匹配研究类型对应的规范 |
 | AI 数据随机划分 | 患者级划分，提示数据泄漏与外部验证 |
 
 **核心理念 —— 强制流程，而非建议：**
@@ -224,7 +224,7 @@ Skill 根据自然语言意图自动触发——你无需记住命令。它们�
 |------|------|
 | `/mrp:write-manuscript` | 撰写医学研究稿件（IMRaD 或综述） |
 | `/mrp:manuscript-export` | Markdown → 符合期刊排版的 `.docx` |
-| `/mrp:reporting-standards` | 把研究类型匹配到报告规范（42+ 项） |
+| `/mrp:reporting-standards` | 把研究类型匹配到报告规范（41 项） |
 | `/mrp:check-standards` | 报告规范合规检查（投稿前检查的 Gate 1） |
 | `/mrp:research-ethics` | 检查伦理合规并起草伦理声明 |
 | `/mrp:peer-review` | 模拟同行评审（4 审稿人 + 8 维度评分） |
@@ -444,7 +444,7 @@ Skill 根据自然语言意图自动触发——你无需记住命令。它们�
 
 ---
 
-## 报告规范（42+）
+## 报告规范（41）
 
 完整的机读索引见 [`skills/reporting-standards/references/checklists/standards-index.yaml`](skills/reporting-standards/references/checklists/standards-index.yaml)，结构化的 CONSORT 2025 清单见 [`consort-2025.yaml`](skills/reporting-standards/references/checklists/consort-2025.yaml)。
 
@@ -666,7 +666,7 @@ MRP 将 Superpowers 方法学框架从软件工程适配到医学研究。
 | `finishing-a-development-branch` | `journal-selection` + `submission-preparation` | 期刊定位 + 投稿信替代合并/部署 |
 | `writing-skills` | `writing-mrp-skills` | 相同的元技能，保证可扩展性 |
 | — | `literature-synthesis` | 软件工程中无对应物；研究需要证据综述 |
-| — | `reporting-standards` | 软件工程中无对应物；42+ 项领域特定合规标准 |
+| — | `reporting-standards` | 软件工程中无对应物；41 项领域特定合规标准 |
 | — | `research-ethics` | 软件工程中无对应物；IRB/IACUC 要求 |
 
 ---

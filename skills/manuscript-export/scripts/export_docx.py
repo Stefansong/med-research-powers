@@ -474,6 +474,14 @@ def generate_report(stats: dict, config: dict, output_path: str) -> str:
     else:
         report += "- ✅ No placeholders detected\n"
 
+    report += (
+        "\n## Notes\n"
+        "- Word count covers body paragraphs and list items only "
+        "(headings and table cells are excluded) — treat it as approximate.\n"
+        "- Figures are **not** embedded; insert `![]()` images and final figure "
+        "files manually before submission.\n"
+    )
+
     return report
 
 

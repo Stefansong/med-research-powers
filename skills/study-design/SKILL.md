@@ -107,7 +107,7 @@ RCT（含交叉、非劣效、适应性、平台、实效性试验）、队列�
 模板大纲（7 个部分：研究概要 / 研究对象 / 样本量计算 MANDATORY / 变量定义 / 数据收集 / SAP 概要 / 伦理合规）→ 加载 `references/protocol-templates.md` 的 "A. Clinical" 部分。
 
 关键判断（保留在此）：
-- 样本量计算用 `skills/statistical-analysis/scripts/power_analysis.py` 或 G*Power，必须确认效应量来源、α、β、脱落率。
+- 样本量计算用 `${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py` 或 G*Power，必须确认效应量来源、α、β、脱落率。
 - 详细 SAP → `data-analysis-planning`；伦理合规 → `research-ethics`。
 
 ---

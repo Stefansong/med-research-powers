@@ -8,7 +8,7 @@ Med-Research-Powers (MRP) is a [Claude Code](https://claude.ai/code) plugin that
 
 Inspired by [Superpowers](https://github.com/obra/superpowers) (software-engineering methodology), adapted for clinical and biomedical research.
 
-> **Version 6.2.1** · 20 skills · 20 slash commands · MIT License · by BTCH Uro AI Lab
+> **Version 6.2.3** · 20 skills · 20 slash commands · MIT License · by BTCH Uro AI Lab
 
 ---
 
@@ -19,7 +19,7 @@ Inspired by [Superpowers](https://github.com/obra/superpowers) (software-enginee
 | **Skills** | 20 skills covering the full research pipeline |
 | **Slash Commands** | 20 commands for direct invocation |
 | **Study Designs** | Clinical, basic/bench, AI/ML, qualitative, survey/Delphi (one unified router) |
-| **Reporting Standards** | 42+ standards — CONSORT 2025, SPIRIT 2025, STROBE, PRISMA, TRIPOD+AI 2024, DECIDE-AI, CLAIM, IDEAL, ARRIVE 2.0, COREQ, CHERRIES … |
+| **Reporting Standards** | 41 standards — CONSORT 2025, SPIRIT 2025, STROBE, PRISMA, TRIPOD+AI 2024, DECIDE-AI, CLAIM, IDEAL, ARRIVE 2.0, COREQ, CHERRIES … |
 | **Journal Templates** | 234 journals across 30+ specialties |
 | **Statistical Methods** | 15+ method categories with an assumption-driven decision tree |
 | **Python Scripts** | 5 bundled scripts (assumptions, power analysis, analysis scaffold, figure styling, .docx export) |
@@ -42,7 +42,7 @@ AI research agents make the same mistakes every time. MRP replaces "best-effort 
 | Writes a manuscript and declares "done" | 6-gate verification blocks submission until compliant |
 | Fabricates references confidently | PubMed MCP auto-verifies every citation |
 | Reports `p < 0.05` with no effect size | Requires effect size + 95% CI + exact p-value |
-| Ignores reporting standards | Matches study type to the correct standard from 42+ options |
+| Ignores reporting standards | Matches study type to the correct standard from 41 options |
 | Splits AI data randomly | Patient-level splits; flags data leakage and external validation |
 
 **Core philosophy — enforced workflows, not suggestions:**
@@ -224,7 +224,7 @@ Every skill is reachable in plain language; commands give you a direct entry poi
 |---------|--------------|
 | `/mrp:write-manuscript` | Draft a medical research manuscript (IMRaD or review) |
 | `/mrp:manuscript-export` | Convert Markdown → journal-formatted `.docx` |
-| `/mrp:reporting-standards` | Match study type to its reporting guideline (42+ standards) |
+| `/mrp:reporting-standards` | Match study type to its reporting guideline (41 standards) |
 | `/mrp:check-standards` | Reporting-guideline compliance check (Gate 1 of pre-submission) |
 | `/mrp:research-ethics` | Check ethical compliance & draft the ethics statement |
 | `/mrp:peer-review` | Simulate peer review (4 reviewers + 8-dimension scoring) |
@@ -444,7 +444,7 @@ The decision tree covers 15+ method categories:
 
 ---
 
-## Reporting Standards (42+)
+## Reporting Standards (41)
 
 The full, machine-readable index lives in [`skills/reporting-standards/references/checklists/standards-index.yaml`](skills/reporting-standards/references/checklists/standards-index.yaml), with a structured CONSORT 2025 checklist in [`consort-2025.yaml`](skills/reporting-standards/references/checklists/consort-2025.yaml).
 
@@ -666,7 +666,7 @@ MRP adapts the Superpowers methodology framework from software engineering to me
 | `finishing-a-development-branch` | `journal-selection` + `submission-preparation` | Journal targeting + cover letter replace merge/deploy |
 | `writing-skills` | `writing-mrp-skills` | Same meta-skill for extensibility |
 | — | `literature-synthesis` | No software equivalent; research requires evidence review |
-| — | `reporting-standards` | No software equivalent; 42+ domain-specific compliance standards |
+| — | `reporting-standards` | No software equivalent; 41 domain-specific compliance standards |
 | — | `research-ethics` | No software equivalent; IRB/IACUC requirements |
 
 ---

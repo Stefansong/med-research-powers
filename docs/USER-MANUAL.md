@@ -1,6 +1,6 @@
 # Med-Research-Powers 用户手册
 
-> **版本**: v6.2.1 | **仓库**: https://github.com/Stefansong/med-research-powers
+> **版本**: v6.2.3 | **仓库**: https://github.com/Stefansong/med-research-powers
 
 ---
 
@@ -14,7 +14,7 @@
 6. [20 个斜杠命令](#6-20-个斜杠命令)
 7. [6-Gate 投稿前验证](#7-6-gate-投稿前验证)
 8. [4 审稿人模拟评审](#8-4-审稿人模拟评审)
-9. [报告规范速查（42+ 个）](#9-报告规范速查42-个)
+9. [报告规范速查（41 个）](#9-报告规范速查41-个)
 10. [内置脚本和参考文件](#10-内置脚本和参考文件)
 11. [常见场景示例](#11-常见场景示例)
 12. [常见问题 FAQ](#12-常见问题-faq)
@@ -33,7 +33,7 @@ MRP 用 **20 个技能**覆盖从"我想研究一个课题"到"论文投出去"�
 
 | 特性 | 通用学术框架 | Med-Research-Powers |
 |------|------------|-------------------|
-| 报告规范 | 不覆盖或仅提 APA | 42+ 个医学规范（CONSORT 2025、DECIDE-AI、IDEAL...） |
+| 报告规范 | 不覆盖或仅提 APA | 41 个医学规范（CONSORT 2025、DECIDE-AI、IDEAL...） |
 | 伦理审查 | 不涉及 | 强制检查 IRB/IACUC、知情同意、数据隐私 |
 | 实验设计 | 不涉及 | WB/qPCR/动物实验设计模板 |
 | 样本量计算 | 不涉及 | 内置 5 种场景的 Python 脚本 |
@@ -312,7 +312,7 @@ MRP 的设计是一条**推荐流水线**，其中 4 个硬性检查点（Protoc
 
 #### 5.8 reporting-standards（报告规范检查）
 
-覆盖 42+ 个报告规范。核心路由：
+覆盖 41 个报告规范。核心路由：
 
 | 研究类型 | 用哪个规范 |
 |---------|----------|
@@ -327,7 +327,7 @@ MRP 的设计是一条**推荐流水线**，其中 4 个硬性检查点（Protoc
 | 医学影像 AI | CLAIM 2020 |
 | 动物实验 | ARRIVE 2.0 |
 
-完整的 42+ 个规范主索引在 `skills/reporting-standards/references/standards-index.yaml`。
+完整的 41 个规范主索引在 `skills/reporting-standards/references/standards-index.yaml`。
 
 **输出**：逐条检查报告（✅/⚠️/❌） + 格式化的投稿 checklist
 
@@ -486,7 +486,7 @@ AI 辅助写论文时最大的风险不是格式问题，而是内容不真实�
 
 ---
 
-## 9. 报告规范速查（42+ 个）
+## 9. 报告规范速查（41 个）
 
 ### 最常用的 10 个
 
@@ -575,7 +575,7 @@ r = survival(hazard_ratio=0.7, event_rate=0.4)
 | 文件 | 位置 | 内容 |
 |------|------|------|
 | `consort-2025.yaml` | reporting-standards/references/checklists/ | 完整 30 项清单（含 2025 新增标记） |
-| `standards-index.yaml` | reporting-standards/references/checklists/ | 42+ 个规范的主索引 |
+| `standards-index.yaml` | reporting-standards/references/checklists/ | 41 个规范的主索引 |
 | `stat-method-decision-tree.yaml` | data-analysis-planning/references/ | 统计方法选择指南 |
 | `metrics-and-reporting.yaml` | study-design/references/ | AI 研究指标 + 规范映射 |
 | `survey-qualitative.yaml` | study-design/references/ | 问卷/定性研究设计参考（Type D/E） |
@@ -673,7 +673,7 @@ MRP 不会替你写论文。它帮你确保**方法学正确、规范合规、�
 
 ```
 med-research-powers/
-├── .claude-plugin/plugin.json        # 插件元数据 (v6.2.1)
+├── .claude-plugin/plugin.json        # 插件元数据 (v6.2.3)
 ├── hooks/session-start.sh            # 启动时自动注入上下文
 ├── commands/ (20)                    # 斜杠命令（命令名见 README）
 │   └── *.md

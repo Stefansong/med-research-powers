@@ -1,5 +1,22 @@
 # Changelog
 
+## v6.2.3 (2026-06-15)
+
+Consistency & runtime-correctness pass. Closes the gaps the v6.2.2 audit missed (the hook and installer were *not* "already current") and adds a CI guard so this class of drift can't recur.
+
+### Bug Fixes
+- **Version drift** — `plugin.json`/`marketplace.json` were at 6.2.2 while the `session-start.sh` hook, `install.sh`, `README*.md`, and `docs/` still said 6.2.1. Unified every version string at **6.2.3**.
+- **`session-start.sh`**: the always-injected rule said "CONSORT 2025 — 30 items", contradicting the corrected `reporting-standards`/README count. Fixed to **31 numbered items / 34 rows**. Also removed a duplicated `python3 -c "import docx"` probe.
+- **Runtime script paths** — `manuscript-export`, `figure-generation`, `statistical-analysis`, and `study-design` referenced plugin scripts (`export_docx.py`, `pub_style.py`, `analysis_template.py`, `power_analysis.py`) by skill-relative paths that don't resolve from the user's working directory. Now anchored to `${CLAUDE_PLUGIN_ROOT}/skills/.../scripts/...`.
+- **Standards count** — corrected the "42+ reporting standards" claim to the real **41** across manifests, README*, and docs (the on-disk index has 41 entries); fixed the resulting broken TOC anchor in `USER-MANUAL.md`.
+- Removed a stray `plugin.json.bak.*` backup from `.claude-plugin/`; added `*.bak*`/`*.orig` to `.gitignore`.
+
+### Tooling
+- Added `tools/check_consistency.py` — asserts a single version string everywhere, that claimed counts (20 skills / 20 commands / 234 journals / 41 standards) match disk, and that plugin scripts are referenced via `${CLAUDE_PLUGIN_ROOT}`.
+- Added `.github/workflows/ci.yml` — runs the guard plus JSON/YAML validation and `compileall` on every push and PR.
+
+---
+
 ## v6.2.2 (2026-05-26)
 
 Consistency & bug-fix pass (multi-agent audit + re-verification). No behavioural changes to the dynamic `session-start.sh` hook or `install.sh` (already current).

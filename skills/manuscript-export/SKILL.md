@@ -61,13 +61,13 @@ description: Use when exporting manuscript markdown into journal-formatted .docx
 
 ### Step 3: 生成 .docx
 
-调用现成脚本 `scripts/export_docx.py` 完成导出，**不要手写转换代码**：
+调用现成脚本（位于插件目录，用 `${CLAUDE_PLUGIN_ROOT}` 定位——运行目录是用户项目，**不是**插件目录）完成导出，**不要手写转换代码**：
 
 ```bash
-python3 scripts/export_docx.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-export/scripts/export_docx.py \
   --manuscript-dir ./manuscript \
   --journal <journal-id> \
-  --yaml ../manuscript-writing/references/journal-templates.yaml \
+  --yaml ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/references/journal-templates.yaml \
   --output manuscript/manuscript.docx \
   --report export-report.md
 ```
@@ -79,7 +79,7 @@ python3 scripts/export_docx.py \
 - 表格格式化（表头加粗 + 灰底）、Nature/Lancet/JAMA 特殊要素
 - 统计字数 / 参考文献 / 表格、Placeholder 检测、生成导出报告
 
-> 期刊 ID 必须存在于 `../manuscript-writing/references/journal-templates.yaml`；
+> 期刊 ID 必须存在于 `${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/references/journal-templates.yaml`；
 > 未知期刊先走 Step 1 的 WebSearch 流程补全模板，再导出。
 
 #### 章节顺序（按期刊要求）
