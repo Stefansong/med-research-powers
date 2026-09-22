@@ -1,0 +1,92 @@
+# STARD 2015 checklist — transcribed verbatim from Table 1 of the STARD 2015 statement
+# Source: Bossuyt PM, Reitsma JB, Bruns DE, et al. STARD 2015: an updated list of essential items
+#         for reporting diagnostic accuracy studies. BMJ 2015;351:h5527. doi:10.1136/bmj.h5527
+#         (PMC4623764). Retrieved via PubMed/PMC full text.
+# The statement: "A one page document presents 30 items, grouped under sections that follow the
+# introduction, methods, results, and discussion (IMRAD) structure". STARD 2015 replaces STARD 2003.
+# New in 2015 (Table 2 of the statement): items 2, 3, 4, 18, 26-27, 28, 29, 30.
+# A flow diagram of participants "is now expected in all reports" (item 19).
+#
+# Field meanings:
+#   id        — item number exactly as in Table 1
+#   text      — checklist item description (verbatim)
+#   new       — added in STARD 2015
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#               reported but do not block on their own
+
+name: STARD 2015
+version: "2015"
+total_items: 30          # numbered items 1-30
+total_rows: 34           # including sub-items (10a/10b, 12a/12b, 13a/13b, 21a/21b)
+supersedes: "STARD 2003"
+reference: "Bossuyt et al. BMJ 2015;351:h5527 (doi:10.1136/bmj.h5527)"
+website: "https://www.equator-network.org/reporting-guidelines/stard/"
+flow_diagram: "Required — prototypical STARD diagram of participant flow (item 19)"
+related: ["STARD-AI (AI-based diagnostic tests, in development)", "STARD for Abstracts", "QUADAS-2 (risk of bias tool, not a reporting guideline)"]
+
+sections:
+  - name: Title or abstract
+    items:
+      - {id: "1", topic: "Title or abstract", text: "Identification as a study of diagnostic accuracy using at least one measure of accuracy (such as sensitivity, specificity, predictive values, or AUC)", critical: true}
+
+  - name: Abstract
+    items:
+      - {id: "2", topic: "Abstract", text: "Structured summary of study design, methods, results, and conclusions (for specific guidance, see STARD for Abstracts)", new: true}
+
+  - name: Introduction
+    items:
+      - {id: "3", topic: "Introduction", text: "Scientific and clinical background, including the intended use and clinical role of the index test", new: true}
+      - {id: "4", topic: "Introduction", text: "Study objectives and hypotheses", new: true}
+
+  - name: Methods
+    items:
+      - {id: "5", topic: "Study design", text: "Whether data collection was planned before the index test and reference standard were performed (prospective study) or after (retrospective study)", critical: true}
+      - {id: "6", topic: "Participants", text: "Eligibility criteria", critical: true}
+      - {id: "7", topic: "Participants", text: "On what basis potentially eligible participants were identified (such as symptoms, results from previous tests, inclusion in registry)", critical: true}
+      - {id: "8", topic: "Participants", text: "Where and when potentially eligible participants were identified (setting, location, and dates)"}
+      - {id: "9", topic: "Participants", text: "Whether participants formed a consecutive, random, or convenience series", critical: true}
+      - {id: "10a", topic: "Test methods", text: "Index test, in sufficient detail to allow replication", critical: true}
+      - {id: "10b", topic: "Test methods", text: "Reference standard, in sufficient detail to allow replication", critical: true}
+      - {id: "11", topic: "Test methods", text: "Rationale for choosing the reference standard (if alternatives exist)"}
+      - {id: "12a", topic: "Test methods", text: "Definition of and rationale for test positivity cut-offs or result categories of the index test, distinguishing pre-specified from exploratory", critical: true}
+      - {id: "12b", topic: "Test methods", text: "Definition of and rationale for test positivity cut-offs or result categories of the reference standard, distinguishing pre-specified from exploratory"}
+      - {id: "13a", topic: "Test methods", text: "Whether clinical information and reference standard results were available to the performers or readers of the index test", critical: true}
+      - {id: "13b", topic: "Test methods", text: "Whether clinical information and index test results were available to the assessors of the reference standard", critical: true}
+      - {id: "14", topic: "Analysis", text: "Methods for estimating or comparing measures of diagnostic accuracy", critical: true}
+      - {id: "15", topic: "Analysis", text: "How indeterminate index test or reference standard results were handled", critical: true}
+      - {id: "16", topic: "Analysis", text: "How missing data on the index test and reference standard were handled"}
+      - {id: "17", topic: "Analysis", text: "Any analyses of variability in diagnostic accuracy, distinguishing pre-specified from exploratory"}
+      - {id: "18", topic: "Analysis", text: "Intended sample size and how it was determined", new: true}
+
+  - name: Results
+    items:
+      - {id: "19", topic: "Participants", text: "Flow of participants, using a diagram", critical: true}
+      - {id: "20", topic: "Participants", text: "Baseline demographic and clinical characteristics of participants", critical: true}
+      - {id: "21a", topic: "Participants", text: "Distribution of severity of disease in those with the target condition"}
+      - {id: "21b", topic: "Participants", text: "Distribution of alternative diagnoses in those without the target condition"}
+      - {id: "22", topic: "Participants", text: "Time interval and any clinical interventions between index test and reference standard"}
+      - {id: "23", topic: "Test results", text: "Cross tabulation of the index test results (or their distribution) by the results of the reference standard", critical: true}
+      - {id: "24", topic: "Test results", text: "Estimates of diagnostic accuracy and their precision (such as 95% confidence intervals)", critical: true}
+      - {id: "25", topic: "Test results", text: "Any adverse events from performing the index test or the reference standard"}
+
+  - name: Discussion
+    items:
+      - {id: "26", topic: "Discussion", text: "Study limitations, including sources of potential bias, statistical uncertainty, and generalisability", new: true, critical: true}
+      - {id: "27", topic: "Discussion", text: "Implications for practice, including the intended use and clinical role of the index test", new: true}
+
+  - name: Other information
+    items:
+      - {id: "28", topic: "Other information", text: "Registration number and name of registry", new: true}
+      - {id: "29", topic: "Other information", text: "Where the full study protocol can be accessed", new: true}
+      - {id: "30", topic: "Other information", text: "Sources of funding and other support; role of funders", new: true}
+
+commonly_missed:
+  - "Item 3 — the intended use (diagnosis / screening / staging / monitoring ...) and clinical role (triage / replacement / add-on) of the index test"
+  - "Item 5 — say whether data collection was planned before (prospective) or after (retrospective) the tests were done"
+  - "Item 9 — consecutive vs random vs convenience sampling"
+  - "Item 12a — cut-offs pre-specified or chosen after seeing the data (exploratory) — a classic source of optimism"
+  - "Item 13a/13b — blinding in both directions (index test readers to reference standard, and vice versa)"
+  - "Item 15 — how indeterminate / uninterpretable results were counted"
+  - "Item 19 — a participant flow diagram is expected in all reports"
+  - "Item 23 — the 2x2 cross tabulation (raw counts), not only sensitivity/specificity"
+  - "Item 24 — 95% CI for every accuracy estimate"

@@ -1,17 +1,22 @@
 # Pre-Submission Verification — 6-Gate Checklists
 # Loaded by pre-submission-verification/SKILL.md Workflow.
-# 全部通过才能投稿。任何 Gate 失败 → 阻止投稿 → 列出修改项。
+# 全部通过才进入 manuscript-export → submission-preparation。任何 Gate 失败 → 列出修改项，回对应 skill。
+# PubMed MCP 工具名写作 mcp__<server名>__<函数>；server 名以当前会话工具列表为准
+# （claude.ai 连接器为 claude_ai_PubMed，本地常见为 PubMed）。
 
 gate_1:
   name: 报告规范合规
-  via: "调用 reporting-standards skill"
+  via: "调用 reporting-standards skill（读取其产物 reporting-compliance-report.md）"
   steps:
-    - 确定研究类型 → 选择对应规范
-    - "逐条检查（✅ / ⚠️ / ❌）"
-  pass_criterion: "0 个 ❌ Critical 项"
+    - 确定研究类型 → 选择对应规范（standards-index.yaml；有本地 checklist 的规范逐条检查）
+    - "逐条检查（✅ / ⚠️ / ❌ / N/A），每条标注论文位置"
+    - 读取 reporting-compliance-report.md 的 critical ❌ 数量
+  pass_criterion: "0 个 critical ❌（critical 由各 checklist YAML 的 critical: true 定义；非 critical ❌ 和 ⚠️ 记录为 Action Items，不单独阻止）"
+  on_fail: "回 manuscript-writing 修改对应章节 → 重跑 reporting-standards"
 
 gate_2:
   name: 统计完整性
+  inputs: ["analysis-plan.md (SAP)", "results-summary.md", "analysis-log.md", "manuscript/*.md"]
   items:
     - 所有主要结局报告了效应量 + 95% CI（不只 p 值）
     - p 值报告精确值（不只 p < 0.05）
@@ -21,19 +26,33 @@ gate_2:
     - 统计软件及版本已标注
     - 完整的分析脚本（Python/R）已生成，包含版本、随机种子、参数注释
     - 脚本输出数字与论文 Results 逐项核对一致
-    - 与 SAP 的任何偏差已在 Methods 中说明理由
+    - 与 SAP（analysis-plan.md）的任何偏差已在 Methods 中说明理由（本条只在 Gate 2 核对）
     - 探索性分析已明确标注为 "exploratory"，与预定分析区分
+  pass_criterion: "以上各条均 ✅（N/A 需写原因）"
+  on_fail: "回 statistical-analysis"
 
 gate_3:
   name: Claim Verification（内容真实性验证）
   purpose: "验证论文中的每个事实断言都有数据支撑，防止 AI 幻觉和数据不一致。"
   phase_A:
-    name: 参考文献真实性（优先使用 PubMed MCP 自动验证）
-    items:
-      - 每篇引用的文献确实存在 → 用 mcp__claude_ai_PubMed__search_articles 或 mcp__claude_ai_PubMed__get_article_metadata 验证 PMID/DOI
-      - 引用的结论与原文一致 → 用 mcp__claude_ai_PubMed__get_full_text_article 交叉核对关键结论
-      - 无编造的文献 → PubMed MCP 查无结果的引用标记为 ❌ SUSPICIOUS
-      - 用 mcp__claude_ai_PubMed__convert_article_ids 统一 PMID/DOI 格式，确保引用一致性
+    name: 参考文献真实性
+    via: "调用 pubmed-search skill 的 Mode 3（Citation Verification），本 Gate 不重复其流程"
+    how:
+      - "有 PMID → mcp__<server名>__get_article_metadata(pmids=[...]) 核对标题/作者/年份"
+      - "有 DOI 无 PMID → mcp__<server名>__convert_article_ids(ids=[...], id_type=\"doi\") 转 PMID → 同上"
+      - "只有作者+年份+期刊 → mcp__<server名>__lookup_article_by_citation 反查"
+      - "引用 ≥ 10 条时分批（每批 ≤ 10 条），先查支撑主要结论的引用，再查其余"
+    status_codes:
+      - "✅ Verified — 找到且标题/作者/年份相符"
+      - "⚠️ Not found — 查询成功但无命中"
+      - "❌ Mismatch — 找到但作者/年份/标题不符（报告差异）"
+      - "⏳ Unverified (tool error) — 工具报错或连接失败；不等于文献不存在，重试一次后仍失败则列为待人工核对"
+      - "ℹ️ Non-PubMed — 书籍、指南、arXiv 等，改用 DOI / WebSearch 核对"
+    gate_rules:
+      - "⚠️ Not found / ❌ Mismatch 的引用：作者提供原文 PDF 或 DOI 页面证明存在并修正，否则删除"
+      - "⏳ Unverified 的引用不能计为通过，也不能删除；Gate 3 不因工具故障判为通过"
+      - "支撑主要结论的关键引用（≤ 10 篇）：有 PMCID 时用 mcp__<server名>__get_full_text_article 核对结论，否则核对摘要"
+    pass_criterion: "0 条 ⚠️ / ❌ 未处理；0 条 ⏳ 未人工核对"
   phase_B:
     name: 数据一致性
     items:
@@ -52,7 +71,7 @@ gate_3:
     items:
       - Methods 中描述的每个分析在 Results 中都有结果
       - Results 中没有 Methods 未描述的分析（后加的需标注）
-      - SAP 中预定的分析与实际报告的分析一致，偏差已说明
+      - SAP 中预定的分析都在 Results 中出现（偏差的说明在 Gate 2 核对，此处不重复）
   phase_E:
     name: 预定 vs 探索性分析区分
     items:
@@ -64,9 +83,13 @@ gate_3:
     items:
       - 检查是否有典型的 AI 幻觉模式（过于对称的数据、编造的 p 值、不存在的引用）
       - 确认所有数据来自实际分析，非 AI 生成
+      - 期刊要求时，在 Methods 或 Acknowledgements 声明 AI 工具的使用方式
+  pass_criterion: "Phase A 通过，且 B–F 各条均 ✅"
+  on_fail: "引用问题 → 作者核对/删除后重跑 Phase A；数据不一致 → 回 statistical-analysis / manuscript-writing"
 
 gate_4:
   name: 图表质量
+  inputs: ["图文件（figure-generation 产物）", "figure-legends.md（figure-generation 产物；或正文中的 legends）"]
   items:
     - 字体 Arial / Helvetica
     - 最小字号 ≥ 6pt（缩放后）
@@ -75,26 +98,40 @@ gate_4:
     - 图例清晰完整
     - 色盲友好配色
     - 每张图有对应的 Figure Legend
+    - 图表编号与正文引用一一对应，无缺号、无未引用的图表
+  pass_criterion: "以上各条均 ✅"
+  on_fail: "回 figure-generation"
 
 gate_5:
   name: 伦理与合规
-  via: "调用 research-ethics skill"
+  via: "读取 research-ethics 的产物 ethics-statement.md，与稿件 Methods / 声明段逐项核对；无该文件则先运行 research-ethics"
   items:
-    - 伦理审查批准号已写入 Methods
+    - 伦理审查批准号已写入 Methods，且与 ethics-statement.md 一致
     - 知情同意声明或豁免说明
     - 利益冲突声明
     - 资金来源声明
     - 数据可用性声明
     - 临床试验注册号（如适用）
+    - 动物研究：伦理委员会名称 + 许可/方案编号（ARRIVE 2.0 item 14）
+  pass_criterion: "以上各条均 ✅（不适用的写原因）"
+  on_fail: "回 research-ethics"
 
 gate_6:
   name: 形式检查
+  note: "在 Markdown 稿（manuscript/*.md）上检查。最终 .docx 由本 skill 通过后的 manuscript-export 生成，导出后的 export-report.md 会再报一次字数，两者应一致。"
+  how:
+    - "运行 python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-export/scripts/export_docx.py --manuscript-dir manuscript --journal <期刊id> --report-only --report gate6-report.md：只出报告不生成 .docx，给出正文（Introduction–Discussion）字数、摘要字数、参考文献数、图表数与占位符"
+    - "脚本不可用时手工计数：正文字数只算 Introduction–Discussion（不含题页、摘要、参考文献、图表说明）；摘要单独计数；参考文献数 = References 条目数；图表数 = Figure/Table 编号数"
+    - "目标期刊的限制从 journal-selection-report.md 读取，或用 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --id <期刊id> 取 journal-templates.yaml 中该刊的 word_limit / abstract_limit / references / figures"
   items:
     - 正文字数在目标期刊限制内
-    - 摘要字数在限制内
+    - 摘要字数在限制内，且结构（结构式/非结构式）符合期刊要求
     - 参考文献数量在限制内
+    - 图表数量在限制内
     - Running title / Short title ≤ 50 字符
     - 关键词 3-6 个
     - 所有缩写首次出现已展开
     - 作者信息完整（单位、通讯作者、ORCID）
-    - 页码连续
+    - 章节顺序与期刊要求一致（如 Nature 系 I-R-D-M）
+  pass_criterion: "以上各条均 ✅"
+  on_fail: "回 manuscript-writing 精简/补充"

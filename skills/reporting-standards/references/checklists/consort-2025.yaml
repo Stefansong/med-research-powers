@@ -1,73 +1,104 @@
+# CONSORT 2025 checklist — transcribed from Table 1 of the CONSORT 2025 statement
+# Source: Hopewell S, Chan A-W, Collins GS, et al. CONSORT 2025 statement: updated guideline
+#         for reporting randomised trials. BMJ 2025;389:e081123. doi:10.1136/bmj-2024-081123
+#         (also published in JAMA, Lancet, Nature Medicine, PLOS Medicine, April 2025)
+# The statement "consists of a 30-item checklist"; several items have sub-items (a/b/c/d),
+# giving 42 rows in the published table. Use the expanded checklist on consort-spirit.org
+# for the bullet-point elaboration of each item.
+#
+# Field meanings:
+#   id        — item number exactly as in Table 1
+#   text      — checklist item description (verbatim, lightly trimmed)
+#   new       — added in 2025 (7 new items: 4, 5b, 8, 12b, 15, 21b/21c, 24a/24b)
+#   revised   — completely revised in 2025 (3 items: 3, 10, 26)
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#               reported but do not block on their own
+
 name: CONSORT 2025
 version: "2025"
-total_items: 34   # 31 numbered items (1-31) + 3 sub-items (21a, 26a, 28a) = 34 rows
-numbered_items: 31
-sub_items: 3       # 21a, 26a, 28a
-supersedes: CONSORT 2010
-reference: "Hopewell et al. BMJ/JAMA/Lancet/Nature Medicine/PLOS Medicine, April 2025"
+total_items: 30          # numbered items 1-30
+total_rows: 42           # including sub-items (1a/1b, 5a/5b, 12a/12b, 16a/16b, 17a/17b, 20a/20b, 21a-d, 22a/22b, 23a/23b, 24a/24b)
+supersedes: "CONSORT 2010 — no longer to be used"
+reference: "Hopewell et al. BMJ 2025;389:e081123 (doi:10.1136/bmj-2024-081123)"
+website: "https://www.consort-spirit.org/"
 key_changes_from_2010:
-  added: 7
-  revised: 3
-  deleted: 1
-  new_section: "Open Science (items 2-5)"
-  integrated_extensions: ["CONSORT-Harms", "CONSORT-Outcomes", "TIDieR"]
+  added: 7       # items 4, 5b, 8, 12b, 15, 21 (b, c), 24 (a, b)
+  revised: 3     # items 3, 10, 26
+  deleted: 1     # generalisability (now part of item 30 limitations)
+  new_section: "Open science (items 2-5)"
+  integrated_extensions: ["CONSORT-Harms", "CONSORT-Outcomes", "CONSORT-Non-pharmacological Treatment", "TIDieR"]
+flow_diagram: "Required — enrolment, allocation, follow-up, analysis for each group (Fig 1 of the statement)"
 
 sections:
-  - name: Title and Open Science
+  - name: Title and abstract
     items:
-      - {id: 1, text: "Title identified as a randomised trial", section: Title}
-      - {id: 2, text: "Trial registration number and registry name", section: Open Science, new: true}
-      - {id: 3, text: "Where protocol and SAP can be accessed", section: Open Science, new: true}
-      - {id: 4, text: "Statement on sharing de-identified participant-level data", section: Open Science, new: true}
-      - {id: 5, text: "Sources of funding and role of funders; conflicts of interest", section: Open Science, new: true}
+      - {id: "1a", topic: "Title and structured abstract", text: "Identification as a randomised trial", critical: true}
+      - {id: "1b", topic: "Title and structured abstract", text: "Structured summary of the trial design, methods, results, and conclusions", critical: true}
 
-  - name: Abstract
+  - name: Open science
     items:
-      - {id: 6, text: "Structured summary of trial design, methods, results, and conclusions"}
+      - {id: "2", topic: "Trial registration", text: "Name of trial registry, identifying number (with URL) and date of registration", critical: true}
+      - {id: "3", topic: "Protocol and statistical analysis plan", text: "Where the trial protocol and statistical analysis plan can be accessed", revised: true, critical: true}
+      - {id: "4", topic: "Data sharing", text: "Where and how the individual de-identified participant data (including data dictionary), statistical code and any other materials can be accessed", new: true}
+      - {id: "5a", topic: "Funding and conflicts of interest", text: "Sources of funding and other support (eg, supply of drugs), and role of funders in the design, conduct, analysis and reporting of the trial", critical: true}
+      - {id: "5b", topic: "Funding and conflicts of interest", text: "Financial and other conflicts of interest of the manuscript authors", new: true, critical: true}
 
   - name: Introduction
     items:
-      - {id: 7, text: "Scientific background and explanation of rationale"}
-      - {id: 8, text: "Specific objectives or hypotheses"}
+      - {id: "6", topic: "Background and rationale", text: "Scientific background and rationale"}
+      - {id: "7", topic: "Objectives", text: "Specific objectives related to benefits and harms", critical: true}
 
   - name: Methods
     items:
-      - {id: 9, text: "Trial design (parallel, factorial, etc.) including allocation ratio"}
-      - {id: 10, text: "Important changes to methods after trial commencement with reasons"}
-      - {id: 11, text: "Eligibility criteria for participants"}
-      - {id: 12, text: "Settings and locations where data were collected"}
-      - {id: 13, text: "Interventions for each group with sufficient details to allow replication (TIDieR integrated)", revised: true}
-      - {id: 14, text: "Completely defined pre-specified primary and secondary outcome measures (CONSORT-Outcomes integrated)", revised: true}
-      - {id: 15, text: "How sample size was determined, including interim analyses and stopping guidelines", revised: true}
-      - {id: 16, text: "Method used to generate the random allocation sequence"}
-      - {id: 17, text: "Type of randomisation; details of any restriction"}
-      - {id: 18, text: "Mechanism used to implement the allocation sequence; concealment"}
-      - {id: 19, text: "Who generated the sequence, who enrolled, who assigned"}
-      - {id: 20, text: "If done, who was blinded after assignment and how"}
-      - {id: 21, text: "Statistical methods used to compare groups; methods for additional analyses"}
-      - {id: 21a, text: "Methods for assessing harms", new: true}
+      - {id: "8", topic: "Patient and public involvement", text: "Details of patient or public involvement in the design, conduct and reporting of the trial", new: true}
+      - {id: "9", topic: "Trial design", text: "Description of trial design including type of trial (eg, parallel group, crossover), allocation ratio, and framework (eg, superiority, equivalence, non-inferiority, exploratory)", critical: true}
+      - {id: "10", topic: "Changes to trial protocol", text: "Important changes to the trial after it commenced including any outcomes or analyses that were not prespecified, with reason", revised: true, critical: true}
+      - {id: "11", topic: "Trial setting", text: "Settings (eg, community, hospital) and locations (eg, countries, sites) where the trial was conducted"}
+      - {id: "12a", topic: "Eligibility criteria", text: "Eligibility criteria for participants", critical: true}
+      - {id: "12b", topic: "Eligibility criteria", text: "If applicable, eligibility criteria for sites and for individuals delivering the interventions (eg, surgeons, physiotherapists)", new: true}
+      - {id: "13", topic: "Intervention and comparator", text: "Intervention and comparator with sufficient details to allow replication. If relevant, where additional materials describing the intervention and comparator (eg, intervention manual) can be accessed", critical: true}
+      - {id: "14", topic: "Outcomes", text: "Prespecified primary and secondary outcomes, including the specific measurement variable (eg, systolic blood pressure), analysis metric (eg, change from baseline, final value, time to event), method of aggregation (eg, median, proportion), and time point for each outcome", critical: true}
+      - {id: "15", topic: "Harms", text: "How harms were defined and assessed (eg, systematically, non-systematically)", new: true}
+      - {id: "16a", topic: "Sample size", text: "How sample size was determined, including all assumptions supporting the sample size calculation", critical: true}
+      - {id: "16b", topic: "Sample size", text: "Explanation of any interim analyses and stopping guidelines"}
+      - {id: "17a", topic: "Randomisation: sequence generation", text: "Who generated the random allocation sequence and the method used", critical: true}
+      - {id: "17b", topic: "Randomisation: sequence generation", text: "Type of randomisation and details of any restriction (eg, stratification, blocking and block size)"}
+      - {id: "18", topic: "Randomisation: allocation concealment mechanism", text: "Mechanism used to implement the random allocation sequence (eg, central computer/telephone; sequentially numbered, opaque, sealed containers), describing any steps to conceal the sequence until interventions were assigned", critical: true}
+      - {id: "19", topic: "Randomisation: implementation", text: "Whether the personnel who enrolled and those who assigned participants to the interventions had access to the random allocation sequence"}
+      - {id: "20a", topic: "Blinding", text: "Who was blinded after assignment to interventions (eg, participants, care providers, outcome assessors, data analysts)", critical: true}
+      - {id: "20b", topic: "Blinding", text: "If blinded, how blinding was achieved and description of the similarity of interventions"}
+      - {id: "21a", topic: "Statistical methods", text: "Statistical methods used to compare groups for primary and secondary outcomes, including harms", critical: true}
+      - {id: "21b", topic: "Statistical methods", text: "Definition of who is included in each analysis (eg, all randomised participants), and in which group", new: true, critical: true}
+      - {id: "21c", topic: "Statistical methods", text: "How missing data were handled in the analysis", new: true}
+      - {id: "21d", topic: "Statistical methods", text: "Methods for any additional analyses (eg, subgroup and sensitivity analyses), distinguishing prespecified from post hoc"}
 
   - name: Results
     items:
-      - {id: 22, text: "Flow of participants through each stage (CONSORT flow diagram)"}
-      - {id: 23, text: "Dates defining the periods of recruitment and follow-up"}
-      - {id: 24, text: "Why the trial ended or was stopped"}
-      - {id: 25, text: "Baseline demographic and clinical characteristics for each group"}
-      - {id: 26, text: "Number of participants in each group included in each analysis; intention-to-treat"}
-      - {id: 26a, text: "Number of participants for each primary and secondary outcome", new: true}
-      - {id: 27, text: "For each outcome: results, effect size, precision (95% CI)"}
-      - {id: 28, text: "Results of any other analyses, including subgroup and adjusted analyses"}
-      - {id: 28a, text: "All important harms or unintended effects in each group (CONSORT-Harms integrated)", new: true}
+      - {id: "22a", topic: "Participant flow (flow diagram)", text: "For each group, the numbers of participants who were randomly assigned, received intended intervention, and were analysed for the primary outcome", critical: true}
+      - {id: "22b", topic: "Participant flow (flow diagram)", text: "For each group, losses and exclusions after randomisation, together with reasons", critical: true}
+      - {id: "23a", topic: "Recruitment", text: "Dates defining the periods of recruitment and follow-up for outcomes of benefits and harms"}
+      - {id: "23b", topic: "Recruitment", text: "If relevant, why the trial ended or was stopped"}
+      - {id: "24a", topic: "Intervention and comparator delivery", text: "Intervention and comparator as they were actually administered (eg, where appropriate, who delivered the intervention/comparator, how participants adhered, whether they were delivered as intended (fidelity))", new: true}
+      - {id: "24b", topic: "Intervention and comparator delivery", text: "Concomitant care received during the trial for each group", new: true}
+      - {id: "25", topic: "Baseline data", text: "A table showing baseline demographic and clinical characteristics for each group", critical: true}
+      - {id: "26", topic: "Numbers analysed, outcomes and estimation", text: "For each primary and secondary outcome, by group: the number of participants included in the analysis; the number of participants with available data at the outcome time point; result for each group, and the estimated effect size and its precision (such as 95% confidence interval); for binary outcomes, presentation of both absolute and relative effect size", revised: true, critical: true}
+      - {id: "27", topic: "Harms", text: "All harms or unintended events in each group", critical: true}
+      - {id: "28", topic: "Ancillary analyses", text: "Any other analyses performed, including subgroup and sensitivity analyses, distinguishing pre-specified from post hoc"}
 
   - name: Discussion
     items:
-      - {id: 29, text: "Trial limitations, sources of potential bias, imprecision"}
-      - {id: 30, text: "Generalisability (external validity, applicability)"}
-      - {id: 31, text: "Interpretation consistent with results, balancing benefits and harms"}
+      - {id: "29", topic: "Interpretation", text: "Interpretation consistent with results, balancing benefits and harms, and considering other relevant evidence", critical: true}
+      - {id: "30", topic: "Limitations", text: "Trial limitations, addressing sources of potential bias, imprecision, generalisability, and, if relevant, multiplicity of analyses", critical: true}
 
 commonly_missed:
-  - "Item 2-5 (Open Science) — entirely new section, easy to forget"
-  - "Item 15 — interim analyses and stopping guidelines"
-  - "Item 21a — methods for assessing harms"
-  - "Item 26a — participant numbers per outcome"
-  - "Item 28a — all important harms"
+  - "Items 2-5 (Open science) — new section; registration URL/date, SAP access, data-sharing statement and author conflicts of interest are all separate items"
+  - "Item 8 — patient and public involvement (state 'none' explicitly if there was none)"
+  - "Item 10 — changes after the trial commenced, including any non-prespecified outcomes or analyses"
+  - "Item 15 and 27 — how harms were assessed (methods) and all harms observed (results) are two different items"
+  - "Item 21b / 21c — who is in each analysis and how missing data were handled"
+  - "Item 24a / 24b — intervention as actually delivered (fidelity, adherence) and concomitant care"
+  - "Item 26 — numbers analysed and numbers with available data per outcome and time point; absolute AND relative effects for binary outcomes"
+  - "Item 30 — generalisability is now part of limitations (the 2010 standalone item was deleted)"
+
+extensions_still_current:
+  note: "Use the relevant CONSORT extension alongside CONSORT 2025 until each extension is realigned (adaptive designs, cluster, crossover, early phase, factorial, non-inferiority/equivalence, pragmatic, multi-arm, n-of-1, pilot/feasibility, within-person, non-pharmacological, outcomes, PROs, surrogate outcomes, social/psychological interventions, harms, abstracts, health equity, CONSORT-AI)"

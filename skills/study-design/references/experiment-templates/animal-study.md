@@ -13,7 +13,7 @@
 - 效应量依据：[文献引用或预实验数据]
 - α = 0.05, Power = 0.80 (或 0.90)
 - 预估脱落率：[X]%，额外增加
-- 计算工具：G*Power / R / `scripts/power_analysis.py`
+- 计算工具：G*Power / R / `${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py`
 
 ## 分组与随机化
 - 随机方法：随机数表 / 软件生成（必须说明）

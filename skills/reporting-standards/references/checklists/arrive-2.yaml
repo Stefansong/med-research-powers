@@ -1,0 +1,84 @@
+# ARRIVE 2.0 checklist — transcribed verbatim from Tables 1 and 2 of the ARRIVE guidelines 2.0
+# Source: Percie du Sert N, Hurst V, Ahluwalia A, et al. The ARRIVE guidelines 2.0: Updated
+#         guidelines for reporting animal research. PLoS Biol 2020;18(7):e3000410.
+#         doi:10.1371/journal.pbio.3000410 (PMC7360023). Retrieved via PubMed/PMC full text.
+# The guideline: 21 items in 2 prioritised groups — the "ARRIVE Essential 10" (items 1-10: "the basic
+# minimum to include in a manuscript, as without this information, reviewers and readers cannot
+# confidently assess the reliability of the findings presented") and the "Recommended Set"
+# (items 11-21: "adds context to the study described"). There is no ranking within each group.
+# Sub-item letters (a/b/c/d) are as printed in the published tables and in the official fillable checklist.
+#
+# Field meanings:
+#   id        — item number and sub-item letter as in Tables 1-2
+#   set       — "Essential 10" | "Recommended Set"
+#   text      — checklist item description (verbatim)
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission. All Essential 10 rows are
+#               critical (the guideline's own definition of the minimum). Item 14 (ethical statement)
+#               is also marked critical because journals will not publish animal research without it.
+
+name: ARRIVE 2.0
+version: "2020"
+total_items: 21          # Essential 10 (items 1-10) + Recommended Set (items 11-21)
+total_rows: 38           # including sub-items (1a/b, 2a/b, 3a-c, 4a/b, 6a/b, 7a/b, 8a/b, 9a-d, 10a/b, 12a/b, 16a-c, 17a/b, 21a/b)
+supersedes: "ARRIVE 2010"
+reference: "Percie du Sert et al. PLoS Biol 2020;18(7):e3000410 (doi:10.1371/journal.pbio.3000410)"
+website: "https://arriveguidelines.org/"
+explanation_and_elaboration: "Percie du Sert et al. PLoS Biol 2020;18(7):e3000411 (doi:10.1371/journal.pbio.3000411)"
+applies_to: "Any study using live animals (laboratory, field, observational; also relevant where animal tissues are used)"
+
+sections:
+  - name: "ARRIVE Essential 10"
+    set: "Essential 10"
+    items:
+      - {id: "1a", topic: "Study design", set: "Essential 10", text: "For each experiment, provide brief details of study design including: The groups being compared, including control groups. If no control group has been used, the rationale should be stated", critical: true}
+      - {id: "1b", topic: "Study design", set: "Essential 10", text: "For each experiment, provide brief details of study design including: The experimental unit (e.g., a single animal, litter, or cage of animals)", critical: true}
+      - {id: "2a", topic: "Sample size", set: "Essential 10", text: "Specify the exact number of experimental units allocated to each group, and the total number in each experiment. Also indicate the total number of animals used", critical: true}
+      - {id: "2b", topic: "Sample size", set: "Essential 10", text: "Explain how the sample size was decided. Provide details of any a priori sample size calculation, if done", critical: true}
+      - {id: "3a", topic: "Inclusion and exclusion criteria", set: "Essential 10", text: "Describe any criteria used for including and excluding animals (or experimental units) during the experiment, and data points during the analysis. Specify if these criteria were established a priori. If no criteria were set, state this explicitly", critical: true}
+      - {id: "3b", topic: "Inclusion and exclusion criteria", set: "Essential 10", text: "For each experimental group, report any animals, experimental units, or data points not included in the analysis and explain why. If there were no exclusions, state so", critical: true}
+      - {id: "3c", topic: "Inclusion and exclusion criteria", set: "Essential 10", text: "For each analysis, report the exact value of n in each experimental group", critical: true}
+      - {id: "4a", topic: "Randomisation", set: "Essential 10", text: "State whether randomisation was used to allocate experimental units to control and treatment groups. If done, provide the method used to generate the randomisation sequence", critical: true}
+      - {id: "4b", topic: "Randomisation", set: "Essential 10", text: "Describe the strategy used to minimise potential confounders such as the order of treatments and measurements, or animal/cage location. If confounders were not controlled, state this explicitly", critical: true}
+      - {id: "5", topic: "Blinding", set: "Essential 10", text: "Describe who was aware of the group allocation at the different stages of the experiment (during the allocation, the conduct of the experiment, the outcome assessment, and the data analysis)", critical: true}
+      - {id: "6a", topic: "Outcome measures", set: "Essential 10", text: "Clearly define all outcome measures assessed (e.g., cell death, molecular markers, or behavioural changes)", critical: true}
+      - {id: "6b", topic: "Outcome measures", set: "Essential 10", text: "For hypothesis-testing studies, specify the primary outcome measure, i.e., the outcome measure that was used to determine the sample size", critical: true}
+      - {id: "7a", topic: "Statistical methods", set: "Essential 10", text: "Provide details of the statistical methods used for each analysis, including software used", critical: true}
+      - {id: "7b", topic: "Statistical methods", set: "Essential 10", text: "Describe any methods used to assess whether the data met the assumptions of the statistical approach, and what was done if the assumptions were not met", critical: true}
+      - {id: "8a", topic: "Experimental animals", set: "Essential 10", text: "Provide species-appropriate details of the animals used, including species, strain and substrain, sex, age or developmental stage, and, if relevant, weight", critical: true}
+      - {id: "8b", topic: "Experimental animals", set: "Essential 10", text: "Provide further relevant information on the provenance of animals, health/immune status, genetic modification status, genotype, and any previous procedures", critical: true}
+      - {id: "9a", topic: "Experimental procedures", set: "Essential 10", text: "For each experimental group, including controls, describe the procedures in enough detail to allow others to replicate them, including: What was done, how it was done, and what was used", critical: true}
+      - {id: "9b", topic: "Experimental procedures", set: "Essential 10", text: "For each experimental group, including controls, describe the procedures in enough detail to allow others to replicate them, including: When and how often", critical: true}
+      - {id: "9c", topic: "Experimental procedures", set: "Essential 10", text: "For each experimental group, including controls, describe the procedures in enough detail to allow others to replicate them, including: Where (including detail of any acclimatisation periods)", critical: true}
+      - {id: "9d", topic: "Experimental procedures", set: "Essential 10", text: "For each experimental group, including controls, describe the procedures in enough detail to allow others to replicate them, including: Why (provide rationale for procedures)", critical: true}
+      - {id: "10a", topic: "Results", set: "Essential 10", text: "For each experiment conducted, including independent replications, report: Summary/descriptive statistics for each experimental group, with a measure of variability where applicable (e.g., mean and SD, or median and range)", critical: true}
+      - {id: "10b", topic: "Results", set: "Essential 10", text: "For each experiment conducted, including independent replications, report: If applicable, the effect size with a confidence interval", critical: true}
+
+  - name: "ARRIVE Recommended Set"
+    set: "Recommended Set"
+    items:
+      - {id: "11", topic: "Abstract", set: "Recommended Set", text: "Provide an accurate summary of the research objectives, animal species, strain and sex, key methods, principal findings, and study conclusions"}
+      - {id: "12a", topic: "Background", set: "Recommended Set", text: "Include sufficient scientific background to understand the rationale and context for the study, and explain the experimental approach"}
+      - {id: "12b", topic: "Background", set: "Recommended Set", text: "Explain how the animal species and model used address the scientific objectives and, where appropriate, the relevance to human biology"}
+      - {id: "13", topic: "Objectives", set: "Recommended Set", text: "Clearly describe the research question, research objectives and, where appropriate, specific hypotheses being tested"}
+      - {id: "14", topic: "Ethical statement", set: "Recommended Set", text: "Provide the name of the ethical review committee or equivalent that has approved the use of animals in this study, and any relevant licence or protocol numbers (if applicable). If ethical approval was not sought or granted, provide a justification", critical: true}
+      - {id: "15", topic: "Housing and husbandry", set: "Recommended Set", text: "Provide details of housing and husbandry conditions, including any environmental enrichment"}
+      - {id: "16a", topic: "Animal care and monitoring", set: "Recommended Set", text: "Describe any interventions or steps taken in the experimental protocols to reduce pain, suffering, and distress"}
+      - {id: "16b", topic: "Animal care and monitoring", set: "Recommended Set", text: "Report any expected or unexpected adverse events"}
+      - {id: "16c", topic: "Animal care and monitoring", set: "Recommended Set", text: "Describe the humane endpoints established for the study, the signs that were monitored, and the frequency of monitoring. If the study did not have humane endpoints, state this"}
+      - {id: "17a", topic: "Interpretation/scientific implications", set: "Recommended Set", text: "Interpret the results, taking into account the study objectives and hypotheses, current theory, and other relevant studies in the literature"}
+      - {id: "17b", topic: "Interpretation/scientific implications", set: "Recommended Set", text: "Comment on the study limitations, including potential sources of bias, limitations of the animal model, and imprecision associated with the results"}
+      - {id: "18", topic: "Generalisability/translation", set: "Recommended Set", text: "Comment on whether, and how, the findings of this study are likely to generalise to other species or experimental conditions, including any relevance to human biology (where appropriate)"}
+      - {id: "19", topic: "Protocol registration", set: "Recommended Set", text: "Provide a statement indicating whether a protocol (including the research question, key design features, and analysis plan) was prepared before the study, and if and where this protocol was registered"}
+      - {id: "20", topic: "Data access", set: "Recommended Set", text: "Provide a statement describing if and where study data are available"}
+      - {id: "21a", topic: "Declaration of interests", set: "Recommended Set", text: "Declare any potential conflicts of interest, including financial and nonfinancial. If none exist, this should be stated"}
+      - {id: "21b", topic: "Declaration of interests", set: "Recommended Set", text: "List all funding sources (including grant identifier) and the role of the funder(s) in the design, analysis, and reporting of the study"}
+
+commonly_missed:
+  - "Item 1b — the experimental unit (animal vs cage vs litter); pseudo-replication is the most common statistical error in animal studies"
+  - "Item 2b — how sample size was decided (a priori calculation or explicit statement that none was done)"
+  - "Item 3a-c — exclusion criteria set a priori, every exclusion reported, exact n per group per analysis"
+  - "Item 4a/4b — randomisation method AND how confounders (order, cage position) were handled; 'randomly' without a method is insufficient"
+  - "Item 5 — blinding at each of the four stages (allocation, conduct, outcome assessment, analysis)"
+  - "Item 6b — the primary outcome that drove the sample size"
+  - "Item 8a — species, strain AND substrain, sex, age/developmental stage, weight"
+  - "Item 14 — ethics committee name and licence/protocol numbers"

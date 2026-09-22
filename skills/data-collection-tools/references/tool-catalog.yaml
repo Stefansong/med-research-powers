@@ -1,6 +1,10 @@
 # Data Collection Tool Catalog
 # Lookup tables: which tools to generate per study type, plus the standard
 # project directory structure. Generation LOGIC stays in SKILL.md (Step 2).
+# Fixed-logic scripts shipped with the plugin (copy or call, never rewrite ad hoc):
+#   ${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/patient_level_split.py
+#   ${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/randomization.py
+#   ${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py   (a priori sample size)
 
 study_type_tools:
 
@@ -11,7 +15,7 @@ study_type_tools:
       - { tool: "推理脚本",      file: "tools/vlm_inference.py",        note: "API 调用、批量推理、结果保存" }
       - { tool: "标注模板",      file: "tools/annotation_template.csv", note: "专家标注 Ground Truth 用" }
       - { tool: "评分模板",      file: "tools/scoring_template.csv",    note: "开放题专家评分用" }
-      - { tool: "分析脚本",      file: "tools/analysis_pipeline.py",    note: "统计分析全流程" }
+      - { tool: "结果汇总脚本",  file: "tools/analysis_pipeline.py",    note: "解析推理输出、汇总各模型/各任务结果表；正式统计分析由 statistical-analysis 生成 analysis_script.py" }
       - { tool: "数据目录",      file: "data/ 目录结构",                note: "标准化文件组织" }
 
   ai_diagnostic_prediction:
@@ -20,7 +24,7 @@ study_type_tools:
       - { tool: "数据提取表", file: "tools/data_extraction.csv",     note: "从病历/影像系统提取变量" }
       - { tool: "标注模板",   file: "tools/annotation_template.csv", note: "Ground Truth 标注" }
       - { tool: "标注指南",   file: "tools/annotation_guide.md",     note: "标注标准、示例、争议处理" }
-      - { tool: "数据划分脚本", file: "tools/data_split.py",         note: "训练/验证/测试集划分（患者级别）" }
+      - { tool: "数据划分脚本", file: "tools/data_split.py",         note: "患者级 hold-out / K 折划分：复制自 ${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/patient_level_split.py；输出 data/splits/split_summary.json（类别分布 + 泄漏检查）" }
       - { tool: "评估脚本",   file: "tools/evaluation.py",           note: "AUROC/AUPRC/混淆矩阵/DCA" }
 
   clinical:
@@ -29,8 +33,8 @@ study_type_tools:
       - { tool: "病例报告表",   file: "tools/CRF.xlsx 或 tools/CRF.csv", note: "每个变量一列，含数据字典" }
       - { tool: "数据字典",     file: "tools/data_dictionary.md",        note: "变量名、类型、取值范围、编码规则" }
       - { tool: "筛选表",       file: "tools/screening_log.csv",         note: "纳入/排除标准逐条判定" }
-      - { tool: "随机分组脚本", file: "tools/randomization.py",          note: "区组随机、分层随机（仅 RCT）" }
-      - { tool: "样本量计算",   file: "tools/sample_size.py",            note: "基于 analysis-plan.md 的 power analysis" }
+      - { tool: "随机分组表",   file: "tools/allocation.csv",            note: "简单/区组/分层随机（仅 RCT），由 ${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/randomization.py 生成，固定 seed；分配表由与入组无关的人员保管" }
+      - { tool: "样本量复核",   file: "(不单独生成)",                    note: "先验样本量已在 study-protocol.md；复核用 ${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py，禁止事后 power" }
 
   basic_experiment:
     label: "基础实验"

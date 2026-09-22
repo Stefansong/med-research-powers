@@ -3,16 +3,27 @@
 # Keep judgment/reasoning in SKILL.md; this file holds static lookup data only.
 
 # 2.1 — Identify the submission system by publisher/journal family.
+# First choice: the target journal's own `system` field in journal-templates.yaml
+#   (python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --id <id>).
+# This table is the fallback by publisher family; journals migrate systems — confirm on the
+# journal's "Submit" page before telling the user which portal to use.
 # NOTE: PLOS uses Editorial Manager (Aries), NOT the legacy Bench>Press.
 submission_systems:
-  - system: "ScholarOne / Manuscript Central"
-    journals: "Lancet 系列、JAMA 系列、BMJ、Nature 系列、多数 Wiley/T&F 期刊"
-  - system: "Editorial Manager (Aries)"
-    journals: "Cell 系列、Science、Elsevier 部分期刊、Springer Nature 部分、PLOS 系列"
-  - system: "eJManager"
-    journals: "部分中文 SCI 期刊"
+  - system: "ScholarOne Manuscripts (Clarivate)"
+    journals: "JAMA 系列、BMJ、多数 Wiley 和 Taylor & Francis 期刊"
+    url_pattern: "mc.manuscriptcentral.com/<journal>"
+  - system: "Editorial Manager (Aries / Elsevier)"
+    journals: "Lancet 系列、Cell 系列、Elsevier 期刊、PLOS 系列、多数 Springer 期刊"
+    url_pattern: "www.editorialmanager.com/<journal>"
+  - system: "eJournalPress (eJP)"
+    journals: "Nature 系列（Nature 自家 MTS 基于 eJP）、Science、NEJM、PNAS"
+    url_pattern: "mts-<journal>.nature.com / cts.sciencemag.org / www.pnascentral.org"
+  - system: "Snapp (Springer Nature Article Processing Platform)"
+    journals: "Springer Nature 新刊及陆续迁移的 BMC / Springer 期刊"
+    url_pattern: "submission.springernature.com"
   - system: "OJS (Open Journal Systems)"
-    journals: "部分开源/学术期刊"
+    journals: "部分开源期刊"
+    url_pattern: "<journal site>/index.php/<journal>/submissions"
 
 # 2.2 — File preparation checklist.
 file_preparation:

@@ -1,27 +1,43 @@
 # Journal Figure Requirements
 # Generic publication-quality figure specifications for medical journals.
 # Most major journals fall within these ranges; verify against the target
-# journal's "Instructions for Authors" for exceptions.
+# journal's "Instructions for Authors" for exceptions (per-journal `figures`
+# field lives in skills/manuscript-writing/references/journal-templates.yaml).
 
 figure_specs:
   format:
-    preferred: TIFF
-    alternative: PDF        # vector, for line art
-    rejected: PNG/JPG       # raster-with-loss, generally not accepted
+    preferred: TIFF          # raster, LZW compression (lossless)
+    alternative: PDF         # vector, for line art; embed fonts (pub_style sets pdf.fonttype 42)
+    also_accepted_by_some: EPS
+    not_for_submission:
+      - JPG                  # lossy compression — artefacts around text and thin lines
+      - PNG                  # lossless, but usually exported at screen resolution and not part of
+                             # most journals' production workflow; keep for exploration/preview only
 
   resolution_dpi:
-    halftone_or_color: 300  # photos, heatmaps
-    line_art: 600           # plots with thin lines / text
-    combination: 500        # mixed line + halftone
+    halftone_or_color: 300   # photos, heatmaps, micrographs
+    line_art: 600            # plots with thin lines / text  (pub_style.save_figure default)
+    combination: 500         # mixed line + halftone
 
   font:
     family: [Arial, Helvetica]
-    min_size_pt: 6          # minimum size AFTER scaling to final width
+    fallback_chain: [Arial, Helvetica, Liberation Sans, DejaVu Sans]   # pub_style.PREFERRED_FONTS
+    min_size_pt: 6           # minimum size AFTER scaling to final width
 
   width:
-    single_column_mm: 85    # ~3.35 inch
-    one_and_half_mm: 127    # ~5.0 inch
-    double_column_mm: 170   # ~6.7 inch
+    generic:                 # used when the journal is unknown (pub_style 'default')
+      single_column_mm: 85   # ~3.35 inch
+      one_and_half_mm: 127   # ~5.0 inch
+      double_column_mm: 170  # ~6.7 inch
+    by_journal:              # mirrors pub_style.JOURNAL_WIDTH_MM
+      nature:  {single_mm: 89, one_and_half_mm: 120, double_mm: 183, max_height_mm: 247, status: verified}
+      lancet:  {single_mm: 85, one_and_half_mm: 127, double_mm: 175, max_height_mm: 230, status: approx}
+      bmj:     {single_mm: 85, one_and_half_mm: 127, double_mm: 175, max_height_mm: 230, status: approx}
+      jama:    {single_mm: 85, one_and_half_mm: 127, double_mm: 175, max_height_mm: 230, status: approx}
+      nejm:    {single_mm: 85, one_and_half_mm: 127, double_mm: 170, max_height_mm: 230, status: approx}
+    status_meaning:
+      verified: "taken from the journal's current figure guide"
+      approx: "typical values for that journal family — confirm in Instructions for Authors before final export"
 
   color:
     print: CMYK
@@ -29,6 +45,7 @@ figure_specs:
     recommendation: colorblind-safe (Okabe-Ito); see COLORBLIND_SAFE in pub_style.py
 
   notes:
-    - 线条图（含细线/文字）建议 ≥ 600 DPI 以保证清晰度
+    - 线条图（含细线/文字）用 600 DPI（save_figure 默认）；照片/热图 300 DPI（line_art=False）
     - 最小字号指最终缩放到目标栏宽后的字号，不是绘图时的字号
     - 每张图必须同时保存 TIFF + PDF（见 save_figure 默认行为）
+    - 无 Arial 的机器上可先出图，投稿前在装有 Arial 的机器重新导出

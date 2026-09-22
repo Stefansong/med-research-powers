@@ -1,5 +1,5 @@
 # Peer Review Simulation — Scoring Rubric
-# Loaded by peer-review-simulation/SKILL.md Steps 2, 3b, 4.
+# Loaded by peer-review-simulation/SKILL.md Steps 2, 3, 3b, 4.
 
 # --- Step 2: 8-dimension 0-100 scoring (weighted) ---
 dimensions:
@@ -28,9 +28,9 @@ dimensions:
     weight: 0.10
     bands: "0-30: 不可复现 / 31-60: 部分可复现 / 61-80: 可复现 / 81-100: 完全透明"
 
-# 综合分 = 加权平均
+# 综合分 = 加权平均（权重之和 = 1.00）
 
-# --- Step 2: score → decision mapping ---
+# --- Step 2 / Step 3: score → decision mapping（唯一权威表；SKILL.md、报告模板、README 都引用这里）---
 score_to_decision:
   - range: "80-100"
     decision: "Accept / Minor Revision"
@@ -42,19 +42,30 @@ score_to_decision:
     decision: "Major Revision (risky)"
   - range: "0-29"
     decision: "Reject"
+# 每位 Reviewer 也按此表给出自己的 Recommendation（Accept / Minor / Major / Reject）；
+# Editor 的最终决策不是平均分：≥1 个 Critical → 至少 Major；≥2 位 Reviewer 建议 Reject → Reject。
 
-# --- Step 3b: journal calibration tiers ---
-# 同一篇论文投不同期刊，审稿标准不同。
+# --- Step 3b: journal calibration tiers（按期刊在学科内的位置，不用绝对 IF）---
+# 怎么判断档位：看 journal-selection-report.md 里的梯队、JCR/中科院分区和该刊在本专科的排名；
+# 引用 IF 时必须标年份（journal-templates.yaml 的 IF_approx 是 JCR 2022 值）并建议 WebSearch 复核。
 journal_calibration:
-  - tier: "Top (IF>30)"
-    note: "Nature/Lancet/JAMA — 标准极高，同样论文得分应下调 10-15 分"
-  - tier: "High (IF 10-30)"
-    note: "专科顶刊 — 标准高，得分下调 5-10 分"
-  - tier: "Mid (IF 5-10)"
-    note: "主流期刊 — 标准适中，得分不调整"
-  - tier: "Entry (IF <5)"
-    note: "入门期刊 — 标准较宽松，得分上调 5 分"
-# 若用户指定 Target Journal，在评分矩阵后添加 Raw Score / Calibrated Score / Calibration note。
+  - tier: "综合顶刊"
+    examples: "NEJM、Lancet、JAMA、BMJ、Nature Medicine"
+    adjustment: "-10 到 -15"
+    note: "标准极高，要求改变实践级别的证据；同样论文得分下调 10-15 分"
+  - tier: "专科 Top"
+    examples: "本专科排名前 10% 的期刊（如泌尿科的 European Urology、影像科的 Radiology）"
+    adjustment: "-5 到 -10"
+    note: "标准高，得分下调 5-10 分"
+  - tier: "主流"
+    examples: "本专科中上游、多数 SCI 收录的专科期刊（如 BJU International、World J Urol、Urology）"
+    adjustment: "0"
+    note: "标准适中，得分不调整"
+  - tier: "入门"
+    examples: "学科分区靠后、新创刊、区域性期刊"
+    adjustment: "+5"
+    note: "标准较宽松，得分上调 5 分"
+# 若用户指定 Target Journal，在评分矩阵后添加 Raw Score / Calibrated Score / Calibration note（写档位，不写 IF 数值）。
 
 # --- Step 4: issue severity grading ---
 severity_grading:

@@ -1,15 +1,12 @@
 ---
 description: Turn a vague idea into a clear PICO question + hypothesis (research-question-formulation)
 argument-hint: [research idea or topic]
+disable-model-invocation: true
 ---
 
-# Research Question Formulation
+# Research Question
 
-Turn a vague research idea into a clear, testable question.
+Invoke the `research-question-formulation` skill with the user's idea: $ARGUMENTS
 
-Invoke the `research-question-formulation` skill, which contains the authoritative Socratic PICO workflow, FINER scoring, hypothesis formulation, and convergence criteria. Pass through the user's idea: $ARGUMENTS
-
-The skill produces `research-question.md` and converges only when PICO is fully explicit, the hypothesis is stated in statistical terms (H0/H1), and the user confirms.
-
-## Mandatory next step
-After completion, suggest `/literature-synthesis` (check existing evidence) or `/study-design` (if the landscape is already known).
+- **Output:** `research-question.md` (PICO, FINER score, H0/H1)
+- **Next step:** `literature-synthesis` (`/mrp:literature-synthesis`) to map the existing evidence, then `study-design`.

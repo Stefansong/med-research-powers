@@ -3,6 +3,14 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .eggs/
+.pytest_cache/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Generated manuscript / figure files (never commit exports)
+*.docx
+*.tiff
 
 # OS
 .DS_Store

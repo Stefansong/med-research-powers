@@ -1,0 +1,118 @@
+# TRIPOD+AI checklist — transcribed verbatim from Table 2 of the TRIPOD+AI statement
+# Source: Collins GS, Moons KGM, Dhiman P, et al. TRIPOD+AI statement: updated guidance for
+#         reporting clinical prediction models that use regression or machine learning methods.
+#         BMJ 2024;385:e078378. doi:10.1136/bmj-2023-078378 (PMC11019967)
+#         Retrieved via PubMed/PMC full text.
+# The statement: "The TRIPOD+AI checklist comprises 27 main items ... Some items included multiple
+# subitems, totalling to 52 checklist subitems." TRIPOD+AI supersedes TRIPOD 2015, which should no
+# longer be used. A separate 13-item TRIPOD+AI for Abstracts checklist (Table 3) covers item 2.
+# Applicability column: D = development only; E = evaluation (validation) only; D;E = both.
+# For studies that both develop and evaluate a model, all items apply.
+# Item text is verbatim except that two table footnotes are folded inline in parentheses:
+# 12c ("separately for all model building approaches") and 18f (what "analytical code" covers).
+#
+# Field meanings:
+#   id        — item number exactly as in Table 2
+#   applies   — "D" | "E" | "D;E" (development / evaluation) as printed in the table
+#   text      — checklist item description (verbatim)
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#               reported but do not block on their own
+
+name: TRIPOD+AI
+version: "2024"
+total_items: 27          # numbered items 1-27
+total_rows: 52           # including sub-items (3a-c, 5a/b, 6a-c, 8a-c, 9a-c, 12a-g, 18a-f, 20a-c, 23a/b, 27a-c)
+supersedes: "TRIPOD 2015 — should no longer be used"
+reference: "Collins et al. BMJ 2024;385:e078378 (doi:10.1136/bmj-2023-078378)"
+website: "https://www.tripod-statement.org/"
+abstract_checklist: "TRIPOD+AI for Abstracts — 13 items (Table 3 of the statement)"
+use_with: ["TRIPOD-Cluster (clustered data / heterogeneity across centres; BMJ 2023)", "PROBAST / PROBAST+AI (risk of bias, not a reporting guideline)"]
+related: ["TRIPOD-LLM (Nat Med 2025) for large language model studies", "CLAIM 2024 for medical imaging AI", "DECIDE-AI for early clinical evaluation of AI decision support", "STARD-AI (in development)"]
+
+sections:
+  - name: Title
+    items:
+      - {id: "1", topic: "Title", applies: "D;E", text: "Identify the study as developing or evaluating the performance of a multivariable prediction model, the target population, and the outcome to be predicted", critical: true}
+
+  - name: Abstract
+    items:
+      - {id: "2", topic: "Abstract", applies: "D;E", text: "See TRIPOD+AI for Abstracts checklist"}
+
+  - name: Introduction
+    items:
+      - {id: "3a", topic: "Background", applies: "D;E", text: "Explain the healthcare context (including whether diagnostic or prognostic) and rationale for developing or evaluating the prediction model, including references to existing models"}
+      - {id: "3b", topic: "Background", applies: "D;E", text: "Describe the target population and the intended purpose of the prediction model in the context of the care pathway, including its intended users (eg, healthcare professionals, patients, public)", critical: true}
+      - {id: "3c", topic: "Background", applies: "D;E", text: "Describe any known health inequalities between sociodemographic groups"}
+      - {id: "4", topic: "Objectives", applies: "D;E", text: "Specify the study objectives, including whether the study describes the development or validation of a prediction model (or both)", critical: true}
+
+  - name: Methods
+    items:
+      - {id: "5a", topic: "Data", applies: "D;E", text: "Describe the sources of data separately for the development and evaluation datasets (eg, randomised trial, cohort, routine care or registry data), the rationale for using these data, and representativeness of the data", critical: true}
+      - {id: "5b", topic: "Data", applies: "D;E", text: "Specify the dates of the collected participant data, including start and end of participant accrual; and, if applicable, end of follow-up"}
+      - {id: "6a", topic: "Participants", applies: "D;E", text: "Specify key elements of the study setting (eg, primary care, secondary care, general population) including the number and location of centres"}
+      - {id: "6b", topic: "Participants", applies: "D;E", text: "Describe the eligibility criteria for study participants", critical: true}
+      - {id: "6c", topic: "Participants", applies: "D;E", text: "Give details of any treatments received, and how they were handled during model development or evaluation, if relevant"}
+      - {id: "7", topic: "Data preparation", applies: "D;E", text: "Describe any data pre-processing and quality checking, including whether this was similar across relevant sociodemographic groups"}
+      - {id: "8a", topic: "Outcome", applies: "D;E", text: "Clearly define the outcome that is being predicted and the time horizon, including how and when assessed, the rationale for choosing this outcome, and whether the method of outcome assessment is consistent across sociodemographic groups", critical: true}
+      - {id: "8b", topic: "Outcome", applies: "D;E", text: "If outcome assessment requires subjective interpretation, describe the qualifications and demographic characteristics of the outcome assessors"}
+      - {id: "8c", topic: "Outcome", applies: "D;E", text: "Report any actions to blind assessment of the outcome to be predicted"}
+      - {id: "9a", topic: "Predictors", applies: "D", text: "Describe the choice of initial predictors (eg, literature, previous models, all available predictors) and any pre-selection of predictors before model building"}
+      - {id: "9b", topic: "Predictors", applies: "D;E", text: "Clearly define all predictors, including how and when they were measured (and any actions to blind assessment of predictors for the outcome and other predictors)", critical: true}
+      - {id: "9c", topic: "Predictors", applies: "D;E", text: "If predictor measurement requires subjective interpretation, describe the qualifications and demographic characteristics of the predictor assessors"}
+      - {id: "10", topic: "Sample size", applies: "D;E", text: "Explain how the study size was arrived at (separately for development and evaluation), and justify that the study size was sufficient to answer the research question. Include details of any sample size calculation", critical: true}
+      - {id: "11", topic: "Missing data", applies: "D;E", text: "Describe how missing data were handled. Provide reasons for omitting any data", critical: true}
+      - {id: "12a", topic: "Analytical methods", applies: "D", text: "Describe how the data were used (eg, for development and evaluation of model performance) in the analysis, including whether the data were partitioned, considering any sample size requirements", critical: true}
+      - {id: "12b", topic: "Analytical methods", applies: "D", text: "Depending on the type of model, describe how predictors were handled in the analyses (functional form, rescaling, transformation, or any standardisation)"}
+      - {id: "12c", topic: "Analytical methods", applies: "D", text: "Specify the type of model, rationale (separately for all model building approaches), all model building steps, including any hyperparameter tuning, and method for internal validation", critical: true}
+      - {id: "12d", topic: "Analytical methods", applies: "D;E", text: "Describe if and how any heterogeneity in estimates of model parameter values and model performance was handled and quantified across clusters (eg, hospitals, countries). See TRIPOD-Cluster for additional considerations"}
+      - {id: "12e", topic: "Analytical methods", applies: "D;E", text: "Specify all measures and plots used (and their rationale) to evaluate model performance (eg, discrimination, calibration, clinical utility) and, if relevant, to compare multiple models", critical: true}
+      - {id: "12f", topic: "Analytical methods", applies: "E", text: "Describe any model updating (eg, recalibration) arising from the model evaluation, either overall or for particular sociodemographic groups or settings"}
+      - {id: "12g", topic: "Analytical methods", applies: "E", text: "For model evaluation, describe how the model predictions were calculated (eg, formula, code, object, application programming interface)"}
+      - {id: "13", topic: "Class imbalance", applies: "D;E", text: "If class imbalance methods were used, state why and how this was done, and any subsequent methods to recalibrate the model or the model predictions"}
+      - {id: "14", topic: "Fairness", applies: "D;E", text: "Describe any approaches that were used to address model fairness and their rationale"}
+      - {id: "15", topic: "Model output", applies: "D", text: "Specify the output of the prediction model (eg, probabilities, classification). Provide details and rationale for any classification and how the thresholds were identified"}
+      - {id: "16", topic: "Training versus evaluation", applies: "D;E", text: "Identify any differences between the development and evaluation data in healthcare setting, eligibility criteria, outcome, and predictors", critical: true}
+      - {id: "17", topic: "Ethical approval", applies: "D;E", text: "Name the institutional research board or ethics committee that approved the study and describe the participant informed consent or the ethics committee waiver of informed consent", critical: true}
+
+  - name: Open science
+    items:
+      - {id: "18a", topic: "Funding", applies: "D;E", text: "Give the source of funding and the role of the funders for the present study"}
+      - {id: "18b", topic: "Conflicts of interest", applies: "D;E", text: "Declare any conflicts of interest and financial disclosures for all authors"}
+      - {id: "18c", topic: "Protocol", applies: "D;E", text: "Indicate where the study protocol can be accessed or state that a protocol was not prepared"}
+      - {id: "18d", topic: "Registration", applies: "D;E", text: "Provide registration information for the study, including register name and registration number, or state that the study was not registered"}
+      - {id: "18e", topic: "Data sharing", applies: "D;E", text: "Provide details of the availability of the study data"}
+      - {id: "18f", topic: "Code sharing", applies: "D;E", text: "Provide details of the availability of the analytical code (data cleaning, feature engineering, model building, and evaluation)"}
+
+  - name: Patient and public involvement
+    items:
+      - {id: "19", topic: "Patient and public involvement", applies: "D;E", text: "Provide details of any patient and public involvement during the design, conduct, reporting, interpretation, or dissemination of the study or state no involvement"}
+
+  - name: Results
+    items:
+      - {id: "20a", topic: "Participants", applies: "D;E", text: "Describe the flow of participants through the study, including the number of participants with and without the outcome and, if applicable, a summary of the follow-up time. A diagram may be helpful", critical: true}
+      - {id: "20b", topic: "Participants", applies: "D;E", text: "Report the characteristics overall and, where applicable, for each data source or setting, including the key dates, key predictors (including demographics), treatments received, sample size, number of outcome events, follow-up time, and amount of missing data. A table may be helpful. Report any differences across key demographic groups", critical: true}
+      - {id: "20c", topic: "Participants", applies: "E", text: "For model evaluation, show a comparison with the development data of the distribution of important predictors (demographics, predictors, and outcome)"}
+      - {id: "21", topic: "Model development", applies: "D;E", text: "Specify the number of participants and outcome events in each analysis (eg, for model development, hyperparameter tuning, model evaluation)", critical: true}
+      - {id: "22", topic: "Model specification", applies: "D", text: "Provide details of the full prediction model (eg, formula, code, object, application programming interface) to allow predictions in new individuals and to enable third party evaluation and implementation, including any restrictions to access or reuse (eg, freely available, proprietary)", critical: true}
+      - {id: "23a", topic: "Model performance", applies: "D;E", text: "Report model performance estimates with confidence intervals, including for any key subgroups (eg, sociodemographic). Consider plots to aid presentation", critical: true}
+      - {id: "23b", topic: "Model performance", applies: "D;E", text: "If examined, report results of any heterogeneity in model performance across clusters. See TRIPOD-Cluster for additional details"}
+      - {id: "24", topic: "Model updating", applies: "E", text: "Report the results from any model updating, including the updated model and subsequent performance"}
+
+  - name: Discussion
+    items:
+      - {id: "25", topic: "Interpretation", applies: "D;E", text: "Give an overall interpretation of the main results, including issues of fairness in the context of the objectives and previous studies"}
+      - {id: "26", topic: "Limitations", applies: "D;E", text: "Discuss any limitations of the study (such as a non-representative sample, sample size, overfitting, missing data) and their effects on any biases, statistical uncertainty, and generalisability", critical: true}
+      - {id: "27a", topic: "Usability of the model in the context of current care", applies: "D", text: "Describe how poor quality or unavailable input data (eg, predictor values) should be assessed and handled when implementing the prediction model"}
+      - {id: "27b", topic: "Usability of the model in the context of current care", applies: "D", text: "Specify whether users will be required to interact in the handling of the input data or use of the model, and what level of expertise is required of users"}
+      - {id: "27c", topic: "Usability of the model in the context of current care", applies: "D;E", text: "Discuss any next steps for future research, with a specific view to applicability and generalisability of the model"}
+
+commonly_missed:
+  - "Item 3b — target population, intended purpose in the care pathway and intended users (not just 'we built a model')"
+  - "Item 10 — sample size justification separately for development and evaluation (events per parameter / Riley criteria), not just 'all available data'"
+  - "Item 12a — how data were partitioned (patient-level split; no leakage between training, tuning and evaluation)"
+  - "Item 12c — every model building step incl. hyperparameter tuning and the internal validation method"
+  - "Item 12e / 23a — calibration and clinical utility (decision curve), not AUC alone; confidence intervals for every performance estimate"
+  - "Item 13 — if class imbalance methods (SMOTE, re-weighting) were used, say so and report any recalibration"
+  - "Item 14 / 25 — fairness across sociodemographic groups is asked in Methods and again in Discussion"
+  - "Item 18c-f — protocol, registration, data sharing and code sharing are four separate sub-items"
+  - "Item 22 — the full model (formula/code/object) or explicit statement that it is proprietary"

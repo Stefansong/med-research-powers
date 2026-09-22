@@ -19,8 +19,8 @@ Fill in the bracketed placeholders. Do not invent numbers.
 
 | Variable | N Missing | % Missing | Strategy | Justification |
 |----------|----------|-----------|----------|---------------|
-| [var1] | [N] | [X%] | Complete case | <5%, MCAR (Little's p=X) |
-| [var2] | [N] | [X%] | Multiple imputation (m=20) | MAR assumed |
+| [var1] | [N] | [X%] | Complete case | <5%, MCAR plausible (Little's test p=X, or missing-vs-observed group comparison if Little's test unavailable) |
+| [var2] | [N] | [X%] | Multiple imputation (m=20, Rubin's rules) | MAR assumed |
 ...
 
 ## Outliers
@@ -118,11 +118,13 @@ Fill in the bracketed placeholders. Do not invent numbers.
 
 ## Sample Characteristics
 
-| Variable | Total (N=[X]) | Group A (n=[X]) | Group B (n=[X]) | p-value |
+| Variable | Total (N=[X]) | Group A (n=[X]) | Group B (n=[X]) | SMD / p-value |
 |----------|:---:|:---:|:---:|:---:|
 | Age, mean±SD | X±X | X±X | X±X | [X] |
 | Male, n(%) | X(X%) | X(X%) | X(X%) | [X] |
 ...
+
+> 基线表最后一列：**RCT 不填 p 值**（随机分组后的基线差异只能来自机会，显著性检验没有意义，CONSORT 明确不推荐），改用标准化均数差 SMD（|SMD| < 0.1 视为均衡）。观察性研究可报 p 值或 SMD；倾向评分匹配后一律报 SMD。
 
 ## Primary Outcome
 

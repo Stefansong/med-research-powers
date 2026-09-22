@@ -1,0 +1,12 @@
+# Python dependencies for the bundled MRP scripts (statistical-analysis,
+# figure-generation, manuscript-export, data-collection-tools, using-med-research-powers).
+# The skills themselves work without these; the scripts do not.
+#   pip install -r requirements.txt
+scipy
+statsmodels
+matplotlib
+pandas
+numpy
+python-docx
+openpyxl
+pyyaml

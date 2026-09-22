@@ -1,5 +1,63 @@
 # Changelog
 
+## v6.3.0 (2026-09-21)
+
+Full review-and-upgrade release. A repository-wide audit (6 parallel reviews, every high-severity finding re-verified against source, scripts executed, CONSORT 2025 checked against the BMJ paper, plugin install/namespace verified on Claude Code 2.1.278) found four classes of problems — the plugin could not be installed as documented, several facts written into protocols/manuscripts were wrong, bundled scripts failed when called as documented, and three core mechanisms existed only as prose. This release fixes all of them.
+
+### Breaking / migration
+- **Plugin `name` is now `mrp`** (was `med-research-powers`), so the documented `/mrp:<command>` and `/mrp:<skill>` names finally match what Claude Code registers (the namespace prefix is always the plugin name). Install id is `mrp@med-research-powers`. Migration: `/plugin uninstall med-research-powers@med-research-powers` → `/plugin marketplace add Stefansong/med-research-powers` → `/plugin install mrp@med-research-powers`.
+- **Commands reduced from 20 to 7** (`analyze-data`, `check-standards`, `peer-review`, `pre-submission`, `research-question`, `using-mrp`, `write-manuscript`). The 13 commands that shared a name with a skill were shadowed by the skill and only duplicated the skill list; call those skills as `/mrp:<skill>`. Remaining commands carry `disable-model-invocation: true` (user-only aliases).
+- **Protocol output is always `study-protocol.md`** (with a `type:` field) for all five study types; `qualitative-protocol.md` / `survey-protocol.md` no longer exist.
+- **User profile moved to `~/.claude/mrp-user-profile.json`** (per person, not per project) and is collected lazily; the 5-question interview at session start is gone.
+- `install.sh` copy/symlink modes replaced by a single whole-repository symlink (`~/.claude/skills/med-research-powers`), which loads as a `mrp@skills-dir` plugin so hooks and `${CLAUDE_PLUGIN_ROOT}` keep working.
+
+### Fixed — installation and packaging
+- README / README_CN / USER-MANUAL / install.sh: `/plugin install ./med-research-powers` and `/plugin install https://…` (not valid syntax) replaced by the two-step marketplace flow; added `--plugin-dir` dev flow, 6.2.x migration and an Uninstall section.
+- marketplace.json: removed `"strict": false` (conflicted with the hooks declared in plugin.json); plugin.json gains `homepage`/`repository`; hook command path is quoted.
+- install.sh: runs `claude plugin marketplace add … && claude plugin install …` when the CLI is present; `--method 1|2`, non-interactive default; `pip install docx` → `python-docx`; verification via `claude plugin list` (the hook's text is context for Claude, not visible to the user). New `requirements.txt`.
+
+### Fixed — facts that were wrong
+- **CONSORT 2025 has 30 items (42 rows incl. sub-items), not "31 items / 34 rows"** (Hopewell et al., BMJ 2025;389:e081123). `consort-2025.yaml` rewritten from Table 1 of the statement with official numbering (1a/1b … 21a-d … 30), new/revised flags and `critical` markers; hook, orchestrator, README, docs corrected.
+- `power_analysis.survival()` doubled the required event count (`* (1 + ratio)` applied twice): HR 0.7, 1:1 now gives ≈247 events / 549 patients (was 494 / 1098).
+- `assumption_tests.full_check()` recommended a t-test when every group had n<8 (`all([])` is True); now non-parametric with a warning.
+- team-collaboration: the sub-agent tool is **Agent** (Task is the legacy alias); the Red Flag that forbade `Agent(...)` is removed.
+- submission-systems.yaml: Lancet uses Editorial Manager, Nature uses its own MTS (eJournalPress), Science uses eJP; added eJP and Snapp categories.
+- pubmed-search: real MCP parameter names (`find_related_articles(pmids=[…])`, `convert_article_ids(ids=[…], id_type=…)`), `mesh_terms` comes from `get_article_metadata`, and a tool error is now `⏳ Unverified` instead of "reference does not exist". Hard-coded `mcp__claude_ai_PubMed__` prefix removed everywhere — the server name follows the session's tool list.
+- reporting-standards index: CLAIM 2024 (44 items), TRIPOD-SRMA/-Cluster 2023, TRIPOD-LLM 2025, Newcastle-Ottawa max 9, DECIDE-AI 17+10, CARE 2013 (E&E 2017), PROBAST+AI note. Added CHERRIES, CROSS, COSMIN, TREND, CONSORT non-inferiority extension → **46 standards**.
+- journal-templates.yaml: `data_as_of` header (IF = JCR 2022, APC = 2022 prices); eLife and eClinicalMedicine "no APC" corrected; European Urology family abstract headings updated to the 2023 format; Nature Medicine submission system corrected; every entry now has a `family` field (lancet / jama / nature / ieee / standard).
+- study-design: non-inferiority now requires ITT **and** PP; qualitative coding rules follow the methodology (codebook vs reflexive TA/IPA); ACE naming; data-split bands `200 ≤ n ≤ 1000` / `50 ≤ n < 200`; CLAIM 2024 throughout; regression vs risk-prediction metrics separated.
+- Smaller: decision tree (paired → normality of differences; ordinal two-group → Mann-Whitney/CMH), multiple imputation example (`sample_posterior=True` + Rubin's rules), RCT baseline tables use SMD not p-values, peer-review score→decision matches the rubric, journal-selection tiers by rank not by matching score, Beall's List replaced by Think.Check.Submit/DOAJ/COPE, PROSPERO wording per PRISMA 2020 item 24a.
+
+### Fixed — scripts that did not run as documented
+- statistical-analysis and figure-generation examples used `sys.path.insert(0, 'scripts')` (fails from a project directory); all script calls are now `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/scripts/…`, checked by the guard.
+- export_docx.py: `encoding="utf-8"` everywhere (crashed on GBK Windows); unpaired `~ ^ *` are kept verbatim (were silently deleted — "~90%" became "90%"); journal family read from YAML (Nature/Lancet/JAMA order and Key Points / Research in Context now work for all 234 journals, not 19); word count split into body / abstract / references; unknown journal id exits 2; placeholders inside HTML comments detected; Heading 3 styled; literal reference numbering; `--supplementary` and `--report-only` implemented.
+- pub_style.py: font fallback chain with a single warning, significance bracket height as a fraction of the axis, 600 dpi for line art, real per-journal figure widths (Nature verified; others approximate).
+- power_analysis.py: `diagnostic()` takes specificity, `proportion()` returns both groups, clear `ValueError` on boundary inputs, friendly missing-dependency messages, argparse CLI.
+
+### Implemented — mechanisms that existed only as prose
+- **Project state**: `skills/using-med-research-powers/scripts/mrp_state.py` is the single writer of `.mrp-state.json`; every main-line skill ends with `mrp_state.py done <skill> --output … --next …`; hard checkpoints are recorded; the session-start hook reads only five whitelisted string fields.
+- **User profile**: lazy, global; `journal-selection`, `data-analysis-planning` and `figure-generation` read one field each and ask a single question when it is missing.
+- **Journal templates**: `skills/manuscript-writing/scripts/get_journal_template.py --id/--search/--list` (with project-level `journal-overrides.yaml`); whole-file reads of the 133 KB YAML are forbidden.
+- **Pipeline**: research-ethics on the main line before data collection; peer-review before pre-submission; manuscript-export after pre-submission; journal-selection is a soft confirmation. **Three** hard checkpoints (protocol, SAP, pre-submission). Default confirmation mode is `light` (summary + auto-continue); `step` and `auto` are opt-in. The "1% Rule" is gone: pipeline for research-process tasks, direct answers for small questions.
+- study-design split into a 184-line router plus `references/modules/{clinical,basic-science,ai-ml,qualitative,survey-delphi}.md`; Type B and C protocol templates added (C includes patient-level split, ground truth, calibration/DCA, prompt standardisation); Type A template now has intervention/comparator, randomisation, blinding, outcomes and follow-up sections.
+- literature-synthesis: Narrative vs Systematic mode; bias tools mapped by design (RoB 2 / ROBINS-I / NOS / QUADAS-2 / PROBAST); templates moved to `references/`.
+- New scripts: `data_cleaning.py`, `patient_level_split.py`, `randomization.py`, `get_journal_template.py`, `mrp_state.py` (10 bundled scripts in total).
+- Full per-item checklists transcribed from the open-access source papers: STROBE, PRISMA 2020, STARD 2015, ARRIVE 2.0, TRIPOD+AI (plus CONSORT 2025) — six of 46 standards now have local checklists; the index says so explicitly and forbids inventing items for the rest.
+
+### Hook
+- Rewritten: a two-line reminder plus, when `$CLAUDE_PROJECT_DIR/.mrp-state.json` exists, five whitelisted fields in a fenced block labelled as data. No routing table, no questionnaire, no `python3` probe, no whole-file `cat` (that allowed prompt injection from a cloned repository). See `SECURITY.md`.
+
+### Tooling and CI
+- `tools/check_consistency.py` rewritten: versions in 8 places, on-disk counts vs every number claimed in docs, plugin name vs command prefix, no command/skill name clashes, script paths must use `${CLAUDE_PLUGIN_ROOT}` and exist, SKILL.md frontmatter/length/reference-path checks, README ↔ README_CN structure sync, dead relative links, stale CONSORT counts.
+- `tests/` (pytest, 77 tests) covering all bundled scripts; CI runs the guard, tests, `sh -n`/shellcheck, a hook smoke test, a whitelist-leak test and `claude plugin validate --strict`.
+- Docs: README/README_CN rewritten in sync; USER-MANUAL deduplicated against README; architecture.md aligned; 4 unreferenced images removed and the remaining one re-encoded (2.3 MB → 52 KB); `SECURITY.md`, `CONTRIBUTING.md` release checklist, `.gitignore` additions.
+
+### Known limitations (unchanged data)
+- Impact factors and APCs in `journal-templates.yaml` are still JCR 2022 / 2022 prices — now labelled as such; skills must state the year and re-check the top candidates. Frequently targeted urology journals that are missing (The Prostate, Urologic Oncology, J Endourology, Cancers, …) can be added via `journal-overrides.yaml`.
+- 40 of 46 standards have index entries with official sources but no local per-item checklist.
+
+---
+
 ## v6.2.3 (2026-06-15)
 
 Consistency & runtime-correctness pass. Closes the gaps the v6.2.2 audit missed (the hook and installer were *not* "already current") and adds a CI guard so this class of drift can't recur.

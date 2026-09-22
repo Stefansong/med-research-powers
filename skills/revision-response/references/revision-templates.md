@@ -18,30 +18,32 @@ NOTE: cover-letter / cascade-rewrite templates are NOT here. When改投, defer t
 
 ## Summary
 - Total comments: [N]
-- Critical: [N] | Major: [N] | Minor: [N] | Disagreeable: [N]
+- Severity — Critical: [N] | Major: [N] | Minor: [N]
+- Stance — Accept: [N] | Partial: [N] | Rebut: [N]
 
 ## Priority Action List
 
-| # | Reviewer | Category | Comment Summary | Difficulty | Action |
-|---|----------|----------|----------------|------------|--------|
-| 1 | R1 | Critical | [摘要] | High | [具体修改] |
-| 2 | R2 | Critical | [摘要] | Medium | [具体修改] |
-| 3 | R1 | Major | [摘要] | Low | [具体修改] |
+| # | Reviewer | Comment # | Severity | Stance | Sub-type | Comment Summary | Difficulty | Priority | Action |
+|---|----------|-----------|----------|--------|----------|-----------------|------------|----------|--------|
+| 1 | R1 | 2 | Critical | Accept | 方法学质疑 | [摘要] | High | P1 | [具体修改] |
+| 2 | R2 | 1 | Critical | Partial | 要求补充分析 | [摘要] | Medium | P1 | [post hoc 分析 + 记入 analysis-log.md] |
+| 3 | R1 | 4 | Major | Accept | 文字改进 | [摘要] | Low | P2 | [具体修改] |
+| 4 | R2 | 5 | Minor | Rebut | 不合理要求 | [摘要] | Low | P3 | [礼貌说明 + 引用] |
 ...
 
-## Disagreeable Items (needs careful response)
-1. R2 Comment 5: [问题] → Strategy: [反驳方式]
-2. R3 Comment 3: [问题] → Strategy: [反驳方式]
+## Rebut Items (needs careful response)
+1. R2 Comment 5 (Minor / Rebut): [问题] → Strategy: [证据 + 措辞]
+2. R3 Comment 3 (Major / Rebut): [问题] → Strategy: [证据 + 措辞]
 
 ## New Analyses/Experiments Required
-- [ ] [分析1] — estimated time: [X days]
+- [ ] [分析1] — post hoc / exploratory，记入 analysis-log.md SAP 偏差 — estimated time: [X days]
 - [ ] [分析2] — estimated time: [X days]
 
 ## Timeline
-- Week 1: Critical fixes + new analyses
-- Week 2: Major revisions + rewrite
-- Week 3: Minor fixes + Response Letter
-- Week 4: Re-run pre-submission-verification + submit
+- Week 1: P1 (all Critical) + new analyses
+- Week 2: P2 Major revisions + rewrite
+- Week 3: P3/P4 Minor fixes + Response Letter (Rebut items last, with care)
+- Week 4: Re-run pre-submission-verification → manuscript-export → resubmit
 ```
 
 ## Per-comment 回复模板（Phase 2 Step 2）
@@ -65,12 +67,12 @@ NOTE: cover-letter / cascade-rewrite templates are NOT here. When改投, defer t
 ## `revision-tracking.md`（Phase 2 Step 3）
 
 ```markdown
-| Reviewer | Comment # | Type | Action | Manuscript Location | Status |
-|----------|-----------|------|--------|-------------------|--------|
-| R1 | 1 | 方法学 | Added sensitivity analysis | Methods ¶3, Results ¶5 | ✅ |
-| R1 | 2 | 文字 | Revised wording | Discussion ¶2 | ✅ |
-| R2 | 1 | 补充分析 | Added subgroup analysis | Results Table 3 | ✅ |
-| R2 | 3 | 不合理 | Rebutted with evidence | Response letter only | ✅ |
+| Reviewer | Comment # | Severity | Stance | Sub-type | Action | Manuscript Location | Status |
+|----------|-----------|----------|--------|----------|--------|---------------------|--------|
+| R1 | 1 | Critical | Accept | 方法学质疑 | Added sensitivity analysis | Methods ¶3, Results ¶5 | ✅ |
+| R1 | 2 | Minor | Accept | 文字改进 | Revised wording | Discussion ¶2 | ✅ |
+| R2 | 1 | Major | Partial | 要求补充分析 | Added post hoc subgroup analysis (labelled exploratory; analysis-log.md) | Results Table 3, Methods ¶6 | ✅ |
+| R2 | 3 | Minor | Rebut | 不合理要求 | Rebutted with evidence | Response letter only | ✅ |
 ```
 
 ## Response Letter 模板（Phase 2 Step 5）

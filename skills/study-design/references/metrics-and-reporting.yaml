@@ -1,4 +1,8 @@
 # AI Medical Study: Metrics and Reporting Map
+# Loaded by references/modules/ai-ml.md (Core Design Element 3 + Reporting Standards).
+# Standard names below match the reporting-standards index
+# (${CLAUDE_PLUGIN_ROOT}/skills/reporting-standards/references/checklists/standards-index.yaml);
+# entries marked "no local checklist" are not in that index and must be checked manually.
 
 ## Performance Metrics by Task Type
 
@@ -30,15 +34,26 @@ llm_vlm_evaluation:
   secondary:
     - {metric: Failure Mode Analysis, description: "Qualitative categorization of errors", when: "Always"}
     - {metric: Calibration, description: "Confidence vs actual accuracy", when: "If model outputs confidence"}
+    - {metric: Prompt Sensitivity, description: "Performance variation across prompt variants / repeated runs", when: "Always for LLM/VLM benchmarks"}
 
-regression_prediction:
+# Continuous-outcome regression (e.g., predicting a lab value, volume, age)
+regression:
   primary:
-    - {metric: MAE / RMSE, description: "Mean Absolute Error / Root Mean Square Error"}
-    - {metric: "R²", description: "Coefficient of determination"}
-    - {metric: Calibration Curve, description: "Predicted vs observed"}
+    - {metric: MAE / RMSE, description: "Mean Absolute Error / Root Mean Square Error", when: "Always"}
+    - {metric: "R²", description: "Coefficient of determination", when: "Always"}
   secondary:
-    - {metric: DCA, description: "Decision Curve Analysis — clinical net benefit", when: "MANDATORY for clinical prediction models"}
-    - {metric: Brier Score, description: "Overall calibration + discrimination"}
+    - {metric: Bland-Altman, description: "Agreement between predicted and reference values (bias + limits of agreement)", when: "Method-comparison framing (AI vs reference measurement)"}
+    - {metric: Residual Plot, description: "Error vs predicted value", when: "Check heteroscedasticity / systematic bias"}
+
+# Binary / time-to-event risk prediction (clinical prediction models, TRIPOD+AI scope)
+risk_prediction:
+  primary:
+    - {metric: AUROC / C-index, description: "Discrimination + 95% CI", when: "Always"}
+    - {metric: Calibration Curve, description: "Predicted vs observed probability (slope, intercept)", when: "Always — high AUROC with poor calibration is unusable"}
+    - {metric: Brier Score, description: "Overall accuracy of probabilistic predictions", when: "Always"}
+  secondary:
+    - {metric: DCA, description: "Decision Curve Analysis — clinical net benefit across thresholds", when: "MANDATORY for clinical prediction models"}
+    - {metric: NRI / IDI, description: "Reclassification / discrimination improvement vs existing model", when: "Only when comparing to an established model; report with caution"}
 
 fairness_and_bias:
   metrics:
@@ -73,12 +88,12 @@ calibration_extended:
 ## Study Type → Reporting Standard Map
 
 mapping:
-  - {study: "AI-assisted diagnosis", primary: "STARD + CLAIM", supplement: "MI-CLAIM"}
-  - {study: "AI clinical trial (RCT)", primary: "CONSORT-AI 2020", supplement: "SPIRIT-AI 2020"}
+  - {study: "AI-assisted diagnosis (diagnostic accuracy)", primary: "STARD 2015 + CLAIM 2024", supplement: "MI-CLAIM; STARD-AI (no local checklist — verify manually); QUADAS-2 for bias"}
+  - {study: "AI clinical trial (RCT)", primary: "CONSORT 2025 + CONSORT-AI 2020", supplement: "SPIRIT 2025 + SPIRIT-AI 2020 for the protocol"}
   - {study: "AI decision support early evaluation", primary: "DECIDE-AI 2022", supplement: "CONSORT-AI if progressing to RCT"}
-  - {study: "Prediction model development", primary: "TRIPOD+AI (2024)", supplement: "PROBAST"}
-  - {study: "LLM/VLM medical evaluation", primary: "TRIPOD-LLM 2024", supplement: "Journal-specific"}
-  - {study: "Surgical video AI", primary: "STARD (if applicable)", supplement: "CLAIM 2024 (no dedicated surgical-video standard exists; apply imaging-AI reporting + DECIDE-AI if decision support)"}
-  - {study: "Medical device/instrument innovation", primary: "IDEAL framework", supplement: "ISO 14155"}
-  - {study: "AI systematic review", primary: "PRISMA 2020", supplement: "QUADAS-2 / PROBAST / ROBINS-I"}
-  - {study: "Medical imaging AI", primary: "CLAIM 2020", supplement: "MI-CLAIM"}
+  - {study: "Prediction model development / validation", primary: "TRIPOD+AI 2024", supplement: "PROBAST for bias; TRIPOD-Cluster (BMJ 2023) if clustered data"}
+  - {study: "LLM/VLM medical evaluation", primary: "TRIPOD-LLM (Nat Med 2025)", supplement: "Journal-specific; report prompt standardization section"}
+  - {study: "Surgical video AI", primary: "STARD 2015 (if diagnostic framing)", supplement: "CLAIM 2024 (no dedicated surgical-video standard exists; apply imaging-AI reporting + DECIDE-AI if decision support)"}
+  - {study: "Medical device/instrument innovation", primary: "IDEAL framework", supplement: "ISO 14155 (no local checklist — verify manually)"}
+  - {study: "AI systematic review", primary: "PRISMA 2020 + PRISMA-S", supplement: "QUADAS-2 / PROBAST / ROBINS-I"}
+  - {study: "Medical imaging AI", primary: "CLAIM 2024 (44 items)", supplement: "MI-CLAIM; CLAIM 2020 is superseded — do not cite as current"}

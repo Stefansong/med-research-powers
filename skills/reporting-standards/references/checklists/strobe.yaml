@@ -1,0 +1,92 @@
+# STROBE checklist — transcribed from the STROBE Statement (22 items)
+# Source: von Elm E, Altman DG, Egger M, Pocock SJ, Gøtzsche PC, Vandenbroucke JP; STROBE Initiative.
+#         The Strengthening the Reporting of Observational Studies in Epidemiology (STROBE) statement:
+#         guidelines for reporting observational studies. PLoS Med 2007;4(10):e296.
+#         doi:10.1371/journal.pmed.0040296 (PMC2020495)
+# Item wording taken verbatim from the item headings of the companion Explanation and Elaboration
+# paper (Vandenbroucke JP et al. PLoS Med 2007;4(10):e297, doi:10.1371/journal.pmed.0040297,
+# PMC2020496), which restates every checklist item. Retrieved via PubMed/PMC full text.
+# The statement: "a checklist of 22 items ... 18 items are common to all three designs, while four
+# (items 6, 12, 14, and 15) are design-specific". Starred items should be reported separately for
+# cases and controls (case-control) or exposed and unexposed groups (cohort, cross-sectional).
+#
+# Field meanings:
+#   id            — item number as in Table 1 (sub-items a/b/c as in the published checklist)
+#   text          — checklist item description (verbatim); design-specific wording is given for all
+#                   three designs in one row, as in the published combined checklist
+#   design_specific — true when the wording differs by design (check only the matching variant)
+#   starred       — report separately for cases/controls or exposed/unexposed groups
+#   critical      — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#                   reported but do not block on their own
+
+name: STROBE
+version: "2007"
+total_items: 22          # numbered items 1-22
+total_rows: 34           # including sub-items (1a/1b, 6a/6b, 12a-e, 13a-c, 14a-c, 16a-c)
+reference: "von Elm et al. PLoS Med 2007;4(10):e296 (doi:10.1371/journal.pmed.0040296); E&E: Vandenbroucke et al. PLoS Med 2007;4(10):e297 (doi:10.1371/journal.pmed.0040297)"
+website: "https://www.strobe-statement.org/"
+applies_to: ["cohort", "case-control", "cross-sectional"]
+extensions: ["STROBE-MR (Mendelian randomisation)", "STREGA (genetic association)", "RECORD (routinely collected data)", "STROBE-nut", "STROBE-Vet", "STROCSS (surgical)"]
+flow_diagram: "Recommended (item 13c) — numbers at each stage of the study"
+
+sections:
+  - name: Title and abstract
+    items:
+      - {id: "1a", topic: "Title and abstract", text: "Indicate the study's design with a commonly used term in the title or the abstract", critical: true}
+      - {id: "1b", topic: "Title and abstract", text: "Provide in the abstract an informative and balanced summary of what was done and what was found"}
+
+  - name: Introduction
+    items:
+      - {id: "2", topic: "Background/rationale", text: "Explain the scientific background and rationale for the investigation being reported"}
+      - {id: "3", topic: "Objectives", text: "State specific objectives, including any prespecified hypotheses"}
+
+  - name: Methods
+    items:
+      - {id: "4", topic: "Study design", text: "Present key elements of study design early in the paper", critical: true}
+      - {id: "5", topic: "Setting", text: "Describe the setting, locations, and relevant dates, including periods of recruitment, exposure, follow-up, and data collection", critical: true}
+      - {id: "6a", topic: "Participants", design_specific: true, text: "Cohort study — Give the eligibility criteria, and the sources and methods of selection of participants. Describe methods of follow-up. Case-control study — Give the eligibility criteria, and the sources and methods of case ascertainment and control selection. Give the rationale for the choice of cases and controls. Cross-sectional study — Give the eligibility criteria, and the sources and methods of selection of participants", critical: true}
+      - {id: "6b", topic: "Participants", design_specific: true, text: "Cohort study — For matched studies, give matching criteria and number of exposed and unexposed. Case-control study — For matched studies, give matching criteria and the number of controls per case"}
+      - {id: "7", topic: "Variables", text: "Clearly define all outcomes, exposures, predictors, potential confounders, and effect modifiers. Give diagnostic criteria, if applicable", critical: true}
+      - {id: "8", topic: "Data sources/measurement", starred: true, text: "For each variable of interest give sources of data and details of methods of assessment (measurement). Describe comparability of assessment methods if there is more than one group", critical: true}
+      - {id: "9", topic: "Bias", text: "Describe any efforts to address potential sources of bias", critical: true}
+      - {id: "10", topic: "Study size", text: "Explain how the study size was arrived at"}
+      - {id: "11", topic: "Quantitative variables", text: "Explain how quantitative variables were handled in the analyses. If applicable, describe which groupings were chosen, and why"}
+      - {id: "12a", topic: "Statistical methods", text: "Describe all statistical methods, including those used to control for confounding", critical: true}
+      - {id: "12b", topic: "Statistical methods", text: "Describe any methods used to examine subgroups and interactions"}
+      - {id: "12c", topic: "Statistical methods", text: "Explain how missing data were addressed", critical: true}
+      - {id: "12d", topic: "Statistical methods", design_specific: true, text: "Cohort study — If applicable, describe how loss to follow-up was addressed. Case-control study — If applicable, explain how matching of cases and controls was addressed. Cross-sectional study — If applicable, describe analytical methods taking account of sampling strategy"}
+      - {id: "12e", topic: "Statistical methods", text: "Describe any sensitivity analyses"}
+
+  - name: Results
+    items:
+      - {id: "13a", topic: "Participants", starred: true, text: "Report the numbers of individuals at each stage of the study — e.g., numbers potentially eligible, examined for eligibility, confirmed eligible, included in the study, completing follow-up, and analysed", critical: true}
+      - {id: "13b", topic: "Participants", starred: true, text: "Give reasons for non-participation at each stage"}
+      - {id: "13c", topic: "Participants", starred: true, text: "Consider use of a flow diagram"}
+      - {id: "14a", topic: "Descriptive data", starred: true, text: "Give characteristics of study participants (e.g., demographic, clinical, social) and information on exposures and potential confounders", critical: true}
+      - {id: "14b", topic: "Descriptive data", starred: true, text: "Indicate the number of participants with missing data for each variable of interest"}
+      - {id: "14c", topic: "Descriptive data", starred: true, design_specific: true, text: "Cohort study — Summarise follow-up time — e.g., average and total amount"}
+      - {id: "15", topic: "Outcome data", starred: true, design_specific: true, text: "Cohort study — Report numbers of outcome events or summary measures over time. Case-control study — Report numbers in each exposure category, or summary measures of exposure. Cross-sectional study — Report numbers of outcome events or summary measures", critical: true}
+      - {id: "16a", topic: "Main results", text: "Give unadjusted estimates and, if applicable, confounder-adjusted estimates and their precision (e.g., 95% confidence intervals). Make clear which confounders were adjusted for and why they were included", critical: true}
+      - {id: "16b", topic: "Main results", text: "Report category boundaries when continuous variables were categorised"}
+      - {id: "16c", topic: "Main results", text: "If relevant, consider translating estimates of relative risk into absolute risk for a meaningful time period"}
+      - {id: "17", topic: "Other analyses", text: "Report other analyses done — e.g., analyses of subgroups and interactions, and sensitivity analyses"}
+
+  - name: Discussion
+    items:
+      - {id: "18", topic: "Key results", text: "Summarise key results with reference to study objectives"}
+      - {id: "19", topic: "Limitations", text: "Discuss limitations of the study, taking into account sources of potential bias or imprecision. Discuss both direction and magnitude of any potential bias", critical: true}
+      - {id: "20", topic: "Interpretation", text: "Give a cautious overall interpretation considering objectives, limitations, multiplicity of analyses, results from similar studies, and other relevant evidence", critical: true}
+      - {id: "21", topic: "Generalisability", text: "Discuss the generalisability (external validity) of the study results"}
+
+  - name: Other information
+    items:
+      - {id: "22", topic: "Funding", text: "Give the source of funding and the role of the funders for the present study and, if applicable, for the original study on which the present article is based", critical: true}
+
+commonly_missed:
+  - "Item 1a — the design term (cohort / case-control / cross-sectional) must appear in the title or abstract"
+  - "Item 9 — say explicitly what was done about selection bias, information bias and confounding, not just that they exist"
+  - "Item 12c — how missing data were handled (complete case, multiple imputation, ...), with numbers in 14b"
+  - "Item 13a-c — numbers at each stage; a flow diagram is expected by most journals"
+  - "Item 16a — both unadjusted AND adjusted estimates with 95% CI, plus which confounders and why"
+  - "Item 19 — direction AND magnitude of potential bias, not just a list of limitations"
+  - "Item 22 — funding source and role of funders (also for the original study when using existing data)"

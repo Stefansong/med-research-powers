@@ -1,33 +1,47 @@
-# Reporting Standards Master Index
+# Reporting Standards Master Index (46 standards)
 # Load this file to find the right standard for a study type.
-# Detailed checklists are in individual YAML files in this directory.
+# Entries with a `file:` field have an item-by-item checklist YAML in this directory
+# (consort-2025, strobe, prisma-2020, stard-2015, arrive-2, tripod-ai) — check those item by item.
+# For all other entries, give the official source (`reference` / EQUATOR Network) and ask the user
+# to verify against the official checklist by hand; do not invent item text.
+# `items` counts for entries without a local file are index metadata only — verify before quoting.
 
 standards:
   # === Clinical Trials ===
   - id: consort-2025
     name: CONSORT 2025
     file: consort-2025.yaml
-    items: 34   # 31 numbered (1-31) + 3 sub-items (21a, 26a, 28a)
+    items: 30   # 30 numbered items
+    rows: 42    # including sub-items (1a/1b, 5a/5b, 12a/12b, 16a/16b, 17a/17b, 20a/20b, 21a-d, 22a/22b, 23a/23b, 24a/24b)
     for: "Randomised controlled trials"
     supersedes: "CONSORT 2010 — do NOT use old version"
-    
+    reference: "Hopewell et al. BMJ 2025;389:e081123 (doi:10.1136/bmj-2024-081123)"
+
   - id: consort-ai
     name: CONSORT-AI 2020
     items: 14 extension items
     for: "RCTs of AI interventions"
     use_with: consort-2025
-    
+
+  - id: consort-noninferiority
+    name: CONSORT extension for non-inferiority and equivalence trials 2012
+    for: "Non-inferiority and equivalence randomised trials"
+    use_with: consort-2025
+    reference: "Piaggio G et al. JAMA 2012;308(24):2594-2604 (doi:10.1001/jama.2012.87802)"
+    note: "Report both ITT and per-protocol analyses; state the non-inferiority margin and its justification"
+
   - id: spirit-2025
     name: SPIRIT 2025
     items: 34
     for: "RCT protocols"
     supersedes: "SPIRIT 2013"
-    
+    note: "Protocol stage only — not used for the pre-submission check of a results paper"
+
   - id: spirit-ai
     name: SPIRIT-AI 2020
     for: "AI intervention RCT protocols"
     use_with: spirit-2025
-    
+
   - id: tidier
     name: TIDieR 2014
     items: 12
@@ -39,18 +53,28 @@ standards:
     for: "Harms reporting in RCTs"
     note: "Partially integrated into CONSORT 2025"
 
+  # === Non-randomised interventions ===
+  - id: trend
+    name: TREND 2004
+    items: 22
+    for: "Non-randomised evaluations of behavioural / public health interventions"
+    reference: "Des Jarlais DC et al. Am J Public Health 2004;94(3):361-366 (doi:10.2105/ajph.94.3.361)"
+
   # === Observational ===
   - id: strobe
     name: STROBE 2007
+    file: strobe.yaml
     items: 22
+    rows: 34    # including sub-items (1a/1b, 6a/6b, 12a-e, 13a-c, 14a-c, 16a-c)
     for: "Cohort, case-control, cross-sectional studies"
-    
+    reference: "von Elm et al. PLoS Med 2007;4(10):e296 (doi:10.1371/journal.pmed.0040296)"
+
   - id: record
     name: RECORD 2015
     items: 13
     for: "Studies using routinely collected health data (EMR, administrative)"
     use_with: strobe
-    
+
   - id: strocss
     name: STROCSS 2021
     items: 17
@@ -59,38 +83,43 @@ standards:
   # === Systematic Reviews ===
   - id: prisma-2020
     name: PRISMA 2020
+    file: prisma-2020.yaml
     items: 27
+    rows: 42    # including sub-items (10a/10b, 13a-f, 16a/16b, 20a-d, 23a-d, 24a-c)
     for: "Systematic reviews and meta-analyses"
-    
+    supersedes: "PRISMA 2009"
+    reference: "Page et al. BMJ 2021;372:n71 (doi:10.1136/bmj.n71)"
+
   - id: prisma-p
     name: PRISMA-P 2015
     items: 17
     for: "Systematic review protocols (PROSPERO registration)"
-    
+
   - id: prisma-scr
     name: PRISMA-ScR 2018
     items: 22
     for: "Scoping reviews"
-    
+
   - id: prisma-s
     name: PRISMA-S 2021
     items: 16
     for: "Search reporting in systematic reviews"
-    
+
   - id: prisma-dta
     name: PRISMA-DTA 2018
     for: "Diagnostic test accuracy systematic reviews"
     use_with: quadas-2
-    
+
   - id: tripod-srma
-    name: TRIPOD-SRMA 2024
+    name: TRIPOD-SRMA 2023 (BMJ)
     for: "Systematic reviews of prediction models"
+    reference: "Snell KIE et al. BMJ 2023;381:e073538 (doi:10.1136/bmj-2022-073538)"
 
   - id: amstar-2
     name: AMSTAR 2 (2017)
     items: 16
     for: "Critical appraisal of systematic reviews"
-    
+
   - id: grade
     name: GRADE framework
     for: "Evidence quality grading (5 dimensions: risk of bias, inconsistency, indirectness, imprecision, publication bias)"
@@ -98,37 +127,48 @@ standards:
   # === Diagnostic ===
   - id: stard
     name: STARD 2015
+    file: stard-2015.yaml
     items: 30
+    rows: 34    # including sub-items (10a/10b, 12a/12b, 13a/13b, 21a/21b)
     for: "Diagnostic accuracy studies"
+    supersedes: "STARD 2003"
+    reference: "Bossuyt et al. BMJ 2015;351:h5527 (doi:10.1136/bmj.h5527)"
 
   # === Prediction & AI ===
   - id: tripod-ai
     name: TRIPOD+AI 2024
+    file: tripod-ai.yaml
     items: 27
-    for: "Prediction model development/validation"
+    rows: 52    # including sub-items (3a-c, 5a/b, 6a-c, 8a-c, 9a-c, 12a-g, 18a-f, 20a-c, 23a/b, 27a-c)
+    for: "Prediction model development/validation (regression or machine learning)"
     supersedes: "TRIPOD 2015"
-    
+    reference: "Collins et al. BMJ 2024;385:e078378 (doi:10.1136/bmj-2023-078378)"
+
   - id: tripod-llm
-    name: TRIPOD-LLM 2024
+    name: TRIPOD-LLM 2025 (Nat Med, Jan 2025)
     for: "LLM/VLM medical evaluation studies"
-    
+
   - id: tripod-cluster
-    name: TRIPOD-Cluster 2024
+    name: TRIPOD-Cluster 2023 (BMJ)
+    items: 19
     for: "Prediction models with clustered data"
+    use_with: tripod-ai
 
   - id: claim
-    name: CLAIM 2020
-    items: 40
+    name: CLAIM 2024
+    items: 44
     for: "AI in medical imaging"
-    
+    supersedes: "CLAIM 2020 (42 items)"
+    reference: "Tejani AS et al. Radiol Artif Intell 2024;6(4):e240300 (doi:10.1148/ryai.240300)"
+
   - id: mi-claim
     name: MI-CLAIM 2020
     items: 15
     for: "Minimum information about clinical AI modeling"
-    
+
   - id: decide-ai
     name: DECIDE-AI 2022
-    items: 17
+    items: "17 AI-specific + 10 generic"
     for: "Early-stage clinical evaluation of AI decision support"
     key_items:
       - "AI system description (inputs, outputs, intended users, use context)"
@@ -136,11 +176,12 @@ standards:
       - "Clinical workflow integration"
       - "Safety monitoring and adverse events"
       - "Usability and user experience data"
-    
+
   - id: probast
     name: PROBAST 2019
     items: 20
     for: "Bias risk in prediction models"
+    note: "PROBAST+AI 2025 available for AI models"
 
   # === Surgery & Devices ===
   - id: ideal
@@ -154,12 +195,33 @@ standards:
       - "Stage 3 (Assessment): RCT or high-quality comparative study"
       - "Stage 4 (Long-term): Registry, long-term outcome surveillance"
 
+  # === Surveys & Measurement ===
+  - id: cherries
+    name: CHERRIES 2004
+    for: "Web-based / internet surveys"
+    reference: "Eysenbach G. J Med Internet Res 2004;6(3):e34 (doi:10.2196/jmir.6.3.e34)"
+    note: "Checklist organised in 8 sections (design; IRB approval and consent; development and pre-testing; recruitment and sample; survey administration; response rates; preventing multiple entries; analysis)"
+
+  - id: cross
+    name: CROSS 2021
+    items: 40
+    for: "Survey / questionnaire studies"
+    reference: "Sharma A et al. J Gen Intern Med 2021;36(10):3179-3187 (doi:10.1007/s11606-021-06737-1)"
+    note: "Consensus-Based Checklist for Reporting of Survey Studies; use CHERRIES in addition for web-based administration"
+
+  - id: cosmin
+    name: COSMIN Reporting Guideline 2021
+    for: "Studies on measurement properties of patient-reported outcome measures"
+    items: "71 (35 common to all measurement-property studies + property-specific items)"
+    reference: "Gagnier JJ et al. Qual Life Res 2021;30(8):2197-2218 (doi:10.1007/s11136-021-02822-4)"
+    note: "Reporting guideline for PROM measurement-property studies (validity, reliability, responsiveness); the COSMIN Risk of Bias checklist is a separate tool"
+
   # === Qualitative ===
   - id: coreq
     name: COREQ 2007
     items: 32
     for: "Qualitative research (interviews, focus groups, observation)"
-    
+
   - id: srqr
     name: SRQR 2014
     items: 21
@@ -168,20 +230,24 @@ standards:
   # === Preclinical ===
   - id: arrive
     name: ARRIVE 2.0 (2020)
-    items: 21
+    file: arrive-2.yaml
+    items: 21   # Essential 10 + Recommended Set (11)
+    rows: 38    # including sub-items (1a/b, 2a/b, 3a-c, 4a/b, 6a/b, 7a/b, 8a/b, 9a-d, 10a/b, 12a/b, 16a-c, 17a/b, 21a/b)
     for: "Animal experiments"
+    supersedes: "ARRIVE 2010"
+    reference: "Percie du Sert et al. PLoS Biol 2020;18(7):e3000410 (doi:10.1371/journal.pbio.3000410)"
 
   # === Other ===
   - id: care
-    name: CARE 2017
+    name: CARE 2013 (E&E 2017)
     items: 13
     for: "Case reports"
-    
+
   - id: squire
     name: SQUIRE 2.0 (2015)
     items: 18
     for: "Quality improvement studies"
-    
+
   - id: cheers
     name: CHEERS 2022
     items: 28
@@ -222,25 +288,25 @@ standards:
     type: bias_tool
     domains: 5
     for: "RCT bias risk"
-    
+
   - id: robins-i
     name: ROBINS-I 2016
     type: bias_tool
     domains: 7
     for: "Non-randomized intervention study bias"
-    
+
   - id: nos
     name: Newcastle-Ottawa Scale
     type: bias_tool
-    max_score: 8
+    max_score: 9
     for: "Observational study quality"
-    
+
   - id: minors
     name: MINORS 2003
     type: bias_tool
     items: 12
     for: "Non-randomized surgical studies"
-    
+
   - id: quadas-2
     name: QUADAS-2 2011
     type: bias_tool

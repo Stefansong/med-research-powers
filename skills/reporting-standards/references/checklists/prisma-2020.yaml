@@ -1,0 +1,98 @@
+# PRISMA 2020 checklist — transcribed verbatim from Table 1 of the PRISMA 2020 statement
+# Source: Page MJ, McKenzie JE, Bossuyt PM, et al. The PRISMA 2020 statement: an updated guideline
+#         for reporting systematic reviews. BMJ 2021;372:n71. doi:10.1136/bmj.n71 (PMC8005924)
+#         Retrieved via PubMed/PMC full text.
+# The statement: "The PRISMA 2020 checklist includes seven sections with 27 items, some of which
+# include sub-items". PRISMA 2020 replaces PRISMA 2009, which should no longer be used.
+# A separate 12-item PRISMA 2020 for Abstracts checklist (Table 2 of the statement) covers item 2.
+#
+# Field meanings:
+#   id        — item number exactly as in Table 1
+#   text      — checklist item description (verbatim)
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#               reported but do not block on their own
+
+name: PRISMA 2020
+version: "2020"
+total_items: 27          # numbered items 1-27
+total_rows: 42           # including sub-items (10a/10b, 13a-f, 16a/16b, 20a-d, 23a-d, 24a-c)
+supersedes: "PRISMA 2009 — should no longer be used"
+reference: "Page et al. BMJ 2021;372:n71 (doi:10.1136/bmj.n71)"
+website: "https://www.prisma-statement.org/"
+abstract_checklist: "PRISMA 2020 for Abstracts — 12 items (Table 2 of the statement)"
+flow_diagram: "Required — PRISMA 2020 flow diagram (records identified → screened → sought for retrieval → assessed for eligibility → included), separate template for updated reviews"
+extensions_use_with: ["PRISMA-S (search reporting)", "PRISMA-NMA", "PRISMA-IPD", "PRISMA-Harms", "PRISMA-DTA", "PRISMA-ScR (scoping reviews)", "SWiM (synthesis without meta-analysis)"]
+
+sections:
+  - name: Title
+    items:
+      - {id: "1", topic: "Title", text: "Identify the report as a systematic review", critical: true}
+
+  - name: Abstract
+    items:
+      - {id: "2", topic: "Abstract", text: "See the PRISMA 2020 for Abstracts checklist"}
+
+  - name: Introduction
+    items:
+      - {id: "3", topic: "Rationale", text: "Describe the rationale for the review in the context of existing knowledge"}
+      - {id: "4", topic: "Objectives", text: "Provide an explicit statement of the objective(s) or question(s) the review addresses", critical: true}
+
+  - name: Methods
+    items:
+      - {id: "5", topic: "Eligibility criteria", text: "Specify the inclusion and exclusion criteria for the review and how studies were grouped for the syntheses", critical: true}
+      - {id: "6", topic: "Information sources", text: "Specify all databases, registers, websites, organisations, reference lists and other sources searched or consulted to identify studies. Specify the date when each source was last searched or consulted", critical: true}
+      - {id: "7", topic: "Search strategy", text: "Present the full search strategies for all databases, registers and websites, including any filters and limits used", critical: true}
+      - {id: "8", topic: "Selection process", text: "Specify the methods used to decide whether a study met the inclusion criteria of the review, including how many reviewers screened each record and each report retrieved, whether they worked independently, and if applicable, details of automation tools used in the process", critical: true}
+      - {id: "9", topic: "Data collection process", text: "Specify the methods used to collect data from reports, including how many reviewers collected data from each report, whether they worked independently, any processes for obtaining or confirming data from study investigators, and if applicable, details of automation tools used in the process"}
+      - {id: "10a", topic: "Data items", text: "List and define all outcomes for which data were sought. Specify whether all results that were compatible with each outcome domain in each study were sought (e.g. for all measures, time points, analyses), and if not, the methods used to decide which results to collect"}
+      - {id: "10b", topic: "Data items", text: "List and define all other variables for which data were sought (e.g. participant and intervention characteristics, funding sources). Describe any assumptions made about any missing or unclear information"}
+      - {id: "11", topic: "Study risk of bias assessment", text: "Specify the methods used to assess risk of bias in the included studies, including details of the tool(s) used, how many reviewers assessed each study and whether they worked independently, and if applicable, details of automation tools used in the process", critical: true}
+      - {id: "12", topic: "Effect measures", text: "Specify for each outcome the effect measure(s) (e.g. risk ratio, mean difference) used in the synthesis or presentation of results", critical: true}
+      - {id: "13a", topic: "Synthesis methods", text: "Describe the processes used to decide which studies were eligible for each synthesis (e.g. tabulating the study intervention characteristics and comparing against the planned groups for each synthesis (item #5))"}
+      - {id: "13b", topic: "Synthesis methods", text: "Describe any methods required to prepare the data for presentation or synthesis, such as handling of missing summary statistics, or data conversions"}
+      - {id: "13c", topic: "Synthesis methods", text: "Describe any methods used to tabulate or visually display results of individual studies and syntheses"}
+      - {id: "13d", topic: "Synthesis methods", text: "Describe any methods used to synthesise results and provide a rationale for the choice(s). If meta-analysis was performed, describe the model(s), method(s) to identify the presence and extent of statistical heterogeneity, and software package(s) used", critical: true}
+      - {id: "13e", topic: "Synthesis methods", text: "Describe any methods used to explore possible causes of heterogeneity among study results (e.g. subgroup analysis, meta-regression)"}
+      - {id: "13f", topic: "Synthesis methods", text: "Describe any sensitivity analyses conducted to assess robustness of the synthesised results"}
+      - {id: "14", topic: "Reporting bias assessment", text: "Describe any methods used to assess risk of bias due to missing results in a synthesis (arising from reporting biases)"}
+      - {id: "15", topic: "Certainty assessment", text: "Describe any methods used to assess certainty (or confidence) in the body of evidence for an outcome"}
+
+  - name: Results
+    items:
+      - {id: "16a", topic: "Study selection", text: "Describe the results of the search and selection process, from the number of records identified in the search to the number of studies included in the review, ideally using a flow diagram", critical: true}
+      - {id: "16b", topic: "Study selection", text: "Cite studies that might appear to meet the inclusion criteria, but which were excluded, and explain why they were excluded"}
+      - {id: "17", topic: "Study characteristics", text: "Cite each included study and present its characteristics", critical: true}
+      - {id: "18", topic: "Risk of bias in studies", text: "Present assessments of risk of bias for each included study", critical: true}
+      - {id: "19", topic: "Results of individual studies", text: "For all outcomes, present, for each study: (a) summary statistics for each group (where appropriate) and (b) an effect estimate and its precision (e.g. confidence/credible interval), ideally using structured tables or plots", critical: true}
+      - {id: "20a", topic: "Results of syntheses", text: "For each synthesis, briefly summarise the characteristics and risk of bias among contributing studies"}
+      - {id: "20b", topic: "Results of syntheses", text: "Present results of all statistical syntheses conducted. If meta-analysis was done, present for each the summary estimate and its precision (e.g. confidence/credible interval) and measures of statistical heterogeneity. If comparing groups, describe the direction of the effect", critical: true}
+      - {id: "20c", topic: "Results of syntheses", text: "Present results of all investigations of possible causes of heterogeneity among study results"}
+      - {id: "20d", topic: "Results of syntheses", text: "Present results of all sensitivity analyses conducted to assess the robustness of the synthesised results"}
+      - {id: "21", topic: "Reporting biases", text: "Present assessments of risk of bias due to missing results (arising from reporting biases) for each synthesis assessed"}
+      - {id: "22", topic: "Certainty of evidence", text: "Present assessments of certainty (or confidence) in the body of evidence for each outcome assessed"}
+
+  - name: Discussion
+    items:
+      - {id: "23a", topic: "Discussion", text: "Provide a general interpretation of the results in the context of other evidence", critical: true}
+      - {id: "23b", topic: "Discussion", text: "Discuss any limitations of the evidence included in the review", critical: true}
+      - {id: "23c", topic: "Discussion", text: "Discuss any limitations of the review processes used"}
+      - {id: "23d", topic: "Discussion", text: "Discuss implications of the results for practice, policy, and future research"}
+
+  - name: Other information
+    items:
+      - {id: "24a", topic: "Registration and protocol", text: "Provide registration information for the review, including register name and registration number, or state that the review was not registered", critical: true}
+      - {id: "24b", topic: "Registration and protocol", text: "Indicate where the review protocol can be accessed, or state that a protocol was not prepared"}
+      - {id: "24c", topic: "Registration and protocol", text: "Describe and explain any amendments to information provided at registration or in the protocol"}
+      - {id: "25", topic: "Support", text: "Describe sources of financial or non-financial support for the review, and the role of the funders or sponsors in the review"}
+      - {id: "26", topic: "Competing interests", text: "Declare any competing interests of review authors"}
+      - {id: "27", topic: "Availability of data, code, and other materials", text: "Report which of the following are publicly available and where they can be found: template data collection forms; data extracted from included studies; data used for all analyses; analytic code; any other materials used in the review"}
+
+commonly_missed:
+  - "Item 6 — the date each source was LAST searched (not just the databases)"
+  - "Item 7 — the FULL search strategy for ALL databases (not just one), including filters and limits"
+  - "Item 8 / 9 / 11 — how many reviewers, whether independent, and any automation tools used"
+  - "Item 13a-f — synthesis methods are now six sub-items (eligibility for synthesis, data preparation, display, synthesis method + heterogeneity + software, heterogeneity exploration, sensitivity)"
+  - "Item 15 / 22 — certainty of evidence (e.g. GRADE) is a separate methods item AND a separate results item"
+  - "Item 16b — cite near-miss studies that were excluded, with reasons"
+  - "Item 24a-c — registration (e.g. PROSPERO), protocol access, and amendments are three separate sub-items"
+  - "Item 27 — data, code and materials availability statement"

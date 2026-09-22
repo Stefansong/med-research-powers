@@ -1,176 +1,235 @@
 #!/bin/bash
-# Med-Research-Powers Installer
-# Works on macOS and Linux
+# Med-Research-Powers (MRP) installer — v6.3.0
+#
+# Two install methods:
+#   1) Claude Code plugin  (recommended; auto-updates via the marketplace)
+#   2) Whole-repo symlink into ~/.claude/skills/med-research-powers
+#      (loaded as the plugin "mrp@skills-dir" — hooks and ${CLAUDE_PLUGIN_ROOT} work,
+#       edits to the checkout take effect immediately; for development)
+#
+# Usage:
+#   ./install.sh                 interactive (asks which method)
+#   ./install.sh --method 1|2    non-interactive
+#   ./install.sh --help
+#
+# When stdin is not a terminal (e.g. `curl ... | bash`) the script never prompts
+# and defaults to method 1.
 
-set -e
+set -eu
 
-# ─── Colors ───
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-NC='\033[0m'
+MRP_VERSION="6.3.0"
+PLUGIN_ID="mrp@med-research-powers"
+GITHUB_REPO="Stefansong/med-research-powers"
 
-echo ""
-echo -e "${BOLD}╔══════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}║     Med-Research-Powers v6.2.3 Installer     ║${NC}"
-echo -e "${BOLD}║     医学科研方法论框架                        ║${NC}"
-echo -e "${BOLD}╚══════════════════════════════════════════════╝${NC}"
-echo ""
-
-# ─── Detect OS ───
-OS="$(uname -s)"
-case "$OS" in
-    Darwin*) PLATFORM="macOS" ;;
-    Linux*)  PLATFORM="Linux" ;;
-    MINGW*|MSYS*|CYGWIN*) PLATFORM="Windows" ;;
-    *) PLATFORM="Unknown" ;;
-esac
-echo -e "${CYAN}Platform: ${PLATFORM}${NC}"
-
-# ─── Detect Claude Code ───
-CLAUDE_DIR=""
-if [ -d "$HOME/.claude" ]; then
-    CLAUDE_DIR="$HOME/.claude"
-    echo -e "${GREEN}✓ Found Claude Code config: $CLAUDE_DIR${NC}"
+# ─── Colors (only when stdout is a terminal) ───
+if [ -t 1 ]; then
+    RED="$(printf '\033[0;31m')"
+    GREEN="$(printf '\033[0;32m')"
+    YELLOW="$(printf '\033[1;33m')"
+    CYAN="$(printf '\033[0;36m')"
+    BOLD="$(printf '\033[1m')"
+    NC="$(printf '\033[0m')"
 else
-    echo -e "${YELLOW}⚠ Claude Code config not found at ~/.claude${NC}"
-    echo -e "  If Claude Code is installed elsewhere, enter the path:"
-    read -r -p "  Path (or press Enter to create ~/.claude): " CUSTOM_PATH
-    if [ -n "$CUSTOM_PATH" ] && [ -d "$CUSTOM_PATH" ]; then
-        CLAUDE_DIR="$CUSTOM_PATH"
-    else
-        CLAUDE_DIR="$HOME/.claude"
-        mkdir -p "$CLAUDE_DIR"
-        echo -e "${GREEN}✓ Created $CLAUDE_DIR${NC}"
-    fi
+    RED=""; GREEN=""; YELLOW=""; CYAN=""; BOLD=""; NC=""
 fi
 
-# ─── Get script directory (where MRP was cloned) ───
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+say()  { printf '%s\n' "$*"; }
+ok()   { printf '%s\n' "${GREEN}✓${NC} $*"; }
+warn() { printf '%s\n' "${YELLOW}⚠${NC} $*"; }
+fail() { printf '%s\n' "${RED}✗${NC} $*" >&2; }
 
-# ─── Verify MRP files exist ───
-if [ ! -f "$SCRIPT_DIR/skills/using-med-research-powers/SKILL.md" ]; then
-    echo -e "${RED}✗ Error: Cannot find MRP skill files in $SCRIPT_DIR${NC}"
-    echo "  Make sure you run this script from the med-research-powers directory."
+usage() {
+    say "Usage: $0 [--method 1|2] [--help]"
+    say "  --method 1   install as a Claude Code plugin (default)"
+    say "  --method 2   symlink the whole repo into ~/.claude/skills/med-research-powers"
+}
+
+# ─── Parse arguments ───
+INSTALL_METHOD=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --method)
+            [ $# -ge 2 ] || { fail "--method needs a value (1 or 2)"; exit 2; }
+            INSTALL_METHOD="$2"; shift 2 ;;
+        --method=*)
+            INSTALL_METHOD="${1#--method=}"; shift ;;
+        -h|--help)
+            usage; exit 0 ;;
+        *)
+            fail "Unknown option: $1"; usage; exit 2 ;;
+    esac
+done
+
+say ""
+say "${BOLD}╔══════════════════════════════════════════════╗${NC}"
+say "${BOLD}║     Med-Research-Powers v${MRP_VERSION} Installer     ║${NC}"
+say "${BOLD}║     医学科研方法论框架                        ║${NC}"
+say "${BOLD}╚══════════════════════════════════════════════╝${NC}"
+say ""
+
+# ─── Detect OS ───
+case "$(uname -s)" in
+    Darwin*)              PLATFORM="macOS" ;;
+    Linux*)               PLATFORM="Linux" ;;
+    MINGW*|MSYS*|CYGWIN*) PLATFORM="Windows" ;;
+    *)                    PLATFORM="Unknown" ;;
+esac
+say "${CYAN}Platform: ${PLATFORM}${NC}"
+if [ "$PLATFORM" = "Windows" ]; then
+    warn "On Windows please use the plugin method (1). Symlinks made by Git Bash are plain copies and will not auto-update."
+fi
+
+# ─── Locate this checkout and sanity-check it ───
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ ! -f "$SCRIPT_DIR/.claude-plugin/plugin.json" ] || [ ! -f "$SCRIPT_DIR/skills/using-med-research-powers/SKILL.md" ]; then
+    fail "Cannot find the MRP plugin files in $SCRIPT_DIR"
+    say "  Run this script from inside the med-research-powers checkout."
     exit 1
 fi
 
+CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+
 # ─── Choose install method ───
-echo ""
-echo -e "${BOLD}Installation method:${NC}"
-echo "  1) Claude Code Plugin (recommended — auto-updates, hooks work)"
-echo "  2) Copy skills to ~/.claude/skills/ (manual, no hooks)"
-echo "  3) Symlink (development — edit files in place)"
-echo ""
-read -r -p "Choose [1/2/3] (default: 1): " INSTALL_METHOD
-INSTALL_METHOD=${INSTALL_METHOD:-1}
+if [ -z "$INSTALL_METHOD" ]; then
+    if [ -t 0 ]; then
+        say ""
+        say "${BOLD}Installation method:${NC}"
+        say "  1) Claude Code plugin (recommended — auto-updates, hook enabled)"
+        say "  2) Symlink this checkout into ~/.claude/skills/ (development — edits take effect immediately)"
+        say ""
+        printf 'Choose [1/2] (default: 1): '
+        read -r INSTALL_METHOD || INSTALL_METHOD=""
+        INSTALL_METHOD="${INSTALL_METHOD:-1}"
+    else
+        INSTALL_METHOD="1"
+        say "(non-interactive: using method 1 — plugin install)"
+    fi
+fi
+
+if [ "$INSTALL_METHOD" = "2" ] && [ "$PLATFORM" = "Windows" ]; then
+    warn "Symlink method is not reliable on Windows — falling back to the plugin method."
+    INSTALL_METHOD="1"
+fi
+
+INSTALL_STATUS="pending"   # installed | manual | pending
 
 case "$INSTALL_METHOD" in
     1)
-        echo ""
-        echo -e "${CYAN}Installing as Claude Code plugin...${NC}"
-        echo ""
-        echo -e "Run the following command in Claude Code:"
-        echo ""
-        echo -e "  ${BOLD}/plugin install $SCRIPT_DIR${NC}"
-        echo ""
-        echo -e "Or if you've pushed to GitHub:"
-        echo ""
-        echo -e "  ${BOLD}/plugin install https://github.com/Stefansong/med-research-powers${NC}"
-        echo ""
-        echo -e "${GREEN}✓ Plugin files are ready. Run the command above in Claude Code.${NC}"
+        say ""
+        say "${CYAN}Installing as a Claude Code plugin...${NC}"
+        if command -v claude >/dev/null 2>&1; then
+            if ! claude plugin marketplace add "$SCRIPT_DIR"; then
+                warn "Could not add the marketplace from $SCRIPT_DIR (it may already be registered) — trying the install anyway."
+            fi
+            if claude plugin install "$PLUGIN_ID"; then
+                INSTALL_STATUS="installed"
+                ok "Plugin installed: $PLUGIN_ID"
+            else
+                INSTALL_STATUS="manual"
+                fail "claude plugin install failed. Run these inside Claude Code instead:"
+            fi
+        else
+            INSTALL_STATUS="manual"
+            warn "The 'claude' CLI is not on PATH. Run these two commands inside Claude Code:"
+        fi
+        if [ "$INSTALL_STATUS" = "manual" ]; then
+            say ""
+            say "  ${BOLD}/plugin marketplace add ${GITHUB_REPO}${NC}"
+            say "  ${BOLD}/plugin install ${PLUGIN_ID}${NC}"
+            say ""
+            say "  (for this local checkout: /plugin marketplace add $SCRIPT_DIR)"
+        fi
         ;;
     2)
         SKILLS_DIR="$CLAUDE_DIR/skills"
+        TARGET="$SKILLS_DIR/med-research-powers"
         mkdir -p "$SKILLS_DIR"
-        
-        # Copy skills
-        echo -e "${CYAN}Copying skills to $SKILLS_DIR ...${NC}"
-        cp -r "$SCRIPT_DIR/skills/"* "$SKILLS_DIR/"
-        echo -e "${GREEN}✓ Skills copied ($(ls -d "$SKILLS_DIR"/*/  | wc -l | tr -d ' ') skills)${NC}"
-        
-        # Copy commands if commands dir exists in claude
-        COMMANDS_DIR="$CLAUDE_DIR/commands"
-        if [ -d "$SCRIPT_DIR/commands" ]; then
-            mkdir -p "$COMMANDS_DIR"
-            cp "$SCRIPT_DIR/commands/"* "$COMMANDS_DIR/"
-            echo -e "${GREEN}✓ Commands copied ($(ls "$COMMANDS_DIR"/*.md 2>/dev/null | wc -l | tr -d ' ') commands)${NC}"
+        say ""
+        say "${CYAN}Linking $SCRIPT_DIR → $TARGET${NC}"
+        if [ -L "$TARGET" ]; then
+            rm "$TARGET"
+        elif [ -e "$TARGET" ]; then
+            fail "$TARGET already exists and is not a symlink. Move it away and re-run."
+            exit 1
         fi
-        
-        echo ""
-        echo -e "${YELLOW}⚠ Note: Manual install does not enable session-start hook.${NC}"
-        echo -e "  Claude won't auto-discover MRP skills unless you tell it."
-        echo -e "  Consider using Plugin install (method 1) for full functionality."
-        ;;
-    3)
-        SKILLS_DIR="$CLAUDE_DIR/skills"
-        mkdir -p "$SKILLS_DIR"
-        
-        echo -e "${CYAN}Creating symlinks...${NC}"
-        for skill_dir in "$SCRIPT_DIR/skills"/*/; do
-            skill_name=$(basename "$skill_dir")
-            target="$SKILLS_DIR/$skill_name"
-            if [ -L "$target" ]; then
-                rm "$target"
-            elif [ -d "$target" ]; then
-                echo -e "${YELLOW}  ⚠ $skill_name already exists (not a symlink), skipping${NC}"
-                continue
-            fi
-            ln -s "$skill_dir" "$target"
-            echo -e "  ${GREEN}✓${NC} $skill_name → $skill_dir"
-        done
-        echo -e "${GREEN}✓ Symlinks created. Edits to source files take effect immediately.${NC}"
+        ln -s "$SCRIPT_DIR" "$TARGET"
+        INSTALL_STATUS="installed"
+        ok "Symlink created. Claude Code loads it as the plugin 'mrp@skills-dir' (hook + \${CLAUDE_PLUGIN_ROOT} work)."
         ;;
     *)
-        echo -e "${RED}Invalid choice. Exiting.${NC}"
-        exit 1
+        fail "Invalid method '$INSTALL_METHOD' (expected 1 or 2)."
+        exit 2
         ;;
 esac
 
-# ─── Check Python dependencies (for scripts) ───
-echo ""
-echo -e "${BOLD}Checking optional dependencies for scripts...${NC}"
+# ─── Check Python dependencies for the bundled scripts (same list as requirements.txt) ───
+say ""
+say "${BOLD}Checking Python dependencies for the bundled scripts (optional)...${NC}"
 
-check_python_pkg() {
-    python3 -c "import $1" 2>/dev/null && echo -e "  ${GREEN}✓${NC} $1" || echo -e "  ${YELLOW}○${NC} $1 (optional — install with: pip install $1)"
-}
-
-if command -v python3 &>/dev/null; then
-    echo -e "${GREEN}✓ Python3 found: $(python3 --version 2>&1)${NC}"
-    check_python_pkg "docx"
-    check_python_pkg "scipy"
-    check_python_pkg "statsmodels"
-    check_python_pkg "matplotlib"
-    check_python_pkg "pandas"
-    check_python_pkg "numpy"
-else
-    echo -e "${YELLOW}○ Python3 not found. Scripts in figure-generation/ and statistical-analysis/ won't run.${NC}"
-    echo -e "  This is optional — MRP skills work without them, just less efficiently."
+PY=""
+if command -v python3 >/dev/null 2>&1; then
+    PY="python3"
+elif command -v python >/dev/null 2>&1; then
+    PY="python"
 fi
 
-# ─── Done ───
-echo ""
-echo -e "${BOLD}╔══════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}║  ${GREEN}Installation complete!${NC}${BOLD}                       ║${NC}"
-echo -e "${BOLD}╚══════════════════════════════════════════════╝${NC}"
-echo ""
-echo -e "  ${BOLD}Quick start:${NC}"
-echo -e "  1. Start a new Claude Code session"
-echo -e "  2. You should see MRP auto-discovery message"
-echo -e "  3. Try: ${CYAN}/mrp:research-question${NC}"
-echo -e "  4. Or just say: ${CYAN}\"帮我设计一个 AI 辅助诊断的研究\"${NC}"
-echo ""
-echo -e "  ${BOLD}Available commands:${NC}"
-echo -e "  /mrp:research-question  — 构建研究问题（PICO/FINER）"
-echo -e "  /mrp:study-design       — 研究设计（临床/基础/AI-ML/定性/问卷）"
-echo -e "  /mrp:analyze-data       — 制定分析计划并执行统计"
-echo -e "  /mrp:write-manuscript   — 按 IMRaD 写论文"
-echo -e "  /mrp:manuscript-export  — 导出 .docx（按期刊格式排版）"
-echo -e "  /mrp:check-standards    — 检查报告规范（投稿前必做）"
-echo -e "  /mrp:peer-review        — 模拟同行评审"
-echo ""
-echo -e "  ${BOLD}Documentation:${NC} https://github.com/Stefansong/med-research-powers"
-echo ""
+# usage: check_python_pkg <import name> <pip name>
+check_python_pkg() {
+    if "$PY" -c "import $1" >/dev/null 2>&1; then
+        say "  ${GREEN}✓${NC} $2"
+    else
+        say "  ${YELLOW}○${NC} $2  (missing — pip install $2)"
+        MISSING="$MISSING $2"
+    fi
+}
+
+MISSING=""
+if [ -n "$PY" ]; then
+    ok "Python found: $("$PY" --version 2>&1)"
+    check_python_pkg scipy       scipy
+    check_python_pkg statsmodels statsmodels
+    check_python_pkg matplotlib  matplotlib
+    check_python_pkg pandas      pandas
+    check_python_pkg numpy       numpy
+    check_python_pkg docx        python-docx
+    check_python_pkg openpyxl    openpyxl
+    check_python_pkg yaml        pyyaml
+    if [ -n "$MISSING" ]; then
+        say ""
+        say "  Install everything at once:  ${CYAN}pip install -r $SCRIPT_DIR/requirements.txt${NC}"
+    fi
+else
+    warn "Python not found. The skills still work; only the bundled scripts (statistics, figures, .docx export) need Python."
+fi
+
+# ─── Summary ───
+say ""
+if [ "$INSTALL_STATUS" = "installed" ]; then
+    say "${BOLD}╔══════════════════════════════════════════════╗${NC}"
+    say "${BOLD}║  ${GREEN}Installation complete!${NC}${BOLD}                       ║${NC}"
+    say "${BOLD}╚══════════════════════════════════════════════╝${NC}"
+else
+    say "${BOLD}╔══════════════════════════════════════════════╗${NC}"
+    say "${BOLD}║  ${YELLOW}Files ready — finish inside Claude Code${NC}${BOLD}     ║${NC}"
+    say "${BOLD}╚══════════════════════════════════════════════╝${NC}"
+fi
+say ""
+say "  ${BOLD}Verify:${NC}"
+say "  ${CYAN}claude plugin list${NC}   → should list ${PLUGIN_ID} (method 1) or mrp@skills-dir (method 2)"
+say "  Then, in a new Claude Code session, try: ${CYAN}/mrp:research-question${NC}"
+say "  or just say: ${CYAN}\"帮我设计一个 AI 辅助诊断的研究\"${NC}"
+say ""
+say "  ${BOLD}Commands (/mrp:<command>):${NC}"
+say "  /mrp:research-question  — 构建研究问题（PICO / FINER）"
+say "  /mrp:analyze-data       — 无分析计划先做计划，有计划则执行统计"
+say "  /mrp:write-manuscript   — 按 IMRaD 写论文"
+say "  /mrp:peer-review        — 模拟 4 位审稿人评审"
+say "  /mrp:check-standards    — 只检查报告规范（CONSORT/STROBE/PRISMA…）"
+say "  /mrp:pre-submission     — 投稿前 6-Gate 核验（投稿前必做）"
+say "  /mrp:using-mrp          — 编排器：路由、流水线、检查点"
+say "  其余 skill 直接用 /mrp:<skill> 调用，例如 /mrp:study-design、/mrp:journal-selection"
+say ""
+say "  ${BOLD}Upgrading from 6.2.x:${NC} the plugin was renamed — first run /plugin uninstall med-research-powers@med-research-powers"
+say "  ${BOLD}Uninstall:${NC} /plugin uninstall ${PLUGIN_ID}   (method 2: rm \"$CLAUDE_DIR/skills/med-research-powers\")"
+say "  ${BOLD}Documentation:${NC} https://github.com/${GITHUB_REPO}"
+say ""

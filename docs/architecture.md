@@ -1,4 +1,4 @@
-# Med-Research-Powers v6.2.3 Architecture
+# Med-Research-Powers v6.3.0 Architecture
 
 ## 1. Full Pipeline Flow
 
@@ -9,75 +9,80 @@ flowchart TD
     subgraph PHASE1["Phase 1: Research Foundation"]
         RQ[research-question-formulation<br/>PICO + FINER + Hypothesis]
         LS[literature-synthesis<br/>Multi-DB Search + PRISMA Screening]
-        SD{Study Type?}
-        SD_C[study-design Type A<br/>Clinical: RCT/Cohort/Cross-sectional]
-        SD_B[study-design Type B<br/>Basic: Cell/Animal/Molecular]
-        SD_A[study-design Type C<br/>AI/ML/Imaging/NLP/LLM]
-        SD_D[study-design Type D/E<br/>Qualitative / Survey / Delphi]
-        JS[journal-selection<br/>4-Step Matching + 3-Tier Ranking]
+        SD{study-design<br/>Study type?}
+        SD_A[Type A<br/>Clinical: RCT / Cohort / Cross-sectional]
+        SD_B[Type B<br/>Basic: Cell / Animal / Molecular]
+        SD_C[Type C<br/>AI/ML: Imaging / NLP / LLM / Device]
+        SD_DE[Type D/E<br/>Qualitative / Survey / Delphi]
+        RE[research-ethics<br/>IRB / IACUC / Privacy / Registration]
+        JS[journal-selection<br/>Scored Matching + 3-Tier Cascade]
     end
 
     subgraph PHASE2["Phase 2: Analysis Engine"]
         DAP[data-analysis-planning<br/>SAP: 7-Section Analysis Plan]
-        SA[statistical-analysis<br/>Data Cleaning + Execution + Scripts]
+        DCT[data-collection-tools<br/>CRFs / Annotation Templates / Split + Randomization Scripts]
+        COLLECT([You collect data])
+        SA[statistical-analysis<br/>Cleaning + Assumptions + Execution + Scripts]
         FG[figure-generation<br/>pub_style.py + Journal Palettes]
     end
 
     subgraph PHASE3["Phase 3: Manuscript & QA"]
-        MW[manuscript-writing<br/>IMRaD + 5 Review Types + 234 Journal Templates]
-        RS[reporting-standards<br/>41 Standards Matching]
-        RE[research-ethics<br/>IRB / IACUC / Privacy]
+        MW[manuscript-writing<br/>IMRaD + 5 Review Types + get_journal_template.py]
         PRS[peer-review-simulation<br/>4 Reviewers + Editor Summary]
-        PSV[pre-submission-verification<br/>6-Gate Mandatory Check]
+        PSV[pre-submission-verification<br/>6-Gate Check]
+        RS[reporting-standards<br/>46 Standards]
+        PS[pubmed-search<br/>Citation Verification]
     end
 
-    subgraph PHASE4["Phase 4: Submission & Revision"]
-        SP[submission-preparation<br/>Cover Letter + ScholarOne/Editorial Manager]
+    subgraph PHASE4["Phase 4: Export, Submission & Revision"]
+        ME[manuscript-export<br/>export_docx.py → manuscript.docx + export-report.md]
+        SP[submission-preparation<br/>Cover Letter + Submission-System Guidance]
         SUB([Submit to Journal])
         RVR[revision-response<br/>Comment Triage + Point-by-Point Response]
     end
 
     RQ -->|research-question.md| LS
     LS -->|literature-synthesis-summary.md<br/>screening-log.md| SD
-    SD -->|Type A: Clinical| SD_C
-    SD -->|Type B: Basic Science| SD_B
-    SD -->|Type C: AI/ML| SD_A
-    SD -->|Type D/E: Qualitative/Survey| SD_D
-    SD_C -->|study-protocol.md| HC1
-    SD_B -->|study-protocol.md| HC1
+    SD -->|Type A| SD_A
+    SD -->|Type B| SD_B
+    SD -->|Type C| SD_C
+    SD -->|Type D/E| SD_DE
     SD_A -->|study-protocol.md| HC1
-    SD_D -->|study-protocol.md| HC1
+    SD_B -->|study-protocol.md| HC1
+    SD_C -->|study-protocol.md| HC1
+    SD_DE -->|study-protocol.md| HC1
 
-    HC1{{"HC #1: Protocol Approval<br/>Research type + Primary outcome LOCKED"}}
-    HC1 --> JS
-    JS -->|journal-selection-report.md| HC2
-    HC2{{"HC #3: Journal Confirmed<br/>Format specs locked"}}
-    HC2 --> DAP
-    DAP -->|analysis-plan.md| HC3
-    HC3{{"HC #2: SAP Approved<br/>Anti p-hacking lock"}}
-    HC3 --> SA
-    SA -->|results-summary.md<br/>analysis_script.py<br/>data-cleaning-log.md| FG
+    HC1{{"Checkpoint 1: Protocol approved<br/>study type, primary outcome, comparator"}}
+    HC1 --> RE
+    RE -->|ethics-statement.md| JS
+    JS -->|journal-selection-report.md<br/>soft confirmation| DAP
+    DAP -->|analysis-plan.md| HC2
+    HC2{{"Checkpoint 2: SAP approved<br/>anti p-hacking record"}}
+    HC2 --> DCT
+    DCT -->|tools/| COLLECT
+    COLLECT --> SA
+    SA -->|results-summary.md<br/>analysis-log.md<br/>analysis_script.py| FG
     FG -->|figures/*.tiff| MW
 
-    RS -.->|checklist| MW
-    RE -.->|reminder| MW
+    RS -.->|Gate 1 checklist| PSV
+    PS -.->|Gate 3 references| PSV
 
-    MW -->|manuscript.md| PRS
-    PRS -->|peer-review-report.md| PSV
-    PSV -->|submission-readiness-report.md| HC4
-    HC4{{"HC #4: 6-Gate ALL PASS<br/>Must confirm to proceed"}}
-    HC4 --> SP
+    MW -->|manuscript/*.md| PRS
+    PRS -->|peer-review-simulation-report.md| PSV
+    PSV -->|submission-readiness-report.md| HC3
+    HC3{{"Checkpoint 3: 6 gates pass<br/>user confirms the report"}}
+    HC3 --> ME
+    ME -->|manuscript.docx| SP
     SP -->|cover-letter.md| SUB
     SUB -->|Major/Minor Revision| RVR
-    RVR -->|revision-plan.md + response-letter.md| PSV2[Re-verify & Resubmit]
+    RVR -->|revision-plan.md<br/>revision-tracking.md<br/>response-letter.md| PSV2[Re-verify & Resubmit]
 
-    SUB -->|Reject| RESUBMIT[Reformat & Resubmit]
+    SUB -->|Reject| RESUBMIT[Cascade to next journal]
     RESUBMIT --> JS
 
     style HC1 fill:#ff6b6b,stroke:#c0392b,color:#fff
     style HC2 fill:#ff6b6b,stroke:#c0392b,color:#fff
     style HC3 fill:#ff6b6b,stroke:#c0392b,color:#fff
-    style HC4 fill:#ff6b6b,stroke:#c0392b,color:#fff
     style PSV fill:#e74c3c,stroke:#c0392b,color:#fff
     style PHASE1 fill:#eaf4fc,stroke:#3498db
     style PHASE2 fill:#eafcef,stroke:#27ae60
@@ -85,24 +90,26 @@ flowchart TD
     style PHASE4 fill:#fdeef4,stroke:#e91e63
 ```
 
+Auxiliary skills not on the main line: `pubmed-search` (called by literature-synthesis, manuscript-writing and Gate 3), `reporting-standards` (Gate 1 content, also `/mrp:check-standards`), `team-collaboration`, `using-med-research-powers` (orchestrator), `writing-mrp-skills`.
+
 ## 2. 6-Gate Pre-Submission Verification
 
 ```mermaid
 flowchart LR
-    subgraph GATE["6-Gate Verification (ALL must pass)"]
-        G1[Gate 1<br/>Reporting Standards<br/>CONSORT/STROBE/PRISMA...]
+    subgraph GATE["6-Gate Verification (all must pass, then the user confirms — Checkpoint 3)"]
+        G1["Gate 1<br/>Reporting Standards<br/>CONSORT 2025 (30 items) / STROBE / PRISMA..."]
         G2[Gate 2<br/>Statistical Completeness<br/>Effect Size + CI + Scripts]
-        G3[Gate 3<br/>Claim Verification<br/>PubMed MCP Auto-Check]
+        G3[Gate 3<br/>Claim Verification<br/>PubMed MCP via pubmed-search]
         G4[Gate 4<br/>Figure Quality<br/>DPI + Font + Colorblind]
         G5[Gate 5<br/>Ethics Compliance<br/>IRB + Consent + COI]
         G6[Gate 6<br/>Formal Requirements<br/>Word Count + References]
     end
 
     G1 --> G2 --> G3 --> G4 --> G5 --> G6
-    G6 -->|ALL PASS| READY([READY TO SUBMIT])
-    G1 -->|FAIL| FIX1[Back to manuscript-writing]
+    G6 -->|ALL PASS| READY([submission-readiness-report.md → manuscript-export])
+    G1 -->|FAIL| FIX1[reporting-standards → fix in manuscript-writing]
     G2 -->|FAIL| FIX2[Back to statistical-analysis]
-    G3 -->|FAIL| FIX3[Verify references via PubMed MCP]
+    G3 -->|FAIL| FIX3[Fix references via pubmed-search / fix data]
     G4 -->|FAIL| FIX4[Back to figure-generation]
     G5 -->|FAIL| FIX5[Back to research-ethics]
     G6 -->|FAIL| FIX6[Adjust formatting]
@@ -111,29 +118,36 @@ flowchart LR
     style G3 fill:#3498db,color:#fff
 ```
 
+Gate 3 citation statuses: ✅ Verified · ⚠️ Not found · ❌ Mismatch · ⏳ Unverified (tool error — retry) · ℹ️ Non-PubMed (DOI / web check).
+
 ## 3. Peer Review Simulation
 
 ```mermaid
 flowchart TD
-    MS([Manuscript]) --> R1 & R2 & R3 & R4
+    MS([manuscript/*.md]) --> R1 & R2 & R3 & R4
 
     R1["Reviewer 1<br/>Methodologist<br/>Design, Stats, Bias"]
     R2["Reviewer 2<br/>Clinical Expert<br/>Significance, Applicability"]
     R3["Reviewer 3<br/>Academic Editor<br/>Structure, Language, Fit"]
     R4["Reviewer 4<br/>Devil's Advocate<br/>Challenge + Blind Spots"]
 
-    R1 & R2 & R3 & R4 --> SCORE["8-Dimension Scoring<br/>(0-100 per dimension)"]
+    R1 & R2 & R3 & R4 --> SCORE["8-Dimension Scoring<br/>(0-100 per dimension, weighted)"]
     SCORE --> ES["Editor Summary<br/>(NOT simple average)"]
-    ES --> CAL["Journal Calibration<br/>(adjust by target IF)"]
+    ES --> CAL["Journal Calibration<br/>(tiers in scoring-rubric.yaml)"]
 
-    CAL --> D1["80-100: Accept/Minor"]
+    CAL --> D1["80-100: Accept / Minor"]
     CAL --> D2["65-79: Minor Revision"]
     CAL --> D3["50-64: Major Revision"]
-    CAL --> D4["<50: Reject"]
+    CAL --> D4["30-49: Major Revision (risky)"]
+    CAL --> D5["0-29: Reject"]
+
+    D1 & D2 & D3 & D4 & D5 --> OUT[peer-review-simulation-report.md]
 
     style R4 fill:#e74c3c,color:#fff
     style ES fill:#2c3e50,color:#fff
 ```
+
+The four reviewers run as parallel sub-agents (Claude Code's Agent tool, formerly Task); the main agent writes the Editor Summary.
 
 ## 4. Literature Synthesis: Multi-Database Search
 
@@ -143,7 +157,7 @@ flowchart TD
 
     STRATEGY --> DB1 & DB2 & DB3 & DB4 & DB5
 
-    DB1["PubMed<br/>(PubMed MCP)<br/>7 functions"]
+    DB1["PubMed<br/>(PubMed MCP: mcp__SERVER__function)<br/>7 functions"]
     DB2["arXiv<br/>(WebSearch)<br/>AI/ML papers"]
     DB3["Cochrane<br/>(WebSearch)<br/>Systematic reviews"]
     DB4["IEEE / ACM<br/>(WebSearch)<br/>Engineering/CS"]
@@ -152,7 +166,7 @@ flowchart TD
     DB1 & DB2 & DB3 & DB4 & DB5 --> DEDUP[Deduplication]
     DEDUP --> SCREEN1["Title/Abstract Screening<br/>(get_article_metadata)"]
     SCREEN1 --> SCREEN2["Full-Text Screening<br/>(get_full_text_article)"]
-    SCREEN2 --> SNOW["Snowball Search<br/>(find_related_articles)"]
+    SCREEN2 --> SNOW["Similar-Article Search<br/>(find_related_articles)"]
     SNOW --> INCLUDED[Included Studies]
 
     INCLUDED --> OUT1[search-strategy.md]
@@ -172,7 +186,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     DATA[(data.csv)] --> LOAD[Step 1: Load & Explore]
-    LOAD --> CLEAN[Step 2: Data Cleaning]
+    LOAD --> CLEAN[Step 2: Data Cleaning<br/>data_cleaning.py]
 
     subgraph CLEANING["Data Cleaning"]
         C1[2.1 Missing Data<br/>MCAR/MAR/MNAR Assessment]
@@ -190,7 +204,7 @@ flowchart TD
 
     TREE --> EXEC[Step 4: Execute Analysis<br/>Per analysis-plan.md]
 
-    subgraph METHODS["Available Methods (v6)"]
+    subgraph METHODS["Available Methods"]
         M1[Two-Group / Multi-Group]
         M2[Survival + Competing Risks]
         M3[Mixed Models / GEE]
@@ -215,85 +229,93 @@ flowchart TD
     style METHODS fill:#d1ecf1,stroke:#0dcaf0
 ```
 
+Sample size is planned in `study-design` (`power_analysis.py`) before data collection, not computed after the fact.
+
 ## 6. Checkpoint Protocol
 
 ```mermaid
 flowchart TD
-    subgraph SOFT["Soft Checkpoint (report + ask)"]
-        S1["research-question<br/>Report PICO + confirm"]
-        S2["literature-synthesis<br/>Report gap + confirm"]
-        S3["statistical-analysis<br/>Report results + confirm"]
-        S4["figure-generation<br/>Report figures + confirm"]
-        S5["manuscript-writing<br/>Report sections + confirm"]
-        S6["peer-review-simulation<br/>Report scores + confirm"]
-        S7["submission-preparation<br/>Report cover letter + checklist + confirm"]
+    subgraph LIGHT["Light confirmation (default): 3–5 line summary, then continue"]
+        S1["research-question-formulation"]
+        S2["literature-synthesis"]
+        S3["research-ethics"]
+        S4["journal-selection<br/>(soft: provisional journal, changeable)"]
+        S5["data-collection-tools"]
+        S6["statistical-analysis"]
+        S7["figure-generation"]
+        S8["manuscript-writing"]
+        S9["peer-review-simulation"]
+        S10["manuscript-export"]
+        S11["submission-preparation"]
     end
 
-    subgraph HARD["Hard Checkpoint (MUST confirm, locks content)"]
-        H1["HC #1: study-protocol.md<br/>Locks: research type,<br/>primary outcome"]
-        H2["HC #2: analysis-plan.md<br/>Locks: statistical methods,<br/>anti p-hacking"]
-        H3["HC #3: journal-selection<br/>Locks: target journal,<br/>format specs"]
-        H4["HC #4: 6-Gate verification<br/>ALL gates must pass<br/>to proceed"]
+    subgraph HARD["Mandatory checkpoints (Claude waits for explicit approval)"]
+        H1["Checkpoint 1: study-protocol.md<br/>study type, primary outcome, comparator"]
+        H2["Checkpoint 2: analysis-plan.md<br/>statistical methods (anti p-hacking)"]
+        H3["Checkpoint 3: submission-readiness-report.md<br/>all 6 gates pass"]
     end
 
     S1 --> S2 --> H1
-    H1 --> H3 --> H2
-    H2 --> S3 --> S4 --> S5 --> S6 --> H4
-    H4 --> S7
+    H1 --> S3 --> S4 --> H2
+    H2 --> S5 --> S6 --> S7 --> S8 --> S9 --> H3
+    H3 --> S10 --> S11
 
     style HARD fill:#ffe0e0,stroke:#e74c3c
-    style SOFT fill:#e0f0ff,stroke:#3498db
+    style LIGHT fill:#e0f0ff,stroke:#3498db
     style H1 fill:#ff6b6b,color:#fff
     style H2 fill:#ff6b6b,color:#fff
     style H3 fill:#ff6b6b,color:#fff
-    style H4 fill:#ff6b6b,color:#fff
 ```
+
+Modes (`checkpoint_mode` in `.mrp-state.json`): **light** (default, above) · **step** — "ask me at every step": waits after every skill · **auto** — "run it all the way": checkpoints are announced but not waited for, and the content that would have been confirmed is written into the artifact. Research-workflow tasks enter the pipeline; one-off questions are answered directly.
 
 ## 7. Plugin Architecture
 
 ```mermaid
 flowchart TD
-    subgraph PLUGIN["med-research-powers (Plugin)"]
-        PJ[".claude-plugin/plugin.json<br/>v6.2.3 | 20 commands registered"]
-        HOOK["hooks/session-start.sh<br/>Injects routing table on startup"]
-        META["skills/using-med-research-powers<br/>Orchestrator: 1% Rule + Checkpoints"]
+    subgraph PLUGIN["mrp (plugin) — marketplace med-research-powers"]
+        PJ[".claude-plugin/plugin.json<br/>name: mrp · v6.3.0 · SessionStart hook<br/>commands/ and skills/ are auto-discovered"]
+        HOOK["hooks/session-start.sh<br/>Reads whitelisted fields of .mrp-state.json,<br/>reports the resume point"]
+        META["skills/using-med-research-powers<br/>Orchestrator: routing + checkpoints + mrp_state.py"]
     end
 
-    subgraph COMMANDS["20 Slash Commands (/mrp:*) — sample"]
+    subgraph COMMANDS["7 Slash Commands (/mrp:*, user-invoked only)"]
         CMD1["/mrp:research-question"]
-        CMD2["/mrp:study-design"]
-        CMD3["/mrp:analyze-data"]
-        CMD4["/mrp:write-manuscript"]
-        CMD5["/mrp:pre-submission"]
+        CMD2["/mrp:analyze-data"]
+        CMD3["/mrp:write-manuscript"]
+        CMD4["/mrp:peer-review"]
+        CMD5["/mrp:check-standards"]
+        CMD6["/mrp:pre-submission"]
+        CMD7["/mrp:using-mrp"]
     end
 
-    subgraph SKILLS["20 Skills"]
-        SK_F["Foundation (4)<br/>research-question-formulation,<br/>literature-synthesis,<br/>study-design (Type A–E router),<br/>journal-selection"]
+    subgraph SKILLS["20 Skills (each also callable as /mrp:SKILL-NAME)"]
+        SK_F["Foundation (5)<br/>research-question-formulation,<br/>literature-synthesis,<br/>study-design (Type A–E router),<br/>research-ethics, journal-selection"]
         SK_A["Analysis (4)<br/>data-analysis-planning, data-collection-tools,<br/>statistical-analysis,<br/>figure-generation"]
-        SK_M["Manuscript & QA (6)<br/>manuscript-writing, manuscript-export,<br/>reporting-standards, research-ethics,<br/>peer-review-simulation,<br/>pre-submission-verification"]
+        SK_M["Manuscript & QA (5)<br/>manuscript-writing, peer-review-simulation,<br/>pre-submission-verification,<br/>manuscript-export, reporting-standards"]
         SK_S["Submission (2)<br/>submission-preparation,<br/>revision-response"]
-        SK_U["Utility (2)<br/>pubmed-search,<br/>team-collaboration"]
-        SK_X["Meta (2)<br/>using-med-research-powers,<br/>writing-mrp-skills"]
+        SK_U["Utility (1)<br/>pubmed-search"]
+        SK_X["Meta (3)<br/>team-collaboration,<br/>using-med-research-powers,<br/>writing-mrp-skills"]
     end
 
-    subgraph SCRIPTS["Python Scripts"]
-        PY1["assumption_tests.py<br/>Normality + Homogeneity + Cohen's d (CI)"]
-        PY2["power_analysis.py<br/>5 designs: t-test, proportion,<br/>diagnostic, survival, correlation"]
-        PY3["pub_style.py<br/>Journal palettes: Nature, Lancet,<br/>JAMA, NEJM + Colorblind safe"]
+    subgraph SCRIPTS["10 Bundled Python Scripts"]
+        PY1["statistical-analysis<br/>assumption_tests.py · power_analysis.py<br/>analysis_template.py · data_cleaning.py"]
+        PY2["figure-generation: pub_style.py<br/>manuscript-export: export_docx.py<br/>manuscript-writing: get_journal_template.py"]
+        PY3["data-collection-tools<br/>patient_level_split.py · randomization.py<br/>using-med-research-powers: mrp_state.py"]
     end
 
     subgraph REFS["Reference Data"]
         R1["stat-method-decision-tree.yaml<br/>15+ method categories"]
-        R2["standards-index.yaml<br/>41 reporting standards"]
-        R3["consort-2025.yaml<br/>30-item checklist"]
-        R4["journal-templates.yaml<br/>234 journals, 30+ specialties"]
+        R2["checklists/standards-index.yaml<br/>46 reporting standards"]
+        R3["checklists/consort-2025.yaml<br/>30 items (42 rows incl. sub-items)"]
+        R4["journal-templates.yaml<br/>234 journals, 30+ specialties, data_as_of"]
         R5["metrics-and-reporting.yaml<br/>AI metrics + fairness + robustness"]
         R6["Experiment templates<br/>WB, qPCR, Animal (ARRIVE 2.0)"]
     end
 
-    subgraph STATE["State Management"]
-        ST1[".mrp-state.json<br/>Session persistence"]
-        ST2["Artifact versioning<br/>Track changes across skills"]
+    subgraph STATE["State"]
+        ST1[".mrp-state.json (project dir)<br/>project · current_stage · completed_skills<br/>artifacts · target_journal · checkpoint_mode · next_step"]
+        ST2["~/.claude/mrp-user-profile.json (global)<br/>favorite_journals · preferred_stats_tool<br/>preferred_figure_style — collected lazily"]
     end
 
     PJ --> HOOK
@@ -311,15 +333,19 @@ flowchart TD
     style STATE fill:#d35400,color:#fff
 ```
 
+Quality gates in CI (`.github/workflows/ci.yml`): `tools/check_consistency.py` (versions, counts, script paths, SKILL.md frontmatter, links, README/README_CN sync), `pytest tests/`, `sh -n` + shellcheck on the hook and installer, `claude plugin validate --strict`, and a hook smoke test.
+
 ## 8. Reporting Standards Coverage Map
 
 ```mermaid
 mindmap
-  root(("41 Reporting<br/>Standards"))
+  root(("46 Reporting<br/>Standards"))
     Clinical Trials
       CONSORT 2025
       CONSORT-AI
       CONSORT-Cluster
+      CONSORT non-inferiority
+      TREND
       SPIRIT 2025
       SPIRIT-AI
       TIDieR
@@ -335,7 +361,7 @@ mindmap
       PRISMA-S
       PRISMA-DTA
       PRISMA-NMA
-      TRIPOD-SRMA
+      TRIPOD-SRMA 2023
       AMSTAR 2
       GRADE
     Guidelines
@@ -346,20 +372,24 @@ mindmap
       STARD 2015
     AI & Prediction
       TRIPOD+AI 2024
-      TRIPOD-LLM
-      TRIPOD-Cluster
-      CLAIM
+      TRIPOD-LLM 2025
+      TRIPOD-Cluster 2023
+      CLAIM 2024
       MI-CLAIM
       DECIDE-AI
       PROBAST
-    Surgery
+    Surgery & Devices
       IDEAL
-      MVAL
     Qualitative
       COREQ
       SRQR
-    Other
+    Surveys & Instruments
+      CHERRIES
+      CROSS
+      COSMIN
+    Preclinical
       ARRIVE 2.0
+    Other
       CARE
       SQUIRE
       CHEERS

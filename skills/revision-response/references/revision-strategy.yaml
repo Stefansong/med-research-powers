@@ -2,61 +2,82 @@
 # Loaded on demand by revision-response. Keep judgment/reasoning in SKILL.md;
 # this file holds the static classification/strategy tables only.
 
-# Phase 1 Step 1 — classify every reviewer comment into 4 categories.
+# Phase 1 Step 1 — classify every reviewer comment on TWO independent axes.
+# Severity = how much the comment threatens the paper; Stance = what we will do about it.
+# Every comment gets exactly one Severity and one Stance (e.g. "Major / Partial", "Minor / Rebut").
 comment_classification:
-  - category: "Critical"
-    definition: "关乎论文核心有效性（设计缺陷、统计错误、数据问题）"
-    strategy: "必须修复，否则一定被拒"
-  - category: "Major"
-    definition: "重要但可协商（增加分析、补充数据、修改解释）"
-    strategy: "强烈建议修复，但修复方式可以讨论"
-  - category: "Minor"
-    definition: "格式、表述、小的补充"
-    strategy: "快速修复，展示认真态度"
-  - category: "Disagreeable"
-    definition: "审稿人要求不合理或基于误解"
-    strategy: "礼貌反驳，提供证据"
+  severity:
+    - level: "Critical"
+      definition: "关乎论文核心有效性（设计缺陷、统计错误、数据问题、结论站不住）"
+      consequence: "不修 = 拒稿"
+    - level: "Major"
+      definition: "重要但不动摇核心（增加分析、补充数据、修改解释、补文献）"
+      consequence: "不修 = 再一轮 Major 或拒稿"
+    - level: "Minor"
+      definition: "格式、表述、小的补充"
+      consequence: "不修 = 显得不认真"
+  stance:
+    - stance: "Accept"
+      definition: "审稿人正确，按要求修改"
+      response_frame: "感谢 → 修改 → 标注位置"
+    - stance: "Partial"
+      definition: "审稿人大致正确但要求过度 / 只能部分做到"
+      response_frame: "同意关切 → 用更小但足够的方案回应 → 说明为什么足够"
+    - stance: "Rebut"
+      definition: "审稿人基于误解或事实错误，或要求不合理（如把队列改成 RCT）"
+      response_frame: "礼貌说明 → 给证据/引用 → 仍对其背后的关切做一点补充"
+  note: "旧版的 'Disagreeable' 类不再使用——它其实是 Stance = Rebut，可以搭配任何 Severity。"
 
-# Phase 1 Step 2 — priority matrix (Impact x Difficulty).
+# Phase 1 Step 2 — priority matrix: Severity x Difficulty, four distinct levels.
 priority_matrix: |
-  (Impact \ Difficulty)   Low Difficulty     High Difficulty
-  High Impact             ★★★ DO FIRST       ★★ PLAN CAREFULLY
-  Low Impact              ★★ DO QUICKLY      ★ CONSIDER COST
-priority_order:
-  - "先修 Critical（不修 = 拒稿）"
-  - "再修 High Impact + Low Difficulty（最大性价比）"
-  - "然后 Minor（展示态度）"
-  - "最后处理 Disagreeable（需要精心措辞）"
+  (Severity \ Difficulty)   Low difficulty                    High difficulty
+  Critical                  P1 立刻做（不修 = 拒稿）           P1 立刻排期，最先启动（耗时最长）
+  Major                     P2 尽早做（性价比最高）             P3 评估可行性；做不到就 Partial + 写进 limitation
+  Minor                     P3 顺手做（展示态度）               P4 最后做或礼貌说明为何不改
+priority_levels:
+  - level: "P1"
+    rule: "所有 Critical，无论难度；高难度的 Critical 最先启动，因为它决定时间表"
+  - level: "P2"
+    rule: "低难度 Major——性价比最高，尽早完成"
+  - level: "P3"
+    rule: "高难度 Major（先评估可行性）和低难度 Minor"
+  - level: "P4"
+    rule: "高难度 Minor——最后处理；Stance = Rebut 的意见不论等级都要留出精心措辞的时间"
 
-# Phase 1 Step 3 — response-letter tone strategy by situation.
+# Phase 1 Step 3 — response-letter tone by Stance (with the typical situation).
 response_strategy:
-  - situation: "审稿人完全正确"
-    response: "We thank the reviewer... We have revised..."
-  - situation: "审稿人大致正确但要求过度"
-    response: "We agree with the concern... We have addressed it by [less extensive but sufficient approach]..."
-  - situation: "审稿人基于误解"
-    response: "We appreciate the comment. We may not have been clear enough. [Clarify]... We have revised the text to be more explicit."
-  - situation: "审稿人明确错误"
+  - stance: "Accept"
+    situation: "审稿人完全正确"
+    response: "We thank the reviewer for this important point. We have revised... (Page X, Lines Y-Z)."
+  - stance: "Partial"
+    situation: "审稿人大致正确但要求过度"
+    response: "We agree with the concern... We have addressed it by [less extensive but sufficient approach]... We believe this addresses the underlying issue because..."
+  - stance: "Partial"
+    situation: "审稿人要求不可能的实验/数据"
+    response: "We agree this would strengthen the study. Unfortunately, [reason]. We have added this as a limitation and future direction (Page X)."
+  - stance: "Rebut"
+    situation: "审稿人基于误解"
+    response: "We appreciate the comment. We may not have been clear enough. [Clarify]... We have revised the text to be more explicit (Page X)."
+  - stance: "Rebut"
+    situation: "审稿人明确错误"
     response: "We respectfully note that [factual correction with reference]. However, we have added [X] to address the underlying concern."
-  - situation: "审稿人要求不可能的实验"
-    response: "We agree this would strengthen the study. Unfortunately, [reason]. We have added this as a limitation and future direction."
 
-# Phase 2 Step 1 — per-comment sub-classification.
+# Phase 2 Step 1 — sub_type = what the comment asks for; it selects the concrete tactic.
 sub_classification:
   - type: "方法学质疑"
     strategy: "感谢 → 补充分析/解释 → 展示证据"
     example: "请解释为什么不用 X 方法"
   - type: "要求补充分析"
-    strategy: "评估可行性 → 执行或解释不可行原因"
+    strategy: "评估可行性 → 执行（标注 post hoc / exploratory，记入 analysis-log.md 的 SAP 偏差）或解释不可行原因"
     example: "请增加亚组分析"
   - type: "文字改进"
     strategy: "接受 → 修改 → 标注位置"
     example: "第3段表述不清"
   - type: "参考文献"
-    strategy: "补充或解释已有引用充分"
+    strategy: "补充（先用 pubmed-search Mode 3 验证存在）或解释已有引用充分"
     example: "请引用 Smith 2024"
   - type: "不合理要求"
-    strategy: "礼貌解释 → 引用文献支持"
+    strategy: "礼貌解释 → 引用文献支持（Stance = Rebut）"
     example: "请将队列改为 RCT"
   - type: "相互矛盾的意见"
     strategy: "说明矛盾 → 采取平衡方案 → 请编辑裁决"
@@ -64,11 +85,13 @@ sub_classification:
 
 # 改投策略 — appeal-vs-resubmit decision after a Reject.
 appeal_decision:
-  - condition: "编辑同意但审稿人意见分歧大"
-    recommendation: "可以 Appeal"
-  - condition: "审稿人有明显的事实性错误"
+  - condition: "决定信显示审稿人意见分歧，且编辑的措辞倾向正面（如 'would consider a new submission'、'borderline'）"
+    recommendation: "可以 Appeal（或按编辑提示重新投稿）"
+  - condition: "审稿人有明显的事实性错误，且该错误是拒稿的主要依据"
     recommendation: "可以 Appeal，附上证据"
   - condition: "审稿人全部认为方法有严重问题"
     recommendation: "不建议 Appeal，改投"
   - condition: "Desk reject（未送审）"
     recommendation: "不建议 Appeal，改投"
+  - condition: "编辑明确写 'the decision is final'"
+    recommendation: "不 Appeal，改投"

@@ -1,34 +1,46 @@
 # Statistical Method Decision Tree
 
 ## Two Groups
+# Order of decisions: paired? -> (paired) normality of the DIFFERENCES
+#                             -> (unpaired) normality of each group -> homogeneity of variance
 two_groups:
   continuous:
-    normal:
-      equal_variance:
-        unpaired: "Independent t-test"
-        paired: "Paired t-test"
-      unequal_variance:
-        unpaired: "Welch's t-test"
-        paired: "Paired t-test (robust to variance)"
-    non_normal:
-      unpaired: "Mann-Whitney U test"
-      paired: "Wilcoxon signed-rank test"
+    paired:
+      step_1: "Test normality of the paired differences (not of each group); no variance-homogeneity step"
+      differences_normal: "Paired t-test"
+      differences_non_normal: "Wilcoxon signed-rank test"
+    unpaired:
+      step_1: "Test normality of each group (Shapiro-Wilk n<50, D'Agostino-Pearson n>=50)"
+      normal:
+        step_2: "Test homogeneity of variance (Levene)"
+        equal_variance: "Independent t-test"
+        unequal_variance: "Welch's t-test"
+      non_normal: "Mann-Whitney U test (no homogeneity step needed)"
   categorical:
-    expected_freq_ge_5: "Chi-squared test"
-    expected_freq_lt_5: "Fisher's exact test"
-    ordered: "Cochran-Armitage trend test"
+    binary_outcome:
+      expected_freq_ge_5: "Chi-squared test"
+      expected_freq_lt_5: "Fisher's exact test"
+    ordinal_outcome: "Mann-Whitney U / Wilcoxon rank-sum (equivalently Cochran-Mantel-Haenszel row-mean-score test); Cochran-Armitage is NOT for this case"
   survival:
     test: "Log-rank test"
     model: "Cox proportional hazards regression"
 
+## Ordered Exposure Groups (>= 3 ordered categories, e.g. dose / stage) x Binary Outcome
+ordered_groups_binary_outcome:
+  trend_test: "Cochran-Armitage trend test (linear trend in proportions across ordered groups)"
+  alternative: "Logistic regression with the ordered group as a numeric score (reports OR per level)"
+  note: "Use only when the GROUPS are ordered and the OUTCOME is binary; two groups x ordinal outcome -> two_groups.categorical.ordinal_outcome"
+
 ## Multiple Groups (>2)
 multiple_groups:
   continuous:
+    # paired / repeated measures: Levene is not applicable — check sphericity (Mauchly) instead
     normal_and_homogeneous:
       unpaired: "One-way ANOVA + Tukey HSD post-hoc"
-      paired: "Repeated-measures ANOVA"
+      paired: "Repeated-measures ANOVA (Mauchly's sphericity test; Greenhouse-Geisser correction if violated)"
     normal_not_homogeneous:
       unpaired: "Welch's ANOVA + Games-Howell post-hoc"
+      paired: "Repeated-measures ANOVA — homogeneity step does not apply; use sphericity check as above (or a linear mixed model)"
     non_normal:
       unpaired: "Kruskal-Wallis + Dunn's post-hoc"
       paired: "Friedman test + Nemenyi post-hoc"
@@ -53,11 +65,17 @@ correction:
   omics_data: "Benjamini-Hochberg FDR"
   subgroup_analyses: "Pre-specify; report as exploratory if not pre-specified"
 
+## Resampling Defaults
+resampling:
+  bootstrap_ci: "BCa or percentile bootstrap, B >= 2000 resamples"
+  permutation_test: ">= 1000 permutations (10 000 when p is near the decision threshold)"
+  seed: "Fix and report the random seed"
+
 ## Longitudinal / Repeated Measures
 longitudinal:
   two_timepoints:
-    normal: "Paired t-test"
-    non_normal: "Wilcoxon signed-rank test"
+    differences_normal: "Paired t-test"
+    differences_non_normal: "Wilcoxon signed-rank test"
   multiple_timepoints:
     continuous:
       balanced_complete: "Repeated-measures ANOVA (check sphericity with Mauchly's)"
@@ -87,18 +105,30 @@ survival_extended:
     model: "AFT model (Weibull, log-normal, log-logistic)"
 
 ## Missing Data
+# SINGLE SOURCE for missing-data rules (SKILL.md files only reference this section).
+# Decide on two axes: (1) proportion missing, (2) missingness mechanism.
 missing_data:
   assessment:
-    - "Report % missing per variable"
-    - "Test missingness mechanism: Little's MCAR test"
+    - "Report n and % missing per variable (data_cleaning.py does this)"
+    - "Mechanism: Little's MCAR test — R naniar::mcar_test() or Python pyampute MCARTest; if neither is available, compare other variables between missing vs observed (t-test / chi-square) and show a missingness-pattern plot, then state MCAR cannot be confirmed"
     - "Pattern analysis: monotone vs arbitrary"
-  strategy:
-    less_than_5_percent: "Complete case analysis acceptable (report and justify)"
+  by_proportion:
+    less_than_5_percent:
+      mcar: "Complete case analysis acceptable (report and justify)"
+      mar: "Multiple imputation preferred; complete case acceptable if justified and n large"
+      mnar: "Multiple imputation + MNAR sensitivity analysis"
     5_to_20_percent:
-      mcar_or_mar: "Multiple imputation (MICE, m≥20 imputations)"
-      combine_results: "Rubin's rules for pooling estimates across imputations"
-    more_than_20_percent: "Multiple imputation + sensitivity analysis under MNAR"
-    mnar: "Pattern-mixture models or selection models; consult statistician"
+      mcar: "Multiple imputation (MICE, m>=20) — complete case loses power"
+      mar: "Multiple imputation (MICE, m>=20); include auxiliary variables and the outcome in the imputation model"
+      mnar: "Multiple imputation + MNAR sensitivity analysis (tipping point / delta adjustment)"
+    more_than_20_percent:
+      mcar_or_mar: "Multiple imputation (m>=20) + sensitivity analysis; discuss as a limitation"
+      mnar: "Pattern-mixture or selection models; consult a statistician"
+    variable_more_than_40_percent: "Discuss whether the variable should be kept at all"
+  pooling: "Rubin's rules for pooling estimates across imputations (never average the imputed datasets)"
+  tools:
+    python: "sklearn IterativeImputer(sample_posterior=True, random_state=i) looped m times + Rubin pooling, or statsmodels.imputation.mice (MICEData + MICE)"
+    r: "mice::mice(m=20) + pool()"
   sensitivity:
     - "Compare complete case vs imputed results"
     - "Vary MNAR assumptions (tipping point analysis)"
@@ -160,7 +190,7 @@ interaction:
 omics:
   dimensionality_reduction:
     unsupervised: "PCA (linear), UMAP/t-SNE (visualization only, not inference)"
-    supervised: "PLS-DA (with permutation testing for significance)"
+    supervised: "PLS-DA (with permutation testing for significance, >=1000 permutations)"
   differential_analysis:
     transcriptomics: "DESeq2 / edgeR (negative binomial models)"
     proteomics: "limma (moderated t-test)"
@@ -176,7 +206,7 @@ time_series:
   autocorrelation: "Newey-West standard errors or ARIMA models"
   controls: "Add control series if available (controlled ITS)"
 
-## Assumption Tests (use skills/statistical-analysis/scripts/assumption_tests.py)
+## Assumption Tests (use ${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/assumption_tests.py)
 assumptions:
   normality:
     n_lt_50: "Shapiro-Wilk test"
@@ -206,7 +236,7 @@ deep_learning_segmentation:
   task: "Image segmentation (organ/lesion delineation)"
   metrics:
     primary: [Dice coefficient, IoU (Jaccard)]
-    secondary: [Hausdorff distance (95th percentile), Average surface distance]
+    secondary: ["95th percentile Hausdorff distance (HD95)", Average surface distance]
     volumetric: [Volume correlation, Bland-Altman for volume]
   comparison:
     - {method: Paired Wilcoxon, when: "Compare two models on same test set"}
@@ -224,11 +254,16 @@ deep_learning_training:
   hyperparameter_reporting:
     required: [optimizer, learning_rate, lr_schedule, batch_size, epochs, early_stopping, weight_decay, dropout]
     recommended: [warmup_steps, gradient_clipping, mixed_precision, seed]
-  data_split:
-    - {condition: "n > 1000", method: "Hold-out (60/20/20)", note: "Patient-level split"}
-    - {condition: "200 <= n <= 1000", method: "5-fold CV", note: "Patient-level folds; report mean±SD"}
-    - {condition: "50 <= n < 200", method: "Transfer learning + nested CV", note: "Pretrained ImageNet/domain weights"}
-    - {condition: "n < 50", method: "LOOCV or classical ML (insufficient for deep learning)", note: "Strong warning; external validation MANDATORY"}
+  data_split:   # SINGLE SOURCE for the data-split table (study-design and data-analysis-planning reference it)
+    - {condition: "n > 1000", method: "Hold-out train/val/test (60/20/20)", note: "Patient-level split"}
+    - {condition: "200 <= n <= 1000", method: "5-fold cross-validation", note: "Patient-level folds; report mean±SD across folds"}
+    - {condition: "50 <= n < 200", method: "Transfer learning + nested CV", note: "Pretrained ImageNet/domain weights; report pretraining data and fine-tuning strategy"}
+    - {condition: "n < 50", method: "LOOCV or classical ML (insufficient for deep learning)", note: "Strong warning; external validation MANDATORY; discuss in Limitations"}
+  data_split_rules:
+    - "Split by patient ID, never by image/slice/frame: all data of one patient stay in one set/fold"
+    - "Report the random seed and the class distribution of every set/fold"
+    - "Never tune hyperparameters or augment on the test set (TTA excepted)"
+    - "Tool: ${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/patient_level_split.py (stratified, seeded, leakage check)"
   augmentation:
     geometric: [rotation, flip, scale, elastic_deformation, crop]
     intensity: [brightness, contrast, noise, blur, gamma]
@@ -244,7 +279,7 @@ model_comparison:
     groups: ["AI alone", "Human alone", "AI-assisted Human"]
     washout: "≥2 weeks between unaided and AI-assisted reading"
   multi_model:
-    method: "Bootstrap or permutation test on paired predictions"
+    method: "Bootstrap (B>=2000) or permutation test (>=1000 permutations) on paired predictions"
     report: "Point estimate + 95% CI for each model"
 
 uncertainty_quantification:

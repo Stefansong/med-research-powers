@@ -1,141 +1,109 @@
 ---
 name: manuscript-writing
-description: Use when drafting a medical research manuscript (original research or review). Triggers on "写论文"、"写稿子"、"写Methods"、"写综述"、"manuscript"、"投稿"、"systematic review"、"meta-analysis"、"narrative review".
+description: Use when drafting a medical research manuscript (original research or review). Triggers on "写论文"、"写稿子"、"写Methods"、"写综述"、"manuscript"、"systematic review"、"meta-analysis"、"narrative review".
 ---
 
 # Manuscript Writing
 
 ## Overview
 
-撰写医学研究论文——支持原始研究（IMRaD）和综述类文章（Narrative / Systematic / Meta-Analysis / Scoping / Mini-Review）。不允许虚构数据或结果。
+撰写医学研究论文——支持原始研究（IMRaD）和综述类文章（Narrative / Systematic / Meta-Analysis / Scoping / Mini-Review）。核心原则：**不虚构数据、结果或参考文献；每一个数字都能回溯到 `results-summary.md`。**
 
 ## When to Use
 
-写论文、写综述、写摘要、写各个章节。
+写论文、写综述、写摘要、写某一个章节；已有 `results-summary.md` 或文献综合结果，准备成稿。
 
 ## When NOT to Use
 
-- 格式排版导出 → `manuscript-export`
-- 检查投稿规范 → `reporting-standards`
+- 排版导出 .docx → `manuscript-export`（在 `pre-submission-verification` 之后）
+- 逐条核对报告规范（CONSORT/STROBE/PRISMA…）→ `reporting-standards`
+- 还没选期刊、不知道投哪 → `journal-selection`
+- 只改一句话、只算一个数 → 直接回答，不走本 skill 流程
 
 ## Article Type Router
 
-**写作前必须先确定文章类型。** 不同类型有不同的结构、前置依赖和写作流程。
+**写作前必须先确定文章类型**，然后**只读取**对应的类型文件（每类一个文件，含前置依赖、写作顺序、章节规则、Output Structure）：
 
 ```
 用户需求 → 什么类型？
   ├── 有自己的数据/实验结果？ → Original Research (IMRaD)
   └── 综合已有文献？
         ├── 需要系统检索 + PRISMA？
-        │     ├── 需要统计合并？ → Meta-Analysis
+        │     ├── 需要统计合并？ → Meta-Analysis（含 NMA）
         │     ├── 目的是映射证据范围？ → Scoping Review
         │     └── 目的是回答特定问题？ → Systematic Review
-        ├── 短篇聚焦 (≤3000字)？ → Mini-Review
+        ├── 短篇聚焦 (≤3000 词)？ → Mini-Review
         └── 自由组织主题？ → Narrative Review
 ```
 
-| 类型 | 代号 | 结构 | 典型字数 | 报告规范 |
-|------|------|------|---------|---------|
-| Original Research | `original` | IMRaD | 3000-5000 | CONSORT/STROBE/TRIPOD 等 |
-| Narrative Review | `narrative` | 主题式 | 4000-8000 | 无强制 |
-| Systematic Review | `systematic` | PRISMA | 6000-12000 | PRISMA 2020 |
-| Meta-Analysis | `meta` | PRISMA + Stats | 6000-12000 | PRISMA 2020 + MOOSE |
-| Scoping Review | `scoping` | 映射式 | 5000-10000 | PRISMA-ScR |
-| Mini-Review | `mini` | 短篇聚焦 | 2000-3000 | 无强制 |
+| 类型 | 代号 | 结构 | 典型字数 | 报告规范 | 类型文件 |
+|------|------|------|---------|---------|---------|
+| Original Research | `original` | IMRaD | 3000–5000 | CONSORT 2025 / STROBE / TRIPOD+AI / CLAIM 2024 等 | `references/article-types/original.md` |
+| Narrative Review | `narrative` | 主题式 | 4000–8000 | 无强制（SANRA 自评） | `references/article-types/narrative.md` |
+| Systematic Review | `systematic` | PRISMA | 6000–12000 | PRISMA 2020 | `references/article-types/systematic.md` |
+| Meta-Analysis / NMA | `meta` | PRISMA + Stats | 6000–12000 | PRISMA 2020 (+ MOOSE / PRISMA-NMA) | `references/article-types/meta.md`（在 systematic.md 之上追加） |
+| Scoping Review | `scoping` | 映射式 | 5000–10000 | PRISMA-ScR | `references/article-types/scoping.md` |
+| Mini-Review | `mini` | 短篇聚焦 | 2000–3000 | 无强制 | `references/article-types/mini.md` |
 
-## Prerequisites（按类型 + 按章节拆分）
+"典型字数"只是经验值；**实际上限一律以目标期刊模板为准**。
 
-### Original Research
+## Workflow
 
-| 章节 | 前置依赖 | 必须/推荐 |
-|------|---------|----------|
-| Methods | `study-protocol.md` + `analysis-plan.md` | 必须 |
-| Introduction | `research-question.md` + `literature-synthesis-summary.md` | 必须 |
-| Results | `results-summary.md` + 图表文件 | 必须 |
-| Discussion | Results 章节已完成 | 必须 |
-| Abstract | 全文各章节已完成 | 必须 |
-| Title | Abstract 已完成 | 推荐 |
+### Step 0：读取用户画像（懒采集）
 
-**可以在没有 results-summary.md 的情况下先写 Methods 和 Introduction。**
+读取 `~/.claude/mrp-user-profile.json` 的 `preferences.favorite_journals`。文件或字段不存在 → 只问这一个问题（"你常投的期刊有哪些？"），并问是否保存到该文件；用户跳过则不保存。它只用于 Step 2 的默认候选，不替代 `journal-selection`。
 
-### Narrative Review
+### Step 1：确定文章类型
 
-| 前置依赖 | 必须/推荐 |
-|---------|----------|
-| `literature-synthesis-summary.md` + `literature-references.md` | 必须 |
-| `journal-selection-report.md` | 推荐 |
-| `research-question.md` | 推荐（帮助聚焦范围） |
+按 Router 判定类型 → 读取对应 `references/article-types/<type>.md` → 按其"前置依赖"表检查文件是否齐全。缺必须项 → 停，先补齐（原始研究例外：Methods 和 Introduction 不依赖 `results-summary.md`，可以先写）。
 
-### Systematic Review / Meta-Analysis
+### Step 2：确定目标期刊并加载模板（软确认）
 
-| 前置依赖 | 必须/推荐 |
-|---------|----------|
-| PROSPERO 注册号 | 必须（SR/MA） |
-| `search-strategy.md` + `screening-log.md` | 必须 |
-| `literature-references.md` | 必须 |
-| PRISMA 2020 Checklist | 必须 |
-| 偏倚评估结果（RoB 2 / NOS / ROBINS-I） | 必须 |
-| Meta 分析统计结果 + 森林图（仅 Meta） | 必须 |
+目标期刊来源优先级：`journal-selection-report.md` 首选 → `.mrp-state.json` 的 `target_journal` → 画像的 `favorite_journals` → 询问用户。写作前**复核一次**："目标期刊仍是 X 吗？"——这是软确认，用户随时可换，换刊后重新加载模板即可，不需要回头重跑流程。
 
-### Scoping Review
+加载模板只用脚本（见下方 Journal Template 节），**禁止整读 `journal-templates.yaml`**。
 
-| 前置依赖 | 必须/推荐 |
-|---------|----------|
-| `search-strategy.md` + `screening-log.md` | 必须 |
-| `literature-references.md` | 必须 |
-| PRISMA-ScR Checklist | 必须 |
-| Evidence Map / Charting Table | 必须 |
+### Step 3：按类型文件的写作顺序逐章写作
 
-### Mini-Review
+- 每章写入 `manuscript/<section>.md`（文件名见 Output）；写作时对照类型文件的章节规则与报告规范条目。
+- 每写完一章，对照模板的 `word_limit` / `abstract` 字数**实时检查**，超限先删冗余再压缩。
+- 未定稿处用 `<!-- PLACEHOLDER: 说明 -->` 或 `[TBD]` 标注，**不要用看起来像真数据的占位值**（导出脚本会检测这些标记）。
+- 引用：写作时标记来源（PMID/DOI）；格式化用 `pubmed-search` Mode 6；写综述 Methods 检索策略可用 Mode 1。调用 PubMed MCP 时写法为 `mcp__<server名>__get_article_metadata(pmids=[...])`，server 名以当前会话工具列表为准（claude.ai 连接器为 `claude_ai_PubMed`，本地常见为 `PubMed`）。引用状态标记：✅ Verified / ⚠️ Not found / ❌ Mismatch / ⏳ Unverified (tool error，重试) / ℹ️ Non-PubMed（用 DOI/WebSearch 核对）；最终逐条验证由 `pre-submission-verification` Gate 3 完成。
 
-| 前置依赖 | 必须/推荐 |
-|---------|----------|
-| 主题明确 | 必须 |
-| `literature-references.md` | 推荐 |
+### Step 4：期刊特殊元素
+
+按模板 `special` 字段补齐：JAMA 家族 → `key-points.md`；Lancet 家族（含 eClinicalMedicine、eBioMedicine）→ `research-in-context.md`；European Urology 家族 → Patient Summary + Take Home Message；Nature 家族 → Reporting Summary、Data/Code availability。
+
+### Step 5：自检与收尾
+
+1. 对照 Convergence 逐条自检；语言规则检查（见 Language Rules）。
+2. 输出 3–5 行摘要（产物清单、目标期刊与字数、待注意的 placeholder），默认直接进入下一步；用户要求"逐步确认"时等确认。
+3. 更新项目目录 `.mrp-state.json`（`python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`，记录 `completed_skills` 与 `artifacts.manuscript/`）。
+4. 下一步 → `peer-review-simulation`。
 
 ## Journal Template（期刊排版规范）
 
-**写作前必须加载目标期刊模板。** 模板文件：`references/journal-templates.yaml`
+模板库：`references/journal-templates.yaml`，234 个期刊（顶层键 `data_as_of` + `templates`），按专科分区。它是字数、摘要格式、参考文献样式、特殊要求、投稿系统、期刊家族（`family`）的**唯一数据源**——不要在本文件重复期刊清单。
 
+**只用脚本读取（文件 3600 多行，整读会截断且浪费上下文）：**
+
+```bash
+# 精确取一条（默认同时查项目目录 ./journal-overrides.yaml，命中则优先）
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --id european-urology
+# 不确定 id：模糊搜索 id/名称/专科分区（词首匹配）
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --search urol
+# 按专科列表 / 机器可读
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --list --specialty urology
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --id nature --json
 ```
-加载流程：
-1. 从 journal-selection-report.md 获取目标期刊
-2. 加载 journal-templates.yaml 中对应模板
-3. 按模板设定字数限制、摘要格式、章节结构、参考文献格式
-4. 写作过程中实时检查是否超限
-```
 
-**模板库覆盖 234 个期刊，按专科分类（综合顶刊 / 肿瘤 / 外科 / 泌尿 / 心血管 / 消化肝病 / 呼吸 / 神经 / 影像 / AI 数字健康 / 儿科 / 骨科 / 眼科皮肤病理 / 感染内分泌肾脏精神 / 系统综述 / 开放获取 / 中国 SCI 等）。**
+找不到 id 时脚本 exit 1 并提示 `--search`。输出里的 `IF_approx` 是 **JCR 2022** 值、APC 是 2022 价（见 `data_as_of`），引用时必须标年份，选刊结论以 `journal-selection` 的 WebSearch 复核为准。
 
-**不要在本文件中重复期刊清单——所有期刊的字数、摘要格式、参考文献样式、特殊要求、投稿系统、期刊家族信息（如 Lancet 家族的 Research in Context panel、JAMA 家族的 Key Points box、Nature 家族的 Reporting Summary）均以 `references/journal-templates.yaml` 为唯一数据源（top-level key `templates:`）。按 journal id / name 查找即可。**
+**目标期刊不在库中：** 用 WebSearch 找期刊 "Instructions for Authors"，把提取到的规范写入**项目目录**的 `journal-overrides.yaml`（与库文件相同结构：`templates:` 下一条含 `id / journal / publisher / word_limit / abstract / references / figures / tables / sections / special / system / family`），字段不确定的写 `verify`。脚本默认读取 `./journal-overrides.yaml`（或 `--overrides <路径>`），同 id 时覆盖库内条目。**不要改插件安装目录里的 `journal-templates.yaml`**——更新插件会丢失。
 
-**如果目标期刊不在模板库中：** 用 WebSearch 检索期刊的 "Instructions for Authors" 页面，提取关键规范并补充到 `references/journal-templates.yaml`。
+## Output
 
----
-
-## A. Original Research — IMRaD
-
-### Writing Order
-
-**不按论文顺序，按推荐的写作效率顺序：**
-
-1. **Methods** — 最客观，最容易写
-2. **Results** — 基于已有分析结果
-3. **Introduction** — 现在更清楚 gap 在哪
-4. **Discussion** — 需要最多思考
-5. **Abstract** — 概括已完成全文
-6. **Title** — 精炼到一句话
-
-### Section Rules
-
-**Methods**: 研究设计、参与者、变量定义、统计方法（可复现程度）、伦理声明、样本量、软件版本
-**Results**: 参与者流程图 → 基线表 → 主要结局 → 次要结局 → 亚组。**禁止**在 Results 讨论意义。
-**Introduction**: 漏斗形（背景→已知→gap→本研究目的）。通常 3-4 段。
-**Discussion**: 主要发现→与文献比较→机制→临床意义→局限性→结论。**禁止**引入 Results 中没有的数据。
-**Abstract**: 结构化（Background/Methods/Results/Conclusions），250-350 字。
-**Title**: 含研究设计类型 + 关键变量，≤20 词。
-
-### Output Structure
+所有章节以 Markdown 生成，放在项目目录 `manuscript/`（各类型的完整结构见类型文件）。原始研究的通用结构：
 
 ```
 manuscript/
@@ -146,297 +114,84 @@ manuscript/
 ├── results.md
 ├── discussion.md
 ├── references.md
-└── supplementary.md
+├── supplementary.md            ← 可选
+├── figure-legends.md           ← 可选（figure-generation 产物）
+├── key-points.md               ← 可选：JAMA 家族必须（Question / Findings / Meaning）
+└── research-in-context.md      ← 可选：Lancet 家族必须（Evidence before / Added value / Implications）
 ```
 
----
+文件名与 `manuscript-export` 的 section id 一一对应：`key-points` 与 `research-in-context` 由导出脚本按期刊 `family` 决定是否纳入及位置（JAMA：Key Points 在 Abstract 之前；Lancet：Research in Context 在 Introduction 之前；其他家族有这两个文件也不会导出，报告里会提示）。综述类的 `section-N-*.md` 导出前需合并进 `discussion.md`。
 
-## B. Narrative Review
+数据表格需要 Excel 时（可选）：
 
-### Writing Order
-
-1. **Outline** — 确定 3-5 个主题板块
-2. **Thematic Sections** — 每个板块独立写作
-3. **Introduction** — 明确综述范围和目的
-4. **Discussion / Future Directions** — 整合各板块、指出趋势
-5. **Conclusion** — 高度凝练
-6. **Abstract** — 概括全文
-
-### Section Rules
-
-**Introduction (3-4 段)**: 主题背景 → 为什么需要这篇综述 → 综述范围和目的
-**Thematic Sections (3-5 个)**: 每个主题一个 section，内部按逻辑组织（不按时间/作者排列）。每个 section 末尾有小结（1-2 句）。
-**Discussion / Current Challenges**: 综合各主题板块的交叉发现 → 当前挑战
-**Future Directions**: 基于 gap 提出研究方向。每个方向需有依据。
-**Conclusion (1-2 段)**: 凝练全文核心要点，**不引入新信息**。
-**Abstract**: 非结构化，150-300 字，概括范围+主要发现+结论。
-
-### Output Structure
-
+```python
+import pandas as pd
+with pd.ExcelWriter("manuscript_tables.xlsx", engine="openpyxl") as writer:
+    table1.to_excel(writer, sheet_name="Table 1", index=False)
 ```
-manuscript/
-├── title-page.md
-├── abstract.md
-├── introduction.md
-├── section-1-[theme].md      ← 按主题命名
-├── section-2-[theme].md
-├── section-3-[theme].md
-├── section-4-[theme].md      ← 可选
-├── discussion.md              ← 含 Current Challenges + Future Directions
-├── conclusion.md
-└── references.md
-```
-
----
-
-## C. Systematic Review
-
-### Writing Order
-
-1. **Methods** — 最客观（检索策略、筛选标准、偏倚评估方法）
-2. **Results** — PRISMA 流程图 → 纳入研究特征 → 偏倚评估 → 综合结果
-3. **Introduction** — 已有综述的不足 → 本综述的目的
-4. **Discussion** — 主要发现 → 证据质量 → 局限性 → 启示
-5. **Abstract** — 结构化
-6. **Title** — 必须含 "systematic review"
-
-### Section Rules
-
-**Methods（必须详细）**:
-- Protocol and Registration（PROSPERO 编号）
-- Eligibility Criteria（PICO 框架）
-- Information Sources（数据库列表 + 检索日期）
-- Search Strategy（完整检索式，附 Appendix）
-- Study Selection Process（双人独立筛选 + 分歧解决）
-- Data Extraction（提取变量列表）
-- Risk of Bias Assessment（工具：RoB 2 / NOS / ROBINS-I）
-- Synthesis Methods（叙述性综合 / 定量合并）
-- Certainty of Evidence（GRADE，如适用）
-
-**Results**:
-- Study Selection → **PRISMA Flow Diagram（必须）**
-- Study Characteristics → 纳入研究汇总表
-- Risk of Bias → 偏倚风险汇总图
-- Synthesis Results → 按结局分组报告
-
-**Discussion**: 主要发现 → 与已有综述对比 → 证据质量（GRADE）→ 局限性 → 临床/研究启示
-
-### Output Structure
-
-```
-manuscript/
-├── title-page.md
-├── abstract.md
-├── introduction.md
-├── methods.md
-├── results.md
-├── discussion.md
-├── conclusion.md
-├── references.md
-├── supplementary.md
-│   ├── appendix-search-strategy.md
-│   ├── appendix-excluded-studies.md
-│   └── appendix-rob-details.md
-└── prisma-checklist.md
-```
-
----
-
-## D. Meta-Analysis
-
-**在 Systematic Review 基础上，Methods 和 Results 额外包含：**
-
-### Methods 增加
-
-- Effect Measure（OR / RR / HR / MD / SMD）
-- Heterogeneity Assessment（I², Cochran Q, τ²）
-- Model Selection（Random-effects vs Fixed-effects + 选择理由）
-- Subgroup Analysis（预先指定的亚组变量 + 理由）
-- Sensitivity Analysis（逐一排除法 / leave-one-out）
-- Publication Bias（Funnel plot + Egger's test / Begg's test）
-- Software（R meta/metafor, RevMan, Stata metan）
-
-### Results 增加
-
-- **Forest Plot（必须）** — 主要结局
-- Heterogeneity（I², p-value, τ²）
-- Subgroup Forest Plots
-- **Funnel Plot** — 发表偏倚
-- Sensitivity Analysis Results
-- GRADE Evidence Table（推荐）
-
----
-
-## D2. Network Meta-Analysis (NMA)
-
-**在 Meta-Analysis 基础上，增加网络结构和间接比较：**
-
-### 与标准 MA 的关键差异
-
-| 维度 | 标准 Meta-Analysis | 网络 Meta-Analysis |
-|------|-------------------|-------------------|
-| 比较 | 两两直接比较（A vs B） | 多干预网络（A vs B vs C vs D） |
-| 数据 | 直接证据 | 直接 + 间接证据 |
-| 核心图表 | Forest plot | **Network plot** + Forest plot + **League table** |
-| 排序 | 无 | **SUCRA / P-score / Mean rank** |
-| 一致性 | N/A | **全局一致性 + 局部一致性检验** |
-| 模型 | 频率学派为主 | 频率学派（netmeta）或贝叶斯（gemtc/JAGS） |
-| 报告规范 | PRISMA 2020 | **PRISMA-NMA extension** |
-
-### Methods 增加
-
-- Network Geometry（网络结构描述：节点数、边数、连通性）
-- Statistical Model（频率学派 vs 贝叶斯 + 选择理由）
-  - 频率学派：R `netmeta` 包
-  - 贝叶斯：R `gemtc` 或 WinBUGS/OpenBUGS/JAGS
-- Transitivity Assumption（可传递性假设评估——NMA 的核心假设）
-- Consistency Assessment（一致性检验：全局 Design-by-Treatment + 局部 Node-Splitting）
-- Ranking（排序方法：SUCRA / P-score / Mean rank）
-- Comparison-Adjusted Funnel Plot（发表偏倚）
-
-### Results 增加
-
-- **Network Plot（必须）** — 节点大小 = 样本量，边粗细 = 研究数量
-- **League Table（必须）** — 所有两两比较的效应量矩阵
-- Consistency Results（全局 + 局部）
-- **SUCRA / Rankogram** — 干预排序
-- Comparison-Adjusted Funnel Plot
-- 如有不一致 → Sensitivity analysis excluding inconsistent loops
-
-### NMA 特有的 Common Mistakes
-
-| 想法 | 现实 |
-|------|------|
-| "有间接证据就能做 NMA" | 必须评估可传递性假设（各比较的研究人群/干预/时间可比） |
-| "不一致可以忽略" | 统计一致性 + 临床一致性都必须检验并报告 |
-| "SUCRA 最高就是最好" | SUCRA 接近时排序不可靠，必须看 CrI 重叠 |
-| "用 PRISMA 2020 就行" | 必须用 PRISMA-NMA extension |
-
----
-
-## E. Scoping Review
-
-### Section Rules
-
-**Methods**: 框架声明（Arksey & O'Malley / JBI）→ PCC（Population, Concept, Context）→ 检索 → 筛选 → Data Charting（不是 "extraction"）→ **不做偏倚评估**
-
-**Results**: PRISMA-ScR Flow Diagram → Study Characteristics → **Evidence Mapping**（表格/概念图/气泡图展示"什么被研究了、什么没有"）
-
-### Output Structure
-
-```
-manuscript/
-├── title-page.md
-├── abstract.md
-├── introduction.md
-├── methods.md
-├── results.md              ← 含 Evidence Map
-├── discussion.md
-├── conclusion.md
-├── references.md
-└── prisma-scr-checklist.md
-```
-
----
-
-## F. Mini-Review
-
-### Section Rules
-
-**结构最简洁：**
-
-```
-Title
-Abstract (非结构化, 100-200 words)
-Introduction (1-2 段: 主题意义 + 本文目的)
-[2-3 Focused Sections] (聚焦讨论一个窄主题)
-Conclusion / Outlook (1 段)
-References (≤30-50)
-```
-
-**注意：** 不需要系统检索，不需要 PRISMA，通常是领域专家受邀撰写。字数控制在 2000-3000 词。
-
----
 
 ## Language Rules（所有类型通用）
 
-- Methods/Results: 过去时
-- Introduction/Discussion: 引用已有知识用现在时
-- Review 综述主体: 用现在时描述已有研究发现（"Smith et al. report that..."）
-- 避免 "significantly" 的非统计学用法
-- 避免 "prove"（用 "support" / "suggest"）
-- 综述中避免过度罗列（"A found X. B found Y. C found Z."）→ 应综合性叙述
+- Methods/Results：过去时；Introduction/Discussion 引用已有知识：现在时
+- 综述主体：用现在时描述已有研究发现（"Smith et al. report that..."）
+- 避免 "significantly" 的非统计学用法；避免 "prove"（用 "support" / "suggest"）
+- 效应量必须带 95% CI；p 值写精确值（p=0.03，不写 p<0.05；p<0.001 例外）
+- 综述避免逐篇罗列（"A found X. B found Y."）→ 综合性叙述
+- 缩写首次出现给全称；同一概念全文用同一术语
 
 ## Common Mistakes
 
 | 想法 | 现实 |
 |------|------|
-| "先写 Introduction" | Methods 最容易（原始研究）；Outline 最先做（综述） |
+| "先写 Introduction" | 原始研究 Methods 最容易先写；综述先做 Outline |
 | "Results 里解释一下结果" | Results 只放数据，解释留给 Discussion |
 | "Discussion 补充几个新分析" | 禁止引入 Results 没有的数据 |
-| "Abstract 最后随便改改" | Abstract 是审稿人最先读的，必须精心写 |
-| "用 significantly 强调重要性" | 在论文里 significantly 只能指统计学显著 |
+| "Abstract 最后随便改改" | Abstract 是审稿人最先读的，必须精心写，字数以模板为准 |
+| "用 significantly 强调重要性" | 论文里 significantly 只能指统计学显著 |
 | "结论可以写得激进一点" | 结论不能超出数据/证据支持的范围 |
 | "综述按时间顺序排列文献" | 必须按主题组织，揭示 gap 和趋势 |
-| "综述就是列文献" | 必须综合分析，而不是逐篇罗列 |
-| "Systematic Review 不需要注册" | PROSPERO 注册是 PRISMA 2020 的要求 |
+| "Systematic Review 不需要注册" | PRISMA 2020 item 24a 要求报告注册信息；未注册必须写明 |
 | "Scoping Review 需要偏倚评估" | Scoping Review 明确不做质量评价 |
-| "Meta 分析用 Fixed-effects 就行" | 必须报告异质性，I²>50% 通常用 Random-effects |
+| "I²>50% 就改用随机效应" | 模型预先指定；I² 只用于报告异质性，不是事后换模型的依据 |
+| "把整个 journal-templates.yaml 读进来看" | 3600 多行，Read 会截断到前 2000 行，后半部分期刊会被误判"不在库中"；只用脚本取一条 |
+| "期刊不在库里就改插件目录的 YAML" | 写项目目录 `journal-overrides.yaml`，更新插件不丢失 |
 | "没有数据就不能开始写论文" | Methods 和 Introduction 不依赖数据，可以先写 |
-
-## Output 文件生成
-
-### Markdown 输出（默认）
-
-所有章节以 Markdown 格式生成（结构见各类型的 Output Structure），便于版本控制和协作编辑。
-
-### .docx 导出（投稿用）
-
-写作完成后 → 调用 `manuscript-export` skill 自动导出。
-
-### .xlsx 导出（数据表格）
-
-将 `results-summary.md` 中的表格导出为 Excel 格式：
-
-```python
-import pandas as pd
-with pd.ExcelWriter('manuscript_tables.xlsx', engine='openpyxl') as writer:
-    table1.to_excel(writer, sheet_name='Table 1', index=False)
-    table2.to_excel(writer, sheet_name='Table 2', index=False)
-```
-
-**依赖安装：** `pip install openpyxl`
 
 ## Convergence
 
 当以下条件全部满足时完成：
-1. 所有章节均已完成（按文章类型要求）
-2. 所有图表已在正文引用
-3. 参考文献完整
+1. 所有章节均已完成（按类型文件的 Output Structure）
+2. 所有图表已在正文引用，编号连续
+3. 参考文献完整、每条有 PMID/DOI 或标注 ℹ️ Non-PubMed
 4. 语言规范检查通过
-5. 字数在目标期刊限制内（加载 journal-templates.yaml 检查）
-6. 期刊特殊要求已满足（如 Key Points box、Research in Context panel）
-7. 综述类：PRISMA Checklist 已完成（如适用）
+5. 正文与摘要字数在目标期刊模板限制内（用脚本取到的 `word_limit` / `abstract`）
+6. 期刊特殊要求已满足（Key Points / Research in Context / Patient Summary 等）
+7. 综述类：PRISMA / PRISMA-ScR checklist 已完成（如适用）
+8. `.mrp-state.json` 已更新
 
 ## Red Flags — STOP
 
-- 在 Results 中没有的数字出现在 Discussion / Abstract → 停，禁止引入未分析的数据
+- Results 中没有的数字出现在 Discussion / Abstract → 停，禁止引入未分析的数据
 - 虚构数据、结果或参考文献 → 绝对禁止，立即停止
-- Systematic Review / Meta-Analysis 没有 PROSPERO 注册号 → 停，先注册（PRISMA 2020 要求）
-- 缺少必须的前置文件（按类型见 Prerequisites）就开始写对应章节 → 停，先补齐
+- 缺少必须的前置文件（按类型文件的前置依赖表）就开始写对应章节 → 停，先补齐
 - "significantly" 用于非统计学语境 / "prove" 表述 → 停，改为规范措辞
+- 准备整读 `journal-templates.yaml` → 停，改用 `get_journal_template.py`
+
+**警告（不阻断）：** Systematic Review / Meta-Analysis 没有注册号 → 提醒用户在 Methods 与 Abstract 明确写"未注册"及原因（PRISMA 2020 item 24a），并说明部分期刊要求注册。
 
 ## 衔接规则
 
-### 前置依赖（按类型拆分，见 Prerequisites 章节）
+### 前置依赖（不满足则阻止）
+- 按类型文件的前置依赖表（原始研究：`study-protocol.md` + `analysis-plan.md` + `results-summary.md`；综述：`literature-synthesis` 产物）
+- 目标期刊：来自 `journal-selection-report.md`（软确认，可随时更换）
 
-**核心原则：** 可以在没有 results-summary.md 的情况下先写 Methods 和 Introduction。
-
-### 强制衔接
-- 完成后 → 建议触发 `manuscript-export`（.docx 导出）
-- 导出后 → **必须**触发 `pre-submission-verification`（不可跳过）
+### 强制衔接（不可跳过）
+- 完成后 → `peer-review-simulation`（模拟审稿）→ `pre-submission-verification`（6-Gate 硬确认）→ `manuscript-export`（.docx）→ `submission-preparation`
+- 写作前 → 复核目标期刊一次（软确认；未选刊则先 `journal-selection`）
+- 完成后 → 更新 `.mrp-state.json`
 
 ### 可选衔接
-- 写综述 Introduction 时 → 可调用 `pubmed-search` Mode 6 格式化引用
-- 写 Methods 检索策略时 → 可调用 `pubmed-search` Mode 1 构建检索式
-- 需要数据表格 → 导出 `manuscript_tables.xlsx`（使用 openpyxl）
+- 参考文献格式化 → `pubmed-search` Mode 6；综述检索策略 → `pubmed-search` Mode 1
+- 写作中发现研究问题定义不清 → 回 `research-question-formulation`；分析需调整 → 回 `data-analysis-planning`（修改须标注为与 SAP 的偏离）
+- 涉及人体/动物数据的 Methods 伦理声明 → `research-ethics` 的 `ethics-statement.md`
+- 需要图表 → `figure-generation`；需要报告规范逐条核对 → `reporting-standards`

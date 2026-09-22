@@ -6,41 +6,59 @@ Analysis Plan: analysis-plan.md
 Date: {date}
 Author: {author}
 ================================================================
-Environment:
-  Python: {version}
-  pandas: {pd_version}
-  scipy: {scipy_version}
-  statsmodels: {sm_version}
+Environment is printed at run time (Python / pandas / numpy / scipy / statsmodels).
 Random Seed: 42
 ================================================================
 
-Skeleton template. Fill each section per analysis-plan.md.
-Loads the CLEAN dataset (data_clean.csv) produced in Step 2.4 —
+Skeleton template. Copy it into the project as analysis_script.py and fill each
+section per analysis-plan.md.
+Loads the CLEAN dataset (data_clean.csv) produced by data_cleaning.py (Step 2) —
 NEVER run downstream analysis on raw data.csv.
 """
 
-import sys, os
-import pandas as pd
-import numpy as np
-from scipy import stats
+import os
+import sys
+
+try:
+    import pandas as pd
+    import numpy as np
+    from scipy import stats
+except ImportError:
+    raise SystemExit("缺少依赖：pip install pandas numpy scipy")
+
 np.random.seed(42)
 
-# Print environment for reproducibility
-print(f"Python {sys.version}")
+# Plugin scripts (assumption_tests.py, power_analysis.py) live in the plugin directory,
+# not in the project directory — locate them via CLAUDE_PLUGIN_ROOT.
+sys.path.insert(0, os.path.join(os.environ.get("CLAUDE_PLUGIN_ROOT", "."),
+                                "skills", "statistical-analysis", "scripts"))
+# from assumption_tests import full_check, effect_size_cohens_d
+
+# ─── Environment (for reproducibility) ───
+print(f"Python {sys.version.split()[0]}")
 for pkg in ['pandas', 'numpy', 'scipy', 'statsmodels']:
-    print(f"{pkg} {__import__(pkg).__version__}")
+    try:
+        print(f"{pkg} {__import__(pkg).__version__}")
+    except ImportError:
+        print(f"{pkg} not installed (only needed for regression / imputation steps)")
 
 # ─── 0. Data Loading ───
-# All downstream analysis uses the cleaned dataset from Step 2.4.
-df = pd.read_csv('data_clean.csv')
+# All downstream analysis uses the cleaned dataset from Step 2.
+DATA_FILE = 'data_clean.csv'
+if not os.path.exists(DATA_FILE):
+    sys.exit(f"找不到 {DATA_FILE}：请先按 analysis-plan.md 第 2 节完成数据清洗"
+             f"（可用 data_cleaning.py 生成 data_clean.csv 与 data-cleaning-log.md），"
+             f"再运行本脚本。当前目录：{os.getcwd()}")
+df = pd.read_csv(DATA_FILE)
 print(f"\n[Data] N={df.shape[0]}, Variables={df.shape[1]}")
-print(f"[Data] Missing values:\n{df.isnull().sum()[df.isnull().sum()>0]}")
+missing = df.isnull().sum()
+print(f"[Data] Missing values:\n{missing[missing > 0] if (missing > 0).any() else 'none'}")
 
 # ─── 1. Descriptive Statistics ───
 # (按 analysis-plan.md Section 3 执行)
 
 # ─── 2. Assumption Tests ───
-# (调用 assumption_tests.py)
+# (调用 assumption_tests.full_check；结果写入 analysis-log.md)
 
 # ─── 3. Primary Analysis ───
 # (按 analysis-plan.md Section 4 逐条执行)

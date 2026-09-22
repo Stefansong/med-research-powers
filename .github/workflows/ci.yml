@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   consistency:
@@ -13,6 +17,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --quiet --upgrade pip
+          python -m pip install --quiet -r requirements.txt pytest
 
       - name: Repository consistency guard
         run: python tools/check_consistency.py
@@ -24,7 +33,6 @@ jobs:
 
       - name: Validate YAML references
         run: |
-          python -m pip install --quiet pyyaml
           python - <<'PY'
           import glob, sys, yaml
           bad = []
@@ -41,3 +49,71 @@ jobs:
 
       - name: Syntax-check Python scripts
         run: python -m compileall -q skills tools
+
+      - name: Unit tests for bundled scripts
+        run: |
+          if [ -d tests ]; then
+            pytest tests/ -q
+          else
+            echo "::warning::tests/ directory not found — skipping pytest"
+          fi
+
+      - name: Shell syntax (sh -n)
+        run: sh -n hooks/session-start.sh install.sh
+
+      - name: shellcheck
+        # Non-blocking: shellcheck's apt package occasionally lags or fails to install;
+        # findings are printed so they are visible in the log.
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck || echo "::warning::shellcheck install failed"
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck hooks/session-start.sh install.sh || echo "::warning::shellcheck reported findings (see above)"
+          fi
+
+      - name: Hook smoke test (empty project directory)
+        # The SessionStart hook must print plain-text context (not a JSON object) even
+        # when there is no .mrp-state.json, and it must not crash.
+        run: |
+          set -eu
+          tmp="$(mktemp -d)"
+          chmod +x hooks/session-start.sh
+          out="$(cd "$tmp" && CLAUDE_PLUGIN_ROOT="$GITHUB_WORKSPACE" CLAUDE_PROJECT_DIR="$tmp" sh "$GITHUB_WORKSPACE/hooks/session-start.sh")"
+          printf '%s\n' "$out" | head -40
+          [ -n "$out" ] || { echo "::error::hook printed nothing"; exit 1; }
+          case "$out" in
+            "{"*) echo "::error::hook output starts with '{' — SessionStart hooks must print plain text"; exit 1 ;;
+          esac
+          echo "✅ hook smoke test passed"
+
+      - name: Hook smoke test (crafted .mrp-state.json)
+        # Non-blocking guard for SECURITY.md's contract: only whitelisted fields of
+        # .mrp-state.json may reach the context, values are never executed.
+        continue-on-error: true
+        run: |
+          tmp="$(mktemp -d)"
+          cat > "$tmp/.mrp-state.json" <<'JSON'
+          {"project": "CI_PROJECT_MARKER", "current_stage": "study-design", "next_step": "research-ethics",
+           "not_a_field": "CI_SECRET_MARKER", "artifacts": {"x.md": {"note": "CI_SECRET_MARKER"}}}
+          JSON
+          out="$(cd "$tmp" && CLAUDE_PLUGIN_ROOT="$GITHUB_WORKSPACE" CLAUDE_PROJECT_DIR="$tmp" sh "$GITHUB_WORKSPACE/hooks/session-start.sh")"
+          printf '%s\n' "$out" | grep -q "CI_PROJECT_MARKER" || { echo "::warning::hook did not report the project name from .mrp-state.json"; exit 1; }
+          if printf '%s\n' "$out" | grep -q "CI_SECRET_MARKER"; then
+            echo "::warning::hook leaked a non-whitelisted field of .mrp-state.json into the context"; exit 1
+          fi
+          echo "✅ hook only exposes whitelisted state fields"
+
+  plugin-validate:
+    runs-on: ubuntu-latest
+    # continue-on-error: the validator ships inside the Claude Code npm package, whose
+    # download can fail or whose --strict rules can change between releases; a red result
+    # here should be looked at but must not block a docs-only PR.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: claude plugin validate --strict (plugin.json)
+        run: npx -y @anthropic-ai/claude-code plugin validate .claude-plugin/plugin.json --strict
+      - name: claude plugin validate --strict (marketplace.json)
+        run: npx -y @anthropic-ai/claude-code plugin validate .claude-plugin/marketplace.json --strict

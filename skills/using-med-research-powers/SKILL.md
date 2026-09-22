@@ -1,321 +1,236 @@
 ---
 name: using-med-research-powers
-description: Use when any research-related task is detected. This is the orchestrator — check it before any scientific response. Triggers on any mention of 论文、数据分析、统计、图表、文献、研究设计、伦理、投稿.
+description: Use when a research-process task is detected (选题、研究设计、数据分析、画图、写论文、投稿、修稿) or the user asks where their project stands. This is the MRP orchestrator — routes to the right skill and keeps project state.
 ---
 
-# Using Med-Research-Powers
+# Using Med-Research-Powers (MRP)
 
-## Priority
+## Overview
 
-User instructions (CLAUDE.md) > MRP skills > Default behavior.
+MRP 是一套覆盖"选题 → 设计 → 分析 → 写作 → 投稿 → 修稿"的医学科研方法论 skill。
+本 skill 是总调度：判断用户要做的是不是研究流程级任务，路由到正确的 skill，记录项目进度，
+并在三个不可逆的节点上要求用户明确确认。
+
+优先级：用户自己的 CLAUDE.md > MRP skill > 默认行为。
 
 ## When to Use
 
-Any research-related task. If there is even 1% chance a skill applies, invoke it.
+- 用户提出研究流程级任务：想研究某个问题、设计研究、算样本量、制定分析计划、跑统计、出图、写论文、选期刊、投稿、回复审稿意见。
+- 用户问"我的项目做到哪了 / 下一步做什么"。
+- 会话开始时项目目录里有 `.mrp-state.json`（hook 会提示）。
 
-## Core Rule
+## When NOT to Use
 
-**Before ANY research-related response, check if a skill applies. 1% Rule: even 1% chance → invoke it.**
+- 单点小问题：改一句话、解释一个统计概念、算一个数、改一处格式。直接回答，不进流程。
+- 与科研无关的任务（写代码、处理文件等）。
+- 用户明确说"不用走 MRP 流程"。
 
 ## Workflow
 
 ```
-对话开始时:
-  → 检查 .mrp-state.json 是否存在
-  → 如存在 → 显示: "上次完成到 [current_stage]，下一步是 [next_steps[0]]。继续？"
-  → 如不存在 → 正常路由
+1. 会话开始
+   - 项目目录有 .mrp-state.json → 一句话告知："上次完成到 [current_stage]，下一步是 [next_step]。继续？"
+   - 没有 → 正常路由；第一个主线 skill 完成时创建状态文件（mrp_state.py init）
 
-User message → Research-related? 
-  → YES → Check skill table → Invoke skill → Announce "Using [skill] to [purpose]"
-  → NO → Respond directly
+2. 收到用户消息
+   - 研究流程级任务 → 查 Skill Routing 表 → 宣布 "Using [skill] to [目的]" → 完整读该 skill 的 SKILL.md 再执行
+   - 单点小问题 → 直接回答
+
+3. 每个主线 skill 完成后（由该 skill 自己执行，本表是统一约定）
+   a. 输出 3–5 行摘要（格式见下）
+   b. 更新 .mrp-state.json（mrp_state.py done <skill> --output <产物> --next <下一个 skill>）
+   c. 按 checkpoint_mode 决定：直接进入下一步 / 等用户确认；硬确认节点一律等待
+
+4. 硬确认节点（3 个）→ 展示锁定内容 → 用户明确同意后 mrp_state.py checkpoint <name> confirmed
 ```
 
-## Fast-Track Mode（快速模式）
-
-当用户明确表示不需要逐步确认时（如"一直做到最后"、"按你的想法来"、"不用问我"），进入 fast-track 模式：
-- **仅在 Hard Checkpoint 暂停**（protocol / SAP / journal / pre-submission）
-- **Soft Checkpoint 自动跳过**（文献综述、图表、各章节等）
-- 在 `.mrp-user-profile.json` 记录用户偏好
-
-## Checkpoint Protocol（每步完成后的报告与确认）
-
-**每个 skill 执行完成后，必须向用户报告并征求确认，然后再进入下一步。禁止静默跳转。**
-
-### 报告格式
-
-每个 skill 完成时，向用户输出以下结构化报告：
+### 摘要格式（每个 skill 完成时）
 
 ```
-────────────────────────────────────────
-✅ [Skill 名称] 已完成
-
-📄 生成的文件：
-  • [file1.md] — [一句话描述]
-  • [file2.py] — [一句话描述]
-
-📊 关键发现/决策：
-  • [1-3 条最重要的发现或决策]
-
-⚠️ 需要注意：
-  • [如有问题或需要用户判断的事项]
-
-➡️ 建议下一步：[下一个 skill 名称] — [做什么]
-────────────────────────────────────────
-是否继续？还是需要修改当前步骤的内容？
+✅ [skill 名] 已完成
+📄 生成的文件：file1.md — 一句话说明
+📊 关键决策：1–3 条
+⚠️ 需要注意：如有
+➡️ 建议下一步：[下一个 skill] — 做什么
 ```
 
-### 确认规则
+轻量模式下紧接着直接进入下一步，不额外提问；逐步模式下末尾加一句"继续，还是先修改？"。
 
-**用户响应示例：**
-- "继续" / "好的" / "下一步" / "OK" → 进入下一个 skill
-- "等一下，[变量名]改成[新名]" → 修改后重新报告
-- "跳过文献检索" → 记录跳过原因，进入下一步
-- "回到研究设计" → 回溯到 study-design
-- 不回应但直接说"帮我分析数据" → 按新指令路由，当前步骤视为已确认
+## 确认方式（checkpoint_mode）
 
-| 情况 | 行为 |
-|------|------|
-| 用户说"继续" / "好" / "下一步" | → 进入建议的下一个 skill |
-| 用户说"等一下" / 提出修改 | → 修改当前 skill 的输出，修改后重新报告 |
-| 用户说"跳过 [skill]" | → 记录跳过原因，进入再下一个 skill（但不能跳过 pre-submission-verification） |
-| 用户说"回到 [skill]" | → 回溯到指定 skill（参考 Pipeline 回溯规则） |
-| 用户无响应但给了新指令 | → 按新指令路由，当前 skill 视为已确认 |
+| 模式 | 行为 | 何时用 |
+|------|------|--------|
+| `light`（默认） | 每步只出摘要并自动推进；只在 3 个硬确认处停下等用户 | 大多数情况 |
+| `step` | 每步出摘要后等用户说"继续" | 用户说"逐步确认 / 每步问我" |
+| `auto` | 硬确认也只提示不等待，但锁定内容照常写入产物与状态文件 | 用户说"一直做到底 / 不用问我" |
 
-### 不可跳过的确认点（Hard Checkpoint）
+用户切换模式时执行 `mrp_state.py set checkpoint_mode=<mode>`；用户同意时也可存入全局画像。
 
-以下 4 个节点**必须**获得用户明确确认才能继续，不接受"无响应默认通过"：
+### 三个硬确认（任何模式下都要展示锁定内容）
 
-1. **`study-protocol.md` 确认**（study-design 完成后）
-   - 研究类型、主要结局、样本量一旦确认即锁定
-   - 主要结局事后更改 = outcome switching = 学术不端
-   - protocol 注册后不可大幅更改
+| # | 节点 | 产物 | 锁定什么 | 为什么不可逆 |
+|---|------|------|----------|--------------|
+| 1 | study-design 完成后 | `study-protocol.md` | 研究类型、主要结局、样本量、对照 | 事后改主要结局 = outcome switching |
+| 2 | data-analysis-planning 完成后 | `analysis-plan.md` | 统计分析计划（SAP） | 防 p-hacking；之后的偏离必须记录理由 |
+| 3 | pre-submission-verification 完成后 | `submission-readiness-report.md` | 6 个 Gate 全部通过 | 任何 Gate 失败不能投稿，必须回去修 |
 
-2. **`analysis-plan.md` 确认**（data-analysis-planning 完成后）
-   - SAP 一旦确认，后续偏差需要记录理由
-   - 这是防 p-hacking 的核心机制
+目标期刊是**软确认**：study-design 后暂定一个，manuscript-writing 前复核一次，随时可换。
 
-3. **`journal-selection-report.md` 确认**（journal-selection 完成后）
-   - 目标期刊决定了后续写作格式和投稿规格
+### 用户响应的处理
 
-4. **`submission-readiness-report.md` 确认**（pre-submission-verification 完成后）
-   - 6 个 Gate 全部通过才能投稿
-   - 任何 Gate 失败必须返回修复
+| 用户说 | 行为 |
+|--------|------|
+| "继续 / 好 / 下一步" | 进入建议的下一个 skill |
+| "等一下，把 X 改成 Y" | 修改当前产物后重新出摘要 |
+| "跳过 [skill]" | 记录跳过原因进入再下一步；pre-submission-verification 不能跳过 |
+| "回到 [skill]" | 按回溯表回到上游 skill，下游产物标记"需重新验证" |
+| 直接给了新指令 | 按新指令路由；当前步骤视为已确认（硬确认节点除外） |
 
-### Pipeline 完整 Checkpoint 流程
+## Pipeline（主线顺序）
 
 ```
 research-question-formulation
-  └─ 报告: PICO + 假设 → 用户确认 ✓
-      │
-literature-synthesis
-  └─ 报告: 检索结果 + Gap → 用户确认 ✓
-      │
-study-design (内置 Type A-E router)
-  └─ 报告: 研究方案摘要 → ⚠️ Hard Checkpoint: 用户必须确认研究方案（锁定研究类型+主要结局）
-      │
-journal-selection
-  └─ 报告: 3 梯队推荐 → ⚠️ Hard Checkpoint: 用户必须确认目标期刊
-      │
-data-analysis-planning
-  └─ 报告: SAP 全文 → ⚠️ Hard Checkpoint: 用户必须确认分析计划
-      │
-data-collection-tools
-  └─ 报告: 生成的工具清单 → 用户确认 ✓ → [用户执行数据收集]
-      │
-statistical-analysis
-  └─ 报告: 清洗日志 + 关键结果 + 脚本 → 用户确认 ✓
-      │
-figure-generation
-  └─ 报告: 图表列表 → 用户确认 ✓
-      │
-manuscript-writing
-  └─ 报告: 各章节完成状态 → 用户确认 ✓
-      │
-manuscript-export
-  └─ 报告: .docx 生成 + 格式检查 + 字数统计 → 用户确认 ✓
-      │
-peer-review-simulation
-  └─ 报告: 评分 + Critical 问题列表 → 用户确认 ✓
-      │
-pre-submission-verification
-  └─ 报告: 6-Gate 结果 → ⚠️ Hard Checkpoint: 用户必须确认全部通过
-      │
-submission-preparation
-  └─ 报告: Cover Letter + 投稿 Checklist → 用户确认 ✓
+→ literature-synthesis
+→ study-design                      [硬确认 1：study-protocol.md]
+→ research-ethics                   （伦理审查 / 注册，必须在收集数据前）
+→ journal-selection                 （暂定目标期刊，软确认）
+→ data-analysis-planning            [硬确认 2：analysis-plan.md]
+→ data-collection-tools
+→ [用户收集数据]
+→ statistical-analysis
+→ figure-generation
+→ manuscript-writing                （写作前复核目标期刊）
+→ peer-review-simulation
+→ pre-submission-verification       [硬确认 3：6-Gate 全过]
+→ manuscript-export
+→ submission-preparation
+→ [投稿] → revision-response → 回到 pre-submission-verification → manuscript-export → 修回
 ```
+
+辅助 skill（不在主线上，被调用或随时可用）：`pubmed-search`（被 literature-synthesis / pre-submission-verification Gate 3 / manuscript-writing 调用）、`reporting-standards`（被 Gate 1 调用）、`team-collaboration`（需要并行子代理时）、`writing-mrp-skills`（改进 MRP 自身）、本 skill。
+
+用户可以从中间任何一步进入（例如已有数据直接做分析），缺失的前置产物由该 skill 的"前置依赖"规则处理。
 
 ## Skill Routing
 
-| Skill | Trigger |
-|-------|---------|
-| research-question-formulation | 模糊研究想法、需要明确假设 |
-| literature-synthesis | 查文献、research gap、综述 |
-| study-design | 所有研究设计（临床/基础/AI/定性/调查，内置 type router） |
-| journal-selection | 选刊策略、影响因子、投哪个期刊 |
-| data-analysis-planning | 制定分析策略 |
-| data-collection-tools | 根据 protocol 生成标注表、推理脚本、CRF、数据目录 |
-| statistical-analysis | 执行统计分析 |
-| figure-generation | 出版级图表 |
-| manuscript-writing | 写论文各章节（原始研究 + 5 种综述，内置 type router） |
-| manuscript-export | Markdown → .docx 导出、期刊排版、格式检查 |
-| reporting-standards | 报告规范检查 |
-| peer-review-simulation | 模拟审稿（4 审稿人含 Devil's Advocate + 期刊校准评分） |
-| research-ethics | 伦理、隐私、知情同意 |
-| **pre-submission-verification** | **论文完成后强制检查（6 Gate 含 PubMed MCP Claim Verification），不通过不能投稿** |
-| submission-preparation | Cover Letter 写作 + 投稿系统操作指南 |
-| revision-response | 修稿策略 + 逐条回复审稿意见 |
-| pubmed-search | PubMed MCP 深度检索、引用验证、批量元数据、引用格式化 |
-| team-collaboration | 多 agent 并行协作 |
-| using-med-research-powers | Orchestrator：路由、检查点、用户记忆、pipeline 状态 |
-| writing-mrp-skills | 创建/改进 MRP skill |
+| Skill | 触发 |
+|-------|------|
+| research-question-formulation | 模糊研究想法、要明确假设、PICO |
+| literature-synthesis | 查文献做综合、research gap、综述证据表（不写作） |
+| pubmed-search | PMID / 引用验证 / 检索式 / MeSH / 单库快速检索 |
+| study-design | 研究设计、样本量、protocol（临床 / 基础 / AI / 定性 / 问卷，内置 Type A–E 路由） |
+| research-ethics | 伦理、IRB、知情同意、注册、隐私、人类遗传资源 |
+| journal-selection | 投哪个期刊、选刊、期刊要求 |
+| data-analysis-planning | 没有 analysis-plan.md 时"帮我分析数据"、制定 SAP |
+| data-collection-tools | CRF、标注表、患者级数据划分、随机分组脚本 |
+| statistical-analysis | 已有 analysis-plan.md 时执行分析、跑统计 |
+| figure-generation | 画图 / 作图 / 出图、期刊图规范 |
+| manuscript-writing | 写论文各章节（原始研究 + 5 种综述） |
+| manuscript-export | Markdown → .docx、期刊排版、字数/图表数检查 |
+| reporting-standards | CONSORT / STROBE / PRISMA 等报告规范逐条检查 |
+| peer-review-simulation | 模拟审稿、审稿人会挑什么毛病 |
+| pre-submission-verification | 写完了 / 可以投了 / 定稿（6-Gate，强制） |
+| submission-preparation | Cover letter、投稿系统操作 |
+| revision-response | 审稿意见怎么改、逐条回复 |
+| team-collaboration | 多子代理并行（多库检索、4 审稿人、并行修稿） |
+| writing-mrp-skills | 写新 skill / 改进 skill |
+| using-med-research-powers | 路由、状态、确认节点（本 skill） |
 
-**研究类型路由（全部在 `study-design` 内部）：**
-- 临床（RCT/队列/横断面/交叉/非劣效/适应性/真实世界/注册研究）→ Type A
-- 基础（细胞/动物/分子）→ Type B
-- AI/ML（影像/视频/LLM/器械）→ Type C
-- 定性（访谈/焦点小组/扎根理论/混合方法）→ Type D
-- 问卷/调查/Delphi → Type E
-- 多类型 → 叠加使用
-
-## Mandatory Pipeline
-
-```
-research-question → literature-synthesis → study-design → journal-selection →
-data-analysis-planning → data-collection-tools → [用户执行数据收集] →
-statistical-analysis → figure-generation →
-manuscript-writing → manuscript-export → pre-submission-verification →
-submission-preparation → [投稿] → revision-response
-```
-
-**辅助 skill（随时可调用，不在主线上）：**
-- `pubmed-search` — 被 literature-synthesis / pre-submission-verification / manuscript-writing 调用
-- `manuscript-export` — 被 manuscript-writing 完成后自动建议
-- `data-collection-tools` — study-design 完成后自动建议，生成数据收集工具
-
-4 个 Hard Checkpoint（Protocol / SAP / Journal / Pre-submission）锁定不可逆决策。其余步骤遵循推荐顺序，支持灵活推进和 Fast-Track Mode。
+研究类型路由全部在 `study-design` 内部：临床 → A；基础（细胞/动物/分子）→ B；AI/ML → C；定性 → D；问卷/调查/Delphi → E。
 
 ## Pipeline 回溯（Backward Links）
 
-在后续阶段发现问题时，允许回溯到上游 skill：
+| 当前阶段 | 发现的问题 | 回到 |
+|----------|------------|------|
+| 任何阶段 | 研究问题定义不准确 | research-question-formulation |
+| statistical-analysis | 前提假设不满足 / 需改方法 | data-analysis-planning（修改 SAP，记录偏离理由） |
+| manuscript-writing | 分析方法需调整 | data-analysis-planning → statistical-analysis |
+| peer-review-simulation | 方法学 Critical 问题 | study-design（只能改写法与局限，不能改已锁定的主要结局） |
+| pre-submission Gate 1（报告规范） | 条目缺失 | manuscript-writing，再跑 reporting-standards |
+| pre-submission Gate 2（统计） | 统计不完整 / 与 SAP 不符 | statistical-analysis |
+| pre-submission Gate 3（引用与数据） | 引用不存在 / 数字不一致 | pubmed-search Mode 3 → manuscript-writing |
+| pre-submission Gate 4（图表） | 图表不合规 | figure-generation |
+| pre-submission Gate 5（伦理） | 伦理声明缺失 | research-ethics |
+| pre-submission Gate 6（形式） | 字数 / 引用数 / 图表数超限 | manuscript-writing（或换期刊 → journal-selection） |
+| revision-response | 审稿人要求补充分析 | statistical-analysis（标注 post hoc，写入 SAP 偏离记录） |
+| revision-response | 被拒需改投 | journal-selection → manuscript-export |
+| data-collection-tools | protocol 缺变量定义 | study-design |
 
-| 当前阶段 | 发现的问题 | 回溯到 |
-|---------|-----------|--------|
-| manuscript-writing | 研究问题定义不准确 | → research-question-formulation |
-| manuscript-writing | 分析方法需要调整 | → data-analysis-planning |
-| statistical-analysis | 假设检验不通过 | → data-analysis-planning（修改 SAP） |
-| pre-submission-verification | 报告规范不合规 | → manuscript-writing |
-| pre-submission-verification | 统计不完整 | → statistical-analysis |
-| peer-review-simulation | 方法学有 Critical 问题 | → study-design |
-| revision-response | 审稿人要求补充分析 | → statistical-analysis |
+回溯规则：修改后的产物标注修改原因和日期；下游依赖它的产物标记"需重新验证"。
 
-**回溯规则：** 回溯后修改的 artifact 必须标注修改原因和日期，下游依赖 skill 需要重新验证。
+## Session State（项目状态）
 
-## Session State Tracking
+文件：项目目录下的 `.mrp-state.json`，**只通过脚本写**：
+`python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`
 
-推荐在项目目录维护 `.mrp-state.json`，追踪研究进度。关键字段：`project`、`current_stage`、`completed_skills[]`、`artifacts{}`。
+| 命令 | 何时用 |
+|------|--------|
+| `init --project "<名称>"` | 第一个主线 skill 开始前（文件不存在时） |
+| `done <skill> --output <文件> [--output ...] --next <下一个 skill>` | 每个主线 skill 完成时 |
+| `set target_journal="..." / checkpoint_mode=light` | 暂定期刊、切换确认方式 |
+| `checkpoint protocol|sap|pre_submission confirmed` | 用户通过硬确认时 |
+| `show [--json]` | 会话开始 / 用户问进度 |
 
-**用法：** 新会话开始时，检查 `.mrp-state.json` → 显示："上次完成到 [current_stage]，下一步是 [next_skill]？"
+字段：`project`、`current_stage`、`next_step`、`checkpoint_mode`、`target_journal`、`hard_checkpoints{}`、`completed_skills[]`、`artifacts{}`、`notes[]`。完整 schema 见 [`references/state-schemas.md`](references/state-schemas.md)。
+hook 只读其中 5 个字符串字段（见仓库 SECURITY.md）。
 
-> 完整 JSON schema 见 [`references/state-schemas.md`](references/state-schemas.md)。
+## User Profile（用户画像，全局）
 
-## User Memory（用户记忆系统）
+文件：`~/.claude/mrp-user-profile.json`（按人不按项目，所有项目共用）。
+**不在会话开始时集中提问。** 只有下面三个 skill 在用到某字段时读一次；缺就只问这一个问题，并问用户要不要保存：
 
-跨会话记住用户的身份、偏好和历史，避免每次从零开始。
+| Skill | 字段 | 命令 |
+|-------|------|------|
+| journal-selection | `favorite_journals` | `mrp_state.py profile get favorite_journals`（exit 3 = 未设置） |
+| data-analysis-planning | `preferred_stats_tool` | `mrp_state.py profile get preferred_stats_tool` |
+| figure-generation | `preferred_figure_style` | `mrp_state.py profile get preferred_figure_style` |
 
-### 记忆文件：`.mrp-user-profile.json`
+写入：`mrp_state.py profile set <field> <value>` / `profile add <列表字段> <值>`。其他字段（role、research_domains、methods_familiar 等）只在用户主动提到时记录。
 
-在项目目录维护，首次使用 MRP 时通过对话收集，后续自动更新。关键字段：`profile.role`、`profile.research_domains[]`、`preferences.favorite_journals[]`、`preferences.preferred_stats_tool`、`history.skills_most_used[]`。
+隐私：文件只在本机；用户可以随时说"忘记我的 X"（对应字段清空）或删除文件；不记录密码、患者数据、伦理批件号。
 
-> 完整 JSON schema 见 [`references/state-schemas.md`](references/state-schemas.md)。
+## Output
 
-### 记忆采集规则
+本 skill 不产出研究文件；它维护 `.mrp-state.json` 与 `~/.claude/mrp-user-profile.json`，并保证每个主线 skill 完成时有统一格式的摘要。
 
-**首次使用时（.mrp-user-profile.json 不存在）：**
+## Common Mistakes
 
-在第一个 skill 触发前，自动询问：
+| 想法 | 现实 |
+|------|------|
+| "用户随口问个统计概念，也走一遍流程" | 单点问题直接回答；流程只给研究流程级任务 |
+| "每一步都停下来问一句更安全" | 只有 3 个节点不可逆；其余步骤的产物本身就是可检查的文件，摘要 + 自动推进即可 |
+| "记住用户偏好就先问 5 个问题" | 用到哪个字段再问哪个；没人用的字段不采集 |
+| "状态文件让 Claude 记在心里就行" | 状态只以 `.mrp-state.json` 为准，且只用脚本写，否则新会话无法恢复 |
+| "论文写完就可以投了" | 必须经过 pre-submission-verification 的 6 个 Gate |
 
-```
-────────────────────────────────────────
-👤 MRP 首次使用 — 建立用户画像
+## Convergence
 
-为了更好地辅助你的研究，请告诉我：
-
-1. 你的身份？（PI / 博士生 / 博士后 / 住院医 / 其他）
-2. 你的研究领域？（如：泌尿外科AI、肿瘤流行病学）
-3. 你常投的期刊？（如：European Urology、Lancet Digital Health）
-4. 你熟悉的统计方法？（如：t-test、Cox 回归、深度学习）
-5. 你偏好的分析工具？（Python / R / SPSS / Stata）
-
-可以简单回答，也可以说"跳过"以后再补充。
-────────────────────────────────────────
-```
-
-**后续自动更新（不打扰用户）：**
-
-| 触发事件 | 更新内容 |
-|---------|---------|
-| journal-selection 完成 | → 更新 `favorite_journals`（计数 +1） |
-| statistical-analysis 使用某方法 | → 更新 `methods_familiar` |
-| 用户说"我不熟悉 X" | → 添加到 `methods_unfamiliar` |
-| pre-submission-verification 通过 | → 添加到 `projects_completed` |
-| 收到审稿意见并处理 | → 更新 `common_reviewer_feedback` |
-| 任何 skill 被调用 | → 更新 `skills_most_used` 计数 |
-
-### 记忆使用规则
-
-**各 skill 如何利用用户记忆：**
-
-| Skill | 使用方式 |
-|-------|---------|
-| `research-question-formulation` | 根据 `research_domains` 引导方向，根据 `expertise_level` 调整提问深度 |
-| `literature-synthesis` | 根据 `research_domains` 预设数据库组合和 MeSH 关键词 |
-| `study-design` | 根据 `methods_familiar` 推荐熟悉的设计，对 `methods_unfamiliar` 提供更多解释 |
-| `journal-selection` | 根据 `favorite_journals` 优先推荐，根据历史投稿结果调整梯队 |
-| `data-analysis-planning` | 根据 `preferred_stats_tool` 生成对应语言的脚本模板 |
-| `statistical-analysis` | 对 `methods_unfamiliar` 的方法提供详细注释和解释 |
-| `figure-generation` | 根据 `preferred_figure_style` 预设配色和样式 |
-| `manuscript-writing` | 根据 `favorite_journals` 自动加载期刊模板 |
-| `peer-review-simulation` | 根据 `common_reviewer_feedback` 重点检查历史弱项 |
-| `revision-response` | 根据历史审稿反馈模式提供针对性建议 |
-
-### 隐私规则
-
-- 记忆文件仅存储在本地项目目录，不上传到任何服务
-- 用户随时可以删除 `.mrp-user-profile.json` 清除所有记忆
-- 用户可以说"忘记我的 [某项信息]"来删除特定字段
-- 不记录敏感信息（密码、患者数据、伦理批准号等）
+一个项目在本 skill 视角下"走完"的条件：`hard_checkpoints` 三项均 confirmed，`completed_skills` 含 submission-preparation，`next_step` 为等待审稿意见。修稿阶段视为新一轮：revision-response → pre-submission-verification → manuscript-export。
 
 ## Red Flags — STOP
 
 | 想法 | 现实 |
 |------|------|
 | "直接跑个 t 检验就行" | 先确认分布、样本量、前提假设 |
-| "这个分析很简单不需要计划" | 无计划 = p-hacking 温床 |
-| "先出图再说" | 先完成统计分析再可视化 |
-| "不需要查文献" | 最新方法学进展可能改变最佳实践 |
-| "伦理审查不是 AI 的事" | 必须提醒确认伦理状态 |
-| "样本量够大没问题" | 必须正式 power analysis |
+| "这个分析很简单不需要计划" | 无 SAP = p-hacking 温床 |
+| "样本量够大没问题" | 必须有正式的先验样本量计算 |
 | "p < 0.05 就是显著" | 效应量 + CI + 临床意义综合判断 |
-| "Accuracy 95% 模型很好" | 类别不平衡时看 AUROC/AUPRC |
-| "训练集效果好就行" | 没有独立测试集/外部验证不可信 |
-| "AI 研究不需要临床规范" | 需要同时满足技术和临床两套 |
-| "数据随机划分就行" | 同一患者不能同时在训练和测试集 |
-| "AUROC 高就有临床价值" | 必须 DCA 评估净获益 |
-| "回顾性不需要伦理" | 需要伦理审查或豁免 |
-| "做了 3 个复孔就是 n=3" | 技术重复 n=1 |
-| "不需要阴性对照" | 无对照结果不可解读 |
-| "WB 肉眼可见不用定量" | 必须灰度值定量 |
-| "SD 太大换 SEM" | 数据美化，如实用 SD |
-| "动物实验不用随机" | 必须随机，否则分配偏倚 |
-| "用 CONSORT 2010 就行" | 2025 已取代 2010（31 项编号/含子项共 34 行） |
-| "器械/AI 直接做 RCT" | 先 IDEAL 定位阶段 |
-| "AI 评估不报告可用性" | DECIDE-AI 要求报告 |
-| "论文写完就可以投了" | **必须过 pre-submission-verification** |
+| "Accuracy 95% 模型很好" | 类别不平衡时看 AUROC / AUPRC，并做校准与 DCA |
+| "数据随机划分就行" | 同一患者不能同时在训练集和测试集 |
+| "回顾性不需要伦理" | 需要伦理审查或书面豁免，且在收集数据前 |
+| "用 CONSORT 2010 就行" | CONSORT 2025 已取代 2010（30 项，含子项共 42 行） |
+| "主要结局改一下没关系" | protocol 确认后主要结局锁定；改动 = 需公开说明的 protocol 修改 |
+| "论文写完就可以投了" | 必须过 pre-submission-verification |
 
-## Quality Gates (cannot skip)
+## 衔接规则
 
-1. **分析前** — 必须有明确的科学问题和假设
-2. **方法选择后** — 必须验证前提假设
-3. **结果出来后** — 必须做敏感性分析
-4. **写结论前** — 必须区分统计显著性和临床意义
-5. **投稿前** — **必须通过 pre-submission-verification（CONSORT 2025 / SPIRIT 2025）**
+### 强制衔接（不可跳过）
+- 每个主线 skill 完成 → 更新 `.mrp-state.json` → 按 checkpoint_mode 进入下一步。
+- 3 个硬确认节点必须得到用户明确同意（auto 模式除外，但锁定内容照常写入）。
+
+### 前置依赖
+- 本 skill 本身无前置；各 skill 的前置产物缺失时，由该 skill 的"前置依赖"规则决定是补做还是询问。
+
+### 可选衔接
+- 需要并行（多库检索、4 审稿人、并行修稿）→ `team-collaboration`。
+- 用户想改进 MRP 自身 → `writing-mrp-skills`。
