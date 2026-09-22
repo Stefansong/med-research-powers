@@ -1,7 +1,7 @@
 # Survey / Questionnaire / Delphi — Static Reference Tables
 # Lookup tables for Module E (references/modules/survey-delphi.md). Router logic and step
 # sequencing stay in that module; SKILL.md only routes here.
-# (Renamed from survey-qualitative.yaml in v6.3.0 — the file holds survey tables only.)
+# (Renamed from survey-qualitative.yaml in v6.3 — the file holds survey tables only.)
 
 # Psychometric Properties (量表验证) — Step 2
 psychometric_properties:

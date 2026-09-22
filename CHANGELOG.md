@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## v6.3.1 (2026-09-22)
+
+Patch release: the SessionStart hook could not read a state file that was not indented, and CI was carrying a guard that failed silently. No skill content changed.
 
 ### Fixed
 - `hooks/session-start.sh` read the whitelisted fields of `.mrp-state.json` with a line-anchored `sed`, so it silently reported nothing when the state file was not indented one field per line (a single-line or hand-edited file). The key is now matched anywhere on a line; the indented files `mrp_state.py` writes behave exactly as before. New `tests/test_session_start_hook.py` pins the contract across indented, single-line and CRLF state files, including the rule that non-whitelisted fields never reach the context.

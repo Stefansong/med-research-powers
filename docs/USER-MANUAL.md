@@ -1,6 +1,6 @@
 # Med-Research-Powers 用户手册
 
-> **版本**: v6.3.0 | **仓库**: https://github.com/Stefansong/med-research-powers
+> **版本**: v6.3.1 | **仓库**: https://github.com/Stefansong/med-research-powers
 
 本手册只讲"怎么装、怎么用、出了问题怎么办"。skill 清单、命令表、报告规范表、期刊库这些参考内容都在 [README_CN.md](../README_CN.md)（英文版 [README.md](../README.md)），这里只给链接，不再复制一遍。
 
@@ -91,13 +91,13 @@ cd med-research-powers
 
 ### 从 6.2.x 升级
 
-6.3.0 把插件名从 `med-research-powers` 改成了 `mrp`。旧版本要先卸载，再按上面任一方式安装：
+6.3 起插件名从 `med-research-powers` 改成了 `mrp`。旧版本要先卸载，再按上面任一方式安装：
 
 ```
 /plugin uninstall med-research-powers@med-research-powers
 ```
 
-旧版本放在项目目录里的 `.mrp-user-profile.json` 不再读取；6.3.0 的用户画像是全局文件 `~/.claude/mrp-user-profile.json`，各 skill 用到某个字段时才会问你一次（见 README 的 "User Memory"）。
+旧版本放在项目目录里的 `.mrp-user-profile.json` 不再读取；6.3 起的用户画像是全局文件 `~/.claude/mrp-user-profile.json`，各 skill 用到某个字段时才会问你一次（见 README 的 "User Memory"）。
 
 ### 验证安装
 
@@ -370,7 +370,7 @@ CONSORT 2025 从 2010 版的 25 项变为 30 项（含子项共 42 行），新�
 | 装完看不到"引导信息" | hook 的输出进的是 Claude 的上下文，本来就不显示给用户 | 用 `claude plugin list` 验证；新会话直接说一句研究相关的话看是否路由 |
 | 脚本 `ModuleNotFoundError` | `sys.path` 里加的是相对路径（如只写 `'scripts'`），而运行目录是你的项目 | 按第 6 节用 `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/scripts` |
 | `.docx` 导出报 `No module named docx` | 没装 python-docx | `pip install -r requirements.txt`（包名是 `python-docx`，不是 `docx`） |
-| 中文 Windows 下脚本读 YAML 报 `UnicodeDecodeError` | 系统默认编码是 GBK | 升级到 6.3.0（脚本已统一 `encoding="utf-8"`）；仍有问题请提 issue |
+| 中文 Windows 下脚本读 YAML 报 `UnicodeDecodeError` | 系统默认编码是 GBK | 升级到 6.3 或更新版本（脚本已统一 `encoding="utf-8"`）；仍有问题请提 issue |
 | 提示找不到 `mcp__…__search_articles` | 没有配置 PubMed MCP，或 server 名和文档示例不同 | 在 Claude Code 里配置一个 PubMed MCP server；工具前缀以你会话里的工具列表为准（如 `mcp__PubMed__search_articles`） |
 | 新会话没有"从上次继续" | `.mrp-state.json` 不在项目根目录，或从子目录启动 | 在项目根目录启动 Claude Code；确认文件在 `$CLAUDE_PROJECT_DIR` 下 |
 | Windows 上 `./install.sh --method 2` 没有软链接 | Git Bash 的 `ln -s` 是复制 | 用方式 1（插件安装） |
@@ -382,7 +382,7 @@ CONSORT 2025 从 2010 版的 25 项变为 30 项（含子项共 42 行），新�
 
 ```
 med-research-powers/
-├── .claude-plugin/                   # plugin.json（name: mrp, v6.3.0）、marketplace.json
+├── .claude-plugin/                   # plugin.json（name: mrp, v6.3.1）、marketplace.json
 ├── .github/workflows/ci.yml          # 一致性守卫、pytest、shellcheck、plugin validate、hook 冒烟
 ├── hooks/session-start.sh            # 启动时读取 .mrp-state.json，报告恢复点
 ├── commands/ (7)                     # 斜杠命令（薄路由 → skill）

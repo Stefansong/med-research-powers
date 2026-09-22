@@ -1,4 +1,4 @@
-# Med-Research-Powers v6.3.0 Architecture
+# Med-Research-Powers v6.3.1 Architecture
 
 ## 1. Full Pipeline Flow
 
@@ -274,7 +274,7 @@ Modes (`checkpoint_mode` in `.mrp-state.json`): **light** (default, above) · **
 ```mermaid
 flowchart TD
     subgraph PLUGIN["mrp (plugin) — marketplace med-research-powers"]
-        PJ[".claude-plugin/plugin.json<br/>name: mrp · v6.3.0 · SessionStart hook<br/>commands/ and skills/ are auto-discovered"]
+        PJ[".claude-plugin/plugin.json<br/>name: mrp · v6.3.1 · SessionStart hook<br/>commands/ and skills/ are auto-discovered"]
         HOOK["hooks/session-start.sh<br/>Reads whitelisted fields of .mrp-state.json,<br/>reports the resume point"]
         META["skills/using-med-research-powers<br/>Orchestrator: routing + checkpoints + mrp_state.py"]
     end
