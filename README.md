@@ -8,7 +8,7 @@ Med-Research-Powers (MRP) is a [Claude Code](https://claude.ai/code) plugin that
 
 Inspired by [Superpowers](https://github.com/obra/superpowers) (software-engineering methodology), adapted for clinical and biomedical research.
 
-> **Version 6.3.0** · 20 skills · 7 slash commands · MIT License · by BTCH Uro AI Lab
+> **Version 6.3.1** · 20 skills · 7 slash commands · MIT License · by BTCH Uro AI Lab
 
 ---
 

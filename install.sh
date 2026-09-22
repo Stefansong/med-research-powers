@@ -1,5 +1,5 @@
 #!/bin/bash
-# Med-Research-Powers (MRP) installer — v6.3.0
+# Med-Research-Powers (MRP) installer — v6.3.1
 #
 # Two install methods:
 #   1) Claude Code plugin  (recommended; auto-updates via the marketplace)
@@ -17,7 +17,7 @@
 
 set -eu
 
-MRP_VERSION="6.3.0"
+MRP_VERSION="6.3.1"
 PLUGIN_ID="mrp@med-research-powers"
 GITHUB_REPO="Stefansong/med-research-powers"
 

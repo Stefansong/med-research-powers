@@ -8,7 +8,7 @@ Med-Research-Powers（MRP）是一个 [Claude Code](https://claude.ai/code) 插�
 
 灵感来自 [Superpowers](https://github.com/obra/superpowers)（软件工程方法论），针对临床与生物医学研究做了改造。
 
-> **版本 6.3.0** · 20 个 skill · 7 个斜杠命令 · MIT 许可 · 作者 BTCH Uro AI Lab
+> **版本 6.3.1** · 20 个 skill · 7 个斜杠命令 · MIT 许可 · 作者 BTCH Uro AI Lab
 
 ---
 
