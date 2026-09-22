@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- `hooks/session-start.sh` read the whitelisted fields of `.mrp-state.json` with a line-anchored `sed`, so it silently reported nothing when the state file was not indented one field per line (a single-line or hand-edited file). The key is now matched anywhere on a line; the indented files `mrp_state.py` writes behave exactly as before. New `tests/test_session_start_hook.py` pins the contract across indented, single-line and CRLF state files, including the rule that non-whitelisted fields never reach the context.
+
+### Changed
+- CI: the `Hook smoke test (crafted .mrp-state.json)` step is no longer `continue-on-error`. It was passing silently with `exit 1` and a warning because of the parsing bug above; now that the hook is format-agnostic the guard actually enforces SECURITY.md's contract, and its annotations are errors rather than warnings.
+- CI: bumped `actions/checkout` v4 → v7, `actions/setup-python` v5 → v7, `actions/setup-node` v4 → v7 and `actions/upload-artifact` v4 → v7, off the deprecated Node 20 runtime. None of the breaking changes in those majors apply here (no `pull_request_target`/`workflow_run` triggers, no `pip-install` input, no implicit non-npm caching, unchanged `upload-artifact` inputs).
+
 ## v6.3.0 (2026-09-21)
 
 Full review-and-upgrade release. A repository-wide audit (6 parallel reviews, every high-severity finding re-verified against source, scripts executed, CONSORT 2025 checked against the BMJ paper, plugin install/namespace verified on Claude Code 2.1.278) found four classes of problems — the plugin could not be installed as documented, several facts written into protocols/manuscripts were wrong, bundled scripts failed when called as documented, and three core mechanisms existed only as prose. This release fixes all of them.

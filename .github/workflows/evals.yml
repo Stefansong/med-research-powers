@@ -21,8 +21,8 @@ jobs:
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
       - name: Install Claude Code
@@ -34,7 +34,7 @@ jobs:
           if [ -n "${{ inputs.tag }}" ]; then TAG_ARG="--tag ${{ inputs.tag }}"; fi
           claude plugin eval . --trust-plugin --json results.json --threshold 0.8 \
             --runs "${{ inputs.runs }}" --ablation none --no-publish --max-cost-usd 10 $TAG_ARG
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: eval-results

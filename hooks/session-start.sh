@@ -14,9 +14,12 @@ set -u
 dir="${CLAUDE_PROJECT_DIR:-$PWD}"
 state="$dir/.mrp-state.json"
 
-# field NAME → first `"NAME": "value"` string in the state file, max 80 chars
+# field NAME → first `"NAME": "value"` string in the state file, max 80 chars.
+# The key is matched anywhere on a line, not only at the start of one, so that a
+# state file written on a single line (or hand-edited without indentation) is read
+# the same way as the indented file mrp_state.py writes.
 field() {
-    sed -n "s/^[[:space:]]*\"$1\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" "$state" 2>/dev/null \
+    sed -n "s/.*\"$1\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" "$state" 2>/dev/null \
         | head -n 1 | cut -c1-80
 }
 
