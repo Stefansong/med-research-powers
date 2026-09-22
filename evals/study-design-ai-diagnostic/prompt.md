@@ -2,7 +2,7 @@
 name: study-design-ai-diagnostic
 tags: [smoke, routing]
 runs: 3
-max_turns: 8
+max_turns: 14
 allowed_tools: [Read, Glob, Grep, Skill]
 ---
 

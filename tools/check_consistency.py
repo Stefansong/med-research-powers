@@ -53,7 +53,7 @@ EXPECTED = {
     "consort_items": 30,       # CONSORT 2025 — 30 items (42 rows incl. sub-items)
 }
 PLUGIN_NAME = "mrp"
-SKIP_DIRS = {".git", "__pycache__", "node_modules", ".pytest_cache"}
+SKIP_DIRS = {".git", "__pycache__", "node_modules", ".pytest_cache", "results"}  # evals/results is git-ignored run output
 # CHANGELOG is history; this guard and the tests quote the very strings they hunt for.
 EXEMPT_FILES = {"CHANGELOG.md", "check_consistency.py"}
 LITERAL_SCAN_SKIP_DIRS = {"tests"}

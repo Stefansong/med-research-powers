@@ -351,7 +351,9 @@ templates:
   - id: jama-surgery
     journal: JAMA Surgery
     publisher: AMA
-    IF_approx: 17
+    IF_approx: 14.9
+    IF_year: 2024
+    IF_source: "https://jamanetwork.com/journals/jamasurgery/fullarticle/2846802"  # JAMA Surgery—The Year in Review, 2025 (published 2026-03): 'Journal Impact Factor of 14.9'
     word_limit: 3000
     abstract: structured (same as JAMA), ≤350 words
     references: ≤40, AMA style
