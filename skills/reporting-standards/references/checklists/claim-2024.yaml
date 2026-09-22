@@ -1,0 +1,121 @@
+# CLAIM 2024 checklist — 44 items, transcribed from the checklist table of the CLAIM 2024 Update
+# Source: Tejani AS, Klontzas ME, Gatti AA, Mongan JT, Moy L, Park SH, Kahn CE Jr; CLAIM 2024 Update Panel.
+#         Checklist for Artificial Intelligence in Medical Imaging (CLAIM): 2024 Update.
+#         Radiol Artif Intell 2024;6(4):e240300. doi:10.1148/ryai.240300 (PMID 38809149, PMC11304031)
+#         Table title: "Checklist for Artificial Intelligence in Medical Imaging (CLAIM): 2024 Update"
+#         (columns Section/Topic | No. | Item; instruction line "Indicate page and/or line number for each
+#         checklist item that is present"). Each item has three response options: Yes / No / Not Applicable (NA).
+# Retrieval: the PMC record (PMC11304031) has no machine-readable full text, so the table was read from the
+#         publisher's article PDF (pubs.rsna.org/doi/pdf/10.1148/ryai.240300) via WebFetch on 2026-09-21 and
+#         cross-checked in three independent extractions (HTML full text, PDF by item range, PDF raw table
+#         text) that agreed on every item. The official fillable checklist (Word) is linked from
+#         pubs.rsna.org/page/ai/claim. Transcribed 2026-09-21.
+# Item wording in the CLAIM 2024 table is deliberately short (eg "Study goal"); the article body explains each
+# item. The `guidance` field quotes the body-text sentence for the item (as extracted, lightly trimmed) and is
+# an aid to interpretation — the compliance check is against `text`.
+# Key changes from CLAIM 2020 (42 items) stated in the article: "The term 'reference standard' has been adopted
+# in lieu of 'ground truth'"; "Because the term 'validation' is ambiguous, the CLAIM team discourages its use"
+# (internal testing / external testing instead); "The NA option was added"; the 2020 item on Common Data
+# Elements was deleted and a new item on image acquisition protocol (13) added; "The authors renewed CLAIM's
+# registration with the ... EQUATOR Network".
+#
+# Field meanings:
+#   id        — item number exactly as in the table (1-44, no sub-items)
+#   topic     — Section/Topic column (Methods and Results sub-headings)
+#   text      — Item column (verbatim)
+#   guidance  — sentence from the article body describing the item (quoted, for interpretation only)
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#               reported but do not block on their own
+
+name: CLAIM 2024
+version: "2024"
+total_items: 44          # numbered items 1-44
+total_rows: 44           # no sub-items
+supersedes: "CLAIM 2020 (Mongan J, Moy L, Kahn CE Jr. Radiol Artif Intell 2020;2(2):e200029; 42 items) — use the 2024 update"
+reference: "Tejani et al. Radiol Artif Intell 2024;6(4):e240300 (doi:10.1148/ryai.240300)"
+website: "https://pubs.rsna.org/page/ai/claim"
+applies_to: "AI in medical imaging — classification, detection, segmentation, image reconstruction, and related applications; both diagnostic and non-diagnostic tasks"
+response_options: ["Yes", "No", "Not Applicable (NA)"]
+terminology: "Use 'reference standard' (not 'ground truth'); describe data partitions as training / tuning / (internal or external) testing and avoid the ambiguous term 'validation'"
+use_with: ["TRIPOD+AI 2024 when the imaging model is a clinical prediction model (tripod-ai.yaml)", "STARD 2015 for diagnostic accuracy study design (stard-2015.yaml)", "DECIDE-AI for early live clinical evaluation (decide-ai.yaml)"]
+
+sections:
+  - name: Title/abstract
+    items:
+      - {id: "1", topic: "Title/abstract", text: "Identification as a study of AI methodology, specifying the category of technology used (eg, deep learning)", guidance: "Specify the AI techniques used in the study—such as 'vision transformers' or 'deep learning'—in the article's title and/or abstract; use judgment regarding the level of specificity", critical: true}
+
+  - name: Abstract
+    items:
+      - {id: "2", topic: "Abstract", text: "Summary of study design, methods, results, and conclusions", guidance: "The abstract should present a succinct structured summary of the study's design, methods, results, and conclusions"}
+
+  - name: Introduction
+    items:
+      - {id: "3", topic: "Introduction", text: "Scientific and/or clinical background, including the intended use and role of the AI approach", guidance: "Present a focused summary of the pertinent literature to describe current practice. The current practice should be explicitly mentioned"}
+      - {id: "4", topic: "Introduction", text: "Study aims, objectives, and hypotheses", guidance: "Define clearly the clinical or scientific question to be answered; avoid vague statements or descriptions of a process", critical: true}
+
+  - name: Methods
+    items:
+      - {id: "5", topic: "Study Design", text: "Prospective or retrospective study", guidance: "Indicate if the study is prospective or retrospective. Evaluate AI models in a prospective setting, if possible", critical: true}
+      - {id: "6", topic: "Study Design", text: "Study goal", guidance: "Describe the study's design and goals, such as model creation, exploratory study, feasibility study, or noninferiority trial"}
+      - {id: "7", topic: "Data", text: "Data sources", guidance: "State the source(s) of data, including publicly available datasets and/or synthetic images; provide links to data sources and/or images, if available", critical: true}
+      - {id: "8", topic: "Data", text: "Inclusion and exclusion criteria", guidance: "Specify inclusion and exclusion criteria, such as location, dates, patient-care setting, demographics (eg, age, sex, race), pertinent follow-up, and results from prior tests", critical: true}
+      - {id: "9", topic: "Data", text: "Data preprocessing", guidance: "Describe preprocessing steps to allow other investigators to reproduce them"}
+      - {id: "10", topic: "Data", text: "Selection of data subsets", guidance: "State whether investigators selected subsets of raw extracted data during preprocessing"}
+      - {id: "11", topic: "Data", text: "De-identification methods", guidance: "Describe the methods used to de-identify data and how protected health information has been removed to meet U.S. (HIPAA), EU (AI Act, EU Health Data Space, GDPR), or other relevant regulations"}
+      - {id: "12", topic: "Data", text: "How missing data were handled", guidance: "Clearly describe how missing data were handled"}
+      - {id: "13", topic: "Data", text: "Image acquisition protocol", guidance: "Describe the image acquisition protocol, such as manufacturer, MRI sequence, ultrasound frequency, maximum CT energy, tube current, slice thickness, scan range, and scan resolution; include all relevant parameters to enable reproducibility of the stated methods"}
+      - {id: "14", topic: "Reference Standard", text: "Definition of method(s) used to obtain reference standard", guidance: "Include a clear, detailed description of methods used to obtain the reference standard; readers should be able to replicate the reference standard based on this description", critical: true}
+      - {id: "15", topic: "Reference Standard", text: "Rationale for choosing the reference standard", guidance: "Describe the rationale for choice of the reference standard versus any alternatives"}
+      - {id: "16", topic: "Reference Standard", text: "Source of reference standard annotations", guidance: "Specify the source of reference standard annotations, citing relevant literature if annotations from existing data resources are used", critical: true}
+      - {id: "17", topic: "Reference Standard", text: "Annotation of test set", guidance: "Detail the steps taken to annotate the test set with sufficient detail so that another investigator could replicate the annotation"}
+      - {id: "18", topic: "Reference Standard", text: "Measures of inter- and intrarater variability of features described by the annotators", guidance: "Describe the methods to measure inter- and intrarater variability, reduce or mitigate variability, and/or resolve discrepancies between annotators"}
+      - {id: "19", topic: "Data Partitions", text: "How data were assigned to partitions", guidance: "Specify how data were partitioned for training, model optimization (often termed 'tuning' or 'validation'), and testing", critical: true}
+      - {id: "20", topic: "Data Partitions", text: "Level at which partitions are disjoint", guidance: "Describe the level at which the partitions are disjoint (eg, patient-, series-, image-level)", critical: true}
+      - {id: "21", topic: "Testing Data", text: "Intended sample size", guidance: "Describe the size of the testing set and how it was determined", critical: true}
+      - {id: "22", topic: "Model", text: "Detailed description of model", guidance: "If novel model architecture is used, provide a complete and detailed structure of the model, including inputs, outputs, and all intermediate layers, in sufficient detail that another investigator could exactly reconstruct the network", critical: true}
+      - {id: "23", topic: "Model", text: "Software libraries, frameworks, and packages", guidance: "Specify the names and version numbers of all software libraries, frameworks, and packages used for model training and inference"}
+      - {id: "24", topic: "Model", text: "Initialization of model parameters", guidance: "Indicate how the parameters of the model were initialized"}
+      - {id: "25", topic: "Training", text: "Details of training approach", guidance: "Describe the training procedures and hyperparameters in sufficient detail to enable another investigator to replicate the experiment"}
+      - {id: "26", topic: "Training", text: "Method of selecting the final model", guidance: "Describe the method and metrics used to select the best-performing model among all the models trained for evaluation against the held-out test set", critical: true}
+      - {id: "27", topic: "Training", text: "Ensembling techniques", guidance: "If the final algorithm involves an ensemble of models, describe each model comprising the ensemble in complete detail in accordance with the preceding recommendations"}
+      - {id: "28", topic: "Evaluation", text: "Metrics of model performance", guidance: "Describe the metrics used to assess the model's performance and indicate how they address the performance characteristics most important to the clinical or scientific problem", critical: true}
+      - {id: "29", topic: "Evaluation", text: "Statistical measures of significance and uncertainty", guidance: "Indicate the uncertainty of the performance metrics' values, such as with standard deviation and/or confidence intervals", critical: true}
+      - {id: "30", topic: "Evaluation", text: "Robustness or sensitivity analysis", guidance: "Analyze the robustness or sensitivity of the model to various assumptions or initial conditions"}
+      - {id: "31", topic: "Evaluation", text: "Methods for explainability or interpretability", guidance: "If applied, describe the methods that allow one to explain or interpret the model's results and provide the parameters used to generate them"}
+      - {id: "32", topic: "Evaluation", text: "Evaluation on internal data", guidance: "Document and describe evaluation performed on internal data"}
+      - {id: "33", topic: "Evaluation", text: "Testing on external data", guidance: "Describe the external data used to evaluate the completed algorithm", critical: true}
+      - {id: "34", topic: "Evaluation", text: "Clinical trial registration", guidance: "If applicable, comply with the clinical trial registration statement from the International Committee of Medical Journal Editors (ICMJE)"}
+
+  - name: Results
+    items:
+      - {id: "35", topic: "Data", text: "Numbers of patients or examinations included and excluded", guidance: "Document the numbers of patients, examinations, or images included and excluded based on each of the study's inclusion and exclusion criteria", critical: true}
+      - {id: "36", topic: "Data", text: "Demographic and clinical characteristics of cases in each partition", guidance: "Specify the demographic and clinical characteristics of cases in each partition and dataset", critical: true}
+      - {id: "37", topic: "Model Performance", text: "Performance metrics and measures of statistical uncertainty", guidance: "Report the final model's performance. Benchmark the performance of the AI model against the reference standard", critical: true}
+      - {id: "38", topic: "Model Performance", text: "Estimates of diagnostic performance and their precision", guidance: "For classification tasks, include estimates of diagnostic accuracy and their measures of statistical uncertainty, such as 95% confidence intervals"}
+      - {id: "39", topic: "Model Performance", text: "Failure analysis of incorrectly classified cases", guidance: "Provide information to help understand incorrect results"}
+
+  - name: Discussion
+    items:
+      - {id: "40", topic: "Discussion", text: "Study limitations", guidance: "Identify the study's limitations, including those involving the study's methods, materials, biases, statistical uncertainty, unexpected results, and generalizability", critical: true}
+      - {id: "41", topic: "Discussion", text: "Implications for practice, including intended use and/or clinical role", guidance: "Describe the implications for practice, including the intended use and possible clinical role of the AI model"}
+
+  - name: Other information
+    items:
+      - {id: "42", topic: "Other information", text: "Provide a reference to the full study protocol or to additional technical details", guidance: "State where readers can access the full study protocol or additional technical details if this description exceeds the journal's word limit"}
+      - {id: "43", topic: "Other information", text: "Statement about the availability of software, trained model, and/or data", guidance: "State where the reader can access the software, model, and/or data associated with the study, including conditions under which these resources can be accessed"}
+      - {id: "44", topic: "Other information", text: "Sources of funding and other support; role of funders", guidance: "Specify the sources of funding and other support and the exact role of the funders in performing the study", critical: true}
+
+commonly_missed:
+  - "Item 1 — the title/abstract must identify the AI technology category (eg, deep learning, vision transformer)"
+  - "Item 5 / 6 — state prospective vs retrospective and the study goal (model creation, exploratory, feasibility, ...)"
+  - "Item 8 / 35 — inclusion/exclusion criteria (Methods) and the numbers included and excluded per criterion (Results) are two items; a flow diagram is the usual way to satisfy 35"
+  - "Item 13 — image acquisition protocol (manufacturer, sequence, parameters) is new in 2024 and is routinely omitted"
+  - "Item 14-18 — the reference standard: how it was obtained, why it was chosen, who annotated it (and their qualifications), how the test set was annotated, and inter-/intrarater variability"
+  - "Item 19 / 20 — how data were partitioned AND at what level the partitions are disjoint (patient-level split to avoid leakage)"
+  - "Item 21 — intended size of the test set and how it was determined"
+  - "Item 23 — names and version numbers of all libraries and frameworks"
+  - "Item 26 — how the final model was selected among all models trained (no selection on the test set)"
+  - "Item 29 / 37 — confidence intervals or other uncertainty measures for every performance metric"
+  - "Item 32 / 33 — internal testing and external testing are separate items; avoid the word 'validation'"
+  - "Item 39 — failure analysis of incorrectly classified cases"
+  - "Item 43 — availability of software, trained model weights, and data (or an explicit statement of restrictions)"

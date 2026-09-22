@@ -1,0 +1,133 @@
+# SPIRIT 2025 checklist — transcribed verbatim from Table 1 of the SPIRIT 2025 statement
+# Source: Chan A-W, Boutron I, Hopewell S, et al. SPIRIT 2025 statement: updated guideline for protocols of
+#         randomised trials. BMJ 2025;389:e081477. doi:10.1136/bmj-2024-081477 (PMID 40294953, PMC12035670)
+#         (also published in JAMA, Lancet, Nature Medicine, PLOS Medicine (PMC12037212), April 2025)
+#         Retrieved via PubMed/PMC full text; transcribed 2026-09-21.
+# The statement: "The SPIRIT 2025 statement comprises a checklist of 34 minimum protocol items and a diagram
+# illustrating the schedule of enrolment, interventions, and assessments". Several items have sub-items
+# (a/b/c/d), giving 53 rows in Table 1. An expanded checklist with bullet points per item is appendix 1 of the
+# statement; the SPIRIT 2025 explanation and elaboration document is published separately (BMJ 2025;389:e081660).
+# Box 1 of the statement ("Summary of main changes in SPIRIT 2025") is the source of the new/revised flags below.
+# "The SPIRIT 2025 statement supersedes the SPIRIT 2013 statement, which should no longer be used or cited."
+# All 53 item texts were checked programmatically against the PMC full text; the only difference is item 18,
+# where the PMC text renders the figure cross-reference as "(see)" — written here as "(see fig 1)", Fig 1 being
+# the statement's "SPIRIT 2025 diagram of the schedule of enrolment, interventions, and assessments".
+#
+# Field meanings:
+#   id        — item number exactly as in Table 1
+#   text      — "SPIRIT 2025 checklist item description" column (verbatim)
+#   new       — added in 2025 (items 11 and 29, per Box 1)
+#   revised   — content revised in 2025 (items 4, 5, 7b, 24a/24b, 27d, per Box 1)
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks the protocol from being called complete;
+#               other ❌ items are reported but do not block on their own
+
+name: SPIRIT 2025
+version: "2025"
+total_items: 34          # numbered items 1-34
+total_rows: 53           # including sub-items (1a/1b, 3a-d, 7a/7b, 9a/9b, 14a/14b, 15a-d, 21a/21b, 24a-c, 25a/25b, 27a-d, 28a/28b, 32a/32b)
+supersedes: "SPIRIT 2013 — should no longer be used or cited"
+reference: "Chan et al. BMJ 2025;389:e081477 (doi:10.1136/bmj-2024-081477); E&E: BMJ 2025;389:e081660 (doi:10.1136/bmj-2024-081660)"
+website: "https://www.consort-spirit.org/"
+stage: "Protocol stage only — not used for the pre-submission check of a results paper (use CONSORT 2025)"
+key_changes_from_2013:
+  added: 2        # items 11 (patient and public involvement), 29 (trial monitoring, replaces auditing)
+  revised: 5      # items 4, 5, 7b, 24a/24b, 27d
+  deleted: 3      # auditing; appendix items 'informed consent materials' and 'biological specimens'
+  merged: 2       # access to data for investigators -> item 26; authorship eligibility / professional writers -> item 8
+  new_section: "Open science (items 4-8)"
+  integrated_extensions: ["CONSORT Harms 2022 (items 10, 17, 27a)", "SPIRIT-Outcomes 2022", "TIDieR (item 15a)"]
+schedule_diagram: "Required — SPIRIT 2025 diagram of the schedule of enrolment, interventions, and assessments (Fig 1 of the statement; item 18)"
+
+sections:
+  - name: Administrative information
+    items:
+      - {id: "1a", topic: "Title and structured summary", text: "Title stating the trial design, population, and interventions, with identification as a protocol", critical: true}
+      - {id: "1b", topic: "Title and structured summary", text: "Structured summary of trial design and methods, including items from the World Health Organization Trial Registration Data Set", critical: true}
+      - {id: "2", topic: "Protocol version", text: "Version date and identifier"}
+      - {id: "3a", topic: "Roles and responsibilities", text: "Names, affiliations, and roles of protocol contributors"}
+      - {id: "3b", topic: "Roles and responsibilities", text: "Name and contact information for the trial sponsor"}
+      - {id: "3c", topic: "Roles and responsibilities", text: "Role of trial sponsor and funders in design, conduct, analysis, and reporting of trial; including any authority over these activities"}
+      - {id: "3d", topic: "Roles and responsibilities", text: "Composition, roles, and responsibilities of the coordinating site, steering committee, endpoint adjudication committee, data management team, and other individuals or groups overseeing the trial, if applicable"}
+
+  - name: Open science
+    items:
+      - {id: "4", topic: "Trial registration", text: "Name of trial registry, identifying number (with URL), and date of registration. If not yet registered, name of intended registry", revised: true, critical: true}
+      - {id: "5", topic: "Protocol and statistical analysis plan", text: "Where the trial protocol and statistical analysis plan can be accessed", revised: true, critical: true}
+      - {id: "6", topic: "Data sharing", text: "Where and how the individual de-identified participant data (including data dictionary), statistical code, and any other materials will be accessible"}
+      - {id: "7a", topic: "Funding and conflicts of interest", text: "Sources of funding and other support (eg, supply of drugs)", critical: true}
+      - {id: "7b", topic: "Funding and conflicts of interest", text: "Financial and other conflicts of interest for principal investigators and steering committee members", revised: true, critical: true}
+      - {id: "8", topic: "Dissemination policy", text: "Plans to communicate trial results to participants, healthcare professionals, the public, and other relevant groups (eg, reporting in trial registry, plain language summary, publication)"}
+
+  - name: Introduction
+    items:
+      - {id: "9a", topic: "Background and rationale", text: "Scientific background and rationale, including summary of relevant studies (published and unpublished) examining benefits and harms for each intervention"}
+      - {id: "9b", topic: "Background and rationale", text: "Explanation for choice of comparator"}
+      - {id: "10", topic: "Objectives", text: "Specific objectives related to benefits and harms", critical: true}
+
+  - name: "Methods: Patient and public involvement, trial design"
+    items:
+      - {id: "11", topic: "Patient and public involvement", text: "Details of, or plans for, patient or public involvement in the design, conduct, and reporting of the trial", new: true}
+      - {id: "12", topic: "Trial design", text: "Description of trial design including type of trial (eg, parallel group, crossover), allocation ratio, and framework (eg, superiority, equivalence, non-inferiority, exploratory)", critical: true}
+
+  - name: "Methods: Participants, interventions, and outcomes"
+    items:
+      - {id: "13", topic: "Trial setting", text: "Settings (eg, community, hospital) and locations (eg, countries, sites) where the trial will be conducted"}
+      - {id: "14a", topic: "Eligibility criteria", text: "Eligibility criteria for participants", critical: true}
+      - {id: "14b", topic: "Eligibility criteria", text: "If applicable, eligibility criteria for sites and for individuals who will deliver the interventions (eg, surgeons, physiotherapists)"}
+      - {id: "15a", topic: "Intervention and comparator", text: "Intervention and comparator with sufficient details to allow replication including how, when, and by whom they will be administered. If relevant, where additional materials describing the intervention and comparator (eg, intervention manual) can be accessed", critical: true}
+      - {id: "15b", topic: "Intervention and comparator", text: "Criteria for discontinuing or modifying allocated intervention/comparator for a trial participant (eg, drug dose change in response to harms, participant request, or improving/worsening disease)"}
+      - {id: "15c", topic: "Intervention and comparator", text: "Strategies to improve adherence to intervention/comparator protocols, if applicable, and any procedures for monitoring adherence (eg, drug tablet return, sessions attended)"}
+      - {id: "15d", topic: "Intervention and comparator", text: "Concomitant care that is permitted or prohibited during the trial"}
+      - {id: "16", topic: "Outcomes", text: "Primary and secondary outcomes, including the specific measurement variable (eg, systolic blood pressure), analysis metric (eg, change from baseline, final value, time to event), method of aggregation (eg, median, proportion), and time point for each outcome", critical: true}
+      - {id: "17", topic: "Harms", text: "How harms are defined and will be assessed (eg, systematically, non-systematically)", critical: true}
+      - {id: "18", topic: "Participant timeline", text: "Time schedule of enrolment, interventions (including any run-ins and washouts), assessments, and visits for participants. A schematic diagram is highly recommended (see fig 1)"}
+      - {id: "19", topic: "Sample size", text: "How sample size was determined, including all assumptions supporting the sample size calculation", critical: true}
+      - {id: "20", topic: "Recruitment", text: "Strategies for achieving adequate participant enrolment to reach target sample size"}
+
+  - name: "Methods: Assignment of interventions"
+    items:
+      - {id: "21a", topic: "Randomisation: sequence generation", text: "Who will generate the random allocation sequence and the method used", critical: true}
+      - {id: "21b", topic: "Randomisation: sequence generation", text: "Type of randomisation (simple or restricted) and details of any factors for stratification. To reduce predictability of a random sequence, other details of any planned restriction (eg, blocking) should be provided in a separate document that is unavailable to those who enrol participants or assign interventions"}
+      - {id: "22", topic: "Randomisation: allocation concealment mechanism", text: "Mechanism used to implement the random allocation sequence (eg, central computer/telephone; sequentially numbered, opaque, sealed containers), describing any steps to conceal the sequence until interventions are assigned", critical: true}
+      - {id: "23", topic: "Randomisation: implementation", text: "Whether the personnel who will enrol and those who will assign participants to the interventions will have access to the random allocation sequence"}
+      - {id: "24a", topic: "Blinding", text: "Who will be blinded after assignment to interventions (eg, participants, care providers, outcome assessors, data analysts)", revised: true, critical: true}
+      - {id: "24b", topic: "Blinding", text: "If blinded, how blinding will be achieved and description of the similarity of interventions", revised: true}
+      - {id: "24c", topic: "Blinding", text: "If blinded, circumstances under which unblinding is permissible, and procedure for revealing a participant's allocated intervention during the trial"}
+
+  - name: "Methods: Data collection, management, and analysis"
+    items:
+      - {id: "25a", topic: "Data collection methods", text: "Plans for assessment and collection of trial data, including any related processes to promote data quality (eg, duplicate measurements, training of assessors) and a description of trial instruments (eg, questionnaires, laboratory tests) along with their reliability and validity, if known. Reference to where data collection forms can be accessed, if not in the protocol"}
+      - {id: "25b", topic: "Data collection methods", text: "Plans to promote participant retention and complete follow-up, including list of any outcome data to be collected for participants who discontinue or deviate from intervention protocols"}
+      - {id: "26", topic: "Data management", text: "Plans for data entry, coding, security, and storage, including any related processes to promote data quality (eg, double data entry; range checks for data values). Reference to where details of data management procedures can be accessed, if not in the protocol"}
+      - {id: "27a", topic: "Statistical methods", text: "Statistical methods used to compare groups for primary and secondary outcomes, including harms", critical: true}
+      - {id: "27b", topic: "Statistical methods", text: "Definition of who will be included in each analysis (eg, all randomised participants), and in which group", critical: true}
+      - {id: "27c", topic: "Statistical methods", text: "How missing data will be handled in the analysis"}
+      - {id: "27d", topic: "Statistical methods", text: "Methods for any additional analyses (eg, subgroup and sensitivity analyses)", revised: true}
+
+  - name: "Methods: Monitoring"
+    items:
+      - {id: "28a", topic: "Data monitoring committee", text: "Composition of data monitoring committee (DMC); summary of its role and reporting structure; statement of whether it is independent from the sponsor and funder; conflicts of interest and reference to where further details about its charter can be found, if not in the protocol. Alternatively, an explanation of why a DMC is not needed"}
+      - {id: "28b", topic: "Data monitoring committee", text: "Explanation of any interim analyses and stopping guidelines, including who will have access to these interim results and make the final decision to terminate the trial", critical: true}
+      - {id: "29", topic: "Trial monitoring", text: "Frequency and procedures for monitoring trial conduct. If there is no monitoring, give explanation", new: true}
+
+  - name: Ethics
+    items:
+      - {id: "30", topic: "Research ethics approval", text: "Plans for seeking research ethics committee/institutional review board approval", critical: true}
+      - {id: "31", topic: "Protocol amendments", text: "Plans for communicating important protocol modifications to relevant parties"}
+      - {id: "32a", topic: "Consent or assent", text: "Who will obtain informed consent or assent from potential trial participants or authorised proxies, and how", critical: true}
+      - {id: "32b", topic: "Consent or assent", text: "Additional consent provisions for collection and use of participant data and biological specimens in ancillary studies, if applicable"}
+      - {id: "33", topic: "Confidentiality", text: "How personal information about potential and enrolled participants will be collected, shared, and maintained in order to protect confidentiality before, during, and after the trial"}
+      - {id: "34", topic: "Ancillary and post-trial care", text: "Provisions, if any, for ancillary and post-trial care, and for compensation to those who suffer harm from trial participation"}
+
+commonly_missed:
+  - "Items 4-8 (Open science) — new section; registration URL/date, protocol + SAP access, data-sharing plan, funding, conflicts of interest (incl. steering committee) and dissemination policy are six separate items"
+  - "Item 5 — where the statistical analysis plan (not only the protocol) can be accessed"
+  - "Item 11 — patient and public involvement (state explicitly if there is none)"
+  - "Item 14b — eligibility criteria for sites and for the individuals delivering the intervention"
+  - "Item 15a — how, when and by whom the intervention AND comparator will be administered (TIDieR-level detail), plus where the intervention manual can be accessed"
+  - "Item 17 — how harms are defined and will be assessed (systematically vs non-systematically); harms also belong in objectives (10) and statistical methods (27a)"
+  - "Item 18 — the schedule diagram of enrolment, interventions and assessments"
+  - "Item 21b — stratification factors in the protocol; block size etc. in a separate restricted document"
+  - "Item 24a/24b/24c — who is blinded, how blinding is achieved (similarity of interventions), and when unblinding is permitted are three sub-items"
+  - "Item 27b / 27c — analysis population per analysis and missing-data handling"
+  - "Item 28a / 29 — DMC (or why none) and trial monitoring (or why none); auditing is no longer an item"

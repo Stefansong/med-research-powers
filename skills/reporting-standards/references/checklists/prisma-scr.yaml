@@ -1,0 +1,113 @@
+# PRISMA-ScR checklist — transcribed verbatim from the official "Preferred Reporting Items for Systematic
+# reviews and Meta-Analyses extension for Scoping Reviews (PRISMA-ScR) Checklist"
+# Source: Tricco AC, Lillie E, Zarin W, O'Brien KK, Colquhoun H, Levac D, Moher D, Peters MDJ, Horsley T,
+#         Weeks L, Hempel S, Akl EA, Chang C, McGowan J, Stewart L, Hartling L, Aldcroft A, Wilson MG,
+#         Garritty C, Lewin S, Godfrey CM, Macdonald MT, Langlois EV, Soares-Weiser K, Moriarty J,
+#         Clifford T, Tunçalp Ö, Straus SE. PRISMA Extension for Scoping Reviews (PRISMA-ScR): Checklist
+#         and Explanation. Ann Intern Med 2018;169(7):467-473. doi:10.7326/M18-0850 (PMID 30178033;
+#         no PMCID — not deposited in PMC; the Annals article page does not expose the table).
+#         Item text retrieved on 2026-09-21 from the authors' official fillable checklist PDF
+#         (PRISMA-ScR-Fillable-Checklist_11Sept2019.pdf, hosted at knowledgetranslation.net — the
+#         Knowledge Translation Program of the corresponding authors — and at prisma-statement.org),
+#         whose "From:" line cites the Annals paper. Table 2 of the paper carries the same 22 rows.
+# The statement (abstract): "The final checklist contains 20 essential reporting items and 2 optional
+# items" — the optional items are 12 and 16 (critical appraisal of / within sources of evidence, both
+# worded "If done, ..."). The checklist numbers its rows 1-22 consecutively; the paper's Explanation and
+# Elaboration section instead walks through the PRISMA 2009 numbering (items 1-27), marking items 13
+# (summary measures), 15 and 22 (risk of bias across studies) and 16 and 23 (additional analyses) as
+# "not applicable" to scoping reviews. The § footnote below refers to that E&E numbering ("items 12 and
+# 19" = checklist items 12 and 16).
+# Checklist columns: SECTION | ITEM | PRISMA-ScR CHECKLIST ITEM | REPORTED ON PAGE #.
+# Footnotes (verbatim):
+#   "JBI = Joanna Briggs Institute; PRISMA-ScR = Preferred Reporting Items for Systematic reviews and
+#    Meta-Analyses extension for Scoping Reviews."
+#   "* Where sources of evidence (see second footnote) are compiled from, such as bibliographic databases,
+#    social media platforms, and Web sites."
+#   "† A more inclusive/heterogeneous term used to account for the different types of evidence or data
+#    sources (e.g., quantitative and/or qualitative research, expert opinion, and policy documents) that
+#    may be eligible in a scoping review as opposed to only studies. This is not to be confused with
+#    information sources (see first footnote)."
+#   "‡ The frameworks by Arksey and O'Malley (6) and Levac and colleagues (7) and the JBI guidance (4, 5)
+#    refer to the process of data extraction in a scoping review as data charting."
+#   "§ The process of systematically examining research evidence to assess its validity, results, and
+#    relevance before using it to inform a decision. This term is used for items 12 and 19 instead of
+#    "risk of bias" (which is more applicable to systematic reviews of interventions) to include and
+#    acknowledge the various sources of evidence that may be used in a scoping review (e.g., quantitative
+#    and/or qualitative research, expert opinion, and policy document)."
+#
+# Field meanings:
+#   id        — item number exactly as in the checklist (footnote symbols *†‡§ kept in `footnote`)
+#   topic     — section/topic label exactly as in the checklist
+#   text      — "PRISMA-ScR checklist item" (verbatim)
+#   optional  — one of the 2 optional items (12, 16)
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#               reported but do not block on their own
+
+name: PRISMA-ScR
+version: "2018"
+total_items: 22          # numbered items 1-22 (20 essential + 2 optional)
+total_rows: 22           # no sub-items
+reference: "Tricco et al. Ann Intern Med 2018;169(7):467-473 (doi:10.7326/M18-0850)"
+website: "https://www.prisma-statement.org/scoping"
+checklist_download: "https://knowledgetranslation.net/wp-content/uploads/PRISMA-ScR-Fillable-Checklist_11Sept2019.pdf"
+applies_to: "Scoping reviews (the extension is also intended to apply to evidence maps)"
+not_for: "Systematic reviews with meta-analysis — use PRISMA 2020 (prisma-2020.yaml)"
+based_on: "PRISMA 2009 statement; conducted with the JBI scoping review methodology / Arksey & O'Malley and Levac frameworks in mind"
+terminology: "'sources of evidence' (not 'studies'), 'data charting' (not 'data extraction'), 'critical appraisal' (not 'risk of bias')"
+flow_diagram: "Ideally (item 14) — numbers screened, assessed for eligibility and included, with reasons for exclusion at each stage"
+
+sections:
+  - name: Title
+    items:
+      - {id: "1", topic: "Title", text: "Identify the report as a scoping review.", critical: true}
+
+  - name: Abstract
+    items:
+      - {id: "2", topic: "Structured summary", text: "Provide a structured summary that includes (as applicable): background, objectives, eligibility criteria, sources of evidence, charting methods, results, and conclusions that relate to the review questions and objectives."}
+
+  - name: Introduction
+    items:
+      - {id: "3", topic: "Rationale", text: "Describe the rationale for the review in the context of what is already known. Explain why the review questions/objectives lend themselves to a scoping review approach."}
+      - {id: "4", topic: "Objectives", text: "Provide an explicit statement of the questions and objectives being addressed with reference to their key elements (e.g., population or participants, concepts, and context) or other relevant key elements used to conceptualize the review questions and/or objectives.", critical: true}
+
+  - name: Methods
+    items:
+      - {id: "5", topic: "Protocol and registration", text: "Indicate whether a review protocol exists; state if and where it can be accessed (e.g., a Web address); and if available, provide registration information, including the registration number.", critical: true}
+      - {id: "6", topic: "Eligibility criteria", text: "Specify characteristics of the sources of evidence used as eligibility criteria (e.g., years considered, language, and publication status), and provide a rationale.", critical: true}
+      - {id: "7", topic: "Information sources", footnote: "*", text: "Describe all information sources in the search (e.g., databases with dates of coverage and contact with authors to identify additional sources), as well as the date the most recent search was executed.", critical: true}
+      - {id: "8", topic: "Search", text: "Present the full electronic search strategy for at least 1 database, including any limits used, such that it could be repeated.", critical: true}
+      - {id: "9", topic: "Selection of sources of evidence", footnote: "†", text: "State the process for selecting sources of evidence (i.e., screening and eligibility) included in the scoping review.", critical: true}
+      - {id: "10", topic: "Data charting process", footnote: "‡", text: "Describe the methods of charting data from the included sources of evidence (e.g., calibrated forms or forms that have been tested by the team before their use, and whether data charting was done independently or in duplicate) and any processes for obtaining and confirming data from investigators.", critical: true}
+      - {id: "11", topic: "Data items", text: "List and define all variables for which data were sought and any assumptions and simplifications made.", critical: true}
+      - {id: "12", topic: "Critical appraisal of individual sources of evidence", footnote: "§", optional: true, text: "If done, provide a rationale for conducting a critical appraisal of included sources of evidence; describe the methods used and how this information was used in any data synthesis (if appropriate)."}
+      - {id: "13", topic: "Synthesis of results", text: "Describe the methods of handling and summarizing the data that were charted.", critical: true}
+
+  - name: Results
+    items:
+      - {id: "14", topic: "Selection of sources of evidence", text: "Give numbers of sources of evidence screened, assessed for eligibility, and included in the review, with reasons for exclusions at each stage, ideally using a flow diagram.", critical: true}
+      - {id: "15", topic: "Characteristics of sources of evidence", text: "For each source of evidence, present characteristics for which data were charted and provide the citations.", critical: true}
+      - {id: "16", topic: "Critical appraisal within sources of evidence", optional: true, text: "If done, present data on critical appraisal of included sources of evidence (see item 12)."}
+      - {id: "17", topic: "Results of individual sources of evidence", text: "For each included source of evidence, present the relevant data that were charted that relate to the review questions and objectives.", critical: true}
+      - {id: "18", topic: "Synthesis of results", text: "Summarize and/or present the charting results as they relate to the review questions and objectives.", critical: true}
+
+  - name: Discussion
+    items:
+      - {id: "19", topic: "Summary of evidence", text: "Summarize the main results (including an overview of concepts, themes, and types of evidence available), link to the review questions and objectives, and consider the relevance to key groups.", critical: true}
+      - {id: "20", topic: "Limitations", text: "Discuss the limitations of the scoping review process.", critical: true}
+      - {id: "21", topic: "Conclusions", text: "Provide a general interpretation of the results with respect to the review questions and objectives, as well as potential implications and/or next steps."}
+
+  - name: Funding
+    items:
+      - {id: "22", topic: "Funding", text: "Describe sources of funding for the included sources of evidence, as well as sources of funding for the scoping review. Describe the role of the funders of the scoping review."}
+
+commonly_missed:
+  - "Item 1 — 'scoping review' in the title (not 'systematic review' or 'literature review')"
+  - "Item 3 — WHY a scoping review approach (rather than a systematic review) suits the questions"
+  - "Item 4 — the key elements of the question (population/participants, concepts, context — PCC)"
+  - "Item 5 — protocol existence and access (e.g. OSF, Figshare) and registration number; state explicitly if none"
+  - "Item 6 — a rationale for the eligibility criteria (years, language, publication status)"
+  - "Item 7 — date the most recent search was executed and database coverage dates"
+  - "Item 8 — the full search strategy for at least one database, reproducible"
+  - "Item 10 — calibrated/pilot-tested charting forms and whether charting was independent or in duplicate"
+  - "Item 12 / 16 — optional, but if a critical appraisal was done give the rationale, methods and how it was used"
+  - "Item 22 — funding of the INCLUDED sources of evidence as well as of the review itself"

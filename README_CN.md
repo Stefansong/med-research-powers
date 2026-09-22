@@ -19,8 +19,8 @@ Med-Research-Powers（MRP）是一个 [Claude Code](https://claude.ai/code) 插�
 | **Skills** | 20 个 skill，覆盖完整科研流程——每个 skill 都可以用 `/mrp:<skill 名>` 直接调用 |
 | **斜杠命令** | 7 个命令，对应最常用的入口 |
 | **研究类型** | 临床、基础/实验、AI/ML、定性、问卷/Delphi（统一入口路由） |
-| **报告规范** | 46 项报告规范 —— CONSORT 2025、SPIRIT 2025、STROBE、PRISMA 2020、TRIPOD+AI 2024、DECIDE-AI、CLAIM 2024、IDEAL、ARRIVE 2.0、COREQ、CHERRIES、COSMIN …… |
-| **期刊模板** | 234 本期刊，覆盖 30+ 专科 |
+| **报告规范** | 47 项报告规范 —— CONSORT 2025、SPIRIT 2025、STROBE、PRISMA 2020、TRIPOD+AI 2024、DECIDE-AI、CLAIM 2024、IDEAL、ARRIVE 2.0、COREQ、CHERRIES、COSMIN …… |
+| **期刊模板** | 240 本期刊，覆盖 30+ 专科 |
 | **统计方法** | 15+ 类方法，配前提假设驱动的决策树 |
 | **Python 脚本** | 10 个内置脚本（前提检验、样本量、数据清洗、分析脚手架、绘图样式、.docx 导出、期刊模板抽取、患者级划分、随机分组、流程状态） |
 | **投稿前检查** | 6 道关卡，含 PubMed MCP 引用核验 |
@@ -42,7 +42,7 @@ AI 科研智能体每次都会犯同样的错。MRP 用有引导的流程取代"
 | 写完稿子就说"完成" | 投稿前先过 6 道关卡 |
 | 自信地编造参考文献 | 每一条引用都对照 PubMed 核对（配置了 PubMed MCP 时自动核验，否则用 DOI / 网络检索人工核对） |
 | 只报 `p < 0.05`，没有效应量 | 必须给效应量 + 95% CI + 精确 p 值 |
-| 忽视报告规范 | 从 46 项报告规范里匹配研究类型对应的那一项 |
+| 忽视报告规范 | 从 47 项报告规范里匹配研究类型对应的那一项 |
 | AI 数据随机划分 | 患者级划分，提示数据泄漏与外部验证 |
 
 **核心理念 —— 有引导的流程，而非建议：**
@@ -411,9 +411,9 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 
 ---
 
-## 报告规范（46）
+## 报告规范（47）
 
-完整的机读索引见 [`skills/reporting-standards/references/checklists/standards-index.yaml`](skills/reporting-standards/references/checklists/standards-index.yaml)，结构化的 CONSORT 2025 清单见 [`consort-2025.yaml`](skills/reporting-standards/references/checklists/consort-2025.yaml)。
+完整的机读索引见 [`skills/reporting-standards/references/checklists/standards-index.yaml`](skills/reporting-standards/references/checklists/standards-index.yaml)。**47 项规范中有 21 项附带从原文逐条转写的 checklist YAML**（CONSORT 2025、CONSORT-AI、SPIRIT 2025、SPIRIT-AI、TIDieR、TREND、RECORD、STROBE、PRISMA 2020、PRISMA-ScR、STARD 2015、TRIPOD 2015、TRIPOD+AI、CLAIM 2024、DECIDE-AI、ARRIVE 2.0、CHERRIES、CROSS、CARE、SQUIRE 2.0、CHEERS 2022）；其余只给官方来源，并明确要求 Claude 不得编造条目。
 
 ### 按研究类型分类
 
@@ -425,7 +425,7 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 | **指南评估** | AGREE II（23 条目） |
 | **观察性研究 Meta 分析** | MOOSE（35 条目） |
 | **诊断准确性** | STARD 2015（30 条目） |
-| **AI 与预测** | TRIPOD+AI 2024（27 条目）、TRIPOD-LLM（2025）、TRIPOD-Cluster（2023，19 条目）、CLAIM 2024（44 条目；取代 CLAIM 2020）、MI-CLAIM、DECIDE-AI（17 条 AI 专属 + 10 条通用）、PROBAST |
+| **AI 与预测** | TRIPOD 2015（22 项，旧版）、TRIPOD+AI 2024（27 条目）、TRIPOD-LLM（2025）、TRIPOD-Cluster（2023，19 条目）、CLAIM 2024（44 条目；取代 CLAIM 2020）、MI-CLAIM、DECIDE-AI（17 条 AI 专属 + 10 条通用）、PROBAST |
 | **外科与器械** | IDEAL 框架（5 阶段） |
 | **定性研究** | COREQ（32 条目）、SRQR（21 条目） |
 | **问卷与量表** | CHERRIES（网络问卷）、CROSS（横断面调查）、COSMIN（测量工具） |
@@ -437,9 +437,9 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 
 ---
 
-## 期刊模板（234）
+## 期刊模板（240）
 
-**234 本期刊、覆盖 30+ 专科**的排版要求（字数限制、摘要格式、参考文献风格、章节结构、特殊栏目、投稿信与 ORCID 要求、投稿系统）见 [`skills/manuscript-writing/references/journal-templates.yaml`](skills/manuscript-writing/references/journal-templates.yaml)。各 skill 用 `get_journal_template.py` 按 id 抽取单条模板，不整读文件。
+**240 本期刊、覆盖 30+ 专科**的排版要求（字数限制、摘要格式、参考文献风格、章节结构、特殊栏目、投稿信与 ORCID 要求、投稿系统）见 [`skills/manuscript-writing/references/journal-templates.yaml`](skills/manuscript-writing/references/journal-templates.yaml)。各 skill 用 `get_journal_template.py` 按 id 抽取单条模板，不整读文件。
 
 | 专科 | 期刊 |
 |---|---|
@@ -469,7 +469,7 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 
 每个模板包含：字数限制、摘要格式（结构化/非结构化）、参考文献格式及上限、图表限制、章节结构、特殊要求（Key Points 框、Research in Context 面板、Reporting Summary）、投稿系统和 ORCID 政策。期刊家族规则（Lancet / JAMA / Nature 子刊）只保存在这个文件里。
 
-库里的影响因子和 APC 有明确日期（`data_as_of`：IF = JCR 2022，APC = 2022 年定价）——各 skill 引用时会标年份并建议先上网复核。若某期刊未收录，MRP 会通过网络检索其"Instructions for Authors"。
+库里的影响因子和 APC 都带数据年份：41 本常投期刊（泌尿、影像、AI/数字健康、顶级综合与肿瘤刊）有 `IF_year`/`IF_source` 字段，是出版社官网公布的 JCR 2025 或 2024 值；其余仍是 JCR 2022 值（规则见 `data_as_of`）。各 skill 引用时会标年份并建议先上网复核。若某期刊未收录，MRP 会通过网络检索其"Instructions for Authors"。
 
 ---
 
@@ -485,7 +485,7 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 | `data_cleaning.py` | `statistical-analysis/scripts/` | 缺失数据、异常值、类型验证的清洗，附审计日志（`data-cleaning-log.md`） |
 | `pub_style.py` | `figure-generation/scripts/` | 期刊图表样式（Nature、Lancet、JAMA、NEJM 配色）、色盲友好选项、≥300 DPI 导出、显著性标注 |
 | `export_docx.py` | `manuscript-export/scripts/` | 由期刊模板库驱动，Markdown → 符合期刊排版的 `.docx`；生成 `export-report.md` |
-| `get_journal_template.py` | `manuscript-writing/scripts/` | 从 234 本期刊的 YAML 里按 id 抽取单条模板（不整读文件） |
+| `get_journal_template.py` | `manuscript-writing/scripts/` | 从 240 本期刊的 YAML 里按 id 抽取单条模板（不整读文件） |
 | `patient_level_split.py` | `data-collection-tools/scripts/` | 患者级训练 / 验证 / 测试集划分（集合之间不泄漏） |
 | `randomization.py` | `data-collection-tools/scripts/` | RCT 的区组 / 分层随机分组表 |
 | `mrp_state.py` | `using-med-research-powers/scripts/` | 每个主线 skill 结束时读取和更新 `.mrp-state.json` |
@@ -613,7 +613,7 @@ MRP 将 Superpowers 方法学框架从软件工程适配到医学研究。
 | `finishing-a-development-branch` | `journal-selection` + `submission-preparation` | 期刊定位 + 投稿信替代合并/部署 |
 | `writing-skills` | `writing-mrp-skills` | 相同的元技能，保证可扩展性 |
 | — | `literature-synthesis` | 软件工程中无对应物；研究需要证据综述 |
-| — | `reporting-standards` | 软件工程中无对应物；46 项领域特定合规规范 |
+| — | `reporting-standards` | 软件工程中无对应物；47 项领域特定合规规范 |
 | — | `research-ethics` | 软件工程中无对应物；IRB/IACUC 要求 |
 
 ---
@@ -631,13 +631,15 @@ MRP 将 Superpowers 方法学框架从软件工程适配到医学研究。
 ```
 med-research-powers/
 ├── .claude-plugin/        plugin.json（name: mrp）、marketplace.json
-├── .github/workflows/     ci.yml —— 一致性守卫、pytest、shellcheck、plugin validate、hook 冒烟
+├── .github/               ci.yml（守卫、pytest、shellcheck、plugin validate、hook 冒烟）、evals.yml（手动）、issue/PR 模板
 ├── commands/              7 个斜杠命令（薄路由 → skill）
 ├── skills/                20 个 skill，每个含：SKILL.md + references/ + scripts/
 ├── hooks/                 session-start.sh（读取 .mrp-state.json，报告恢复点）
 ├── docs/                  architecture.md、USER-MANUAL.md、images/
 ├── tools/                 check_consistency.py —— 仓库守卫（版本、计数、路径、链接）
 ├── tests/                 内置脚本的 pytest 测试
+├── evals/                 `claude plugin eval` 用例 —— skill 路由回归（见 evals/README.md）
+├── examples/              一个合成的示例项目（状态文件、研究问题、Type C protocol）
 ├── install.sh             安装脚本（插件 / 软链接）
 ├── requirements.txt       内置脚本的 Python 依赖
 ├── README.md / README_CN.md

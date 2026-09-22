@@ -1,0 +1,134 @@
+# TREND checklist — transcribed verbatim from Table 1 ("TREND Statement Checklist", version 1.0) of
+# the TREND statement
+# Source: Des Jarlais DC, Lyles C, Crepaz N; TREND Group. Improving the reporting quality of
+#         nonrandomized evaluations of behavioral and public health interventions: the TREND statement.
+#         Am J Public Health 2004;94(3):361-366. doi:10.2105/ajph.94.3.361 (PMID 14998794; PMC1448256).
+#         Item text retrieved from the PMC article page (https://pmc.ncbi.nlm.nih.gov/articles/PMC1448256/)
+#         on 2026-09-21 (the PMC full-text API returns no body text for this scanned-era article).
+# The statement: "We present the initial version of the Transparent Reporting of Evaluations with
+# Nonrandomized Designs (TREND) statement. These guidelines emphasize the reporting of theories used and
+# descriptions of intervention and comparison conditions, research design, and methods of adjusting for
+# possible biases in evaluation studies that use nonrandomized designs." 22 items modelled on CONSORT.
+# Table 1 columns: Paper Section/Topic | Item No | Descriptor. Most cells contain several descriptor
+# lines; they are kept in order and joined with "; " in `text`. Lines the table prints in BOLDFACE are
+# wrapped in ** ** — per the table note, "Descriptors appearing in boldface are specifically added,
+# modified, or further emphasized from the CONSORT statement." Illustrative "Example" lines printed
+# inside the cells are kept verbatim in `examples`.
+# Table note (verbatim): "Masking (blinding) of participants or those administering the intervention may
+# not be relevant or possible for many behavioral interventions. Theories used to design the
+# interventions (see item 2) could also be reported as part of item 4. The comparison between study
+# population at baseline and target population of interest (see item 14) could also be reported as part
+# of item 21. Descriptors appearing in boldface are specifically added, modified, or further emphasized
+# from the CONSORT statement. Boldface topic and descriptors are not included in the CONSORT statement but
+# are relevant for behavioral interventions using nonrandomized experimental designs. The CONSORT
+# statement or the explanation document for the CONSORT statement provides relevant examples for any
+# topic or descriptor that is not in boldface."
+#
+# Field meanings:
+#   id        — item number exactly as in Table 1
+#   topic     — Paper Section/Topic exactly as in Table 1
+#   text      — descriptor lines (verbatim, joined with "; "; **bold** = TREND-specific vs CONSORT)
+#   examples  — "Example" lines printed in the descriptor cell (verbatim)
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#               reported but do not block on their own
+
+name: TREND
+version: "2004"
+total_items: 22          # numbered items 1-22
+total_rows: 22           # no lettered sub-items (multi-line descriptors are kept within each item)
+reference: "Des Jarlais et al. Am J Public Health 2004;94(3):361-366 (doi:10.2105/ajph.94.3.361)"
+website: "https://www.cdc.gov/hivpartners/php/trend-statement/index.html (checklist PDF: https://stacks.cdc.gov/view/cdc/149677; EQUATOR: https://www.equator-network.org/reporting-guidelines/improving-the-reporting-quality-of-nonrandomized-evaluations-of-behavioral-and-public-health-interventions-the-trend-statement/)"
+applies_to: "Nonrandomized (quasi-experimental) evaluations of behavioral and public health interventions — e.g. non-randomised controlled designs, interrupted time series, before-after with comparison group"
+modelled_on: "CONSORT (2001) — non-bold descriptors are CONSORT items; use the CONSORT explanation document for examples of those"
+use_with: "TIDieR (tidier.yaml) for the intervention description in item 4; SQUIRE 2.0 (squire-2.yaml) when the study is a quality-improvement initiative"
+flow_diagram: "Strongly recommended (item 12) — enrollment, assignment, allocation and intervention exposure, follow-up, analysis"
+
+sections:
+  - name: Title and abstract
+    items:
+      - {id: "1", topic: "Title and abstract", text: "Information on how units were allocated to interventions; Structured abstract recommended; **Information on target population or study sample**", critical: true}
+
+  - name: Introduction
+    items:
+      - {id: "2", topic: "Background", text: "Scientific background and explanation of rationale; **Theories used in designing behavioral interventions**"}
+
+  - name: Methods
+    items:
+      - {id: "3", topic: "Participants", text: "Eligibility criteria for participants, **including criteria at different levels in recruitment/sampling plan (e.g., cities, clinics, subjects)**; Method of recruitment (e.g., referral, self-selection), including the **sampling method** if a systematic sampling plan was implemented; **Recruitment setting**; Settings and locations where the data were collected", critical: true}
+      - {id: "4", topic: "Interventions", text: "Details of the interventions intended for each study condition and how and when they were actually administered, specifically including: Content: what was given?; Delivery method: how was the content given?; **Unit of delivery: how were subjects grouped during delivery?**; Deliverer: who delivered the intervention?; **Setting: where was the intervention delivered?**; Exposure quantity and duration: how many sessions or episodes or events were intended to be delivered? How long were they intended to last?; Time span: how long was it intended to take to deliver the intervention to each unit?; **Activities to increase compliance or adherence (e.g., incentives)**", critical: true}
+      - {id: "5", topic: "Objectives", text: "Specific objectives and hypotheses", critical: true}
+      - {id: "6", topic: "Outcomes", text: "Clearly defined primary and secondary outcome measures; **Methods used to collect data** and any methods used to enhance the quality of measurements; Information on validated instruments such as psychometric and biometric properties", critical: true}
+      - {id: "7", topic: "Sample size", text: "How sample size was determined and, when applicable, explanation of any interim analyses and stopping rules"}
+      - id: "8"
+        topic: "Assignment method"
+        text: "**Unit of assignment (the unit being assigned to study condition, e.g., individual, group, community)**; **Method used to assign units to study conditions, including details of any restriction (e.g., blocking, stratification, minimization)**; **Inclusion of aspects employed to help minimize potential bias induced due to nonrandomization (e.g., matching)**"
+        examples:
+          - "Example 1 (assignment method): subjects were assigned to study conditions using an alternating sequence wherein every other individual enrolled (e.g., 1, 3, 5, etc.) was assigned to the intervention condition and the alternate subjects enrolled (e.g., 2, 4, 6, etc.) were assigned to the comparison condition"
+          - "Example 2 (assignment method): for odd weeks (e.g. 1, 3, 5), subjects attending the clinic on Monday, Wednesday, and Friday were assigned to the intervention condition and those attending the clinic on Tuesday and Thursday were assigned to the comparison condition; this assignment was reversed for even weeks"
+        critical: true
+      - id: "9"
+        topic: "Blinding (masking)"
+        text: "Whether or not participants, those administering the interventions, and those assessing the outcomes were blinded to study condition assignment; if so, statement regarding how the blinding **was accomplished** and how it was assessed"
+        examples:
+          - "Example (blinding): the staff member performing the assessments was not involved in implementing any aspect of the intervention and knew the participants only by their study identifier number"
+      - id: "10"
+        topic: "Unit of analysis"
+        text: "**Description of the smallest unit that is being analyzed to assess intervention effects (e.g., individual, group, or community)**; **If the unit of analysis differs from the unit of assignment, the analytical method used to account for this (e.g., adjusting the standard error estimates by the design effect or using multilevel analysis)**"
+        examples:
+          - "Example 1 (unit of analysis): since groups of individuals were assigned to study conditions, the analyses were performed at the group level, where mixed effects models were used to account for random subject effects within each group"
+          - "Example 2 (unit of analysis): since analyses were performed at the individual level and communities were randomized, a prior estimate of the intraclass correlation coefficient was used to adjust the standard error estimates before calculating confidence intervals"
+      - {id: "11", topic: "Statistical methods", text: "Statistical methods used to compare study groups for primary outcome(s), including complex methods for correlated data; Statistical methods used for additional analyses, such as subgroup analyses and adjusted analysis; **Methods for imputing missing data, if used**; **Statistical software or programs used**", critical: true}
+
+  - name: Results
+    items:
+      - {id: "12", topic: "Participant flow", text: "Flow of participants through each stage of the study: enrollment, assignment, allocation and intervention exposure, follow-up, analysis (a diagram is strongly recommended); Enrollment: the numbers of participants screened for eligibility, found to be eligible or not eligible, declined to be enrolled, and enrolled in the study; Assignment: the numbers of participants assigned to a study condition; Allocation and intervention exposure: the number of participants assigned to each study condition and the number of participants who received each intervention; Follow-up: the number of participants who completed the follow-up or did not complete the follow-up (i.e., lost to follow-up), by study condition; Analysis: the number of participants included in or excluded from the main analysis, by study condition; Description of protocol deviations from study as planned, along with reasons", critical: true}
+      - {id: "13", topic: "Recruitment", text: "Dates defining the periods of recruitment and follow-up"}
+      - id: "14"
+        topic: "Baseline data"
+        text: "Baseline demographic and clinical characteristics of participants in each study condition; **Baseline characteristics for each study condition relevant to specific disease prevention research**; **Baseline comparisons of those lost to follow-up and those retained, overall and by study condition**; **Comparison between study population at baseline and target population of interest**"
+        examples:
+          - "Example (baseline characteristics specific to HIV prevention research): HIV serostatus and HIV testing behavior"
+        critical: true
+      - id: "15"
+        topic: "Baseline equivalence"
+        text: "**Data on study group equivalence at baseline and statistical methods used to control for baseline differences**"
+        examples:
+          - "Example (baseline equivalence): the intervention and comparison groups did not statistically differ with respect to demographic data (gender, age, race/ethnicity; P > .05 for each), but the intervention group reported a significantly greater baseline frequency of injection drug use (P = .03); all regression analyses included baseline frequency of injection drug use as a covariate in the model"
+        critical: true
+      - id: "16"
+        topic: "Numbers analyzed"
+        text: "Number of participants (denominator) included in each analysis for each study condition, particularly when the denominators change for different outcomes; statement of the results in absolute numbers when feasible; Indication of whether the analysis strategy was **“intention to treat” or, if not, description of how noncompliers were treated in the analyses**"
+        examples:
+          - "Example (number of participants included in the analysis): the analysis of condom use included only those who reported at the 6-month follow-up having had vaginal or anal sex in the past 3 months (75/125 for intervention group and 35/60 for standard group)"
+          - "Example (“intention to treat”): the primary analysis was intention to treat and included all subjects as assigned with available 9-month outcome data (125 of 176 assigned to the intervention and 110 of 164 assigned to the standard condition)"
+        critical: true
+      - {id: "17", topic: "Outcomes and estimation", text: "For each primary and secondary outcome, a summary of results for each study condition, and the estimated effect size and a confidence interval to indicate the precision; Inclusion of null and negative findings; **Inclusion of results from testing prespecified causal pathways through which the intervention was intended to operate, if any**", critical: true}
+      - id: "18"
+        topic: "Ancillary analyses"
+        text: "Summary of other analyses performed, including subgroup or restricted analyses, indicating which are prespecified or exploratory"
+        examples:
+          - "Example (ancillary analyses): although the study was not powered for this hypothesis, an exploratory analysis shows that the intervention effect was greater among women than among men (although not statistically significant)"
+      - id: "19"
+        topic: "Adverse events"
+        text: "Summary of all important adverse events or unintended effects in each study condition (including summary measures, effect size estimates, and confidence intervals)"
+        examples:
+          - "Example (adverse events): police cracked down on prostitution, which drove the target population, commercial sex workers, to areas outside the recruitment/sampling area"
+
+  - name: Discussion
+    items:
+      - {id: "20", topic: "Interpretation", text: "Interpretation of the results, taking into account study hypotheses, sources of potential bias, imprecision of measures, multiplicative analyses, and other limitations or weaknesses of the study; **Discussion of results taking into account the mechanism by which the intervention was intended to work (causal pathways) or alternative mechanisms or explanations**; **Discussion of the success of and barriers to implementing the intervention, fidelity of implementation**; Discussion of research, **programmatic, or policy implications**", critical: true}
+      - {id: "21", topic: "Generalizability", text: "Generalizability (external validity) of the trial findings, taking into account the study population, the characteristics of the intervention, length of follow-up, **incentives, compliance rates, specific sites/settings involved in the study,** and other contextual issues"}
+      - {id: "22", topic: "Overall evidence", text: "General interpretation of the results in the context of current evidence and current theory"}
+
+commonly_missed:
+  - "Item 2 — the theory/theories used to design the intervention (may alternatively be reported under item 4)"
+  - "Item 3 — recruitment method, sampling method and recruitment setting, plus eligibility criteria at each level (site, clinic, individual)"
+  - "Item 4 — content, delivery method, unit of delivery, deliverer, setting, exposure quantity/duration, time span, adherence activities — for the comparison condition too"
+  - "Item 8 — unit of assignment, how units were assigned, and what was done to minimise bias from nonrandomisation (e.g. matching)"
+  - "Item 10 — unit of analysis vs unit of assignment, and the method used to account for clustering when they differ"
+  - "Item 11 — missing-data imputation method and the statistical software used"
+  - "Item 14 — baseline comparison of those lost to follow-up vs retained, and of the study population vs the target population"
+  - "Item 15 — baseline equivalence AND the statistical adjustment for baseline differences"
+  - "Item 16 — denominators per analysis and whether analysis was intention-to-treat (or how non-compliers were handled)"
+  - "Item 17 — results of testing prespecified causal pathways/mediators, and null or negative findings"
+  - "Item 20 — mechanism (causal pathway) discussion, implementation success/barriers and fidelity, programmatic/policy implications"

@@ -49,7 +49,7 @@ description: Use when choosing or re-checking a target journal (tentative after 
 
 ### 数据来源规则（Step 2 之前必读）
 
-- 库内 `IF_approx` 全部是 **JCR 2022** 值（库文件顶层 `data_as_of` 字段），APC 是 2022 价。**报告里每个 IF 必须标注 JCR 年份**，如 "IF 25 (JCR 2022)"。
+- 库内 `IF_approx` 的年份看该条目的 `IF_year`（有则为出版社公布的 JCR 2025/2024 值，来源在 `IF_source`）；没有 `IF_year` 的条目仍是 **JCR 2022** 值；APC 同理看 `apc_year`（规则见库文件顶层 `data_as_of`）。**报告里每个 IF 必须标注 JCR 年份与来源**，如 "IF 29.1 (JCR 2025, sciencedirect.com)"。
 - 库内没有分区、接收率、审稿周期、ORCID 要求等字段。**报告前必须用 WebSearch 复核 Top 3 期刊的最新 IF 与 JCR/中科院分区**，并写明年份与来源 URL。
 - 无法查到的数据一律写 **N/A**，禁止凭印象填数。
 
@@ -141,7 +141,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_temp
 **Date:** [日期]
 **Research Type:** [RCT/Cohort/AI/...]
 **Paper level (Step 1):** [A/B/C/D] → 目标层级 [Q1 top / Q1 / Q2 / Q3–Q4]
-**Data sources:** 库内 IF = JCR 2022（journal-templates.yaml data_as_of）；最新 IF/分区/接收率/周期/APC/ORCID 来自 WebSearch，逐项附 URL；查不到写 N/A
+**Data sources:** 库内 IF 年份按条目 `IF_year`（无则 JCR 2022，见 journal-templates.yaml data_as_of）；最新 IF/分区/接收率/周期/APC/ORCID 来自 WebSearch，逐项附 URL；查不到写 N/A
 
 ## Research Profile
 - Innovation level: [颠覆性/增量/验证性]
@@ -189,7 +189,7 @@ Reach 被拒（有审稿意见）→ 按意见修改后投 Target
 |------|------|
 | "先投 Nature/Lancet 试试" | 浪费 3–6 个月，除非论文档位真的是 A |
 | "影响因子越高越好" | Scope 不匹配的高 IF 期刊 = 100% desk reject；Scope ≤3 直接剔除 |
-| "库里写 BMJ IF 106 就报 106" | 那是 JCR 2022 值；报告前必须 WebSearch 复核并标年份 |
+| "库里写的 IF 直接报" | 先看条目 `IF_year`；没有的是 JCR 2022 旧值；报告前必须 WebSearch 复核并标年份与来源 |
 | "接收率大概 20% 吧" | 没有来源的数字一律写 N/A，不能编 |
 | "写完再选期刊" | 设计阶段就暂定，按目标期刊格式写作；写作前再复核一次 |
 | "选定期刊就不能换了" | 目标期刊是软确认，随时可换；只有 protocol / SAP / pre-submission 是硬确认 |

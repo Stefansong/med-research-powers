@@ -46,8 +46,8 @@ ROOT = Path(__file__).resolve().parent.parent
 EXPECTED = {
     "skills": 20,
     "commands": 7,
-    "journals": 234,
-    "standards": 46,
+    "journals": 240,
+    "standards": 47,
     "scripts": 10,
     "checkpoints": 3,          # mandatory (hard) checkpoints: protocol / SAP / pre-submission
     "consort_items": 30,       # CONSORT 2025 — 30 items (42 rows incl. sub-items)

@@ -1,0 +1,43 @@
+name: Plugin evals (manual)
+
+# Routing regression with `claude plugin eval` — costs API usage, so it runs on demand only.
+# Requires the ANTHROPIC_API_KEY repository secret.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Only run cases with this tag (empty = all)"
+        default: "smoke"
+      runs:
+        description: "Runs per case"
+        default: "2"
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Run evals
+        run: |
+          set -eu
+          TAG_ARG=""
+          if [ -n "${{ inputs.tag }}" ]; then TAG_ARG="--tag ${{ inputs.tag }}"; fi
+          claude plugin eval . --trust-plugin --json results.json --threshold 0.8 \
+            --runs "${{ inputs.runs }}" --ablation none --no-publish --max-cost-usd 10 $TAG_ARG
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-results
+          path: |
+            results.json
+            evals/results/

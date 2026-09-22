@@ -44,3 +44,6 @@ Thumbs.db
 
 # Node
 node_modules/
+
+# plugin eval runs
+evals/results/

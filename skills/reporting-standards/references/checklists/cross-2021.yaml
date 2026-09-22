@@ -1,0 +1,105 @@
+# CROSS checklist — transcribed verbatim from Table 1 of the CROSS statement
+# Source: Sharma A, Minh Duc NT, Luu Lam Thang T, Nam NH, Ng SJ, Abbas KS, Huy NT, Marušić A, Paul CL,
+#         Kwok J, Karbwang J, de Waure C, Drummond FJ, Kizawa Y, Taal E, Vermeulen J, Lee GHM, Gyedu A,
+#         To KG, Verra ML, Jacqz-Aigrain ÉM, Leclercq WKG, Salminen ST, Sherbourne CD, Mintzes B, Lozano S,
+#         Tran US, Matsui M, Karamouzian M. A Consensus-Based Checklist for Reporting of Survey Studies
+#         (CROSS). J Gen Intern Med 2021;36(10):3179-3187. doi:10.1007/s11606-021-06737-1
+#         (PMID 33886027; PMC8481359 — PMC copy could not be retrieved through the PMC API on
+#         2026-09-21, so item text was taken from Table 1 of the publisher's article PDF
+#         (link.springer.com) on 2026-09-21).
+# Table 1 ("Percentage Agreement and Mean Score with Standard Deviation of the Items in Different
+# Rounds") lists every checklist item with its Delphi scores; the clean checklist is the paper's
+# Supplement 3 ("Please see Supplement 3 for the final checklist"). The statement: "CROSS contains
+# 19 sections with 40 different items" — i.e. 19 numbered sections (1-19) and 40 rows (1a ... 19).
+# Numbering caveat: under "Ethical considerations" Table 1 prints the two rows as "9a" and "9c" (no
+# "9b"); the second row is given id "9b" here so that the 40 rows are contiguous — if the exact label
+# matters, verify against Supplement 3.
+#
+# Field meanings:
+#   id        — item label as in Table 1 (section number + letter); see caveat for 9b
+#   topic     — CROSS section/topic label exactly as in Table 1
+#   text      — item description (verbatim)
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#               reported but do not block on their own
+
+name: CROSS
+version: "2021"
+total_items: 19          # numbered sections 1-19 (CROSS calls these "sections")
+total_rows: 40           # 40 items (1a/1b, 2, 3, 4, 5a-d, 6a-d, 7a-c, 8, 9a/9b, 10a-g, 11a-d, 12, 13a-c, 14, 15, 16, 17, 18, 19)
+reference: "Sharma et al. J Gen Intern Med 2021;36(10):3179-3187 (doi:10.1007/s11606-021-06737-1)"
+website: "https://www.equator-network.org/reporting-guidelines/a-consensus-based-checklist-for-reporting-of-survey-studies-cross/"
+applies_to: "Survey studies (questionnaire-based, cross-sectional or longitudinal; paper, interview or web-based administration)"
+use_with: "CHERRIES (cherries.yaml) in addition for web-based/e-mail administration; STROBE (strobe.yaml) for the observational design when the survey is embedded in a cohort or cross-sectional epidemiological study"
+flow_diagram: "Recommended (item 11a) — numbers of individuals at each stage"
+
+sections:
+  - name: Title and abstract
+    items:
+      - {id: "1a", topic: "Title and abstract", text: "State the word 'survey' along with a commonly used term in title or abstract to introduce the study's design.", critical: true}
+      - {id: "1b", topic: "Title and abstract", text: "Provide an informative summary in the abstract, covering background, objectives, methods, findings/results, interpretation/discussion, and conclusions."}
+
+  - name: Introduction
+    items:
+      - {id: "2", topic: "Background", text: "Provide a background about the rationale of study, what has been previously done, and why this survey is needed."}
+      - {id: "3", topic: "Purpose/aim", text: "Identify specific purposes, aims, goals, or objectives of the study.", critical: true}
+
+  - name: Methods
+    items:
+      - {id: "4", topic: "Study design", text: "Specify the study design in the 'Methods' section with a commonly used term (e.g., cross-sectional or longitudinal).", critical: true}
+      - {id: "5a", topic: "Data collection methods", text: "Describe the questionnaire (e.g., number of sections, number of questions, number and names of instruments used).", critical: true}
+      - {id: "5b", topic: "Data collection methods", text: "Describe all questionnaire instruments that were used in the survey to measure particular concepts. Report target population, reported validity and reliability information, scoring/classification procedure, and reference links (if any).", critical: true}
+      - {id: "5c", topic: "Data collection methods", text: "Provide information on pretesting of the questionnaire, if performed (in the article or in an online supplement). Report the method of pretesting, number of times questionnaire was pre-tested, number and demographics of participants used for pretesting, and the level of similarity of demographics between pre-testing participants and sample population."}
+      - {id: "5d", topic: "Data collection methods", text: "Questionnaire, if possible, should be fully provided (in the article, or as appendices or as an online supplement)."}
+      - {id: "6a", topic: "Sample characteristics", text: "Describe the study population (i.e., background, locations, eligibility criteria for participant inclusion in survey, exclusion criteria).", critical: true}
+      - {id: "6b", topic: "Sample characteristics", text: "Describe the sampling techniques used (e.g., single stage or multistage sampling, simple random sampling, stratified sampling, cluster sampling, convenience sampling). Specify the locations of sample participants whenever clustered sampling was applied.", critical: true}
+      - {id: "6c", topic: "Sample characteristics", text: "Provide information on sample size, along with details of sample size calculation.", critical: true}
+      - {id: "6d", topic: "Sample characteristics", text: "Describe how representative the sample is of the study population (or target population if possible), particularly for population-based surveys."}
+      - {id: "7a", topic: "Survey administration", text: "Provide information on modes of questionnaire administration, including the type and number of contacts, the location where the survey was conducted (e.g., outpatient room or by use of online tools, such as SurveyMonkey).", critical: true}
+      - {id: "7b", topic: "Survey administration", text: "Provide information of survey's time frame, such as periods of recruitment, exposure, and follow-up days."}
+      - {id: "7c", topic: "Survey administration", text: "Provide information on the entry process: –>For non-web-based surveys, provide approaches to minimize human error in data entry. –>For web-based surveys, provide approaches to prevent 'multiple participation' of participants."}
+      - {id: "8", topic: "Study preparation", text: "Describe any preparation process before conducting the survey (e.g., interviewers' training process, advertising the survey)."}
+      - {id: "9a", topic: "Ethical considerations", text: "Provide information on ethical approval for the survey if obtained, including informed consent, institutional review board [IRB] approval, Helsinki declaration, and good clinical practice [GCP] declaration (as appropriate).", critical: true}
+      - {id: "9b", topic: "Ethical considerations", text: "Provide information about survey anonymity and confidentiality and describe what mechanisms were used to protect unauthorized access.", printed_as: "9c"}
+      - {id: "10a", topic: "Statistical analysis", text: "Describe statistical methods and analytical approach. Report the statistical software that was used for data analysis.", critical: true}
+      - {id: "10b", topic: "Statistical analysis", text: "Report any modification of variables used in the analysis, along with reference (if available)."}
+      - {id: "10c", topic: "Statistical analysis", text: "Report details about how missing data was handled. Include rate of missing items, missing data mechanism (i.e., missing completely at random [MCAR], missing at random [MAR], or missing not at random [MNAR]), and methods used to deal with missing data (e.g., multiple imputation)."}
+      - {id: "10d", topic: "Statistical analysis", text: "State how non-response error was addressed."}
+      - {id: "10e", topic: "Statistical analysis", text: "For longitudinal surveys, state how loss to follow-up was addressed."}
+      - {id: "10f", topic: "Statistical analysis", text: "Indicate whether any methods such as weighting of items or propensity scores have been used to adjust for non-representativeness of the sample."}
+      - {id: "10g", topic: "Statistical analysis", text: "Describe any sensitivity analysis conducted."}
+
+  - name: Results
+    items:
+      - {id: "11a", topic: "Respondent characteristics", text: "Report numbers of individuals at each stage of the study. Consider using a flow diagram, if possible.", critical: true}
+      - {id: "11b", topic: "Respondent characteristics", text: "Provide reasons for non-participation at each stage, if possible."}
+      - {id: "11c", topic: "Respondent characteristics", text: "Report response rate, present the definition of response rate or the formula used to calculate response rate.", critical: true}
+      - {id: "11d", topic: "Respondent characteristics", text: "Provide information to define how unique visitors are determined. Report number of unique visitors along with relevant proportions (e.g., view proportion, participation proportion, completion proportion)."}
+      - {id: "12", topic: "Descriptive results", text: "Provide characteristics of study participants, as well as information on potential confounders and assessed outcomes.", critical: true}
+      - {id: "13a", topic: "Main findings", text: "Give unadjusted estimates and, if applicable, confounder-adjusted estimates along with 95% confidence intervals and p values.", critical: true}
+      - {id: "13b", topic: "Main findings", text: "For multivariable analysis, provide information on the model building process, model fit statistics, and model assumptions (as appropriate)."}
+      - {id: "13c", topic: "Main findings", text: "Provide details about any sensitivity analysis performed. If there are considerable amount of missing data, report sensitivity analyses comparing the results of complete cases with that of the imputed dataset (if possible)."}
+
+  - name: Discussion
+    items:
+      - {id: "14", topic: "Limitations", text: "Discuss the limitations of the study, considering sources of potential biases and imprecisions, such as non-representativeness of sample, study design, important uncontrolled confounders.", critical: true}
+      - {id: "15", topic: "Interpretations", text: "Give a cautious overall interpretation of results, based on potential biases and imprecisions and suggest areas for future research."}
+      - {id: "16", topic: "Generalizability", text: "Discuss the external validity of the results."}
+
+  - name: Other sections
+    items:
+      - {id: "17", topic: "Role of funding source", text: "State whether any funding organization has had any roles in the survey's design, implementation, and analysis."}
+      - {id: "18", topic: "Conflict of interest", text: "Declare any potential conflict of interest."}
+      - {id: "19", topic: "Acknowledgements", text: "Provide names of organizations/persons that are acknowledged along with their contribution to the research."}
+
+commonly_missed:
+  - "Item 1a — the word 'survey' in the title or abstract"
+  - "Item 5b — validity/reliability evidence and scoring procedure for EVERY instrument used, with references"
+  - "Item 5c — pretesting/piloting details (method, how many rounds, who, how similar to the target sample)"
+  - "Item 5d — the full questionnaire as an appendix/supplement"
+  - "Item 6c — sample size calculation, not just the achieved n"
+  - "Item 6d — how representative the sample is of the target population"
+  - "Item 7c — data-entry error control (paper surveys) or prevention of multiple participation (web surveys)"
+  - "Item 10c — missing data: rate, assumed mechanism (MCAR/MAR/MNAR) and handling method"
+  - "Item 10d / 10f — how non-response error was addressed and whether weighting/propensity adjustment was used"
+  - "Item 11c — the DEFINITION or formula of the reported response rate (see CHERRIES view/participation/completion rates for web surveys)"
+  - "Item 13b — model-building process, fit statistics and assumption checks for multivariable models"

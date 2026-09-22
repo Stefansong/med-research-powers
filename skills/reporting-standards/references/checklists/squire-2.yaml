@@ -1,0 +1,91 @@
+# SQUIRE 2.0 checklist — transcribed verbatim from Table 1 ("Revised Standards for QUality Improvement
+# Reporting Excellence (SQUIRE 2.0) publication guidelines") of the SQUIRE 2.0 statement
+# Source: Ogrinc G, Davies L, Goodman D, Batalden P, Davidoff F, Stevens D. SQUIRE 2.0 (Standards for
+#         QUality Improvement Reporting Excellence): revised publication guidelines from a detailed
+#         consensus process. BMJ Qual Saf 2016;25(12):986-992. doi:10.1136/bmjqs-2015-004411
+#         (PMID 26369893; PMC5256233). Retrieved via PubMed/PMC full text on 2026-09-21.
+#         Co-published (identical table) in Am J Med Qual 2015;30(6):543-549 (PMC4620592), Perm J
+#         2015;19(4):65-70 (PMC4625997), J Nurs Care Qual 2016;31(1):1-8 (PMC5411027), Am J Crit Care,
+#         J Contin Educ Nurs, Can J Diabetes, Jt Comm J Qual Patient Saf, Medwave (Spanish) and others.
+# The statement: "SQUIRE 2.0 contains 18 items, but omits the multiple subitems that were a source of
+# confusion for SQUIRE 1.0 users." Several table cells nevertheless contain more than one line
+# (e.g. items 8-11, 13-17); those lines are kept in order and joined into one `text` string here,
+# each original line as its own sentence.
+# Table 1 columns: "Text section and item name" | "Section or item description". The section headings
+# in the table carry A. Bradford Hill's four questions (Why did you start? / What did you do? /
+# What did you find? / What does it mean?), reproduced in the section names below.
+#
+# Field meanings:
+#   id        — item number exactly as in Table 1
+#   topic     — item name exactly as in Table 1
+#   text      — "Section or item description" (verbatim; multi-line cells joined, one sentence per line)
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#               reported but do not block on their own
+
+name: SQUIRE 2.0
+version: "2015"
+total_items: 18          # numbered items 1-18
+total_rows: 18           # no sub-items (deliberately removed in 2.0)
+supersedes: "SQUIRE 1.0 (2008)"
+reference: "Ogrinc et al. BMJ Qual Saf 2016;25(12):986-992 (doi:10.1136/bmjqs-2015-004411)"
+website: "http://www.squire-statement.org/"
+applies_to: "Reports of system-level work to improve the quality, safety and value of healthcare, using any of the range of improvement methods (PDSA cycles in single settings, retrospective analyses of large programmes, multisite trials ...)"
+use_with: "Apply design-specific guidelines (CONSORT for randomised designs, STROBE for observational, TREND for non-randomised evaluations, TIDieR for the intervention description) alongside SQUIRE as appropriate"
+notes_to_authors:   # verbatim from the head of Table 1
+  - "The SQUIRE guidelines provide a framework for reporting new knowledge about how to improve healthcare."
+  - "The SQUIRE guidelines are intended for reports that describe system level work to improve the quality, safety and value of healthcare, and used methods to establish that observed outcomes were due to the intervention(s)."
+  - "A range of approaches exists for improving healthcare. SQUIRE may be adapted for reporting any of these."
+  - "Authors should consider every SQUIRE item, but it may be inappropriate or unnecessary to include every SQUIRE element in a particular manuscript."
+  - "The SQUIRE glossary contains definitions of many of the key words in SQUIRE."
+  - "The explanation and elaboration document provides specific examples of well-written SQUIRE items and an in-depth explanation of each item."
+  - "Please cite SQUIRE when it is used to write a manuscript."
+key_changes_from_1_0: ["terminology (shorter, more direct items; glossary)", "theory (new item 5 'Rationale')", "context (item 7, now a distinct methods item)", "study of the intervention(s) (item 9, 'doing' vs 'studying' improvement)"]
+
+sections:
+  - name: Title and abstract
+    items:
+      - {id: "1", topic: "Title", text: "Indicate that the manuscript concerns an initiative to improve healthcare (broadly defined to include the quality, safety, effectiveness, patient-centredness, timeliness, cost, efficiency and equity of healthcare).", critical: true}
+      - {id: "2", topic: "Abstract", text: "Provide adequate information to aid in searching and indexing. Summarise all key information from various sections of the text using the abstract format of the intended publication or a structured summary such as: background, local problem, methods, interventions, results, conclusions."}
+
+  - name: Introduction — Why did you start?
+    items:
+      - {id: "3", topic: "Problem description", text: "Nature and significance of the local problem."}
+      - {id: "4", topic: "Available knowledge", text: "Summary of what is currently known about the problem, including relevant previous studies."}
+      - {id: "5", topic: "Rationale", text: "Informal or formal frameworks, models, concepts and/or theories used to explain the problem, any reasons or assumptions that were used to develop the intervention(s) and reasons why the intervention(s) was expected to work"}
+      - {id: "6", topic: "Specific aims", text: "Purpose of the project and of this report.", critical: true}
+
+  - name: Methods — What did you do?
+    items:
+      - {id: "7", topic: "Context", text: "Contextual elements considered important at the outset of introducing the intervention(s).", critical: true}
+      - {id: "8", topic: "Intervention(s)", text: "Description of the intervention(s) in sufficient detail that others could reproduce it. Specifics of the team involved in the work.", critical: true}
+      - {id: "9", topic: "Study of the intervention(s)", text: "Approach chosen for assessing the impact of the intervention(s). Approach used to establish whether the observed outcomes were due to the intervention(s).", critical: true}
+      - {id: "10", topic: "Measures", text: "Measures chosen for studying processes and outcomes of the intervention(s), including rationale for choosing them, their operational definitions and their validity and reliability. Description of the approach to the ongoing assessment of contextual elements that contributed to the success, failure, efficiency and cost. Methods employed for assessing completeness and accuracy of data.", critical: true}
+      - {id: "11", topic: "Analysis", text: "Qualitative and quantitative methods used to draw inferences from the data. Methods for understanding variation within the data, including the effects of time as a variable.", critical: true}
+      - {id: "12", topic: "Ethical considerations", text: "Ethical aspects of implementing and studying the intervention(s) and how they were addressed, including, but not limited to, formal ethics review and potential conflict(s) of interest."}
+
+  - name: Results — What did you find?
+    items:
+      - {id: "13", topic: "Results", text: "Initial steps of the intervention(s) and their evolution over time (eg, time-line diagram, flow chart or table), including modifications made to the intervention during the project. Details of the process measures and outcomes. Contextual elements that interacted with the intervention(s). Observed associations between outcomes, interventions and relevant contextual elements. Unintended consequences such as unexpected benefits, problems, failures or costs associated with the intervention(s). Details about missing data.", critical: true}
+
+  - name: Discussion — What does it mean?
+    items:
+      - {id: "14", topic: "Summary", text: "Key findings, including relevance to the rationale and specific aims. Particular strengths of the project."}
+      - {id: "15", topic: "Interpretation", text: "Nature of the association between the intervention(s) and the outcomes. Comparison of results with findings from other publications. Impact of the project on people and systems. Reasons for any differences between observed and anticipated outcomes, including the influence of context. Costs and strategic trade-offs, including opportunity costs."}
+      - {id: "16", topic: "Limitations", text: "Limits to the generalisability of the work. Factors that might have limited internal validity such as confounding, bias or imprecision in the design, methods, measurement or analysis. Efforts made to minimise and adjust for limitations.", critical: true}
+      - {id: "17", topic: "Conclusions", text: "Usefulness of the work. Sustainability. Potential for spread to other contexts. Implications for practice and for further study in the field. Suggested next steps."}
+
+  - name: Other information
+    items:
+      - {id: "18", topic: "Funding", text: "Sources of funding that supported this work. Role, if any, of the funding organisation in the design, implementation, interpretation and reporting."}
+
+commonly_missed:
+  - "Item 5 — the rationale/theory ('why did you think this would work?'): formal or informal theory, models or assumptions behind the intervention"
+  - "Item 7 — context described as a distinct methods item (setting, organisation, people, resources), not scattered or omitted"
+  - "Item 8 — the intervention in enough detail to reproduce (consider TIDieR) AND who was on the improvement team"
+  - "Item 9 — 'studying' vs 'doing': how you established that the observed outcomes were due to the intervention(s)"
+  - "Item 10 — operational definitions, validity/reliability of measures, ongoing assessment of context, and data completeness/accuracy checks"
+  - "Item 11 — methods for understanding variation over time (e.g. run charts, SPC charts), not only before-after comparisons"
+  - "Item 12 — ethical review AND potential conflicts of interest"
+  - "Item 13 — evolution of the intervention over time (time-line/flow chart), interactions with context, unintended consequences and missing data"
+  - "Item 15 — costs and strategic trade-offs including opportunity costs"
+  - "Item 17 — sustainability and potential for spread, not just 'it worked here'"

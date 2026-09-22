@@ -26,7 +26,7 @@ description: Use when checking a manuscript item by item against its reporting g
 ### Step 1: 确定研究类型 → 匹配规范
 
 1. 先看 `study-protocol.md` 的 `type:` 字段和 Methods 里的设计描述；不确定就问用户，不要猜。
-2. 加载 `references/checklists/standards-index.yaml`（46 条规范）查找对应条目；主规范 + `use_with`
+2. 加载 `references/checklists/standards-index.yaml`（47 条规范）查找对应条目；主规范 + `use_with`
    扩展一起列出。
 
 核心路由（常用）：
@@ -39,17 +39,20 @@ description: Use when checking a manuscript item by item against its reporting g
 | 诊断准确性 | STARD 2015 | ✅ `stard-2015.yaml` |
 | 预测模型（回归 / 机器学习） | TRIPOD+AI 2024 | ✅ `tripod-ai.yaml` |
 | 动物实验 | ARRIVE 2.0 | ✅ `arrive-2.yaml` |
-| AI 医学影像 | CLAIM 2024（44 项） | 索引 + 官方来源 |
-| AI 决策支持早期临床评估 | DECIDE-AI 2022 | 索引 + 官方来源 |
+| AI 医学影像 | CLAIM 2024（44 项） | ✅ `claim-2024.yaml` |
+| AI 决策支持早期临床评估 | DECIDE-AI 2022 | ✅ `decide-ai.yaml` |
 | LLM / VLM 评估 | TRIPOD-LLM 2025 | 索引 + 官方来源 |
 | 手术 / 器械创新 | IDEAL | 索引 + 官方来源 |
-| 问卷 / 网络调查 | CROSS 2021 / CHERRIES | 索引 + 官方来源 |
+| 问卷 / 网络调查 | CROSS 2021 / CHERRIES | ✅ `cross-2021.yaml` / `cherries.yaml` |
 | 非劣效 / 等效 RCT | CONSORT 2025 + 非劣效扩展 | 主规范 ✅，扩展按官方来源 |
+| AI 干预 RCT / 其 protocol | CONSORT-AI / SPIRIT-AI（+ SPIRIT 2025） | ✅ `consort-ai.yaml` / `spirit-ai.yaml` / `spirit-2025.yaml` |
+| 常规数据 / 登记研究 | STROBE + RECORD | ✅ `record.yaml` |
+| 范围综述 | PRISMA-ScR | ✅ `prisma-scr.yaml` |
+| 经济学评价 / 质量改进 / 病例报告 | CHEERS 2022 / SQUIRE 2.0 / CARE | ✅ 各有本地清单 |
 
 ### Step 2: 加载 checklist
 
-- 索引条目有 `file:` 字段（索引 id：consort-2025、strobe、prisma-2020、stard、tripod-ai、arrive，对应文件
-  consort-2025.yaml、strobe.yaml、prisma-2020.yaml、stard-2015.yaml、tripod-ai.yaml、arrive-2.yaml）→
+- 索引条目有 `file:` 字段（47 条中有 21 条有本地逐条清单：consort-2025、consort-ai、spirit-2025、spirit-ai、tidier、trend、record、strobe、prisma-2020、prisma-scr、stard、tripod-2015、tripod-ai、claim、decide-ai、arrive、cherries、cross、care、squire、cheers，文件名见索引 `file:`）→
   读取 `references/checklists/<file>`，按 `sections[].items[]` **逐行**检查；行的 `text` 就是官方条目原文。
 - 索引条目没有 `file:` → 给出 `reference` 与 EQUATOR Network 链接，提示用户下载官方 checklist 人工
   核对；本 skill 只做按章节的粗检，**不要凭记忆编造条目文本**，也不能据此宣布 Gate 1 通过。
@@ -98,7 +101,7 @@ Essential 10 全部为 critical）。**Gate 1 通过 = 0 个 critical ❌**；�
 | "STROBE 和 CONSORT 差不多" | 完全不同的规范，用错等于没用 |
 | "AI 研究不需要临床报告规范" | CLAIM 2024 / DECIDE-AI / TRIPOD+AI 2024 专门为 AI 医学研究设计 |
 | "Checklist 打勾就行" | 必须标注论文中的具体位置（页码/段落），否则编辑退回 |
-| "索引里有名字就能逐条查" | 只有 6 条规范有本地逐条 checklist，其余要下载官方 checklist 人工核对 |
+| "索引里有名字就能逐条查" | 47 条中只有 21 条有本地逐条 checklist（其余 26 条如 COREQ、SRQR、MOOSE、AMSTAR 2、QUADAS-2 等），其余要下载官方 checklist 人工核对 |
 | "有几个 ❌ 也无所谓" | critical ❌ 一个都不能有；非 critical 的也会被审稿人挑出来 |
 
 ## Convergence

@@ -32,7 +32,7 @@ MRP 用 **20 个 skill** 覆盖从"我想研究一个课题"到"论文投出去"
 
 | 特性 | 通用学术框架 | Med-Research-Powers |
 |------|------------|-------------------|
-| 报告规范 | 不覆盖或仅提 APA | 46 项报告规范（CONSORT 2025、DECIDE-AI、IDEAL……） |
+| 报告规范 | 不覆盖或仅提 APA | 47 项报告规范（CONSORT 2025、DECIDE-AI、IDEAL……） |
 | 伦理审查 | 不涉及 | 主线上有 research-ethics：收集数据前检查 IRB/IACUC、知情同意、数据隐私 |
 | 实验设计 | 不涉及 | WB/qPCR/动物实验设计模板 |
 | 样本量计算 | 不涉及 | 内置 5 种场景的 Python 脚本 |
@@ -211,8 +211,8 @@ research-question-formulation
 - **研究设计路由（Type A–E）**：README_CN 的 [研究设计路由](../README_CN.md#研究设计路由type-ae)。
 - **6 道投稿前关卡与引用核验状态**：README_CN 的 [6 道投稿前核验](../README_CN.md#6-道投稿前核验)。
 - **4 位审稿人与评分**：README_CN 的 [同行评审模拟](../README_CN.md#4-位审稿人同行评审模拟)。
-- **46 项报告规范**：README_CN 的 [报告规范](../README_CN.md#报告规范46)；机读索引在 `skills/reporting-standards/references/checklists/standards-index.yaml`，CONSORT 2025 逐条清单在同目录 `consort-2025.yaml`（30 项，含子项共 42 行）。
-- **234 本期刊模板**：README_CN 的 [期刊模板](../README_CN.md#期刊模板234)；数据文件 `skills/manuscript-writing/references/journal-templates.yaml`（IF/APC 标注了年份，引用前请复核）。
+- **47 项报告规范**：README_CN 的 [报告规范](../README_CN.md#报告规范47)；机读索引在 `skills/reporting-standards/references/checklists/standards-index.yaml`，CONSORT 2025 逐条清单在同目录 `consort-2025.yaml`（30 项，含子项共 42 行）。
+- **240 本期刊模板**：README_CN 的 [期刊模板](../README_CN.md#期刊模板234)；数据文件 `skills/manuscript-writing/references/journal-templates.yaml`（IF/APC 标注了年份，引用前请复核）。
 - **统计方法覆盖**：README_CN 的 [统计方法覆盖范围](../README_CN.md#统计方法覆盖范围)；决策树 `skills/data-analysis-planning/references/stat-method-decision-tree.yaml`。
 - **架构图**：[architecture.md](architecture.md)。
 
@@ -256,14 +256,14 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_temp
 
 | 文件 | 位置 | 内容 |
 |------|------|------|
-| `standards-index.yaml` | reporting-standards/references/checklists/ | 46 项报告规范的主索引 |
+| `standards-index.yaml` | reporting-standards/references/checklists/ | 47 项报告规范的主索引 |
 | `consort-2025.yaml` | reporting-standards/references/checklists/ | CONSORT 2025 逐条清单（30 项，含子项共 42 行） |
 | `stat-method-decision-tree.yaml` | data-analysis-planning/references/ | 统计方法选择指南 |
 | `omics-methods.md` | data-analysis-planning/references/ | 组学分析流程 |
 | `metrics-and-reporting.yaml` | study-design/references/ | AI 研究指标 + 规范映射 |
 | `survey-reference.yaml` | study-design/references/ | 问卷/Delphi 设计参考表（Type E） |
 | `experiment-templates/` | study-design/references/ | WB、qPCR、动物实验设计模板 |
-| `journal-templates.yaml` | manuscript-writing/references/ | 234 本期刊格式模板 |
+| `journal-templates.yaml` | manuscript-writing/references/ | 240 本期刊格式模板 |
 | `state-schemas.md` | using-med-research-powers/references/ | `.mrp-state.json` 与用户画像的 schema |
 
 ---
@@ -407,7 +407,7 @@ med-research-powers/
 │   ├── figure-generation/
 │   │   └── scripts/ (pub_style.py)
 │   ├── manuscript-writing/
-│   │   ├── references/journal-templates.yaml   # 234 本期刊模板
+│   │   ├── references/journal-templates.yaml   # 240 本期刊模板
 │   │   └── scripts/ (get_journal_template.py)
 │   ├── manuscript-export/
 │   │   └── scripts/ (export_docx.py)

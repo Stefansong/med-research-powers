@@ -1,0 +1,98 @@
+# CHERRIES checklist — transcribed verbatim from Table 1 ("Checklist for Reporting Results of Internet
+# E-Surveys (CHERRIES)") of the CHERRIES editorial
+# Source: Eysenbach G. Improving the quality of Web surveys: the Checklist for Reporting Results of
+#         Internet E-Surveys (CHERRIES). J Med Internet Res 2004;6(3):e34. doi:10.2196/jmir.6.3.e34
+#         (PMID 15471760; PMC1550605). Retrieved via PubMed/PMC full text on 2026-09-21.
+# The published table has three columns — "Item Category" | "Checklist Item" | "Explanation" — and NO
+# item numbers. The ids below (1-30) are sequential in table order and are this file's own convention;
+# cite CHERRIES items by their checklist-item name, not by these numbers. `topic` is the "Checklist
+# Item" label and `text` is the "Explanation" column, both verbatim. Sections are the eight
+# "Item Category" rows of the table.
+# The editorial defines an e-survey as "an electronic questionnaire administered on the Internet or an
+# Intranet. Although many of the CHERRIES items are also valid for surveys administered via e-mail, the
+# checklist focuses on Web-based surveys." It recommends avoiding the term "response rate" and instead
+# reporting the view rate, participation rate and completion rate as defined in the table.
+#
+# Field meanings:
+#   id        — sequential row number (this file's convention; the original table is unnumbered)
+#   topic     — "Checklist Item" label exactly as in Table 1
+#   text      — "Explanation" column (verbatim)
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#               reported but do not block on their own
+
+name: CHERRIES
+version: "2004"
+total_items: 30          # 30 checklist items (unnumbered in the original; numbered 1-30 here in table order)
+total_rows: 30
+reference: "Eysenbach G. J Med Internet Res 2004;6(3):e34 (doi:10.2196/jmir.6.3.e34)"
+website: "https://www.jmir.org/2004/3/e34/"
+applies_to: "Web-based (and e-mail) surveys — e-surveys administered on the Internet or an Intranet"
+use_with: "CROSS (cross-2021.yaml) for the general survey-study items; CHERRIES adds the web-administration, response-metric and duplicate-entry items"
+response_metrics_note: "There is no single response rate in online surveys — report view rate (unique survey visitors / unique site visitors), participation rate (unique visitors who agreed to participate / unique first survey page visitors) and completion rate (users who finished the survey / users who agreed to participate) as defined in Table 1"
+
+sections:
+  - name: Design
+    items:
+      - {id: "1", topic: "Describe survey design", text: "Describe target population, sample frame. Is the sample a convenience sample? (In “open” surveys this is most likely.)", critical: true}
+
+  - name: IRB (Institutional Review Board) approval and informed consent process
+    items:
+      - {id: "2", topic: "IRB approval", text: "Mention whether the study has been approved by an IRB.", critical: true}
+      - {id: "3", topic: "Informed consent", text: "Describe the informed consent process. Where were the participants told the length of time of the survey, which data were stored and where and for how long, who the investigator was, and the purpose of the study?", critical: true}
+      - {id: "4", topic: "Data protection", text: "If any personal information was collected or stored, describe what mechanisms were used to protect unauthorized access."}
+
+  - name: Development and pre-testing
+    items:
+      - {id: "5", topic: "Development and testing", text: "State how the survey was developed, including whether the usability and technical functionality of the electronic questionnaire had been tested before fielding the questionnaire.", critical: true}
+
+  - name: Recruitment process and description of the sample having access to the questionnaire
+    items:
+      - {id: "6", topic: "Open survey versus closed survey", text: "An “open survey” is a survey open for each visitor of a site, while a closed survey is only open to a sample which the investigator knows (password-protected survey).", critical: true}
+      - {id: "7", topic: "Contact mode", text: "Indicate whether or not the initial contact with the potential participants was made on the Internet. (Investigators may also send out questionnaires by mail and allow for Web-based data entry.)"}
+      - {id: "8", topic: "Advertising the survey", text: "How/where was the survey announced or advertised? Some examples are offline media (newspapers), or online (mailing lists – If yes, which ones?) or banner ads (Where were these banner ads posted and what did they look like?). It is important to know the wording of the announcement as it will heavily influence who chooses to participate. Ideally the survey announcement should be published as an appendix.", critical: true}
+
+  - name: Survey administration
+    items:
+      - {id: "9", topic: "Web/E-mail", text: "State the type of e-survey (eg, one posted on a Web site, or one sent out through e-mail). If it is an e-mail survey, were the responses entered manually into a database, or was there an automatic method for capturing responses?", critical: true}
+      - {id: "10", topic: "Context", text: "Describe the Web site (for mailing list/newsgroup) in which the survey was posted. What is the Web site about, who is visiting it, what are visitors normally looking for? Discuss to what degree the content of the Web site could pre-select the sample or influence the results. For example, a survey about vaccination on a anti-immunization Web site will have different results from a Web survey conducted on a government Web site", critical: true}
+      - {id: "11", topic: "Mandatory/voluntary", text: "Was it a mandatory survey to be filled in by every visitor who wanted to enter the Web site, or was it a voluntary survey?"}
+      - {id: "12", topic: "Incentives", text: "Were any incentives offered (eg, monetary, prizes, or non-monetary incentives such as an offer to provide the survey results)?"}
+      - {id: "13", topic: "Time/Date", text: "In what timeframe were the data collected?", critical: true}
+      - {id: "14", topic: "Randomization of items or questionnaires", text: "To prevent biases items can be randomized or alternated."}
+      - {id: "15", topic: "Adaptive questioning", text: "Use adaptive questioning (certain items, or only conditionally displayed based on responses to other items) to reduce number and complexity of the questions."}
+      - {id: "16", topic: "Number of Items", text: "What was the number of questionnaire items per page? The number of items is an important factor for the completion rate."}
+      - {id: "17", topic: "Number of screens (pages)", text: "Over how many pages was the questionnaire distributed? The number of items is an important factor for the completion rate."}
+      - {id: "18", topic: "Completeness check", text: "It is technically possible to do consistency or completeness checks before the questionnaire is submitted. Was this done, and if “yes”, how (usually JAVAScript)? An alternative is to check for completeness after the questionnaire has been submitted (and highlight mandatory items). If this has been done, it should be reported. All items should provide a non-response option such as “not applicable” or “rather not say”, and selection of one response option should be enforced."}
+      - {id: "19", topic: "Review step", text: "State whether respondents were able to review and change their answers (eg, through a Back button or a Review step which displays a summary of the responses and asks the respondents if they are correct)."}
+
+  - name: Response rates
+    items:
+      - {id: "20", topic: "Unique site visitor", text: "If you provide view rates or participation rates, you need to define how you determined a unique visitor. There are different techniques available, based on IP addresses or cookies or both."}
+      - {id: "21", topic: "View rate (Ratio of unique survey visitors/unique site visitors)", text: "Requires counting unique visitors to the first page of the survey, divided by the number of unique site visitors (not page views!). It is not unusual to have view rates of less than 0.1 % if the survey is voluntary."}
+      - {id: "22", topic: "Participation rate (Ratio of unique visitors who agreed to participate/unique first survey page visitors)", text: "Count the unique number of people who filled in the first survey page (or agreed to participate, for example by checking a checkbox), divided by visitors who visit the first page of the survey (or the informed consents page, if present). This can also be called “recruitment” rate.", critical: true}
+      - {id: "23", topic: "Completion rate (Ratio of users who finished the survey/users who agreed to participate)", text: "The number of people submitting the last questionnaire page, divided by the number of people who agreed to participate (or submitted the first survey page). This is only relevant if there is a separate “informed consent” page or if the survey goes over several pages. This is a measure for attrition. Note that “completion” can involve leaving questionnaire items blank. This is not a measure for how completely questionnaires were filled in. (If you need a measure for this, use the word “completeness rate”.)", critical: true}
+
+  - name: Preventing multiple entries from the same individual
+    items:
+      - {id: "24", topic: "Cookies used", text: "Indicate whether cookies were used to assign a unique user identifier to each client computer. If so, mention the page on which the cookie was set and read, and how long the cookie was valid. Were duplicate entries avoided by preventing users access to the survey twice; or were duplicate database entries having the same user ID eliminated before analysis? In the latter case, which entries were kept for analysis (eg, the first entry or the most recent)?"}
+      - {id: "25", topic: "IP check", text: "Indicate whether the IP address of the client computer was used to identify potential duplicate entries from the same user. If so, mention the period of time for which no two entries from the same IP address were allowed (eg, 24 hours). Were duplicate entries avoided by preventing users with the same IP address access to the survey twice; or were duplicate database entries having the same IP address within a given period of time eliminated before analysis? If the latter, which entries were kept for analysis (eg, the first entry or the most recent)?"}
+      - {id: "26", topic: "Log file analysis", text: "Indicate whether other techniques to analyze the log file for identification of multiple entries were used. If so, please describe."}
+      - {id: "27", topic: "Registration", text: "In “closed” (non-open) surveys, users need to login first and it is easier to prevent duplicate entries from the same user. Describe how this was done. For example, was the survey never displayed a second time once the user had filled it in, or was the username stored together with the survey results and later eliminated? If the latter, which entries were kept for analysis (eg, the first entry or the most recent)?"}
+
+  - name: Analysis
+    items:
+      - {id: "28", topic: "Handling of incomplete questionnaires", text: "Were only completed questionnaires analyzed? Were questionnaires which terminated early (where, for example, users did not go through all questionnaire pages) also analyzed?", critical: true}
+      - {id: "29", topic: "Questionnaires submitted with an atypical timestamp", text: "Some investigators may measure the time people needed to fill in a questionnaire and exclude questionnaires that were submitted too soon. Specify the timeframe that was used as a cut-off point, and describe how this point was determined."}
+      - {id: "30", topic: "Statistical correction", text: "Indicate whether any methods such as weighting of items or propensity scores have been used to adjust for the non-representative sample; if so, please describe the methods."}
+
+commonly_missed:
+  - "Open vs closed survey — say which, and for open surveys acknowledge the convenience sample"
+  - "Advertising the survey — where/how it was announced and the exact wording of the announcement (appendix)"
+  - "Context — what site/list the survey was posted on and how that could pre-select respondents"
+  - "Development and testing — usability and technical functionality testing before fielding"
+  - "Number of items per page and number of pages — determinants of completion rate"
+  - "Completeness check / review step — whether mandatory items were enforced and whether respondents could go back"
+  - "View rate, participation rate, completion rate — report these defined metrics instead of an undefined 'response rate', and define 'unique visitor'"
+  - "Preventing multiple entries — cookies, IP check, log-file analysis or registration, and which duplicate entry was kept"
+  - "Handling of incomplete questionnaires — whether partial responses were analysed"
+  - "Atypical timestamp — cut-off for too-fast submissions and how it was chosen"

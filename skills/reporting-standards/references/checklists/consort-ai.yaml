@@ -1,0 +1,77 @@
+# CONSORT-AI extension — 14 items, transcribed verbatim from Table 1 ("CONSORT-AI checklist") of the statement
+# Source: Liu X, Cruz Rivera S, Moher D, Calvert MJ, Denniston AK; SPIRIT-AI and CONSORT-AI Working Group.
+#         Reporting guidelines for clinical trial reports for interventions involving artificial intelligence:
+#         the CONSORT-AI extension. BMJ 2020;370:m3164. doi:10.1136/bmj.m3164 (PMID 32909959, PMC7490784)
+#         Simultaneously published in Nat Med 2020;26(9):1364-1374 (doi:10.1038/s41591-020-1034-x, PMC7598943)
+#         and Lancet Digit Health 2020;2(10):e537-e548 (doi:10.1016/S2589-7500(20)30218-1, PMC8183333).
+#         Retrieved via PubMed/PMC full text; transcribed 2026-09-21.
+# The statement: "The CONSORT-AI Extension recommends that 14 new checklists items are added to the existing
+# CONSORT 2010 statement (11 extensions and three elaborations)". Table footnote: "We strongly recommend
+# reading this statement in conjunction with the CONSORT 2010 Explanation and Elaboration for important
+# clarifications on all the items." An adapted CONSORT flow diagram for AI trials is given as Fig 1.
+# Each CONSORT-AI item is numbered after the CONSORT 2010 item it extends/elaborates (eg "CONSORT-AI 5 (iii)"),
+# so every row here is its own numbered item: total_items == total_rows == 14.
+# The published extension is anchored to CONSORT 2010; MRP's base checklist is CONSORT 2025. The
+# `consort_2025_item` field is MRP's own crosswalk (NOT part of the CONSORT-AI publication) to the CONSORT 2025
+# item covering the same topic — use it to place the AI item next to the right base item.
+#
+# Field meanings:
+#   id                — CONSORT-AI item label exactly as in Table 1 (without the "CONSORT-AI" prefix)
+#   type              — "extension" (new AI-specific content) | "elaboration" (AI-specific clarification of an existing item)
+#   consort_2010_item — CONSORT 2010 item(s) the AI item is attached to, as printed in Table 1
+#   consort_2025_item — MRP crosswalk to consort-2025.yaml (see note above)
+#   text              — CONSORT-AI item text (verbatim)
+#   critical          — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#                       reported but do not block on their own
+
+name: CONSORT-AI
+version: "2020"
+total_items: 14          # 11 extensions + 3 elaborations, each separately numbered
+total_rows: 14
+use_with: ["CONSORT 2025 (consort-2025.yaml) — CONSORT-AI is an extension, not a stand-alone checklist; the CONSORT 2025 statement lists CONSORT-AI among the extensions still to be realigned and says to keep using it", "SPIRIT-AI 2020 for the trial protocol (spirit-ai.yaml)"]
+reference: "Liu et al. BMJ 2020;370:m3164 (doi:10.1136/bmj.m3164); Nat Med 2020;26:1364-1374 (doi:10.1038/s41591-020-1034-x); Lancet Digit Health 2020;2:e537-e548 (doi:10.1016/S2589-7500(20)30218-1)"
+website: "https://www.equator-network.org/reporting-guidelines/consort-artificial-intelligence/"
+applies_to: "Randomised trial reports in which the intervention includes an artificial intelligence / machine learning component (any modality — diagnostic, prognostic, therapeutic)"
+flow_diagram: "CONSORT 2010 flow diagram adapted for AI clinical trials (Fig 1 of the statement) — exclusions at the input-data level after randomisation are analysis exclusions, not enrolment exclusions"
+
+sections:
+  - name: Title and abstract
+    items:
+      - {id: "1a,b (i)", type: elaboration, consort_2010_item: "1a, 1b", consort_2025_item: "1a, 1b", topic: "Title and abstract", text: "Indicate that the intervention involves artificial intelligence/machine learning in the title and/or abstract and specify the type of model.", critical: true}
+      - {id: "1a,b (ii)", type: elaboration, consort_2010_item: "1a, 1b", consort_2025_item: "1a, 1b", topic: "Title and abstract", text: "State the intended use of the AI intervention within the trial in the title and/or abstract."}
+
+  - name: Introduction
+    items:
+      - {id: "2a (i)", type: extension, consort_2010_item: "2a", consort_2025_item: "6", topic: "Background and objectives", text: "Explain the intended use of the AI intervention in the context of the clinical pathway, including its purpose and its intended users (e.g. healthcare professionals, patients, public).", critical: true}
+
+  - name: Methods
+    items:
+      - {id: "4a (i)", type: elaboration, consort_2010_item: "4a", consort_2025_item: "12a", topic: "Participants", text: "State the inclusion and exclusion criteria at the level of participants."}
+      - {id: "4a (ii)", type: extension, consort_2010_item: "4a", consort_2025_item: "12a", topic: "Participants", text: "State the inclusion and exclusion criteria at the level of the input data.", critical: true}
+      - {id: "4b", type: extension, consort_2010_item: "4b", consort_2025_item: "11", topic: "Participants", text: "Describe how the AI intervention was integrated into the trial setting, including any onsite or offsite requirements."}
+      - {id: "5 (i)", type: extension, consort_2010_item: "5", consort_2025_item: "13 (and 24a for the version actually delivered)", topic: "Interventions", text: "State which version of the AI algorithm was used.", critical: true}
+      - {id: "5 (ii)", type: extension, consort_2010_item: "5", consort_2025_item: "13", topic: "Interventions", text: "Describe how the input data were acquired and selected for the AI intervention.", critical: true}
+      - {id: "5 (iii)", type: extension, consort_2010_item: "5", consort_2025_item: "13", topic: "Interventions", text: "Describe how poor quality or unavailable input data were assessed and handled.", critical: true}
+      - {id: "5 (iv)", type: extension, consort_2010_item: "5", consort_2025_item: "13", topic: "Interventions", text: "Specify whether there was human-AI interaction in the handling of the input data, and what level of expertise was required of users."}
+      - {id: "5 (v)", type: extension, consort_2010_item: "5", consort_2025_item: "13", topic: "Interventions", text: "Specify the output of the AI intervention", critical: true}
+      - {id: "5 (vi)", type: extension, consort_2010_item: "5", consort_2025_item: "13", topic: "Interventions", text: "Explain how the AI intervention's outputs contributed to decision-making or other elements of clinical practice.", critical: true}
+
+  - name: Results
+    items:
+      - {id: "19", type: extension, consort_2010_item: "19", consort_2025_item: "27 (results) with 15 (how assessed)", topic: "Harms", text: "Describe results of any analysis of performance errors and how errors were identified, where applicable. If no such analysis was planned or done, justify why not.", critical: true}
+
+  - name: Other information
+    items:
+      - {id: "25", type: extension, consort_2010_item: "25", consort_2025_item: "4 (data/code sharing) and 5a (funding)", topic: "Funding", text: "State whether and how the AI intervention and/or its code can be accessed, including any restrictions to access or re-use."}
+
+commonly_missed:
+  - "Item 1a,b (i) / (ii) — title/abstract must say the intervention involves AI/ML, name the type of model, AND state its intended use"
+  - "Item 2a (i) — where the AI sits in the clinical pathway, its purpose and its intended users (healthcare professionals, patients, public)"
+  - "Item 4a (ii) — eligibility criteria at the level of the input data (image quality, format, minimum requirements), separate from participant-level criteria"
+  - "Item 4b — onsite/offsite requirements to integrate the AI (hardware, vendor-specific devices, cloud, local fine-tuning)"
+  - "Item 5 (i) — the exact algorithm version (and UDI/regulatory marking if available); whether it changed during the trial"
+  - "Item 5 (iii) — amount of poor-quality/missing input data, how it was identified and handled, and the impact on the care pathway — reported for the control arm too where relevant"
+  - "Item 5 (iv) — human-AI interaction in handling input data and the expertise required of users"
+  - "Item 5 (vi) — how the AI output actually fed into clinical decision-making"
+  - "Item 19 — an analysis of performance errors (or an explicit justification for not doing one)"
+  - "Item 25 — whether and how the AI intervention and/or its code can be accessed, with any restrictions"

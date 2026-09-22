@@ -19,8 +19,8 @@ Inspired by [Superpowers](https://github.com/obra/superpowers) (software-enginee
 | **Skills** | 20 skills covering the full research pipeline — every skill is callable as `/mrp:<skill-name>` |
 | **Slash Commands** | 7 commands for the most common entry points |
 | **Study Designs** | Clinical, basic/bench, AI/ML, qualitative, survey/Delphi (one unified router) |
-| **Reporting Standards** | 46 standards — CONSORT 2025, SPIRIT 2025, STROBE, PRISMA 2020, TRIPOD+AI 2024, DECIDE-AI, CLAIM 2024, IDEAL, ARRIVE 2.0, COREQ, CHERRIES, COSMIN … |
-| **Journal Templates** | 234 journals across 30+ specialties |
+| **Reporting Standards** | 47 standards — CONSORT 2025, SPIRIT 2025, STROBE, PRISMA 2020, TRIPOD+AI 2024, DECIDE-AI, CLAIM 2024, IDEAL, ARRIVE 2.0, COREQ, CHERRIES, COSMIN … |
+| **Journal Templates** | 240 journals across 30+ specialties |
 | **Statistical Methods** | 15+ method categories with an assumption-driven decision tree |
 | **Python Scripts** | 10 bundled scripts (assumptions, power, cleaning, analysis scaffold, figure styling, .docx export, journal-template lookup, patient-level split, randomization, pipeline state) |
 | **Pre-Submission** | 6-gate verification with PubMed MCP citation checking |
@@ -42,7 +42,7 @@ AI research agents make the same mistakes every time. MRP replaces "best-effort 
 | Writes a manuscript and declares "done" | 6-gate verification before any submission step |
 | Fabricates references confidently | Every citation is checked against PubMed (automatically when a PubMed MCP is configured, otherwise by DOI / web search) |
 | Reports `p < 0.05` with no effect size | Requires effect size + 95% CI + exact p-value |
-| Ignores reporting standards | Matches study type to the correct standard from 46 options |
+| Ignores reporting standards | Matches study type to the correct standard from 47 options |
 | Splits AI data randomly | Patient-level splits; flags data leakage and external validation |
 
 **Core philosophy — guided workflows, not suggestions:**
@@ -411,9 +411,9 @@ The decision tree covers 15+ method categories:
 
 ---
 
-## Reporting Standards (46)
+## Reporting Standards (47)
 
-The full, machine-readable index lives in [`skills/reporting-standards/references/checklists/standards-index.yaml`](skills/reporting-standards/references/checklists/standards-index.yaml), with a structured CONSORT 2025 checklist in [`consort-2025.yaml`](skills/reporting-standards/references/checklists/consort-2025.yaml).
+The full, machine-readable index lives in [`skills/reporting-standards/references/checklists/standards-index.yaml`](skills/reporting-standards/references/checklists/standards-index.yaml). **21 of the 47 standards ship with an item-by-item checklist YAML transcribed from the source paper** (CONSORT 2025, CONSORT-AI, SPIRIT 2025, SPIRIT-AI, TIDieR, TREND, RECORD, STROBE, PRISMA 2020, PRISMA-ScR, STARD 2015, TRIPOD 2015, TRIPOD+AI, CLAIM 2024, DECIDE-AI, ARRIVE 2.0, CHERRIES, CROSS, CARE, SQUIRE 2.0, CHEERS 2022); for the rest the index gives the official source and Claude is told not to invent items.
 
 ### Standards by Study Type
 
@@ -425,7 +425,7 @@ The full, machine-readable index lives in [`skills/reporting-standards/reference
 | **Guidelines Appraisal** | AGREE II (23 items) |
 | **Meta-analysis of Observational** | MOOSE (35 items) |
 | **Diagnostic** | STARD 2015 (30 items) |
-| **AI & Prediction** | TRIPOD+AI 2024 (27 items), TRIPOD-LLM (2025), TRIPOD-Cluster (2023, 19 items), CLAIM 2024 (44 items; supersedes CLAIM 2020), MI-CLAIM, DECIDE-AI (17 AI-specific + 10 generic items), PROBAST |
+| **AI & Prediction** | TRIPOD 2015 (22 items, legacy), TRIPOD+AI 2024 (27 items), TRIPOD-LLM (2025), TRIPOD-Cluster (2023, 19 items), CLAIM 2024 (44 items; supersedes CLAIM 2020), MI-CLAIM, DECIDE-AI (17 AI-specific + 10 generic items), PROBAST |
 | **Surgery & Devices** | IDEAL framework (5 stages) |
 | **Qualitative** | COREQ (32 items), SRQR (21 items) |
 | **Surveys & Instruments** | CHERRIES (web surveys), CROSS (cross-sectional surveys), COSMIN (measurement instruments) |
@@ -437,9 +437,9 @@ The full, machine-readable index lives in [`skills/reporting-standards/reference
 
 ---
 
-## Journal Templates (234)
+## Journal Templates (240)
 
-Formatting requirements (word limits, abstract format, reference style, section structure, special boxes, cover-letter & ORCID requirements, submission system) for **234 journals across 30+ specialties** live in [`skills/manuscript-writing/references/journal-templates.yaml`](skills/manuscript-writing/references/journal-templates.yaml). Skills fetch one entry at a time with `get_journal_template.py` instead of reading the whole file.
+Formatting requirements (word limits, abstract format, reference style, section structure, special boxes, cover-letter & ORCID requirements, submission system) for **240 journals across 30+ specialties** live in [`skills/manuscript-writing/references/journal-templates.yaml`](skills/manuscript-writing/references/journal-templates.yaml). Skills fetch one entry at a time with `get_journal_template.py` instead of reading the whole file.
 
 | Specialty | Journals |
 |-----------|----------|
@@ -469,7 +469,7 @@ Formatting requirements (word limits, abstract format, reference style, section 
 
 Each template includes: word limit, abstract format (structured/unstructured), reference style and limit, figure/table limits, section structure, special requirements (Key Points box, Research in Context panel, Reporting Summary), submission system, and ORCID policy. The journal-family rules (Lancet / JAMA / Nature sub-journals) are kept in that file only.
 
-Impact factors and APCs in the library are dated (`data_as_of`: IF = JCR 2022, APC = 2022 list prices) — skills state the year and suggest a web check before you rely on them. If a journal isn't listed, MRP fetches its "Instructions for Authors" via web search.
+Impact factors and APCs carry their vintage: 41 frequently targeted journals (urology, radiology, AI/digital health, top general and oncology titles) have `IF_year`/`IF_source` fields with the publisher-reported JCR 2025 or 2024 value; the rest still hold JCR 2022 values (`data_as_of` explains the rule). Skills always state the year and re-check the top candidates on the web before you rely on them. If a journal isn't listed, MRP fetches its "Instructions for Authors" via web search.
 
 ---
 
@@ -485,7 +485,7 @@ Reusable, callable code (not re-written from prompts each time). Skills call the
 | `data_cleaning.py` | `statistical-analysis/scripts/` | Missing-data, outlier and type-validation cleaning with an audit log (`data-cleaning-log.md`) |
 | `pub_style.py` | `figure-generation/scripts/` | Journal figure styling (Nature, Lancet, JAMA, NEJM palettes), colorblind-safe options, ≥300 DPI export, significance bars |
 | `export_docx.py` | `manuscript-export/scripts/` | Markdown → journal-formatted `.docx`, driven by the journal template library; writes `export-report.md` |
-| `get_journal_template.py` | `manuscript-writing/scripts/` | Extract one journal's entry by id from the 234-journal YAML (no whole-file reads) |
+| `get_journal_template.py` | `manuscript-writing/scripts/` | Extract one journal's entry by id from the 240-journal YAML (no whole-file reads) |
 | `patient_level_split.py` | `data-collection-tools/scripts/` | Patient-level train / validation / test split (no leakage across sets) |
 | `randomization.py` | `data-collection-tools/scripts/` | Block / stratified randomization lists for RCTs |
 | `mrp_state.py` | `using-med-research-powers/scripts/` | Read and update `.mrp-state.json` at the end of each pipeline skill |
@@ -631,13 +631,15 @@ MRP adapts the Superpowers methodology framework from software engineering to me
 ```
 med-research-powers/
 ├── .claude-plugin/        plugin.json (name: mrp), marketplace.json
-├── .github/workflows/     ci.yml — consistency guard, pytest, shellcheck, plugin validate, hook smoke test
+├── .github/               ci.yml (guard, pytest, shellcheck, plugin validate, hook smoke test), evals.yml (manual), issue/PR templates
 ├── commands/              7 slash commands (thin routers → skills)
 ├── skills/                20 skills, each: SKILL.md + references/ + scripts/
 ├── hooks/                 session-start.sh (reads .mrp-state.json, reports the resume point)
 ├── docs/                  architecture.md, USER-MANUAL.md, images/
 ├── tools/                 check_consistency.py — repository guard (versions, counts, paths, links)
 ├── tests/                 pytest suite for the bundled scripts
+├── evals/                 `claude plugin eval` cases — skill routing regression (see evals/README.md)
+├── examples/              a synthetic example project (state file, research question, Type C protocol)
 ├── install.sh             installer (plugin / symlink)
 ├── requirements.txt       Python packages for the bundled scripts
 ├── README.md / README_CN.md

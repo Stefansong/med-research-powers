@@ -1,0 +1,116 @@
+# TRIPOD 2015 checklist — 22 items, transcribed from the official TRIPOD checklist
+# Source: Collins GS, Reitsma JB, Altman DG, Moons KGM. Transparent reporting of a multivariable
+#         prediction model for individual prognosis or diagnosis (TRIPOD): the TRIPOD statement.
+#         BMJ 2015;350:g7594. doi:10.1136/bmj.g7594 (PMID 25569120; no PMCID for the BMJ version)
+#         Simultaneously published (identical content) in Ann Intern Med 2015;162:55-63, BMC Med 2015;13:1
+#         (doi:10.1186/s12916-014-0241-z, PMC4284921), Circulation 2015;131:211-219
+#         (doi:10.1161/CIRCULATIONAHA.114.014508, PMC4297220), Br J Cancer 2015;112:251-259
+#         (doi:10.1038/bjc.2014.639, PMC4454817), Eur Urol, J Clin Epidemiol, BJOG, BJS, Diabet Med, Eur J Clin Invest.
+# Item text: taken verbatim from the official combined checklist "TRIPOD Checklist: Prediction Model
+#         Development and Validation" (PDF, tripod-statement.org/resources), which the TRIPOD group
+#         states is the latest, corrected version — it incorporates the 09/02/2015 erratum to item 7a
+#         ("developing or validating" instead of "developing"). The D / V / D;V applicability markers
+#         were cross-checked against the statement text retrieved via PubMed/PMC (PMC4284921, PMC4297220,
+#         PMC4454817): "some items are relevant only for studies reporting the development of a
+#         prediction model (items 10a, 10b, 14, and 15), and others apply only to studies reporting the
+#         (external) validation of a prediction model (items 10c, 10e, 12, 13c, 17, and 19a)".
+#         Checklist footnote: "*Items relevant only to the development of a prediction model are denoted by D,
+#         items relating solely to a validation of a prediction model are denoted by V, and items relating to
+#         both are denoted D;V." Two independent extractions of the PDF agreed on every item.
+#         Item 15b in the official checklist reads "Explain how to the use the prediction model"
+#         (typographical slip); written here as "Explain how to use the prediction model".
+#         Transcribed 2026-09-21.
+# E&E: Moons KGM et al. Ann Intern Med 2015;162:W1-W73 (doi:10.7326/M14-0698).
+# STATUS: superseded by TRIPOD+AI 2024 (tripod-ai.yaml), which "should be used for all prediction model
+#         studies regardless of modelling method". Keep this file only for journals/reviewers that still
+#         request the 2015 checklist or for appraising manuscripts written against it.
+#
+# Field meanings:
+#   id        — item number exactly as in the checklist (sub-items a/b/c as published)
+#   applies   — "D" (development only) | "V" (validation only) | "D;V" (both), as printed in the checklist;
+#               for studies that both develop and validate a model, all items apply
+#   text      — checklist item description (verbatim)
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#               reported but do not block on their own
+
+name: TRIPOD
+version: "2015"
+total_items: 22          # numbered items 1-22
+total_rows: 37           # including sub-items (3a/b, 4a/b, 5a-c, 6a/b, 7a/b, 10a-e, 13a-c, 14a/b, 15a/b, 19a/b)
+superseded_by: "TRIPOD+AI 2024 (Collins et al. BMJ 2024;385:e078378) — use tripod-ai.yaml for new manuscripts"
+reference: "Collins et al. BMJ 2015;350:g7594 (doi:10.1136/bmj.g7594); Ann Intern Med 2015;162:55-63 (doi:10.7326/M14-0697); E&E: Moons et al. Ann Intern Med 2015;162:W1-W73 (doi:10.7326/M14-0698)"
+website: "https://www.tripod-statement.org/"
+applies_to: "Studies developing, validating (with or without updating), or both developing and validating a multivariable prediction model for diagnosis or prognosis (any medical domain, any predictor type); also studies of the incremental value of a predictor"
+not_for: "Multivariable modelling in aetiological studies, single prognostic factor studies, and impact studies of using a model (per the statement)"
+development_only_items: ["10a", "10b", "14a", "14b", "15a", "15b"]
+validation_only_items: ["10c", "10e", "12", "13c", "17", "19a"]
+flow_diagram: "Recommended (item 13a) — 'A diagram may be helpful'"
+
+sections:
+  - name: Title and abstract
+    items:
+      - {id: "1", topic: "Title", applies: "D;V", text: "Identify the study as developing and/or validating a multivariable prediction model, the target population, and the outcome to be predicted", critical: true}
+      - {id: "2", topic: "Abstract", applies: "D;V", text: "Provide a summary of objectives, study design, setting, participants, sample size, predictors, outcome, statistical analysis, results, and conclusions"}
+
+  - name: Introduction
+    items:
+      - {id: "3a", topic: "Background and objectives", applies: "D;V", text: "Explain the medical context (including whether diagnostic or prognostic) and rationale for developing or validating the multivariable prediction model, including references to existing models"}
+      - {id: "3b", topic: "Background and objectives", applies: "D;V", text: "Specify the objectives, including whether the study describes the development or validation of the model or both", critical: true}
+
+  - name: Methods
+    items:
+      - {id: "4a", topic: "Source of data", applies: "D;V", text: "Describe the study design or source of data (e.g., randomized trial, cohort, or registry data), separately for the development and validation data sets, if applicable", critical: true}
+      - {id: "4b", topic: "Source of data", applies: "D;V", text: "Specify the key study dates, including start of accrual; end of accrual; and, if applicable, end of follow-up"}
+      - {id: "5a", topic: "Participants", applies: "D;V", text: "Specify key elements of the study setting (e.g., primary care, secondary care, general population) including number and location of centres"}
+      - {id: "5b", topic: "Participants", applies: "D;V", text: "Describe eligibility criteria for participants", critical: true}
+      - {id: "5c", topic: "Participants", applies: "D;V", text: "Give details of treatments received, if relevant"}
+      - {id: "6a", topic: "Outcome", applies: "D;V", text: "Clearly define the outcome that is predicted by the prediction model, including how and when assessed", critical: true}
+      - {id: "6b", topic: "Outcome", applies: "D;V", text: "Report any actions to blind assessment of the outcome to be predicted"}
+      - {id: "7a", topic: "Predictors", applies: "D;V", text: "Clearly define all predictors used in developing or validating the multivariable prediction model, including how and when they were measured", critical: true}
+      - {id: "7b", topic: "Predictors", applies: "D;V", text: "Report any actions to blind assessment of predictors for the outcome and other predictors"}
+      - {id: "8", topic: "Sample size", applies: "D;V", text: "Explain how the study size was arrived at", critical: true}
+      - {id: "9", topic: "Missing data", applies: "D;V", text: "Describe how missing data were handled (e.g., complete-case analysis, single imputation, multiple imputation) with details of any imputation method", critical: true}
+      - {id: "10a", topic: "Statistical analysis methods", applies: "D", text: "Describe how predictors were handled in the analyses"}
+      - {id: "10b", topic: "Statistical analysis methods", applies: "D", text: "Specify type of model, all model-building procedures (including any predictor selection), and method for internal validation", critical: true}
+      - {id: "10c", topic: "Statistical analysis methods", applies: "V", text: "For validation, describe how the predictions were calculated"}
+      - {id: "10d", topic: "Statistical analysis methods", applies: "D;V", text: "Specify all measures used to assess model performance and, if relevant, to compare multiple models", critical: true}
+      - {id: "10e", topic: "Statistical analysis methods", applies: "V", text: "Describe any model updating (e.g., recalibration) arising from the validation, if done"}
+      - {id: "11", topic: "Risk groups", applies: "D;V", text: "Provide details on how risk groups were created, if done"}
+      - {id: "12", topic: "Development vs. validation", applies: "V", text: "For validation, identify any differences from the development data in setting, eligibility criteria, outcome, and predictors", critical: true}
+
+  - name: Results
+    items:
+      - {id: "13a", topic: "Participants", applies: "D;V", text: "Describe the flow of participants through the study, including the number of participants with and without the outcome and, if applicable, a summary of the follow-up time. A diagram may be helpful", critical: true}
+      - {id: "13b", topic: "Participants", applies: "D;V", text: "Describe the characteristics of the participants (basic demographics, clinical features, available predictors), including the number of participants with missing data for predictors and outcome", critical: true}
+      - {id: "13c", topic: "Participants", applies: "V", text: "For validation, show a comparison with the development data of the distribution of important variables (demographics, predictors and outcome)"}
+      - {id: "14a", topic: "Model development", applies: "D", text: "Specify the number of participants and outcome events in each analysis", critical: true}
+      - {id: "14b", topic: "Model development", applies: "D", text: "If done, report the unadjusted association between each candidate predictor and outcome"}
+      - {id: "15a", topic: "Model specification", applies: "D", text: "Present the full prediction model to allow predictions for individuals (i.e., all regression coefficients, and model intercept or baseline survival at a given time point)", critical: true}
+      - {id: "15b", topic: "Model specification", applies: "D", text: "Explain how to use the prediction model"}
+      - {id: "16", topic: "Model performance", applies: "D;V", text: "Report performance measures (with CIs) for the prediction model", critical: true}
+      - {id: "17", topic: "Model-updating", applies: "V", text: "If done, report the results from any model updating (i.e., model specification, model performance)"}
+
+  - name: Discussion
+    items:
+      - {id: "18", topic: "Limitations", applies: "D;V", text: "Discuss any limitations of the study (such as nonrepresentative sample, few events per predictor, missing data)", critical: true}
+      - {id: "19a", topic: "Interpretation", applies: "V", text: "For validation, discuss the results with reference to performance in the development data, and any other validation data"}
+      - {id: "19b", topic: "Interpretation", applies: "D;V", text: "Give an overall interpretation of the results, considering objectives, limitations, results from similar studies, and other relevant evidence"}
+      - {id: "20", topic: "Implications", applies: "D;V", text: "Discuss the potential clinical use of the model and implications for future research"}
+
+  - name: Other information
+    items:
+      - {id: "21", topic: "Supplementary information", applies: "D;V", text: "Provide information about the availability of supplementary resources, such as study protocol, Web calculator, and data sets"}
+      - {id: "22", topic: "Funding", applies: "D;V", text: "Give the source of funding and the role of the funders for the present study"}
+
+commonly_missed:
+  - "Item 1 / 3b — say in the title and objectives whether the study is development, validation, or both; the D/V column depends on it"
+  - "Item 4b — start and end of accrual and end of follow-up, separately for development and validation data sets"
+  - "Item 6b / 7b — blinding of outcome assessment and of predictor assessment are two separate items, usually omitted"
+  - "Item 8 — how the study size was arrived at (events per candidate predictor), not just 'all available patients'"
+  - "Item 9 — the missing-data method (complete case, single or multiple imputation) with details of the imputation model"
+  - "Item 10b — every model-building step incl. predictor selection AND the internal validation method (bootstrap, cross-validation)"
+  - "Item 10d / 16 — calibration as well as discrimination, with confidence intervals for every performance measure"
+  - "Item 12 / 13c — for validation, spell out how the validation data differ from the development data and compare their distributions"
+  - "Item 14a — number of participants and outcome events in each analysis"
+  - "Item 15a — the full model (all coefficients plus intercept or baseline survival), otherwise nobody can validate it"
+  - "Item 21 — availability of protocol, web calculator and data sets"

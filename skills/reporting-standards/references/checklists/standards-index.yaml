@@ -1,7 +1,9 @@
-# Reporting Standards Master Index (46 standards)
+# Reporting Standards Master Index (47 standards)
 # Load this file to find the right standard for a study type.
 # Entries with a `file:` field have an item-by-item checklist YAML in this directory
-# (consort-2025, strobe, prisma-2020, stard-2015, arrive-2, tripod-ai) — check those item by item.
+# (21 of 47: consort-2025, consort-ai, spirit-2025, spirit-ai, tidier, trend, record, strobe, prisma-2020, prisma-scr,
+#  stard-2015, tripod-2015, tripod-ai, claim-2024, decide-ai, arrive-2, cherries, cross-2021, care-2013, squire-2, cheers-2022)
+# — check those item by item.
 # For all other entries, give the official source (`reference` / EQUATOR Network) and ask the user
 # to verify against the official checklist by hand; do not invent item text.
 # `items` counts for entries without a local file are index metadata only — verify before quoting.
@@ -19,6 +21,7 @@ standards:
 
   - id: consort-ai
     name: CONSORT-AI 2020
+    file: consort-ai.yaml
     items: 14 extension items
     for: "RCTs of AI interventions"
     use_with: consort-2025
@@ -32,6 +35,7 @@ standards:
 
   - id: spirit-2025
     name: SPIRIT 2025
+    file: spirit-2025.yaml
     items: 34
     for: "RCT protocols"
     supersedes: "SPIRIT 2013"
@@ -39,11 +43,13 @@ standards:
 
   - id: spirit-ai
     name: SPIRIT-AI 2020
+    file: spirit-ai.yaml
     for: "AI intervention RCT protocols"
     use_with: spirit-2025
 
   - id: tidier
     name: TIDieR 2014
+    file: tidier.yaml
     items: 12
     for: "Intervention description and replication"
     note: "Partially integrated into CONSORT 2025 but standalone useful"
@@ -56,6 +62,7 @@ standards:
   # === Non-randomised interventions ===
   - id: trend
     name: TREND 2004
+    file: trend.yaml
     items: 22
     for: "Non-randomised evaluations of behavioural / public health interventions"
     reference: "Des Jarlais DC et al. Am J Public Health 2004;94(3):361-366 (doi:10.2105/ajph.94.3.361)"
@@ -71,6 +78,7 @@ standards:
 
   - id: record
     name: RECORD 2015
+    file: record.yaml
     items: 13
     for: "Studies using routinely collected health data (EMR, administrative)"
     use_with: strobe
@@ -97,6 +105,7 @@ standards:
 
   - id: prisma-scr
     name: PRISMA-ScR 2018
+    file: prisma-scr.yaml
     items: 22
     for: "Scoping reviews"
 
@@ -143,6 +152,14 @@ standards:
     for: "Prediction model development/validation (regression or machine learning)"
     supersedes: "TRIPOD 2015"
     reference: "Collins et al. BMJ 2024;385:e078378 (doi:10.1136/bmj-2023-078378)"
+  - id: tripod-2015
+    name: TRIPOD 2015
+    file: tripod-2015.yaml
+    items: 22
+    for: "Prediction model development / validation studies (regression-based); use when a journal or reviewer still asks for the 2015 checklist"
+    superseded_by: "TRIPOD+AI 2024 — prefer tripod-ai for new manuscripts"
+    reference: "Collins GS et al. BMJ 2015;350:g7594 (doi:10.1136/bmj.g7594)"
+
 
   - id: tripod-llm
     name: TRIPOD-LLM 2025 (Nat Med, Jan 2025)
@@ -156,6 +173,7 @@ standards:
 
   - id: claim
     name: CLAIM 2024
+    file: claim-2024.yaml
     items: 44
     for: "AI in medical imaging"
     supersedes: "CLAIM 2020 (42 items)"
@@ -168,6 +186,7 @@ standards:
 
   - id: decide-ai
     name: DECIDE-AI 2022
+    file: decide-ai.yaml
     items: "17 AI-specific + 10 generic"
     for: "Early-stage clinical evaluation of AI decision support"
     key_items:
@@ -198,12 +217,14 @@ standards:
   # === Surveys & Measurement ===
   - id: cherries
     name: CHERRIES 2004
+    file: cherries.yaml
     for: "Web-based / internet surveys"
     reference: "Eysenbach G. J Med Internet Res 2004;6(3):e34 (doi:10.2196/jmir.6.3.e34)"
     note: "Checklist organised in 8 sections (design; IRB approval and consent; development and pre-testing; recruitment and sample; survey administration; response rates; preventing multiple entries; analysis)"
 
   - id: cross
     name: CROSS 2021
+    file: cross-2021.yaml
     items: 40
     for: "Survey / questionnaire studies"
     reference: "Sharma A et al. J Gen Intern Med 2021;36(10):3179-3187 (doi:10.1007/s11606-021-06737-1)"
@@ -240,16 +261,19 @@ standards:
   # === Other ===
   - id: care
     name: CARE 2013 (E&E 2017)
+    file: care-2013.yaml
     items: 13
     for: "Case reports"
 
   - id: squire
     name: SQUIRE 2.0 (2015)
+    file: squire-2.yaml
     items: 18
     for: "Quality improvement studies"
 
   - id: cheers
     name: CHEERS 2022
+    file: cheers-2022.yaml
     items: 28
     for: "Health economic evaluations"
 

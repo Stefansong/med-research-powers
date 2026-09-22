@@ -83,7 +83,7 @@ description: Use when drafting a medical research manuscript (original research 
 
 ## Journal Template（期刊排版规范）
 
-模板库：`references/journal-templates.yaml`，234 个期刊（顶层键 `data_as_of` + `templates`），按专科分区。它是字数、摘要格式、参考文献样式、特殊要求、投稿系统、期刊家族（`family`）的**唯一数据源**——不要在本文件重复期刊清单。
+模板库：`references/journal-templates.yaml`，240 个期刊（顶层键 `data_as_of` + `templates`），按专科分区。它是字数、摘要格式、参考文献样式、特殊要求、投稿系统、期刊家族（`family`）的**唯一数据源**——不要在本文件重复期刊清单。
 
 **只用脚本读取（文件 3600 多行，整读会截断且浪费上下文）：**
 
@@ -97,7 +97,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_temp
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --id nature --json
 ```
 
-找不到 id 时脚本 exit 1 并提示 `--search`。输出里的 `IF_approx` 是 **JCR 2022** 值、APC 是 2022 价（见 `data_as_of`），引用时必须标年份，选刊结论以 `journal-selection` 的 WebSearch 复核为准。
+找不到 id 时脚本 exit 1 并提示 `--search`。输出里的 `IF_approx` 年份看条目的 `IF_year`（没有则为 **JCR 2022** 旧值）、APC 看 `apc_year`（规则见 `data_as_of`），引用时必须标年份与来源，选刊结论以 `journal-selection` 的 WebSearch 复核为准。
 
 **目标期刊不在库中：** 用 WebSearch 找期刊 "Instructions for Authors"，把提取到的规范写入**项目目录**的 `journal-overrides.yaml`（与库文件相同结构：`templates:` 下一条含 `id / journal / publisher / word_limit / abstract / references / figures / tables / sections / special / system / family`），字段不确定的写 `verify`。脚本默认读取 `./journal-overrides.yaml`（或 `--overrides <路径>`），同 id 时覆盖库内条目。**不要改插件安装目录里的 `journal-templates.yaml`**——更新插件会丢失。
 

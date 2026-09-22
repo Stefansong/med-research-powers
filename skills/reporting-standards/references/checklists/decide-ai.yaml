@@ -1,0 +1,102 @@
+# DECIDE-AI checklist — transcribed verbatim from Table 2 ("DECIDE-AI checklist") of the DECIDE-AI statement
+# Source: Vasey B, Nagendran M, Campbell B, et al.; DECIDE-AI expert group. Reporting guideline for the
+#         early stage clinical evaluation of decision support systems driven by artificial intelligence:
+#         DECIDE-AI. BMJ 2022;377:e070904. doi:10.1136/bmj-2022-070904 (PMID 35584845, PMC9116198)
+#         (simultaneously published in Nat Med 2022;28:924-933, doi:10.1038/s41591-022-01772-9)
+#         Retrieved via PubMed/PMC full text; transcribed 2026-09-21.
+# The statement: "The DECIDE-AI reporting guideline comprises 17 AI specific reporting items (made of
+# 28 subitems) and 10 generic reporting items". Table footnote: "AI specific items are numbered in
+# Arab numerals, generic items in Roman numerals." An E&E paragraph exists for every item
+# (supplementary appendix 1 of the statement).
+# Scope: "early stage live clinical evaluation of AI-based decision support systems, independently of
+# the study design chosen"; "authors may also wish to complete the reporting according to study type
+# specific guideline (eg, STROBE for cohort studies)".
+# Item text is verbatim; the table's "Al system" (typesetting slip for "AI system") is written "AI system".
+#
+# Field meanings:
+#   id        — item number exactly as in Table 2 (Arabic = AI specific; Roman = generic), sub-items a/b/c
+#   topic     — "Theme" column of Table 2
+#   generic   — true for the 10 generic reporting items (Roman numerals)
+#   text      — "Recommendation" column (verbatim)
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#               reported but do not block on their own
+
+name: DECIDE-AI
+version: "2022"
+total_items: 27          # 17 AI specific items (1-17) + 10 generic items (I-X)
+total_rows: 38           # 28 AI specific sub-items (2a/b, 3a-c, 4a-c, 5a/b, 6a/b, 9a/b, 10a/b, 13a/b, 14a/b) + 10 generic items
+reference: "Vasey et al. BMJ 2022;377:e070904 (doi:10.1136/bmj-2022-070904); Nat Med 2022;28:924-933 (doi:10.1038/s41591-022-01772-9)"
+website: "https://www.decide-ai.org/"
+applies_to: "Early stage, small scale, live clinical evaluation of AI-based decision support systems (any study design; any modality — detection, diagnostic, prognostic, therapeutic)"
+use_with: ["Study-design-specific guideline where one exists (eg, STROBE for cohort studies)", "TRIPOD+AI / CLAIM 2024 for the preceding preclinical development and offline validation", "SPIRIT-AI / CONSORT-AI for the subsequent comparative trial"]
+not_for: "Preclinical in silico development or offline validation (TRIPOD+AI, STARD-AI, CLAIM) and large scale comparative RCTs (CONSORT-AI)"
+
+sections:
+  - name: Title and abstract
+    items:
+      - {id: "1", topic: "Title", text: "Identify the study as early clinical evaluation of a decision support system based on AI or machine learning, specifying the problem addressed", critical: true}
+      - {id: "I", topic: "Abstract", generic: true, text: "Provide a structured summary of the study. Consider including: intended use of the AI system, type of underlying algorithm, study setting, number of patients and users included, primary and secondary outcomes, key safety endpoints, human factors evaluated, main results, conclusions"}
+
+  - name: Introduction
+    items:
+      - {id: "2a", topic: "Intended use", text: "Describe the targeted medical condition(s) and problem(s), including the current standard practice, and the intended patient population(s)", critical: true}
+      - {id: "2b", topic: "Intended use", text: "Describe the intended users of the AI system, its planned integration in the care pathway, and the potential impact, including patient outcomes, it is intended to have", critical: true}
+      - {id: "II", topic: "Objectives", generic: true, text: "State the study objectives"}
+
+  - name: Methods
+    items:
+      - {id: "III", topic: "Research governance", generic: true, text: "Provide a reference to any study protocol, study registration number, and ethics approval", critical: true}
+      - {id: "3a", topic: "Participants", text: "Describe how patients were recruited, stating the inclusion and exclusion criteria at both patient and data level, and how the number of recruited patients was decided", critical: true}
+      - {id: "3b", topic: "Participants", text: "Describe how users were recruited, stating the inclusion and exclusion criteria, and how the intended number of recruited users was decided"}
+      - {id: "3c", topic: "Participants", text: "Describe steps taken to familiarise the users with the AI system, including any training received prior to the study"}
+      - {id: "4a", topic: "AI system", text: "Briefly describe the AI system, specifying its version and type of underlying algorithm used. Describe, or provide a direct reference to, the characteristics of the patient population on which the algorithm was trained and its performance in preclinical development/validation studies", critical: true}
+      - {id: "4b", topic: "AI system", text: "Identify the data used as inputs. Describe how the data were acquired, the process needed to enter the input data, the pre-processing applied, and how missing/low-quality data were handled"}
+      - {id: "4c", topic: "AI system", text: "Describe the AI system outputs and how they were presented to the users (an image may be useful)"}
+      - {id: "5a", topic: "Implementation", text: "Describe the settings in which the AI system was evaluated"}
+      - {id: "5b", topic: "Implementation", text: "Describe the clinical workflow/care pathway in which the AI system was evaluated, the timing of its use, and how the final supported decision was reached and by whom", critical: true}
+      - {id: "IV", topic: "Outcomes", generic: true, text: "Specify the primary and secondary outcomes measured", critical: true}
+      - {id: "6a", topic: "Safety and errors", text: "Provide a description of how significant errors/malfunctions were defined and identified", critical: true}
+      - {id: "6b", topic: "Safety and errors", text: "Describe how any risks to patient safety or instances of harm were identified, analysed, and minimised", critical: true}
+      - {id: "7", topic: "Human factors", text: "Describe the human factors tools, methods or frameworks used, the use cases considered, and the users involved"}
+      - {id: "V", topic: "Analysis", generic: true, text: "Describe the statistical methods by which the primary and secondary outcomes were analysed, as well as any prespecified additional analyses, including subgroup analyses and their rationale"}
+      - {id: "8", topic: "Ethics", text: "Describe whether specific methodologies were utilised to fulfil an ethics-related goal (such as algorithmic fairness) and their rationale"}
+      - {id: "VI", topic: "Patient involvement", generic: true, text: "State how patients were involved in any aspect of: the development of the research question, the study design, and the conduct of the study"}
+
+  - name: Results
+    items:
+      - {id: "9a", topic: "Participants", text: "Describe the baseline characteristics of the patients included in the study, and report on input data missingness", critical: true}
+      - {id: "9b", topic: "Participants", text: "Describe the baseline characteristics of the users included in the study"}
+      - {id: "10a", topic: "Implementation", text: "Report on the user exposure to the AI system, on the number of instances the AI system was used, and on the users' adherence to the intended implementation", critical: true}
+      - {id: "10b", topic: "Implementation", text: "Report any significant changes to the clinical workflow or care pathway caused by the AI system"}
+      - {id: "VII", topic: "Main results", generic: true, text: "Report on the prespecified outcomes, including outcomes for any comparison group if applicable", critical: true}
+      - {id: "VIII", topic: "Subgroups analysis", generic: true, text: "Report on the differences in the main outcomes according to the prespecified subgroups"}
+      - {id: "11", topic: "Modifications", text: "Report any changes made to the AI system or its hardware platform during the study. Report the timing of these modifications, the rationale for each, and any changes in outcomes observed after each of them", critical: true}
+      - {id: "12", topic: "Human-computer agreement", text: "Report on the user agreement with the AI system. Describe any instances of and reasons for user variation from the AI system's recommendations and, if applicable, users changing their mind based on the AI system's recommendations", critical: true}
+      - {id: "13a", topic: "Safety and errors", text: "List any significant errors/malfunctions related to: AI system recommendations, supporting software/hardware, or users. Include details of: (i) rate of occurrence, (ii) apparent causes, (iii) whether they could be corrected, and (iv) any significant potential impacts on patient care", critical: true}
+      - {id: "13b", topic: "Safety and errors", text: "Report on any risks to patient safety or observed instances of harm (including indirect harm) identified during the study", critical: true}
+      - {id: "14a", topic: "Human factors", text: "Report on the usability evaluation, according to recognised standards or frameworks"}
+      - {id: "14b", topic: "Human factors", text: "Report on the user learning curves evaluation"}
+
+  - name: Discussion
+    items:
+      - {id: "15", topic: "Support for intended use", text: "Discuss whether the results obtained support the intended use of the AI system in clinical settings", critical: true}
+      - {id: "16", topic: "Safety and errors", text: "Discuss what the results indicate about the safety profile of the AI system. Discuss any observed errors/malfunctions and instances of harm, their implications for patient care, and whether/how they can be mitigated", critical: true}
+      - {id: "IX", topic: "Strengths and limitations", generic: true, text: "Discuss the strengths and limitations of the study"}
+
+  - name: Statements
+    items:
+      - {id: "17", topic: "Data availability", text: "Disclose if and how data and relevant code are available"}
+      - {id: "X", topic: "Conflicts of interest", generic: true, text: "Disclose any relevant conflicts of interest, including the source of funding for the study, the role of funders, any other roles played by commercial companies, and personal conflicts of interest for each author", critical: true}
+
+commonly_missed:
+  - "Item 1 — the title must identify the study as an early clinical evaluation of an AI/ML decision support system AND name the problem addressed"
+  - "Item 2b / 5b — intended users and planned care-pathway integration (Introduction) versus the workflow actually evaluated, timing of use, and who made the final supported decision (Methods) are separate items"
+  - "Item 3b / 3c / 9b — users are study participants too: how they were recruited, how many, what training they received, and their baseline characteristics"
+  - "Item 4a — AI system version and algorithm type, plus training population and preclinical performance (or a direct reference to them)"
+  - "Item 6a / 6b then 13a / 13b — how errors/malfunctions and safety risks were defined and identified (Methods) and what was actually observed, with rate, causes, correctability and impact (Results)"
+  - "Item 10a — user exposure, number of times the system was used, and adherence to the intended implementation"
+  - "Item 11 — every modification to the AI system or hardware during the study, with timing, rationale and any change in outcomes"
+  - "Item 12 — human-computer agreement: when and why users deviated from the AI recommendation, and whether users changed their mind"
+  - "Item 14b — learning curves: if not evaluated, state so explicitly with a rationale (the statement says this fulfils the item)"
+  - "Item 8 — state whether any method was used to pursue an ethics-related goal such as algorithmic fairness, and why"
+  - "Item X — funding, role of funders, any other role of commercial companies, and per-author personal conflicts of interest"

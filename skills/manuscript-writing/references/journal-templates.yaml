@@ -14,8 +14,12 @@
 #   (or --search <keyword> / --list [--specialty X]). A project-level
 #   journal-overrides.yaml (same structure) is consulted first via --overrides.
 #
-# Data vintage: see the top-level `data_as_of` key below. IF_approx values are
-#   JCR 2022 and APC figures are 2022 list prices — always state the year and
+# Data vintage: see the top-level `data_as_of` key below. Entries carrying
+#   IF_year / IF_source were refreshed 2026-09 from publisher pages (IF_year =
+#   JCR data year; 2025 = JCR release of 2026-06). Elsevier/ScienceDirect pages
+#   show the IF without a year — those values were recorded 2026-09 and are
+#   JCR 2025. All other IF_approx values are still JCR 2022; APC figures are
+#   2022 list prices unless apc_year is given — always state the year and
 #   re-check with WebSearch before quoting them in a report.
 #
 # How to contribute:
@@ -23,7 +27,7 @@
 #   Fields present in every entry: id, journal, publisher, IF_approx, word_limit,
 #           abstract, references, sections, system, family
 #   Fields present in some entries only: figures, tables, special, figure_format,
-#           cover_letter, orcid
+#           cover_letter, orcid, IF_year, IF_source (URL), apc_year
 #   family: lancet | jama | nature | ieee | standard — drives section order and
 #           special elements in scripts (export_docx.py). Rule: id/name contains
 #           lancet/eclinical/ebiomedicine → lancet; jama → jama; nature/npj/
@@ -32,7 +36,7 @@
 #   sections: 19 entries say "same as Lancet/JAMA" — kept for human readers;
 #           scripts ignore the free-text `sections` and use `family` instead.
 
-data_as_of: "IF = JCR 2022 (released 2023-06); APC = 2022 list prices; verify before citing"
+data_as_of: "IF = JCR year given in IF_year (JCR 2025 released 2026-06 / JCR 2024 released 2025-06) for entries with IF_year, otherwise JCR 2022 (released 2023-06); APC = 2022 list prices unless apc_year is given; verify before citing"
 
 templates:
 
@@ -43,7 +47,9 @@ templates:
   - id: nature
     journal: Nature
     publisher: Springer Nature
-    IF_approx: 64
+    IF_approx: 56.1
+    IF_year: 2025
+    IF_source: "https://www.nature.com/nature/journal-impact"
     word_limit: 3000 (excluding Methods)
     abstract: unstructured, ≤150 words
     references: ≤50, Nature style (numbered, superscript)
@@ -58,13 +64,15 @@ templates:
       - "Data and Code availability statements required"
     cover_letter: required
     orcid: required
-    system: Editorial Manager
+    system: Nature MTS (eJournalPress)
     family: nature
 
   - id: nature-medicine
     journal: Nature Medicine
     publisher: Springer Nature
-    IF_approx: 82
+    IF_approx: 52.5
+    IF_year: 2025
+    IF_source: "https://www.nature.com/nm/journal-impact"
     word_limit: 3000 (excluding Methods)
     abstract: unstructured, ≤150 words
     references: ≤50, Nature style (numbered, superscript)
@@ -85,7 +93,9 @@ templates:
   - id: lancet
     journal: The Lancet
     publisher: Elsevier
-    IF_approx: 169
+    IF_approx: 109.0
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/the-lancet"
     word_limit: 3000
     abstract: structured (Background, Methods, Findings, Interpretation, Funding), ≤300 words
     references: ≤30, Vancouver (numbered)
@@ -149,7 +159,9 @@ templates:
   - id: bmj
     journal: BMJ
     publisher: BMJ Publishing Group
-    IF_approx: 106
+    IF_approx: 55.1
+    IF_year: 2025
+    IF_source: "https://bmjgroup.com/publishing-and-events/"
     word_limit: 4000
     abstract: structured (Objectives, Design, Setting, Participants, Main outcome measures, Results, Conclusions), ≤250 words
     references: ≤40, Vancouver (numbered)
@@ -170,7 +182,9 @@ templates:
   - id: annals-internal-medicine
     journal: Annals of Internal Medicine
     publisher: ACP
-    IF_approx: 39
+    IF_approx: 17.3
+    IF_year: 2025
+    IF_source: "https://www.acponline.org/clinical-information/journals-publications/annals-of-internal-medicine"
     word_limit: 3000
     abstract: structured, ≤250 words
     references: ≤40, Vancouver
@@ -180,6 +194,7 @@ templates:
     special:
       - "Primary Data Sharing statement"
       - "Reproducible Research statement"
+      - "IF year taken from ACP wording 'most recent (2025) Impact Factor' — verify against JCR"
     system: ScholarOne
     family: standard
 
@@ -190,7 +205,9 @@ templates:
   - id: bmc-medicine
     journal: BMC Medicine
     publisher: Springer Nature
-    IF_approx: 9
+    IF_approx: 8.7
+    IF_year: 2025
+    IF_source: "https://link.springer.com/journal/12916"
     word_limit: no strict limit
     abstract: structured, ≤350 words
     references: unlimited, Vancouver
@@ -198,10 +215,11 @@ templates:
     tables: unlimited
     sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
     special:
-      - "APC: ~$3590"
+      - "APC: $4490 (£3190 / €3690)"
       - "EQUATOR checklist required"
       - "Data availability mandatory"
-    system: Editorial Manager
+    apc_year: 2026
+    system: Springer Nature submission system (SNAPP)
     family: standard
 
   - id: medicine
@@ -244,7 +262,9 @@ templates:
   - id: lancet-oncology
     journal: Lancet Oncology
     publisher: Elsevier
-    IF_approx: 52
+    IF_approx: 33.7
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/the-lancet-oncology"
     word_limit: 3000
     abstract: structured (Background, Methods, Findings, Interpretation, Funding), ≤300 words
     references: ≤30, Vancouver
@@ -276,7 +296,9 @@ templates:
   - id: annals-oncology
     journal: Annals of Oncology
     publisher: Elsevier / ESMO
-    IF_approx: 51
+    IF_approx: 80.4
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/annals-of-oncology"
     word_limit: 3000
     abstract: structured, ≤250 words
     references: ≤50, Vancouver
@@ -311,7 +333,9 @@ templates:
   - id: annals-surgery
     journal: Annals of Surgery
     publisher: Wolters Kluwer
-    IF_approx: 11
+    IF_approx: 6.4
+    IF_year: 2024
+    IF_source: "https://mediakits.wkadcenter.com/mediakit/annals-surgery"
     word_limit: 3500
     abstract: structured, ≤250 words
     references: ≤40, Vancouver
@@ -320,6 +344,7 @@ templates:
     sections: "Abstract, Mini-Abstract (≤50 words), Introduction, Methods, Results, Discussion, References"
     special:
       - "Mini-abstract required (≤50 words)"
+      - "IF 6.4 from Wolters Kluwer 2026 media kit (rank 10/312 in Surgery = JCR 2024 category size); journals.lww.com not reachable — verify"
     system: Editorial Manager
     family: standard
 
@@ -341,15 +366,18 @@ templates:
   - id: bjs
     journal: British Journal of Surgery (BJS)
     publisher: Oxford University Press
-    IF_approx: 9
+    IF_approx: 9.4
+    IF_year: 2025
+    IF_source: "https://academic.oup.com/bjs"
     word_limit: 3000
-    abstract: structured (Background, Methods, Results, Conclusion), ≤250 words
+    abstract: structured (Introduction, Method, Results, Conclusion), <250 words
     references: ≤40, Vancouver
-    figures: ≤6
-    tables: ≤4
+    figures: ≤5 (tables and/or figures combined)
+    tables: included in figure limit
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Collaborative authorship accepted"
+      - "Guidelines checked: https://academic.oup.com/bjs/pages/general-instructions (accessed 2026-09)"
     system: ScholarOne
     family: standard
 
@@ -375,23 +403,30 @@ templates:
   - id: european-urology
     journal: European Urology
     publisher: Elsevier
-    IF_approx: 25
-    word_limit: 3000
-    abstract: structured (Background and objective, Methods, Key findings and limitations, Conclusions and clinical implications, Patient summary), ≤300 words
+    IF_approx: 29.1
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/european-urology"
+    word_limit: 2500 (body text; abstract ≤250 additional; excludes what-does-the-study-add, patient summary, references, tables, figures, legends)
+    abstract: structured (Background and objective, Methods, Key findings and limitations, Conclusions and clinical implications, Patient summary), ≤250 words
     references: ≤40, Vancouver
-    figures: ≤6
-    tables: ≤4
+    figures: ≤5 (figures + tables combined; each figure ≤4 subparts)
+    tables: included in figure limit
     sections: "Abstract, Patient Summary, Introduction, Patients and Methods, Results, Discussion, Conclusions, References"
     special:
       - "Patient Summary required (≤4 sentences in lay language)"
-      - "Take Home Message (≤2 sentences)"
+      - "Take Home Message (2-3 sentences, ≤40 words, uploaded as separate file)"
+      - "Abstract limit is now ≤250 words (older guide versions allowed ≤300 words)"
+      - "'What does the study add' section (3-4 sentences) required"
+      - "Guidelines checked: https://www.sciencedirect.com/journal/european-urology/publish/guide-for-authors (accessed 2026-09)"
     system: Editorial Manager
     family: standard
 
   - id: journal-urology
     journal: The Journal of Urology
     publisher: AUA / Wolters Kluwer
-    IF_approx: 7
+    IF_approx: 7.5
+    IF_year: 2024
+    IF_source: "https://www.auanet.org/annual-reports/2025/"
     word_limit: 2500
     abstract: structured (Purpose, Materials and Methods, Results, Conclusions), ≤250 words
     references: ≤40, Vancouver
@@ -400,7 +435,9 @@ templates:
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
     special:
       - "Lay language synopsis for social media"
-    system: ScholarOne
+      - "IF 7.5 = JIF announced in 2025 (JCR 2024) per AUA 2025 Annual Report; auajournals.org metrics page not reachable — verify"
+      - "Submission system per AUA page https://www.auanet.org/membership/publications-overview/the-journal-of-urology (accessed 2026-09)"
+    system: Editorial Manager (editorialmanager.com/ju)
     family: standard
 
   - id: bju-international
@@ -618,38 +655,47 @@ templates:
   - id: radiology
     journal: Radiology
     publisher: RSNA
-    IF_approx: 20
-    word_limit: 3500
-    abstract: structured, ≤300 words
-    references: ≤45
-    figures: ≤8
-    tables: ≤5
+    IF_approx: 17.6
+    IF_year: 2025
+    IF_source: "https://www.rsna.org/news/2026/june/2025-journals-impact-factors"
+    word_limit: 3000 (Introduction through Discussion)
+    abstract: structured (Background, Purpose, Materials and Methods, Results, Conclusion), ≤300 words
+    references: ≤35 (may be extended for meta-analyses)
+    figures: ≤6
+    tables: ≤4
     sections: "Abstract, Summary Statement, Key Results, Introduction, Materials and Methods, Results, Discussion, References"
     special:
-      - "Summary Statement required (1 sentence)"
-      - "Key Results required (≤3 bullet points, quantitative)"
+      - "Summary Statement required (1 sentence, ≤30 words)"
+      - "Key Results required (≤3 results/conclusions with summary data, ≤75 words)"
+      - "Table 1 must be participant demographics; Figure 1 must be a participant flow diagram"
+      - "Guidelines checked: https://pubs.rsna.org/page/radiology/author-instructions (accessed 2026-09)"
     system: ScholarOne
     family: standard
 
   - id: european-radiology
     journal: European Radiology
     publisher: Springer Nature
-    IF_approx: 6
-    word_limit: 3500
+    IF_approx: 6.0
+    IF_year: 2025
+    IF_source: "https://link.springer.com/journal/330"
+    word_limit: 3000 (Original Articles; systematic reviews/meta-analyses ≤5000)
     abstract: structured (Objectives, Methods, Results, Conclusions), ≤250 words
-    references: ≤40
-    figures: ≤8
+    references: no fixed limit
+    figures: ≤6 (≤12 for systematic reviews)
     tables: ≤5
     sections: "Abstract, Key Points (3 bullet), Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Key Points required (3 bullet points)"
+      - "Guidelines checked: https://journals.myesr.org/eur-radiol/for-authors/ (accessed 2026-09)"
     system: Editorial Manager
     family: standard
 
   - id: medical-image-analysis
     journal: Medical Image Analysis
     publisher: Elsevier
-    IF_approx: 11
+    IF_approx: 14.0
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/medical-image-analysis"
     word_limit: no strict limit (typically 8000-12000)
     abstract: unstructured, ≤250 words
     references: unlimited
@@ -670,25 +716,31 @@ templates:
   - id: npj-digital-medicine
     journal: npj Digital Medicine
     publisher: Springer Nature
-    IF_approx: 15
-    word_limit: 3500 (excluding Methods)
-    abstract: unstructured, ≤200 words
-    references: ≤60
-    figures: ≤8
+    IF_approx: 18.0
+    IF_year: 2025
+    IF_source: "https://www.nature.com/npjdigitalmed/journal-impact"
+    word_limit: no strict limit (write concisely; Methods must be in the main text)
+    abstract: unstructured, ≤150 words
+    references: ≤60 (not strictly enforced)
+    figures: no fixed limit (figure legends ≤350 words each)
     tables: ≤4
     sections: "Abstract, Introduction, Results, Discussion, Methods, References"
     special:
       - "Nature journal formatting rules"
       - "Reporting Summary required"
       - "Data and Code availability required"
-      - "APC: ~$2990"
-    system: Editorial Manager
+      - "APC: $4290 (£3090 / €3390) for research articles"
+      - "Guidelines checked: https://www.nature.com/npjdigitalmed/content-types (accessed 2026-09)"
+    apc_year: 2026
+    system: Springer Nature submission system (SNAPP)
     family: nature
 
   - id: lancet-digital-health
     journal: Lancet Digital Health
     publisher: Elsevier
-    IF_approx: 24
+    IF_approx: 25.5
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/the-lancet-digital-health"
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
     references: ≤30
@@ -702,7 +754,9 @@ templates:
   - id: jmir
     journal: Journal of Medical Internet Research (JMIR)
     publisher: JMIR Publications
-    IF_approx: 7
+    IF_approx: 8.2
+    IF_year: 2025
+    IF_source: "https://www.jmir.org/"
     word_limit: no strict limit
     abstract: structured, ≤300 words
     references: unlimited
@@ -710,16 +764,19 @@ templates:
     tables: unlimited
     sections: "Abstract, Introduction, Methods, Results, Discussion (Principal Findings, Comparison With Prior Work, Limitations, Conclusions), References"
     special:
-      - "APC: ~$2500"
+      - "APC: $3350 (standard article processing fee)"
       - "Discussion must include Principal Findings subsection"
+    apc_year: 2026
     system: JMIR submission system
     family: standard
 
   - id: ieee-jbhi
     journal: IEEE Journal of Biomedical and Health Informatics (JBHI)
     publisher: IEEE
-    IF_approx: 7
-    word_limit: 8 pages (double column, ~5000 words)
+    IF_approx: 6.8
+    IF_year: 2024
+    IF_source: "https://www.embs.org/jbhi/statistics/"
+    word_limit: 8 pages (double column) without overlength charges; mandatory charges for pages 9-10 ($250/page) and 11+ ($350/page); hard limit 14 pages incl. supplementary
     abstract: unstructured, ≤250 words
     references: ≤50, IEEE style (numbered brackets)
     figures: unlimited within page limit
@@ -729,7 +786,8 @@ templates:
       - "Index Terms (keywords) required"
       - "IEEE formatting template (LaTeX/Word)"
       - "Double-column format"
-    system: ScholarOne
+      - "Guidelines checked: https://www.embs.org/jbhi/prepare-and-submit-your-manuscript/ (accessed 2026-09)"
+    system: IEEE Author Portal (ieee.atyponrex.com/journal/jbhi-embs)
     family: ieee
 
   # ═══════════════════════════════════════════════
@@ -1071,8 +1129,9 @@ templates:
       - "Author Summary required (≤200 words, no jargon)"
       - "Data availability: must be deposited in public repository"
       - "EQUATOR checklist required"
-      - "APC: ~$3500"
+      - "APC: $6460 (research article, non-member institutions; Community Action Publishing model)"
     cover_letter: required
+    apc_year: 2026
     system: Editorial Manager
     family: standard
 
@@ -1089,14 +1148,17 @@ templates:
     special:
       - "Judges on technical soundness, NOT novelty/impact"
       - "Data availability mandatory"
-      - "APC: ~$1805"
+      - "APC: $2477 (research article)"
+    apc_year: 2026
     system: Editorial Manager
     family: standard
 
   - id: nature-communications
     journal: Nature Communications
     publisher: Springer Nature
-    IF_approx: 17
+    IF_approx: 18.1
+    IF_year: 2025
+    IF_source: "https://www.nature.com/ncomms/journal-impact"
     word_limit: no strict limit (typically 3000-5000)
     abstract: unstructured, ≤150 words
     references: unlimited
@@ -1105,15 +1167,18 @@ templates:
     sections: "Abstract, Introduction, Results, Discussion, Methods, References"
     special:
       - "Reporting Summary required"
-      - "APC: ~$5790"
+      - "APC: $7350 (£5490 / €6150)"
     cover_letter: required
-    system: Editorial Manager
+    apc_year: 2026
+    system: Nature MTS (eJournalPress)
     family: nature
 
   - id: scientific-reports
     journal: Scientific Reports
     publisher: Springer Nature
-    IF_approx: 4
+    IF_approx: 4.9
+    IF_year: 2025
+    IF_source: "https://www.nature.com/srep/journal-impact"
     word_limit: no strict limit
     abstract: unstructured, ≤200 words
     references: unlimited
@@ -1121,9 +1186,10 @@ templates:
     tables: unlimited
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
-      - "APC: ~$2090"
+      - "APC: $2850 (£2290 / €2490)"
       - "Technical soundness focus"
-    system: Editorial Manager
+    apc_year: 2026
+    system: Springer Nature submission portal (author-welcome.nature.com/41598)
     family: nature
 
   # ═══════════════════════════════════════════════
@@ -1180,7 +1246,9 @@ templates:
   - id: eclinical-medicine
     journal: eClinicalMedicine
     publisher: Elsevier / The Lancet
-    IF_approx: 15
+    IF_approx: 12.8
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/eclinicalmedicine"
     word_limit: 3500
     abstract: structured (same as Lancet), ≤300 words
     references: ≤50
@@ -1443,7 +1511,9 @@ templates:
   - id: european-journal-cancer
     journal: European Journal of Cancer
     publisher: Elsevier
-    IF_approx: 9
+    IF_approx: 7.9
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/european-journal-of-cancer"
     word_limit: 3500
     abstract: structured, ≤250 words
     references: ≤50, Vancouver
@@ -1466,6 +1536,27 @@ templates:
     special:
       - "APC: ~$2990"
     system: Editorial Manager
+    family: standard
+
+  - id: cancers
+    journal: Cancers
+    publisher: MDPI
+    IF_approx: 4.8
+    IF_year: 2025
+    IF_source: "https://www.mdpi.com/journal/cancers"
+    word_limit: no maximum (text must be concise and comprehensive)
+    abstract: structured (Background/Objectives, Methods, Results, Conclusions), about 250 words; preceded by a Simple Summary ≤150 words
+    references: "more than 30 expected for research articles; numbered in square brackets (MDPI style)"
+    figures: no fixed limit (≥600 dpi PNG/JPEG/TIFF; color free of charge)
+    tables: no fixed limit
+    sections: "Simple Summary, Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Simple Summary (lay language, ≤150 words) mandatory — submissions without it are returned"
+      - "APC: CHF 2900"
+      - "Back matter: Supplementary Materials, Author Contributions, Funding, Data Availability Statement, Conflicts of Interest"
+      - "Source: https://www.mdpi.com/journal/cancers/instructions (accessed 2026-09)"
+    apc_year: 2026
+    system: MDPI SuSy (susy.mdpi.com)
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -2443,71 +2534,90 @@ templates:
   - id: european-urology-focus
     journal: European Urology Focus
     publisher: Elsevier / EAU
-    IF_approx: 6
-    word_limit: 2500
-    abstract: structured (Background and objective, Methods, Key findings and limitations, Conclusions and clinical implications, Patient summary), ≤300 words
-    references: ≤30
-    figures: ≤4
-    tables: ≤3
+    IF_approx: 6.3
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/european-urology-focus"
+    word_limit: 2500 (body text; abstract ≤250 additional)
+    abstract: structured (Background and objective, Methods, Key findings and limitations, Conclusions and clinical implications, Patient summary), ≤250 words
+    references: ≤40
+    figures: ≤5 (figures + tables combined; each figure ≤4 subparts)
+    tables: included in figure limit
     sections: "Abstract, Patient Summary, Introduction, Patients and Methods, Results, Discussion, Conclusions, References"
     special:
       - "Patient Summary required"
+      - "Take Home Message (2-3 sentences, ≤40 words, separate file)"
+      - "Guidelines checked: https://www.sciencedirect.com/journal/european-urology-focus/publish/guide-for-authors (accessed 2026-09)"
     system: Editorial Manager
     family: standard
 
   - id: european-urology-oncology
     journal: European Urology Oncology
     publisher: Elsevier / EAU
-    IF_approx: 9
-    word_limit: 3000
-    abstract: structured (Background and objective, Methods, Key findings and limitations, Conclusions and clinical implications, Patient summary), ≤300 words
+    IF_approx: 8.5
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/european-urology-oncology"
+    word_limit: 2500 (body text; abstract ≤250 additional; excludes references, tables, figures, legends)
+    abstract: structured (Background and objective, Methods, Key findings and limitations, Conclusions and clinical implications, Patient summary), ≤250 words
     references: ≤40
-    figures: ≤6
-    tables: ≤4
+    figures: ≤6 (figures + tables combined)
+    tables: included in figure limit
     sections: "Abstract, Patient Summary, Introduction, Patients and Methods, Results, Discussion, Conclusions, References"
     special:
       - "Patient Summary required"
-      - "Take Home Message required"
+      - "Take Home Message (2-3 sentences, ≤40 words, separate file)"
+      - "Guidelines checked: https://www.sciencedirect.com/journal/european-urology-oncology/publish/guide-for-authors (accessed 2026-09)"
     system: Editorial Manager
     family: standard
 
   - id: world-journal-urology
     journal: World Journal of Urology
     publisher: Springer Nature
-    IF_approx: 3
-    word_limit: 3500
-    abstract: structured (Purpose, Methods, Results, Conclusions), ≤250 words
-    references: ≤40
-    figures: ≤6
-    tables: ≤4
+    IF_approx: 3.3
+    IF_year: 2025
+    IF_source: "https://link.springer.com/journal/345"
+    word_limit: 3000 (excluding abstract and references; each table or figure counts as 250 words)
+    abstract: structured (Purpose, Methods, Results, Conclusion), 150-250 words
+    references: no fixed limit
+    figures: no fixed maximum (each counts 250 words against the limit)
+    tables: no fixed maximum (each counts 250 words against the limit)
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
-    system: Editorial Manager
+    special:
+      - "Guidelines checked: https://link.springer.com/journal/345/submission-guidelines (accessed 2026-09)"
+    system: Springer Nature submission system (SNAPP)
     family: standard
 
   - id: urology
     journal: Urology
     publisher: Elsevier
-    IF_approx: 3
+    IF_approx: 2.3
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/urology"
     word_limit: 3000
     abstract: structured (Objective, Methods, Results, Conclusion), ≤250 words
-    references: ≤40
-    figures: ≤6
-    tables: ≤4
+    references: ≤30
+    figures: ≤4 (figures + tables combined)
+    tables: included in figure limit
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Guidelines checked: https://www.sciencedirect.com/journal/urology/publish/guide-for-authors (accessed 2026-09)"
     system: Editorial Manager
     family: standard
 
   - id: prostate-cancer-prostatic-diseases
     journal: Prostate Cancer and Prostatic Diseases
     publisher: Springer Nature
-    IF_approx: 6
-    word_limit: 3500
-    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    IF_approx: 6.9
+    IF_year: 2025
+    IF_source: "https://www.nature.com/pcan/journal-information"
+    word_limit: 3000 (including abstract)
+    abstract: structured (Background, Methods, Results, Conclusions), ≤300 words
     references: ≤50
-    figures: ≤6
-    tables: ≤4
+    figures: ≤5 (tables or figures combined)
+    tables: included in figure limit
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
-    system: Editorial Manager
+    special:
+      - "Guidelines checked: https://www.nature.com/pcan/authors-and-referees/guide-to-authors (accessed 2026-09)"
+    system: Nature MTS (eJournalPress)
     family: standard
 
   - id: neurourology-urodynamics
@@ -2523,6 +2633,45 @@ templates:
     system: ScholarOne
     family: standard
 
+  - id: urologic-oncology
+    journal: "Urologic Oncology: Seminars and Original Investigations"
+    publisher: Elsevier / Society of Urologic Oncology
+    IF_approx: 2.8
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/urologic-oncology-seminars-and-original-investigations"
+    word_limit: no strict limit stated in guide for authors (keep concise)
+    abstract: structured (headings at author's discretion), ≤250 words
+    references: no fixed limit; numbered (Vancouver-style), no strict formatting at submission
+    figures: see author guidelines (no fixed limit)
+    tables: see author guidelines (no fixed limit)
+    sections: "Abstract, Highlights, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
+    special:
+      - "Highlights required (3-5 bullets, ≤85 characters each)"
+      - "Official journal of the Society of Urologic Oncology (SUO)"
+      - "Source: https://www.sciencedirect.com/journal/urologic-oncology-seminars-and-original-investigations/publish/guide-for-authors (accessed 2026-09)"
+    system: Editorial Manager (via submit.elsevier.com/URO)
+    family: standard
+
+  - id: journal-endourology
+    journal: Journal of Endourology
+    publisher: Mary Ann Liebert (Sage)
+    IF_approx: 3.2
+    IF_year: 2025
+    IF_source: "https://services.sagepub.com/journal/journal-of-endourology/"
+    word_limit: 2500 (excluding abstract, tables, figures, legends, acknowledgments, disclosures, references)
+    abstract: ≤250-300 words (headings not mandated; Introduction/Objectives, Materials and Methods, Results, Conclusions customary)
+    references: ≤30, Vancouver-style numbered
+    figures: ≤6
+    tables: ≤6
+    sections: "Abstract, Introduction, Materials (or Patients) and Methods, Results, Discussion, Conclusions, Acknowledgments, Disclosures, References"
+    special:
+      - "Techniques papers no longer accepted — submit as video to Videourology"
+      - "Case reports discouraged"
+      - "IF year inferred: Sage 2026 rate card (Dec 2025) listed 2.8 (JCR 2024); journal page now shows 3.2 — verify"
+      - "Source: https://home.liebertpub.com/publications/journal-of-endourology/32/for-authors (accessed 2026-09)"
+    system: ScholarOne (Manuscript Central)
+    family: standard
+
   # ═══════════════════════════════════════════════
   # RADIOLOGY & IMAGING — Additional
   # ═══════════════════════════════════════════════
@@ -2530,20 +2679,26 @@ templates:
   - id: investigative-radiology
     journal: Investigative Radiology
     publisher: Wolters Kluwer
-    IF_approx: 7
+    IF_approx: 8.0
+    IF_year: 2024
+    IF_source: "https://mediakits.wkadcenter.com/mediakit/investigative-radiology"
     word_limit: 3500
     abstract: structured (Objectives, Materials and Methods, Results, Conclusions), ≤250 words
     references: ≤40
     figures: ≤8
     tables: ≤5
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "IF 8.0 from Wolters Kluwer 2026 media kit (rank 9/212 in Radiology = JCR 2024 category size); journals.lww.com not reachable — verify"
     system: Editorial Manager
     family: standard
 
   - id: ajr
     journal: American Journal of Roentgenology (AJR)
     publisher: AJR / ARRS
-    IF_approx: 5
+    IF_approx: 7.4
+    IF_year: 2025
+    IF_source: "https://arrs.org/ARRSLIVE/Pressroom/AJR-Notches-Historic-Impact-Factor-Increase.aspx"
     word_limit: 3500
     abstract: structured (Background, Objective, Methods, Results, Conclusion), ≤250 words
     references: ≤40
@@ -2556,7 +2711,9 @@ templates:
   - id: jnm
     journal: Journal of Nuclear Medicine
     publisher: SNMMI
-    IF_approx: 10
+    IF_approx: 9.6
+    IF_year: 2025
+    IF_source: "https://snmmi.org/Web/News/Articles/JNM-Continues-Strong-Performance-in-2025-Journal-Citation-Reports"
     word_limit: 4000
     abstract: unstructured, ≤250 words
     references: ≤40
@@ -2565,20 +2722,64 @@ templates:
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusion, References"
     special:
       - "Visual Abstract encouraged"
-    system: ScholarOne
+    system: JNM online submission portal (submit-jnm.snmjournals.org)
     family: standard
 
   - id: academic-radiology
     journal: Academic Radiology
     publisher: Elsevier / AUR
-    IF_approx: 4
-    word_limit: 3500
+    IF_approx: 4.7
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/academic-radiology"
+    word_limit: 5000
     abstract: structured (Rationale and Objectives, Materials and Methods, Results, Conclusion), ≤250 words
-    references: ≤40
-    figures: ≤8
+    references: ≤50
+    figures: ≤10
     tables: ≤5
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "Guidelines checked: https://www.sciencedirect.com/journal/academic-radiology/publish/guide-for-authors (accessed 2026-09)"
     system: Editorial Manager
+    family: standard
+
+  - id: european-journal-radiology
+    journal: European Journal of Radiology
+    publisher: Elsevier
+    IF_approx: 3.9
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/european-journal-of-radiology"
+    word_limit: 4000 (Research Papers; including abstract, legends and references)
+    abstract: unstructured (no mandated headings; state purpose, methods, findings, conclusions), ≤250 words
+    references: ≤40 (counted within the 4000-word limit), numbered
+    figures: see author guidelines (no fixed limit)
+    tables: see author guidelines (no fixed limit)
+    sections: "Abstract, Highlights, Introduction, Materials and Methods, Results, Discussion, Conclusion, References"
+    special:
+      - "Highlights required (3-5 bullets, ≤85 characters each)"
+      - "Review articles ≤6000 words; Short communications/Technical notes ~2500 words; case reports not published"
+      - "CRediT author contributions required"
+      - "Source: https://www.sciencedirect.com/journal/european-journal-of-radiology/publish/guide-for-authors (accessed 2026-09)"
+    system: Editorial Manager (via submit.elsevier.com/EJR)
+    family: standard
+
+  - id: abdominal-radiology
+    journal: Abdominal Radiology
+    publisher: Springer Nature / Society of Abdominal Radiology
+    IF_approx: 2.3
+    IF_year: 2025
+    IF_source: "https://link.springer.com/journal/261"
+    word_limit: 3500 (Original Research / meta-analysis)
+    abstract: structured (Purpose, Methods, Results, Conclusion), ≤300 words
+    references: ≤60, numbered in square brackets
+    figures: ≤5 (≤10 images total)
+    tables: ≤5
+    sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusion, References"
+    special:
+      - "Double-blind peer review — anonymize manuscript (author details entered in submission system only)"
+      - "Key take-home message must be the last sentence of both abstract and discussion"
+      - "Keywords 4-6; Statements and Declarations section required"
+      - "Source: https://link.springer.com/journal/261/submission-guidelines (accessed 2026-09)"
+    system: Springer Nature submission system (SNAPP)
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -2588,7 +2789,9 @@ templates:
   - id: artificial-intelligence-medicine
     journal: Artificial Intelligence in Medicine
     publisher: Elsevier
-    IF_approx: 8
+    IF_approx: 7.8
+    IF_year: 2025
+    IF_source: "https://www.sciencedirect.com/journal/artificial-intelligence-in-medicine"
     word_limit: no strict limit (typically 8000-10000)
     abstract: unstructured, ≤250 words
     references: unlimited
@@ -2603,7 +2806,9 @@ templates:
   - id: jmir-mhealth
     journal: JMIR mHealth and uHealth
     publisher: JMIR Publications
-    IF_approx: 6
+    IF_approx: 6.3
+    IF_year: 2025
+    IF_source: "https://mhealth.jmir.org/"
     word_limit: no strict limit
     abstract: structured, ≤300 words
     references: unlimited
@@ -2611,8 +2816,9 @@ templates:
     tables: unlimited
     sections: "Abstract, Introduction, Methods, Results, Discussion (Principal Findings, Limitations, Comparison With Prior Work, Conclusions), References"
     special:
-      - "APC: ~$2200"
+      - "APC: $3150 (standard article processing fee)"
       - "Mobile/wearable health focus"
+    apc_year: 2026
     system: JMIR submission system
     family: standard
 
@@ -2635,8 +2841,10 @@ templates:
   - id: ieee-tmi
     journal: IEEE Transactions on Medical Imaging (TMI)
     publisher: IEEE
-    IF_approx: 11
-    word_limit: 12 pages (double column)
+    IF_approx: 12.4
+    IF_year: 2025
+    IF_source: "https://ieeetmi.org/"
+    word_limit: ≤10 pages (double column) at initial submission — longer papers returned without review; overlength charges beyond 8 published pages ($250/page for 9-10, $350/page 11+)
     abstract: unstructured, ≤250 words
     references: unlimited, IEEE style (numbered brackets)
     figures: unlimited within page limit
@@ -2646,8 +2854,28 @@ templates:
       - "IEEE formatting template required"
       - "Index Terms required"
       - "Double-column format"
-    system: ScholarOne
+      - "Guidelines checked: https://ieeetmi.org/authors-instructions/ (accessed 2026-09)"
+    system: IEEE Author Portal (ieee.atyponrex.com/journal/tmi-ieee)
     family: ieee
+
+  - id: jamia
+    journal: Journal of the American Medical Informatics Association (JAMIA)
+    publisher: Oxford University Press / AMIA
+    IF_approx: 7.1
+    IF_year: 2025
+    IF_source: "https://academic.oup.com/jamia"
+    word_limit: 4000 (Research and Applications)
+    abstract: structured (Objective, Materials and Methods, Results, Discussion, Conclusion), ≤250 words
+    references: unlimited, numbered (Medline journal abbreviations; first 3 authors then et al.)
+    figures: ≤6
+    tables: ≤4
+    sections: "Abstract, Background and Significance, Objective, Materials and Methods, Results, Discussion, Conclusion, References"
+    special:
+      - "Main text headings should mirror the structured abstract, plus a Background and Significance section"
+      - "Submit as Word document; order — title page, abstract, main text, tables, acknowledgments, references"
+      - "Source: https://academic.oup.com/jamia/pages/General_Instructions (accessed 2026-09)"
+    system: ScholarOne
+    family: standard
 
   # ═══════════════════════════════════════════════
   # PEDIATRICS — Additional
@@ -3833,10 +4061,10 @@ defaults:
 #   BMC Medicine, BMC Public Health, BMC Surgery
 #
 # ═══════════════════════════════════════════════
-# SPECIALTY COVERAGE SUMMARY (234 journals total; per-specialty breakdown below is indicative, last fully recounted at v6.1)
+# SPECIALTY COVERAGE SUMMARY (240 journals total; per-specialty breakdown below is indicative, last fully recounted at v6.1)
 # ═══════════════════════════════════════════════
 # General Medical (top+mid+additional): 16 journals
-# Oncology:                             14 journals
+# Oncology:                             15 journals
 # Cardiology:                            9 journals
 # Gastroenterology & Hepatology:         7 journals
 # Respiratory:                           6 journals
@@ -3849,9 +4077,9 @@ defaults:
 # Psychiatry:                            6 journals
 # Surgery (General/Thoracic/Cardiac/
 #   Neuro/Plastic/Transplant):          15 journals
-# Urology:                               9 journals
-# Radiology & Imaging:                   7 journals
-# AI / Digital Health:                    7 journals
+# Urology:                              11 journals
+# Radiology & Imaging:                   9 journals
+# AI / Digital Health:                    8 journals
 # Pediatrics:                            6 journals
 # Obstetrics & Gynecology:               6 journals
 # Emergency & Critical Care:             5 journals

@@ -68,7 +68,7 @@ description: Use when [触发条件]. Triggers on "[中文触发词]"、"[英文
 | 可复用的固定代码 | `scripts/*.py` | Claude 调用而不是重写；给 CLI 与 `--help` |
 
 - **SKILL.md ≤ 500 行**（官方建议）；MRP 目标 ≤ 250 行。超了就把按类型分的模块拆到 references 下的 modules 子目录（study-design 是范例），SKILL.md 只留 router。
-- 大文件（如 234 条期刊库）必须提供按 id 抽取的脚本或 grep 命令，**禁止让 Claude 整读**。
+- 大文件（如 240 条期刊库）必须提供按 id 抽取的脚本或 grep 命令，**禁止让 Claude 整读**。
 - 脚本路径一律 `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/scripts/<file>.py`；Python 里用
   `sys.path.insert(0, os.path.join(os.environ.get("CLAUDE_PLUGIN_ROOT", "."), "skills", "<skill>", "scripts"))`，
   绝不把一个相对目录名（如 scripts）直接塞进 sys.path——运行目录是用户项目，不是插件目录。

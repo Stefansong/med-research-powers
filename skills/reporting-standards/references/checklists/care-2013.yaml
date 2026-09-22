@@ -1,0 +1,93 @@
+# CARE checklist — transcribed verbatim from Table 1 ("The CARE guidelines checklist") of the CARE statement
+# Source: Gagnier JJ, Kienle G, Altman DG, Moher D, Sox H, Riley D; CARE Group. The CARE guidelines:
+#         consensus-based clinical case reporting guideline development. J Med Case Rep 2013;7:223.
+#         doi:10.1186/1752-1947-7-223 (PMID 24228906; PMC3844611). Retrieved via PubMed/PMC full text
+#         on 2026-09-21. Published simultaneously (identical checklist) in BMJ Case Rep 2013
+#         (doi:10.1136/bcr-2013-201554; PMC3822203), Glob Adv Health Med 2013;2(5):38-43
+#         (doi:10.7453/gahmj.2013.008; PMC3833570), Dtsch Arztebl Int 2013;110(37):603-608
+#         (doi:10.3238/arztebl.2013.0603; PMC3784031), Headache 2013, J Clin Epidemiol 2014;67(1):46-51
+#         (doi:10.1016/j.jclinepi.2013.08.003) and J Diet Suppl 2013.
+# The statement: "This consensus process involved 27 participants and resulted in a 13-item checklist ...
+# The primary items of the checklist are title, key words, abstract, introduction, patient information,
+# clinical findings, timeline, diagnostic assessment, therapeutic interventions, follow-up and outcomes,
+# discussion, patient perspective, and informed consent."
+# Table 1 preamble (verbatim): "A case report tells a story in a narrative format that includes the
+# presenting concerns, clinical findings, diagnoses, interventions, outcomes (including adverse events),
+# and follow-up. The narrative should include a discussion of the rationale for any conclusions and any
+# take-away messages."
+# Table 1 columns: Item name | Item no. | Brief description. Items 3, 5, 8, 9, 10 and 11 have lettered
+# sub-points (a/b/c/d) in the "Brief description" cell; each lettered sub-point is one row here. Dash
+# bullets nested under a lettered sub-point (items 3b, 9a, 10a) are folded into that row's text,
+# separated by "; ".
+# NOTE: the 2017 Explanation and Elaboration (Riley DS et al. J Clin Epidemiol 2017;89:218-235,
+# doi:10.1016/j.jclinepi.2017.04.026) explains each item with examples, and the downloadable "CARE
+# Checklist" on care-statement.org words the sub-items slightly differently from the 2013 table; this
+# file transcribes the 2013 statement table (the same 13 items). The paper also notes that journals
+# often require three things outside the checklist: competing interests, de-identification of
+# patient-related data, and ethics committee/IRB approval if obtained or necessary.
+#
+# Field meanings:
+#   id        — item number exactly as in Table 1 (lettered sub-points as printed)
+#   topic     — Item name exactly as in Table 1
+#   text      — Brief description (verbatim)
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#               reported but do not block on their own
+
+name: CARE
+version: "2013"
+total_items: 13          # numbered items 1-13
+total_rows: 23           # including lettered sub-points (3a-c, 5a-c, 8a-d, 9a, 10a, 11a-d)
+reference: "Gagnier et al. J Med Case Rep 2013;7:223 (doi:10.1186/1752-1947-7-223); E&E: Riley et al. J Clin Epidemiol 2017;89:218-235 (doi:10.1016/j.jclinepi.2017.04.026)"
+website: "https://www.care-statement.org/"
+applies_to: "Clinical case reports (one or several patients); specialty extensions exist (e.g. CARE for acupuncture, homeopathy, anaesthesia, surgery)"
+timeline_figure: "Recommended (item 7) — table or figure with the specific dates and times of the key events of the case"
+
+sections:
+  - name: Title, keywords and abstract
+    items:
+      - {id: "1", topic: "Title", text: "The words “case report” (or “case study”) should appear in the title along with phenomenon of greatest interest (eg, symptom, diagnosis, test, intervention)", critical: true}
+      - {id: "2", topic: "Keywords", text: "The key elements of this case in 2-5 words"}
+      - {id: "3a", topic: "Abstract", text: "Introduction—What does this case add?"}
+      - {id: "3b", topic: "Abstract", text: "Case Presentation: The main symptoms of the patient; The main clinical findings; The main diagnoses and interventions; The main outcomes", critical: true}
+      - {id: "3c", topic: "Abstract", text: "Conclusion—What were the main “take-away” lessons from this case?"}
+
+  - name: Introduction
+    items:
+      - {id: "4", topic: "Introduction", text: "Brief background summary of this case referencing the relevant medical literature"}
+
+  - name: Case presentation
+    items:
+      - {id: "5a", topic: "Patient Information", text: "Demographic information (eg, age, gender, ethnicity, occupation)", critical: true}
+      - {id: "5b", topic: "Patient Information", text: "Main symptoms of the patient (his or her chief complaints)", critical: true}
+      - {id: "5c", topic: "Patient Information", text: "Medical, family, and psychosocial history—including diet, lifestyle, and genetic information whenever possible, and details about relevant comorbidities including past interventions and their outcomes"}
+      - {id: "6", topic: "Clinical Findings", text: "Describe the relevant physical examination (PE) findings", critical: true}
+      - {id: "7", topic: "Timeline", text: "Depict important dates and times in this case (table or figure)", critical: true}
+      - {id: "8a", topic: "Diagnostic Assessment", text: "Diagnostic methods (eg, PE, laboratory testing, imaging, questionnaires)", critical: true}
+      - {id: "8b", topic: "Diagnostic Assessment", text: "Diagnostic challenges (eg, financial, language/cultural)"}
+      - {id: "8c", topic: "Diagnostic Assessment", text: "Diagnostic reasoning including other diagnoses considered"}
+      - {id: "8d", topic: "Diagnostic Assessment", text: "Prognostic characteristics (eg, staging) where applicable"}
+      - {id: "9a", topic: "Therapeutic Intervention", text: "Types of intervention (eg, pharmacologic, surgical, preventive, self-care); Administration of intervention (eg, dosage, strength, duration); Changes in intervention (with rationale)", critical: true}
+      - {id: "10a", topic: "Follow-up and Outcomes", text: "Summarize the clinical course of all follow-up visits including: Clinician and patient-assessed outcomes; Important follow-up test results (positive or negative); Intervention adherence and tolerability (and how this was assessed); Adverse and unanticipated events", critical: true}
+
+  - name: Discussion
+    items:
+      - {id: "11a", topic: "Discussion", text: "The strengths and limitations of the management of this case"}
+      - {id: "11b", topic: "Discussion", text: "The relevant medical literature"}
+      - {id: "11c", topic: "Discussion", text: "The rationale for conclusions (including assessments of cause and effect)", critical: true}
+      - {id: "11d", topic: "Discussion", text: "The main “take-away” lessons of this case report"}
+
+  - name: Patient perspective and consent
+    items:
+      - {id: "12", topic: "Patient Perspective", text: "The patient should share his or her perspective or experience whenever possible"}
+      - {id: "13", topic: "Informed Consent", text: "Did the patient give informed consent? Please provide if requested", critical: true}
+
+commonly_missed:
+  - "Item 1 — the words 'case report' in the title together with the phenomenon of greatest interest"
+  - "Item 5c — psychosocial history, diet, lifestyle, genetic information and relevant comorbidities with past interventions and their outcomes"
+  - "Item 7 — a timeline (table or figure) with dates of key events, not only a narrative"
+  - "Item 8b / 8c — diagnostic challenges and the differential diagnoses considered"
+  - "Item 9a — dosage, strength, duration of interventions and any changes with rationale"
+  - "Item 10a — adherence and tolerability (and how assessed) plus adverse and unanticipated events"
+  - "Item 11c — the rationale for conclusions, including how cause and effect was assessed"
+  - "Item 12 — the patient's own perspective or experience"
+  - "Item 13 — an explicit statement that the patient (or relative/institutional committee) gave informed consent to publish"

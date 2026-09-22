@@ -1,0 +1,106 @@
+# CHEERS 2022 checklist — transcribed verbatim from Table 1 ("The CHEERS 2022 checklist") of the
+# CHEERS 2022 statement
+# Source: Husereau D, Drummond M, Augustovski F, de Bekker-Grob E, Briggs AH, Carswell C, Caulley L,
+#         Chaiyakunapruk N, Greenberg D, Loder E, Mauskopf J, Mullins CD, Petrou S, Pwu R-F, Staniszewska S;
+#         CHEERS 2022 ISPOR Good Research Practices Task Force. Consolidated Health Economic Evaluation
+#         Reporting Standards 2022 (CHEERS 2022) statement: updated reporting guidance for health economic
+#         evaluations. BMJ 2022;376:e067975. doi:10.1136/bmj-2021-067975 (PMID 35017145; PMC8749494).
+#         Retrieved via PubMed/PMC full text on 2026-09-21. Co-published simultaneously in Value Health,
+#         BMC Health Serv Res (PMC8793223), BMC Public Health (PMC8793177), MDM Policy Pract (PMC8755935),
+#         Eur J Health Econ, J Manag Care Spec Pharm, Appl Health Econ Health Policy, Clin Ther, Pharmacoeconomics
+#         and others — identical Table 1 text.
+# The statement: "The new CHEERS checklist contains 28 items with accompanying descriptions ... Checklist
+# items are subdivided into seven main categories: (1) Title; (2) Abstract; (3) Introduction; (4) Methods;
+# (5) Results; (6) Discussion; and (7) Other relevant information." CHEERS 2022 "replaces the 2013 CHEERS
+# statement, which should no longer be used." The companion Explanation and Elaboration report
+# (Husereau et al. Value Health 2022;25(1):10-31, doi:10.1016/j.jval.2021.10.008) gives item-level guidance.
+# Table 1 columns: Section/topic | Item No | Guidance for reporting | Reported in section.
+#
+# Field meanings:
+#   id        — item number exactly as in Table 1
+#   topic     — Section/topic label exactly as in Table 1
+#   text      — "Guidance for reporting" (verbatim)
+#   na_note   — from the statement text: when the item may legitimately be reported as "Not applicable"
+#   critical  — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#               reported but do not block on their own
+
+name: CHEERS 2022
+version: "2022"
+total_items: 28          # numbered items 1-28
+total_rows: 28           # no sub-items
+supersedes: "CHEERS 2013 — should no longer be used"
+reference: "Husereau et al. BMJ 2022;376:e067975 (doi:10.1136/bmj-2021-067975); E&E: Husereau et al. Value Health 2022;25(1):10-31 (doi:10.1016/j.jval.2021.10.008)"
+website: "https://www.equator-network.org/reporting-guidelines/cheers/ (checklist, templates and interactive form via ISPOR: https://www.ispor.org/)"
+applies_to: "Any form of health economic evaluation — cost analyses, cost-effectiveness/cost-utility, cost-minimisation, cost-benefit/benefit-cost, extended and distributional CEAs; model based or empirical (trial/patient-level); any health intervention (drugs, devices, public health, processes and re-organisation of care)"
+out_of_scope: "Budget impact analyses and constrained optimisation studies"
+not_a_scoring_tool: "As there is no validated scoring system for the checklist, using it as a scoring tool could lead to misleading findings and is strongly discouraged"
+reporting_convention: "Indicate the manuscript section for each item; write 'Not applicable' when an item does not apply and 'Not reported' when information is missing; avoid 'Not conducted'"
+major_changes_from_2013:
+  - "Items related to patients or service recipients, the general public, and community or stakeholder involvement and engagement added (items 21, 25)"
+  - "Language broadened to make CHEERS more widely applicable to cost-benefit/benefit-cost analysis, as well as equity or distributional cost effectiveness"
+  - "Item related to reporting and availability of a health economic analysis plan added (item 4)"
+  - "Item related to characterising distributional effects added (item 19)"
+  - "Items distinguishing between model based and study based measures removed"
+  - "Recommendation to report where publicly available models can be found added (item 16). Sharing of unlocked models with editors and reviewers encouraged"
+
+sections:
+  - name: Title
+    items:
+      - {id: "1", topic: "Title", text: "Identify the study as an economic evaluation and specify the interventions being compared.", critical: true}
+
+  - name: Abstract
+    items:
+      - {id: "2", topic: "Abstract", text: "Provide a structured summary that highlights context, key methods, results, and alternative analyses."}
+
+  - name: Introduction
+    items:
+      - {id: "3", topic: "Background and objectives", text: "Give the context for the study, the study question, and its practical relevance for decision making in policy or practice.", critical: true}
+
+  - name: Methods
+    items:
+      - {id: "4", topic: "Health economic analysis plan", text: "Indicate whether a health economic analysis plan was developed and where available."}
+      - {id: "5", topic: "Study population", text: "Describe characteristics of the study population (such as age range, demographics, socioeconomic, or clinical characteristics)."}
+      - {id: "6", topic: "Setting and location", text: "Provide relevant contextual information that may influence findings."}
+      - {id: "7", topic: "Comparators", text: "Describe the interventions or strategies being compared and why chosen.", critical: true}
+      - {id: "8", topic: "Perspective", text: "State the perspective(s) adopted by the study and why chosen.", critical: true}
+      - {id: "9", topic: "Time horizon", text: "State the time horizon for the study and why appropriate.", critical: true}
+      - {id: "10", topic: "Discount rate", text: "Report the discount rate(s) and reason chosen.", critical: true}
+      - {id: "11", topic: "Selection of outcomes", text: "Describe what outcomes were used as the measure(s) of benefit(s) and harm(s).", na_note: "Not applicable for cost analyses (items 11-13)"}
+      - {id: "12", topic: "Measurement of outcomes", text: "Describe how outcomes used to capture benefit(s) and harm(s) were measured.", na_note: "Not applicable for cost analyses (items 11-13)"}
+      - {id: "13", topic: "Valuation of outcomes", text: "Describe the population and methods used to measure and value outcomes.", na_note: "Not applicable for cost analyses (items 11-13)"}
+      - {id: "14", topic: "Measurement and valuation of resources and costs", text: "Describe how costs were valued.", critical: true}
+      - {id: "15", topic: "Currency, price date, and conversion", text: "Report the dates of the estimated resource quantities and unit costs, plus the currency and year of conversion.", critical: true}
+      - {id: "16", topic: "Rationale and description of model", text: "If modelling is used, describe in detail and why used. Report if the model is publicly available and where it can be accessed.", na_note: "Not applicable for non-modelling studies (items 16 and 22)"}
+      - {id: "17", topic: "Analytics and assumptions", text: "Describe any methods for analysing or statistically transforming data, any extrapolation methods, and approaches for validating any model used.", critical: true}
+      - {id: "18", topic: "Characterising heterogeneity", text: "Describe any methods used for estimating how the results of the study vary for subgroups."}
+      - {id: "19", topic: "Characterising distributional effects", text: "Describe how impacts are distributed across different individuals or adjustments made to reflect priority populations."}
+      - {id: "20", topic: "Characterising uncertainty", text: "Describe methods to characterise any sources of uncertainty in the analysis.", critical: true}
+      - {id: "21", topic: "Approach to engagement with patients and others affected by the study", text: "Describe any approaches to engage patients or service recipients, the general public, communities, or stakeholders (such as clinicians or payers) in the design of the study."}
+
+  - name: Results
+    items:
+      - {id: "22", topic: "Study parameters", text: "Report all analytic inputs (such as values, ranges, references) including uncertainty or distributional assumptions.", na_note: "Not applicable for non-modelling studies (items 16 and 22)", critical: true}
+      - {id: "23", topic: "Summary of main results", text: "Report the mean values for the main categories of costs and outcomes of interest and summarise them in the most appropriate overall measure.", critical: true}
+      - {id: "24", topic: "Effect of uncertainty", text: "Describe how uncertainty about analytic judgments, inputs, or projections affect findings. Report the effect of choice of discount rate and time horizon, if applicable.", critical: true}
+      - {id: "25", topic: "Effect of engagement with patients and others affected by the study", text: "Report on any difference patient/service recipient, general public, community, or stakeholder involvement made to the approach or findings of the study"}
+
+  - name: Discussion
+    items:
+      - {id: "26", topic: "Study findings, limitations, generalisability, and current knowledge", text: "Report key findings, limitations, ethical or equity considerations not captured, and how these could affect patients, policy, or practice.", critical: true}
+
+  - name: Other relevant information
+    items:
+      - {id: "27", topic: "Source of funding", text: "Describe how the study was funded and any role of the funder in the identification, design, conduct, and reporting of the analysis", critical: true}
+      - {id: "28", topic: "Conflicts of interest", text: "Report authors conflicts of interest according to journal or International Committee of Medical Journal Editors requirements.", critical: true}
+
+commonly_missed:
+  - "Item 1 — the title must say 'economic evaluation' (or cost-effectiveness / cost-utility analysis) AND name the interventions compared"
+  - "Item 4 — whether a health economic analysis plan existed and where it can be found (new in 2022; state 'none' explicitly)"
+  - "Items 7-10 — comparators, perspective, time horizon and discount rate each need a stated REASON ('and why chosen'), not just the value"
+  - "Item 15 — price year, currency and conversion method (PPP/exchange rate) for all unit costs"
+  - "Item 16 — model structure in detail plus whether the model is publicly available and where"
+  - "Item 19 — distributional/equity effects (new in 2022); say if none were assessed"
+  - "Items 21 / 25 — patient, public and stakeholder engagement in design (methods) and its effect on the study (results) are two separate new items"
+  - "Item 22 — a full table of all inputs (values, ranges, distributions, sources) for model based studies"
+  - "Item 24 — effect of uncertainty including the effect of the choice of discount rate and time horizon"
+  - "Item 26 — ethical or equity considerations not captured by the analysis, alongside limitations and generalisability"

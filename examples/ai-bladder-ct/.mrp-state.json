@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "project": "Deep learning for bladder cancer detection on contrast-enhanced CT (synthetic example)",
+  "created": "2026-09-15",
+  "updated": "2026-09-21",
+  "current_stage": "study-design",
+  "next_step": "research-ethics",
+  "checkpoint_mode": "light",
+  "target_journal": "",
+  "hard_checkpoints": {
+    "protocol": "confirmed 2026-09-21",
+    "sap": null,
+    "pre_submission": null
+  },
+  "completed_skills": [
+    {"skill": "research-question-formulation", "date": "2026-09-15", "outputs": ["research-question.md"]},
+    {"skill": "literature-synthesis", "date": "2026-09-18", "outputs": ["search-strategy.md", "literature-synthesis-summary.md"]},
+    {"skill": "study-design", "date": "2026-09-21", "outputs": ["study-protocol.md"]}
+  ],
+  "artifacts": {
+    "research-question.md": {"skill": "research-question-formulation", "date": "2026-09-15"},
+    "search-strategy.md": {"skill": "literature-synthesis", "date": "2026-09-18"},
+    "literature-synthesis-summary.md": {"skill": "literature-synthesis", "date": "2026-09-18"},
+    "study-protocol.md": {"skill": "study-design", "date": "2026-09-21"}
+  },
+  "notes": [
+    {"date": "2026-09-21", "skill": "study-design", "note": "Primary outcome locked: AUROC on the external test set; patient-level split, seed 20260921"}
+  ]
+}

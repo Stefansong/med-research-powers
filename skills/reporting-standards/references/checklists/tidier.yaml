@@ -1,0 +1,63 @@
+# TIDieR checklist — transcribed verbatim from Table 1 of the TIDieR statement
+# Source: Hoffmann TC, Glasziou PP, Boutron I, Milne R, Perera R, Moher D, Altman DG, Barbour V,
+#         Macdonald H, Johnston M, Lamb SE, Dixon-Woods M, McCulloch P, Wyatt JC, Chan A-W, Michie S.
+#         Better reporting of interventions: template for intervention description and replication
+#         (TIDieR) checklist and guide. BMJ 2014;348:g1687. doi:10.1136/bmj.g1687 (PMID 24609605;
+#         no PMCID — not deposited in PMC). Open access on bmj.com.
+#         Item text retrieved from the BMJ Table 1 page (https://www.bmj.com/content/348/bmj.g1687/T1)
+#         on 2026-09-21; the official checklist PDF on equator-network.org carries the same items.
+# Table 1 caption: "Items included in the Template for Intervention Description and Replication
+# (TIDieR) checklist: information to include when describing an intervention. Full version of
+# checklist provides space for authors and reviewers to give location of the information (see appendix 3)".
+# The statement: "The resultant 12 item TIDieR checklist ... is an extension of the CONSORT 2010
+# statement (item 5) and the SPIRIT 2013 statement (item 11). While the emphasis of the checklist is on
+# trials, the guidance is intended to apply across all evaluative study designs."
+# Table 1 has no section headings; items 3 and 4 share the label "What" (Materials / Procedures) and
+# items 11 and 12 share the label "How well" (Planned / Actual). The ten TIDieR item labels are
+# therefore listed in the paper as: brief name, why, what (materials), what (procedures), who provided,
+# how, where, when and how much, tailoring, modifications, how well (planned), how well (actual).
+#
+# Field meanings:
+#   id                — item number exactly as in Table 1
+#   text              — checklist item description (verbatim)
+#   protocol_na       — marked * in Table 1: "If checklist is completed for a protocol, these items are
+#                       not relevant to protocol and cannot be described until study is complete"
+#   critical          — MRP Gate 1 rule: a ❌ on a critical item blocks submission; other ❌ items are
+#                       reported but do not block on their own
+
+name: TIDieR
+version: "2014"
+total_items: 12          # numbered items 1-12
+total_rows: 12           # no sub-items
+reference: "Hoffmann et al. BMJ 2014;348:g1687 (doi:10.1136/bmj.g1687)"
+website: "https://tidierguide.org/"
+checklist_download: "https://www.equator-network.org/wp-content/uploads/2014/03/TIDieR-Checklist-PDF.pdf"
+extends: ["CONSORT 2010 item 5 (interventions)", "SPIRIT 2013 item 11 (interventions)"]
+applies_to: "Description of the intervention AND the comparator/control in any evaluative study design (trials, but also non-randomised and observational evaluations); also usable at protocol stage (items 10 and 12 then not applicable)"
+relation_to_consort_2025: "CONSORT 2025 integrated TIDieR into items 13 (intervention and comparator) and 24a/24b (delivery as actually administered); TIDieR remains the item-level template for the intervention description itself"
+note: "Report each item for the intervention and, where relevant, for the comparator. The full checklist has 'Where located' columns (primary paper page/appendix; other source e.g. protocol, URL) for authors and reviewers to record the location of each element."
+
+sections:
+  - name: TIDieR items (Table 1 has no section headings)
+    items:
+      - {id: "1", topic: "Brief name", text: "Provide the name or a phrase that describes the intervention"}
+      - {id: "2", topic: "Why", text: "Describe any rationale, theory, or goal of the elements essential to the intervention"}
+      - {id: "3", topic: "What — Materials", text: "Describe any physical or informational materials used in the intervention, including those provided to participants or used in intervention delivery or in training of intervention providers. Provide information on where the materials can be accessed (such as online appendix, URL)", critical: true}
+      - {id: "4", topic: "What — Procedures", text: "Describe each of the procedures, activities, and/or processes used in the intervention, including any enabling or support activities", critical: true}
+      - {id: "5", topic: "Who provided", text: "For each category of intervention provider (such as psychologist, nursing assistant), describe their expertise, background, and any specific training given", critical: true}
+      - {id: "6", topic: "How", text: "Describe the modes of delivery (such as face to face or by some other mechanism, such as internet or telephone) of the intervention and whether it was provided individually or in a group", critical: true}
+      - {id: "7", topic: "Where", text: "Describe the type(s) of location(s) where the intervention occurred, including any necessary infrastructure or relevant features"}
+      - {id: "8", topic: "When and how much", text: "Describe the number of times the intervention was delivered and over what period of time including the number of sessions, their schedule, and their duration, intensity, or dose", critical: true}
+      - {id: "9", topic: "Tailoring", text: "If the intervention was planned to be personalised, titrated or adapted, then describe what, why, when, and how"}
+      - {id: "10", topic: "Modifications", text: "If the intervention was modified during the course of the study, describe the changes (what, why, when, and how)", protocol_na: true}
+      - {id: "11", topic: "How well — Planned", text: "If intervention adherence or fidelity was assessed, describe how and by whom, and if any strategies were used to maintain or improve fidelity, describe them"}
+      - {id: "12", topic: "How well — Actual", text: "If intervention adherence or fidelity was assessed, describe the extent to which the intervention was delivered as planned", protocol_na: true, critical: true}
+
+commonly_missed:
+  - "Comparator/control — TIDieR applies to the control arm too ('usual care' must be described, not just named)"
+  - "Item 2 — the rationale/theory behind the essential elements, not just a literature review"
+  - "Item 3 — where the materials (manuals, apps, handouts, training materials) can be accessed (appendix/URL)"
+  - "Item 5 — expertise, background AND training of each category of provider"
+  - "Item 8 — full dose: number of sessions, schedule, duration, intensity"
+  - "Item 9 vs 10 — planned tailoring (personalisation rules) is different from unplanned modifications made during the study"
+  - "Item 11 vs 12 — how fidelity was assessed (methods) is different from the fidelity actually achieved (results)"

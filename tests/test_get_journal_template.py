@@ -32,7 +32,7 @@ def test_yaml_structure_and_count():
     assert "templates" in data and "data_as_of" in data
     assert "JCR 2022" in data["data_as_of"]
     templates = data["templates"]
-    assert len(templates) == 234
+    assert len(templates) == 240
     ids = [t["id"] for t in templates]
     assert len(ids) == len(set(ids))
     assert all(t.get("family") in FAMILIES for t in templates)
@@ -63,7 +63,7 @@ def test_id_lookup_yaml_snippet(tmp_path):
     assert r.returncode == 0
     assert "id: european-urology" in r.stdout
     assert "family: standard" in r.stdout
-    assert "≤300 words" in r.stdout  # UTF-8 output intact
+    assert "≤250 words" in r.stdout  # UTF-8 output intact
 
 
 def test_unknown_id_exits_1_and_hints_search(tmp_path):
@@ -84,7 +84,7 @@ def test_list_with_specialty_filter(tmp_path):
     assert "european-urology" in r.stdout
     assert "lancet |" not in r.stdout
     r_all = run("--list", cwd=tmp_path)
-    assert r_all.stdout.count("\n") >= 234
+    assert r_all.stdout.count("\n") >= 240
 
 
 def test_overrides_file_wins(tmp_path):

@@ -30,7 +30,7 @@ flowchart TD
         MW[manuscript-writing<br/>IMRaD + 5 Review Types + get_journal_template.py]
         PRS[peer-review-simulation<br/>4 Reviewers + Editor Summary]
         PSV[pre-submission-verification<br/>6-Gate Check]
-        RS[reporting-standards<br/>46 Standards]
+        RS[reporting-standards<br/>47 Standards]
         PS[pubmed-search<br/>Citation Verification]
     end
 
@@ -306,9 +306,9 @@ flowchart TD
 
     subgraph REFS["Reference Data"]
         R1["stat-method-decision-tree.yaml<br/>15+ method categories"]
-        R2["checklists/standards-index.yaml<br/>46 reporting standards"]
+        R2["checklists/standards-index.yaml<br/>47 reporting standards"]
         R3["checklists/consort-2025.yaml<br/>30 items (42 rows incl. sub-items)"]
-        R4["journal-templates.yaml<br/>234 journals, 30+ specialties, data_as_of"]
+        R4["journal-templates.yaml<br/>240 journals, 30+ specialties, data_as_of"]
         R5["metrics-and-reporting.yaml<br/>AI metrics + fairness + robustness"]
         R6["Experiment templates<br/>WB, qPCR, Animal (ARRIVE 2.0)"]
     end
@@ -339,7 +339,7 @@ Quality gates in CI (`.github/workflows/ci.yml`): `tools/check_consistency.py` (
 
 ```mermaid
 mindmap
-  root(("46 Reporting<br/>Standards"))
+  root(("47 Reporting<br/>Standards"))
     Clinical Trials
       CONSORT 2025
       CONSORT-AI
