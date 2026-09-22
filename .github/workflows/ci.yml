@@ -13,8 +13,8 @@ jobs:
   consistency:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
 
@@ -86,19 +86,21 @@ jobs:
           echo "✅ hook smoke test passed"
 
       - name: Hook smoke test (crafted .mrp-state.json)
-        # Non-blocking guard for SECURITY.md's contract: only whitelisted fields of
-        # .mrp-state.json may reach the context, values are never executed.
-        continue-on-error: true
+        # Guard for SECURITY.md's contract: only whitelisted fields of .mrp-state.json
+        # may reach the context, values are never executed. Blocking — the hook reads the
+        # state file whatever its indentation, and tests/test_session_start_hook.py covers
+        # the same contract across formats.
         run: |
+          set -eu
           tmp="$(mktemp -d)"
           cat > "$tmp/.mrp-state.json" <<'JSON'
           {"project": "CI_PROJECT_MARKER", "current_stage": "study-design", "next_step": "research-ethics",
            "not_a_field": "CI_SECRET_MARKER", "artifacts": {"x.md": {"note": "CI_SECRET_MARKER"}}}
           JSON
           out="$(cd "$tmp" && CLAUDE_PLUGIN_ROOT="$GITHUB_WORKSPACE" CLAUDE_PROJECT_DIR="$tmp" sh "$GITHUB_WORKSPACE/hooks/session-start.sh")"
-          printf '%s\n' "$out" | grep -q "CI_PROJECT_MARKER" || { echo "::warning::hook did not report the project name from .mrp-state.json"; exit 1; }
+          printf '%s\n' "$out" | grep -q "CI_PROJECT_MARKER" || { echo "::error::hook did not report the project name from .mrp-state.json"; exit 1; }
           if printf '%s\n' "$out" | grep -q "CI_SECRET_MARKER"; then
-            echo "::warning::hook leaked a non-whitelisted field of .mrp-state.json into the context"; exit 1
+            echo "::error::hook leaked a non-whitelisted field of .mrp-state.json into the context"; exit 1
           fi
           echo "✅ hook only exposes whitelisted state fields"
 
@@ -109,8 +111,8 @@ jobs:
     # here should be looked at but must not block a docs-only PR.
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
       - name: claude plugin validate --strict (plugin.json)
