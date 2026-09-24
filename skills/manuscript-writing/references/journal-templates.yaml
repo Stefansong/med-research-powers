@@ -21,13 +21,20 @@
 #   JCR 2025. All other IF_approx values are still JCR 2022; APC figures are
 #   2022 list prices unless apc_year is given — always state the year and
 #   re-check with WebSearch before quoting them in a report.
+#   guidelines_checked (e.g. "2026-09") marks entries whose author-guideline
+#   fields were re-checked that month (guidelines_source = the page used; most
+#   publisher pages were only reachable through search snippets, so treat them as
+#   a good starting point, not a substitute for the journal's own instructions).
+#   Entries without guidelines_checked have not been re-verified since 2023.
+#   A `special` item starting with "待核实" names a value that could not be checked.
 #
 # How to contribute:
 #   Add new entries following the same structure. Keep alphabetical within each category.
 #   Fields present in every entry: id, journal, publisher, IF_approx, word_limit,
 #           abstract, references, sections, system, family
 #   Fields present in some entries only: figures, tables, special, figure_format,
-#           cover_letter, orcid, IF_year, IF_source (URL), apc_year
+#           cover_letter, orcid, IF_year, IF_source (URL), apc_year,
+#           guidelines_checked, guidelines_source (URL)
 #   family: lancet | jama | nature | ieee | standard — drives section order and
 #           special elements in scripts (export_docx.py). Rule: id/name contains
 #           lancet/eclinical/ebiomedicine → lancet; jama → jama; nature/npj/
@@ -50,8 +57,8 @@ templates:
     IF_approx: 56.1
     IF_year: 2025
     IF_source: "https://www.nature.com/nature/journal-impact"
-    word_limit: 3000 (excluding Methods)
-    abstract: unstructured, ≤150 words
+    word_limit: typically ~2500 (6-page Article, ~4 display items) to ~4300 (8-page Article, 5–6 display items); summary paragraph + body text, excluding Methods
+    abstract: unstructured (fully referenced summary paragraph, aimed at non-specialists), ideally ≤200 words
     references: ≤50, Nature style (numbered, superscript)
     figures: ≤6 main + Extended Data
     tables: ≤3
@@ -65,6 +72,8 @@ templates:
     cover_letter: required
     orcid: required
     system: Nature MTS (eJournalPress)
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.nature.com/nature/for-authors/formatting-guide
     family: nature
 
   - id: nature-medicine
@@ -73,22 +82,24 @@ templates:
     IF_approx: 52.5
     IF_year: 2025
     IF_source: "https://www.nature.com/nm/journal-impact"
-    word_limit: 3000 (excluding Methods)
+    word_limit: 4000 (excluding abstract, Methods, references and figure legends)
     abstract: unstructured, ≤150 words
-    references: ≤50, Nature style (numbered, superscript)
-    figures: ≤8 main, unlimited supplementary
+    references: ≤60 (guideline), Nature style (numbered, superscript)
+    figures: ≤6 display items (figures and/or tables combined)
     figure_format: "TIFF/EPS/PDF, ≥300 DPI, max 20MB per file"
-    tables: ≤4
+    tables: included in display-item limit
     sections: "Abstract, Introduction, Results, Discussion, Methods, References"
     special:
       - "Reporting Summary checklist required"
       - "Data availability statement required"
       - "Code availability statement required"
       - "Life Sciences Reporting Summary required"
-      - "待核实: word/figure/table/reference limits above were not re-checked against nature.com/nm/content (page not reachable in the 2026-09 review); confirm there before relying on them"
+      - Limits verified 2026-09 from nature.com/nm/content search snippets only (page itself not reachable); abstract length for Articles not re-checked
     cover_letter: required
     orcid: required
     system: Nature MTS (eJournalPress)
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.nature.com/nm/content
     family: nature
 
   - id: lancet
@@ -97,7 +108,7 @@ templates:
     IF_approx: 109.0
     IF_year: 2025
     IF_source: "https://www.sciencedirect.com/journal/the-lancet"
-    word_limit: 3000
+    word_limit: '3000 (randomised trials may be extended to 4500; observational studies and systematic reviews/meta-analyses: 3500)'
     abstract: structured (Background, Methods, Findings, Interpretation, Funding), ≤300 words
     references: ≤30, Vancouver (numbered)
     figures: ≤5 (combined figures + tables)
@@ -113,6 +124,8 @@ templates:
     cover_letter: required
     orcid: required
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.thelancet.com/pb-assets/Lancet/authors/RCTguidelines-1753449053253.pdf
     family: lancet
 
   - id: nejm
@@ -122,9 +135,9 @@ templates:
     word_limit: 2700
     abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
     references: ≤40, NEJM style (numbered)
-    figures: ≤4
+    figures: ≤5 (figures + tables combined)
     figure_format: "EPS/TIFF, ≥1000 DPI for line art"
-    tables: ≤4
+    tables: included in figure limit
     sections: "Abstract, Introduction (no heading), Methods, Results, Discussion, References"
     special:
       - "Disclosure forms for ALL authors (ICMJE)"
@@ -134,6 +147,8 @@ templates:
     cover_letter: required
     orcid: required
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.nejm.org/author-center/new-manuscripts
     family: standard
 
   - id: jama
@@ -152,6 +167,7 @@ templates:
       - "eTable/eFigure for supplementary"
       - "Mandatory statistical review"
       - "Structured abstract with 7 headings"
+      - '待核实: flagged — JAMA Original Investigation may allow up to ~50–75 references and ≤5 tables and/or figures combined; jamanetwork.com instructions not readable in 2026-09 review (only third-party summaries found)'
     cover_letter: required
     orcid: recommended
     system: eJournalPress (manuscripts.jama.com)
@@ -196,6 +212,7 @@ templates:
       - "Primary Data Sharing statement"
       - "Reproducible Research statement"
       - "IF year taken from ACP wording 'most recent (2025) Impact Factor' — verify against JCR"
+      - '待核实: flagged word/abstract limits (possibly 3500 words / 275-word abstract) — acpjournals.org author pages not readable in 2026-09 review; current values unchanged'
     system: ScholarOne
     family: standard
 
@@ -246,18 +263,26 @@ templates:
   - id: jco
     journal: Journal of Clinical Oncology (JCO)
     publisher: ASCO
-    IF_approx: 45
+    IF_approx: 46.2
+    IF_year: 2025
+    IF_source: https://ascopubs.org/jco/about
     word_limit: 3000
-    abstract: structured (Purpose, Methods, Results, Conclusion), ≤250 words
+    abstract: structured (Purpose, Methods [Patients and Methods], Results, Conclusion), ≤275 words
     references: ≤50, Vancouver
-    figures: ≤6
-    tables: ≤4
+    figures: ≤6 (figures + tables combined, not counting figure parts)
+    tables: included in figure limit
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Data Supplement for supplementary (Appendix online only)"
       - "Author contributions (CRediT)"
       - "Institutional approval statement"
+      - 'Context Summary required for Original Reports (<100 words: Key Objective + Knowledge Generated; editors add Relevance) — supplied at revision'
+      - Graphical abstract for all JCO Original Reports (one figure + legend + context summary/relevance)
+      - Format-free initial submission (ASCO journals); references follow ICMJE style, numbered in order of citation
+      - Do not exceed the word limit by >1000 words at submission; revised papers must meet it
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://ascopubs.org/jco/authors/format-manuscript
     family: standard
 
   - id: lancet-oncology
@@ -432,7 +457,7 @@ templates:
     IF_source: "https://www.auanet.org/annual-reports/2025/"
     word_limit: 2500
     abstract: structured (Purpose, Materials and Methods, Results, Conclusions), ≤250 words
-    references: ≤40, Vancouver
+    references: ≤30, Vancouver
     figures: ≤6
     tables: ≤4
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
@@ -440,20 +465,27 @@ templates:
       - "Lay language synopsis for social media"
       - "IF 7.5 = JIF announced in 2025 (JCR 2024) per AUA 2025 Annual Report; auajournals.org metrics page not reachable — verify"
       - "Submission system per AUA page https://www.auanet.org/membership/publications-overview/the-journal-of-urology (accessed 2026-09)"
+      - Reference limit (30) taken from the AUA-hosted JU Information for Authors (2019 version indexed); current JU_IFA PDF not readable in 2026-09 review — confirm
     system: Editorial Manager (editorialmanager.com/ju)
     family: standard
 
   - id: bju-international
     journal: BJU International
     publisher: Wiley
-    IF_approx: 4
-    word_limit: 3000
-    abstract: structured (Objective, Patients and Methods, Results, Conclusion), ≤250 words
-    references: ≤35, Vancouver
-    figures: ≤6
-    tables: ≤4
+    IF_approx: 4.4
+    IF_year: 2024
+    IF_source: https://www.bjuinternational.com/bjui-journals-new-impact-factors-announced/
+    word_limit: 4000
+    abstract: structured (Objectives [start with 'To…'], Subjects/Patients (or Materials) and Methods, Results, Conclusion), ≤300 words
+    references: ≤30, Vancouver
+    figures: ≤3
+    tables: ≤3
     sections: "Abstract, Introduction, Patients and Methods, Results, Discussion, References"
+    special:
+      - Limits from BJUI author guidelines (2022 PDF + journal author page, search snippets); a June 2026 IF announcement was not retrievable — update IF when available
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://bjui-journals.onlinelibrary.wiley.com/hub/journal/1464410x/homepage/forauthors.html
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -497,14 +529,18 @@ templates:
     publisher: AHA
     IF_approx: 38
     word_limit: 5000
-    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    abstract: structured (Background, Methods, Results, Conclusions), ≤350 words
     references: ≤50
     figures: ≤7
     tables: ≤5
     sections: "Abstract, Clinical Perspective (What is New, What are the Clinical Implications), Introduction, Methods, Results, Discussion, References"
     special:
       - "Clinical Perspective box required (What is New + Clinical Implications)"
+      - Format-free initial submission accepted (AHA Minimum Submission Requirements)
+      - '待核实: word/reference/figure limits and current IF not verifiable from ahajournals.org in 2026-09 review'
     system: eJournalPress (circ-submit.aha-journals.org)
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.ahajournals.org/circ/manuscript-preparation
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -539,6 +575,7 @@ templates:
     sections: "Abstract, Significance of this study (What is already known, What are the new findings, How might it impact), Introduction, Methods, Results, Discussion, References"
     special:
       - "Significance of this study box required"
+      - '待核实: abstract headings (flagged: may be Objective / Design / Results / Conclusion rather than full BMJ headings), limits and IF — gut.bmj.com not reachable/indexed in 2026-09 review'
     system: ScholarOne
     family: standard
 
@@ -564,7 +601,9 @@ templates:
   - id: lancet-respiratory
     journal: Lancet Respiratory Medicine
     publisher: Elsevier
-    IF_approx: 39
+    IF_approx: 32.8
+    IF_year: 2024
+    IF_source: https://www.thelancet.com/lanres/about
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
     references: ≤30, Vancouver
@@ -572,6 +611,7 @@ templates:
     sections: same as Lancet
     special:
       - "Research in Context panel required"
+      - IF 32.8 = JCR 2024 (Clarivate 2025) as shown on thelancet.com/lanres/about; the page now cites the 2025 JCR ranking but the 2025 value was not retrievable — update when available
     system: Editorial Manager
     family: lancet
 
@@ -612,10 +652,12 @@ templates:
   - id: lancet-neurology
     journal: Lancet Neurology
     publisher: Elsevier
-    IF_approx: 48
+    IF_approx: 54.6
+    IF_year: 2025
+    IF_source: https://www.thelancet.com/laneur/about
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
-    references: ≤30
+    references: ≤30, Vancouver
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -746,7 +788,7 @@ templates:
     IF_source: "https://www.sciencedirect.com/journal/the-lancet-digital-health"
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
-    references: ≤30
+    references: ≤30, Vancouver
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -800,13 +842,16 @@ templates:
   - id: lancet-child
     journal: Lancet Child & Adolescent Health
     publisher: Elsevier
-    IF_approx: 20
+    IF_approx: 15.5
+    IF_year: 2024
+    IF_source: https://www.thelancet.com/lanchi/about
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
-    references: ≤30
+    references: ≤30, Vancouver
     sections: same as Lancet
     special:
       - "Research in Context panel required"
+      - IF 15.5 = JCR 2024 (Clarivate 2025) per thelancet.com/lanchi/about; JCR 2025 value not retrievable in 2026-09 review
     system: Editorial Manager
     family: lancet
 
@@ -974,10 +1019,12 @@ templates:
   - id: lancet-id
     journal: Lancet Infectious Diseases
     publisher: Elsevier
-    IF_approx: 36
+    IF_approx: 29.4
+    IF_year: 2025
+    IF_source: https://www.thelancet.com/laninf/about
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
-    references: ≤30
+    references: ≤30, Vancouver
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -1020,10 +1067,12 @@ templates:
   - id: lancet-diabetes
     journal: Lancet Diabetes & Endocrinology
     publisher: Elsevier
-    IF_approx: 44
+    IF_approx: 36.3
+    IF_year: 2025
+    IF_source: https://www.thelancet.com/landia/about
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
-    references: ≤30
+    references: ≤30, Vancouver
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -1056,10 +1105,12 @@ templates:
   - id: lancet-psychiatry
     journal: Lancet Psychiatry
     publisher: Elsevier
-    IF_approx: 65
+    IF_approx: 21.1
+    IF_year: 2025
+    IF_source: https://www.thelancet.com/lanpsy/about
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
-    references: ≤30
+    references: ≤30, Vancouver
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -1366,7 +1417,8 @@ templates:
   - id: elife
     journal: eLife
     publisher: eLife Sciences Publications
-    IF_approx: "suspended (2024) — JCR 2022 value was 7; Clarivate paused Web of Science coverage in 2024, verify current status"
+    IF_approx: none — eLife lost its Journal Impact Factor (Clarivate decision announced end of 2024 over its publish-review-curate model); last JCR value (2022) was ~7
+    IF_source: https://doi.org/10.7554/eLife.110392
     word_limit: no strict limit
     abstract: unstructured, ≤150 words
     references: unlimited
@@ -1377,7 +1429,8 @@ templates:
       - "eLife Assessment and Public Reviews published alongside paper"
       - "Publication fee ~USD 2000 per Reviewed Preprint (new model since 2023; verify current amount)"
       - "Publish-Review-Curate (Reviewed Preprint) model since 2023"
-      - "Web of Science / JCR coverage paused by Clarivate in 2024 — no current IF; verify indexing status before targeting"
+      - 'No Journal Impact Factor: Clarivate removed it after eLife''s 2023 switch to publish-review-curate (eLife editorial, March 2026, doi:10.7554/eLife.110392) — check whether your institution/funder requires a JIF before targeting'
+      - eLife is closing its legacy peer-review track to new submissions; only the Reviewed Preprint (PRC) route remains (same editorial, 2026)
     system: eLife submission system
     family: standard
 
@@ -1435,19 +1488,25 @@ templates:
   - id: cancer-cell
     journal: Cancer Cell
     publisher: Cell Press / Elsevier
-    IF_approx: 49
-    word_limit: 5000 (excluding STAR Methods)
+    IF_approx: 44.5
+    IF_year: 2024
+    IF_source: https://www.cell.com/cancer-cell/home
+    word_limit: 7000 (including main figure legends; excluding STAR Methods, supplemental legends and references)
     abstract: unstructured, ≤150 words
-    references: ≤80
-    figures: ≤7
-    tables: ≤3
+    references: ≤80, Cell (numbered, superscript)
+    figures: ≤8 (figures and/or tables combined)
+    tables: included in figure limit
     sections: "Summary, Introduction, Results, Discussion, STAR Methods, References"
     special:
       - "Graphical Abstract required"
       - "Highlights (≤4 bullet points) required"
       - "eTOC blurb required (≤70 words)"
       - "STAR Methods format (KEY RESOURCES TABLE)"
+      - IF 44.5 = value shown on cell.com Cancer Cell homepage (JCR 2024); the page now cites JCR 2025 (Clarivate 2026) but the new value was not retrievable — update
+      - Reference count (≤80) not re-verified
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.cell.com/cancer-cell/article-types
     family: standard
 
   - id: cancer-discovery
@@ -1477,16 +1536,21 @@ templates:
     sections: "Abstract, Translational Relevance, Introduction, Patients and Methods, Results, Discussion, References"
     special:
       - "Translational Relevance statement required (≤150 words)"
+      - 'Clinical-trial research articles use a structured 250-word abstract (regular research articles: unstructured)'
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://aacrjournals.org/clincancerres/pages/journal-ifora
     family: standard
 
   - id: nature-reviews-clinical-oncology
     journal: Nature Reviews Clinical Oncology
     publisher: Springer Nature
-    IF_approx: 82
+    IF_approx: 94.6
+    IF_year: 2025
+    IF_source: https://www.nature.com/nrclinonc/journal-impact
     word_limit: no strict limit (reviews)
     abstract: unstructured, ≤200 words
-    references: unlimited
+    references: no hard limit (~25 per 1,000 words; up to ~150 for Reviews), Nature
     figures: unlimited
     tables: unlimited
     sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
@@ -1494,6 +1558,8 @@ templates:
       - "Invited review journal"
       - "Key Points box required"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.nature.com/documents/natrev-articleformatguide-review.pdf
     family: nature
 
   - id: jnci
@@ -1509,6 +1575,8 @@ templates:
     special:
       - "Context and Caveats box (editor-written)"
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://academic.oup.com/jnci/pages/author-guidelines
     family: standard
 
   - id: european-journal-cancer
@@ -1519,17 +1587,21 @@ templates:
     IF_source: "https://www.sciencedirect.com/journal/european-journal-of-cancer"
     word_limit: 3500
     abstract: structured, ≤250 words
-    references: ≤50, Vancouver
+    references: ≤40, Vancouver
     figures: ≤6
     tables: ≤4
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/european-journal-of-cancer/publish/guide-for-authors
     family: standard
 
   - id: breast-cancer-research
     journal: Breast Cancer Research
     publisher: Springer Nature
-    IF_approx: 7
+    IF_approx: 6.2
+    IF_year: 2025
+    IF_source: https://link.springer.com/journal/13058
     word_limit: no strict limit
     abstract: structured, ≤350 words
     references: unlimited
@@ -1539,6 +1611,8 @@ templates:
     special:
       - "APC: ~$2990"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://breast-cancer-research.biomedcentral.com/submission-guidelines/preparing-your-manuscript/research-articles
     family: standard
 
   - id: cancers
@@ -1569,10 +1643,12 @@ templates:
   - id: nature-reviews-cardiology
     journal: Nature Reviews Cardiology
     publisher: Springer Nature
-    IF_approx: 42
+    IF_approx: 50.2
+    IF_year: 2025
+    IF_source: https://www.nature.com/nrcardio/journal-impact
     word_limit: no strict limit (reviews)
     abstract: unstructured, ≤200 words
-    references: unlimited
+    references: no hard limit (~25 per 1,000 words; up to ~150 for Reviews), Nature
     figures: unlimited
     tables: unlimited
     sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
@@ -1580,6 +1656,8 @@ templates:
       - "Invited review journal"
       - "Key Points box required"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.nature.com/documents/natrev-articleformatguide-review.pdf
     family: nature
 
   - id: jama-cardiology
@@ -1600,7 +1678,9 @@ templates:
   - id: european-journal-heart-failure
     journal: European Journal of Heart Failure
     publisher: Oxford University Press / ESC
-    IF_approx: 11
+    IF_approx: 10.3
+    IF_year: 2025
+    IF_source: https://academic.oup.com/eurjhf
     word_limit: 4000
     abstract: structured, ≤250 words
     references: ≤50
@@ -1615,7 +1695,9 @@ templates:
   - id: cardiovascular-research
     journal: Cardiovascular Research
     publisher: Oxford University Press / ESC
-    IF_approx: 13
+    IF_approx: 12.5
+    IF_year: 2025
+    IF_source: https://academic.oup.com/cardiovascres
     word_limit: 5000
     abstract: structured, ≤250 words
     references: ≤60
@@ -1646,16 +1728,18 @@ templates:
     journal: Circulation Research
     publisher: AHA
     IF_approx: 17
-    word_limit: 5000
-    abstract: structured, ≤250 words
+    word_limit: 8000 (including references)
+    abstract: structured (Background, Methods, Results, Conclusions), ≤300 words
     references: ≤60
-    figures: ≤7
-    tables: ≤5
+    figures: ≤8 (figures + tables combined)
+    tables: included in figure limit
     sections: "Abstract, Novelty and Significance (What Is Known, What New Information Does This Article Contribute), Introduction, Methods, Results, Discussion, References"
     special:
       - "Novelty and Significance box required"
       - "Major Resources Table for reagents"
     system: eJournalPress (circres-submit.aha-journals.org)
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.ahajournals.org/res/article-types
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -1668,7 +1752,7 @@ templates:
     IF_approx: 36
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
-    references: ≤30
+    references: ≤30, Vancouver
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -1681,7 +1765,7 @@ templates:
     IF_approx: 47
     word_limit: no strict limit (reviews)
     abstract: unstructured, ≤200 words
-    references: unlimited
+    references: no hard limit (~25 per 1,000 words; up to ~150 for Reviews), Nature
     figures: unlimited
     tables: unlimited
     sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
@@ -1689,6 +1773,8 @@ templates:
       - "Invited review journal"
       - "Key Points box required"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.nature.com/documents/natrev-articleformatguide-review.pdf
     family: nature
 
   - id: journal-hepatology
@@ -1792,10 +1878,12 @@ templates:
   - id: nature-reviews-neurology
     journal: Nature Reviews Neurology
     publisher: Springer Nature
-    IF_approx: 38
+    IF_approx: 31.2
+    IF_year: 2025
+    IF_source: https://www.nature.com/nrneurol/journal-impact
     word_limit: no strict limit (reviews)
     abstract: unstructured, ≤200 words
-    references: unlimited
+    references: no hard limit (~25 per 1,000 words; up to ~150 for Reviews), Nature
     figures: unlimited
     tables: unlimited
     sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
@@ -1803,6 +1891,8 @@ templates:
       - "Invited review journal"
       - "Key Points box required"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.nature.com/documents/natrev-articleformatguide-review.pdf
     family: nature
 
   - id: annals-neurology
@@ -1950,7 +2040,7 @@ templates:
     IF_approx: 20
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
-    references: ≤30
+    references: ≤30, Vancouver
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -2008,17 +2098,21 @@ templates:
   - id: blood
     journal: Blood
     publisher: ASH (published by Elsevier since 2021)
-    IF_approx: 21
+    IF_approx: 23.9
+    IF_year: 2025
+    IF_source: https://ashpublications.org/blood/pages/journal_facts
     word_limit: 4000
-    abstract: unstructured, ≤200 words
-    references: ≤60
-    figures: ≤7
-    tables: ≤4
+    abstract: unstructured (single paragraph, no subheadings), ≤250 words
+    references: ≤100 (recommended), AMA
+    figures: ≤7 (figures + tables combined)
+    tables: included in figure limit
     sections: "Abstract, Visual Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Visual Abstract required"
       - "Key Points required (2 bullet points)"
-    system: ScholarOne
+    system: eJournalPress
+    guidelines_checked: 2026-09
+    guidelines_source: https://ashpublications.org/blood/pages/Article_Types
     family: standard
 
   - id: lancet-haematology
@@ -2027,7 +2121,7 @@ templates:
     IF_approx: 25
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
-    references: ≤30
+    references: ≤30, Vancouver
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -2052,18 +2146,22 @@ templates:
   - id: blood-advances
     journal: Blood Advances
     publisher: ASH (published by Elsevier since 2021)
-    IF_approx: 7
+    IF_approx: 7.7
+    IF_year: 2025
+    IF_source: https://ashpublications.org/bloodadvances/pages/why_submit
     word_limit: 4000
-    abstract: unstructured, ≤200 words
-    references: ≤60
-    figures: ≤7
-    tables: ≤4
+    abstract: unstructured (single paragraph), ≤250 words
+    references: ≤100 (recommended), AMA
+    figures: ≤7 (figures + tables combined)
+    tables: included in figure limit
     sections: "Abstract, Visual Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Visual Abstract required"
       - "Key Points required (2 bullet points)"
       - "Open access"
-    system: ScholarOne
+    system: eJournalPress
+    guidelines_checked: 2026-09
+    guidelines_source: https://ashpublications.org/bloodadvances/pages/article-types
     family: standard
 
   - id: american-journal-hematology
@@ -2086,10 +2184,12 @@ templates:
   - id: nature-reviews-rheumatology
     journal: Nature Reviews Rheumatology
     publisher: Springer Nature
-    IF_approx: 33
+    IF_approx: 33.7
+    IF_year: 2025
+    IF_source: https://www.nature.com/nrrheum/journal-impact
     word_limit: no strict limit (reviews)
     abstract: unstructured, ≤200 words
-    references: unlimited
+    references: no hard limit (~25 per 1,000 words; up to ~150 for Reviews), Nature
     figures: unlimited
     tables: unlimited
     sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
@@ -2097,21 +2197,27 @@ templates:
       - "Invited review journal"
       - "Key Points box required"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.nature.com/documents/natrev-articleformatguide-review.pdf
     family: nature
 
   - id: annals-rheumatic-diseases
     journal: Annals of the Rheumatic Diseases
     publisher: Elsevier / EULAR
-    IF_approx: 21
-    word_limit: 3000
+    IF_approx: 24.0
+    IF_year: 2025
+    IF_source: https://www.eular.org/eular-journals
+    word_limit: 4000
     abstract: structured (Objectives, Methods, Results, Conclusions), ≤250 words
-    references: ≤40, Vancouver
-    figures: ≤6
-    tables: ≤4
+    references: flexible (usually <100), Vancouver
+    figures: ≤8 (figures + tables combined)
+    tables: included in figure limit
     sections: "Abstract, Key Messages, Introduction, Methods, Results, Discussion, References"
     special:
       - "Key Messages box required (≤3 bullet points)"
-    system: ScholarOne
+    system: Editorial Manager (editorialmanager.com/ard)
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/annals-of-the-rheumatic-diseases/publish/guide-for-authors
     family: standard
 
   - id: arthritis-rheumatology
@@ -2152,7 +2258,7 @@ templates:
     IF_approx: 42
     word_limit: no strict limit (reviews)
     abstract: unstructured, ≤200 words
-    references: unlimited
+    references: no hard limit (~25 per 1,000 words; up to ~150 for Reviews), Nature
     figures: unlimited
     tables: unlimited
     sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
@@ -2160,6 +2266,8 @@ templates:
       - "Invited review journal"
       - "Key Points box required"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.nature.com/documents/natrev-articleformatguide-review.pdf
     family: nature
 
   - id: kidney-international
@@ -2228,10 +2336,12 @@ templates:
   - id: nature-reviews-endocrinology
     journal: Nature Reviews Endocrinology
     publisher: Springer Nature
-    IF_approx: 29
+    IF_approx: 39.1
+    IF_year: 2025
+    IF_source: https://www.nature.com/nrendo/journal-impact
     word_limit: no strict limit (reviews)
     abstract: unstructured, ≤200 words
-    references: unlimited
+    references: no hard limit (~25 per 1,000 words; up to ~150 for Reviews), Nature
     figures: unlimited
     tables: unlimited
     sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
@@ -2239,6 +2349,8 @@ templates:
       - "Invited review journal"
       - "Key Points box required"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.nature.com/documents/natrev-articleformatguide-review.pdf
     family: nature
 
   - id: diabetes
@@ -2662,7 +2774,7 @@ templates:
     IF_year: 2025
     IF_source: "https://services.sagepub.com/journal/journal-of-endourology/"
     word_limit: 2500 (excluding abstract, tables, figures, legends, acknowledgments, disclosures, references)
-    abstract: ≤250-300 words (headings not mandated; Introduction/Objectives, Materials and Methods, Results, Conclusions customary)
+    abstract: structured, ≤300 words (purpose, major findings, conclusions; trial registry name, URL and number at end for clinical trials)
     references: ≤30, Vancouver-style numbered
     figures: ≤6
     tables: ≤6
@@ -2673,6 +2785,8 @@ templates:
       - "IF year inferred: Sage 2026 rate card (Dec 2025) listed 2.8 (JCR 2024); journal page now shows 3.2 — verify"
       - "Source: https://home.liebertpub.com/publications/journal-of-endourology/32/for-authors (accessed 2026-09)"
     system: ScholarOne (Manuscript Central)
+    guidelines_checked: 2026-09
+    guidelines_source: https://journals.sagepub.com/author-instructions/enr
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -2736,13 +2850,14 @@ templates:
     IF_source: "https://www.sciencedirect.com/journal/academic-radiology"
     word_limit: 5000
     abstract: structured (Rationale and Objectives, Materials and Methods, Results, Conclusion), ≤250 words
-    references: ≤50
+    references: ≤50, Vancouver
     figures: ≤10
     tables: ≤5
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Guidelines checked: https://www.sciencedirect.com/journal/academic-radiology/publish/guide-for-authors (accessed 2026-09)"
     system: Editorial Manager
+    guidelines_checked: 2026-09
     family: standard
 
   - id: european-journal-radiology
@@ -2753,7 +2868,7 @@ templates:
     IF_source: "https://www.sciencedirect.com/journal/european-journal-of-radiology"
     word_limit: 4000 (Research Papers; including abstract, legends and references)
     abstract: unstructured (no mandated headings; state purpose, methods, findings, conclusions), ≤250 words
-    references: ≤40 (counted within the 4000-word limit), numbered
+    references: ≤40 (counted within the 4000-word limit), Vancouver
     figures: see author guidelines (no fixed limit)
     tables: see author guidelines (no fixed limit)
     sections: "Abstract, Highlights, Introduction, Materials and Methods, Results, Discussion, Conclusion, References"
@@ -2763,6 +2878,7 @@ templates:
       - "CRediT author contributions required"
       - "Source: https://www.sciencedirect.com/journal/european-journal-of-radiology/publish/guide-for-authors (accessed 2026-09)"
     system: Editorial Manager (via submit.elsevier.com/EJR)
+    guidelines_checked: 2026-09
     family: standard
 
   - id: abdominal-radiology
@@ -2773,7 +2889,7 @@ templates:
     IF_source: "https://link.springer.com/journal/261"
     word_limit: 3500 (Original Research / meta-analysis)
     abstract: structured (Purpose, Methods, Results, Conclusion), ≤300 words
-    references: ≤60, numbered in square brackets
+    references: ≤60, Vancouver (numbered in square brackets)
     figures: ≤5 (≤10 images total)
     tables: ≤5
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusion, References"
@@ -2783,6 +2899,7 @@ templates:
       - "Keywords 4-6; Statements and Declarations section required"
       - "Source: https://link.springer.com/journal/261/submission-guidelines (accessed 2026-09)"
     system: Springer Nature submission system (SNAPP)
+    guidelines_checked: 2026-09
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -2797,13 +2914,15 @@ templates:
     IF_source: "https://www.sciencedirect.com/journal/artificial-intelligence-in-medicine"
     word_limit: no strict limit (typically 8000-10000)
     abstract: unstructured, ≤250 words
-    references: unlimited
+    references: unlimited, Vancouver (numbered in square brackets)
     figures: unlimited
     tables: unlimited
     sections: "Abstract, Highlights, Introduction, Related Work, Methods, Experiments, Results, Discussion, Conclusion, References"
     special:
       - "Highlights required (3-5 bullet points)"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/artificial-intelligence-in-medicine/publish/guide-for-authors
     family: standard
 
   - id: jmir-mhealth
@@ -2814,7 +2933,7 @@ templates:
     IF_source: "https://mhealth.jmir.org/"
     word_limit: no strict limit
     abstract: structured, ≤300 words
-    references: unlimited
+    references: unlimited, AMA
     figures: unlimited
     tables: unlimited
     sections: "Abstract, Introduction, Methods, Results, Discussion (Principal Findings, Limitations, Comparison With Prior Work, Conclusions), References"
@@ -2823,6 +2942,8 @@ templates:
       - "Mobile/wearable health focus"
     apc_year: 2026
     system: JMIR submission system
+    guidelines_checked: 2026-09
+    guidelines_source: https://mhealth.jmir.org/author-information/instructions-for-authors
     family: standard
 
   - id: computers-in-biology-medicine
@@ -2831,7 +2952,7 @@ templates:
     IF_approx: 7
     word_limit: no strict limit
     abstract: unstructured, ≤250 words
-    references: unlimited
+    references: unlimited, Vancouver (numbered in square brackets)
     figures: unlimited
     tables: unlimited
     sections: "Abstract, Highlights, Introduction, Methods, Results, Discussion, Conclusion, References"
@@ -2839,6 +2960,8 @@ templates:
       - "Highlights required"
       - "Code availability encouraged"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/computers-in-biology-and-medicine/publish/guide-for-authors
     family: standard
 
   - id: ieee-tmi
@@ -2888,13 +3011,17 @@ templates:
     journal: Journal of Pediatrics
     publisher: Elsevier
     IF_approx: 5
-    word_limit: 3000
-    abstract: structured (Objective, Study design, Results, Conclusions), ≤250 words
-    references: ≤40
-    figures: ≤6
-    tables: ≤4
+    word_limit: 4000
+    abstract: structured (Objective, Study design, Results, Conclusions), <250 words
+    references: ≤35, AMA
+    figures: ≤8 figures + tables combined
+    tables: ≤8 figures + tables combined
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - Word count 4000 includes title page and abstract, excludes references, tables and figures
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/the-journal-of-pediatrics/publish/guide-for-authors
     family: standard
 
   - id: archives-disease-childhood
@@ -2916,15 +3043,17 @@ templates:
     journal: Pediatric Research
     publisher: Springer Nature
     IF_approx: 3
-    word_limit: 4000
-    abstract: structured (Background, Methods, Results, Conclusion), ≤250 words
-    references: ≤50
+    word_limit: 5000–6000 (Basic Science / Clinical Research Articles)
+    abstract: structured (Background, Methods, Results, Conclusion), ≤200 words
+    references: unlimited, Nature (superscript numbers; >5 authors → first author et al.)
     figures: ≤6
     tables: ≤4
     sections: "Abstract, Impact Statement, Introduction, Methods, Results, Discussion, References"
     special:
-      - "Impact Statement required (≤50 words)"
+      - Impact statement required on title page (≤100 words, labelled 'Impact')
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.nature.com/pr/authors-and-referees/preparation-of-articles
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -2935,8 +3064,8 @@ templates:
     journal: American Journal of Obstetrics and Gynecology (AJOG)
     publisher: Elsevier
     IF_approx: 9
-    word_limit: 3500
-    abstract: structured (Objective, Study Design, Results, Conclusion), ≤250 words
+    word_limit: 3000
+    abstract: structured (Background, Objective, Study Design, Results, Conclusion), 250–500 words
     references: ≤40, Vancouver
     figures: ≤6
     tables: ≤4
@@ -2944,7 +3073,12 @@ templates:
     special:
       - "'Comment' instead of 'Discussion'"
       - "AJOG at a Glance box required"
+      - 'Condensation page: Tweetable statement (≤210 characters) + Short Title (≤25 words)'
+      - AJOG at a Glance ≤130 words (1-3 bullets)
+      - Word count excludes title page, condensation, abstract, acknowledgments, references, tables, legends, figures
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/american-journal-of-obstetrics-and-gynecology/publish/guide-for-authors
     family: standard
 
   - id: obstetrics-gynecology
@@ -2968,13 +3102,15 @@ templates:
     IF_approx: 6
     word_limit: 3500
     abstract: structured (Objective, Design, Setting, Population, Methods, Main Outcome Measures, Results, Conclusions), ≤250 words
-    references: ≤40
+    references: ≤40, Vancouver
     figures: ≤6
     tables: ≤4
     sections: "Abstract, Tweetable Abstract, Introduction, Methods, Results, Discussion, Conclusion, References"
     special:
       - "Tweetable Abstract required (≤140 characters)"
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://obgyn.onlinelibrary.wiley.com/hub/journal/14710528/author-guidelines
     family: standard
 
   - id: human-reproduction
@@ -2983,13 +3119,15 @@ templates:
     IF_approx: 6
     word_limit: 5000
     abstract: structured (Study Question, Summary Answer, What Is Known Already, Study Design/Subjects/Duration, Main Results and the Role of Chance, Limitations, Wider Implications), ≤300 words
-    references: ≤60
+    references: ≤60, Harvard (author-year, alphabetical)
     figures: ≤6
     tables: ≤4
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Extended structured abstract with unique headings"
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://academic.oup.com/humrep/pages/General_Instructions
     family: standard
 
   - id: fertility-sterility
@@ -3009,15 +3147,17 @@ templates:
     journal: Gynecologic Oncology
     publisher: Elsevier / SGO
     IF_approx: 5
-    word_limit: 3500
+    word_limit: 4000
     abstract: structured (Objective, Methods, Results, Conclusions), ≤250 words
-    references: ≤50
-    figures: ≤6
-    tables: ≤4
+    references: ≤40
+    figures: ≤6 tables + figures combined
+    tables: ≤6 tables + figures combined
     sections: "Abstract, Highlights, Introduction, Methods, Results, Discussion, References"
     special:
       - "Highlights required (3-5 bullet points)"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/gynecologic-oncology/publish/guide-for-authors
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -3027,9 +3167,11 @@ templates:
   - id: critical-care
     journal: Critical Care
     publisher: Springer Nature
-    IF_approx: 15
+    IF_approx: 9.3
+    IF_year: 2024
+    IF_source: https://ccforum.biomedcentral.com/
     word_limit: no strict limit
-    abstract: structured, ≤350 words
+    abstract: structured, ≤250 words
     references: unlimited
     figures: unlimited
     tables: unlimited
@@ -3038,6 +3180,8 @@ templates:
       - "APC: ~$3290"
       - "Open access"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://ccforum.biomedcentral.com/submission-guidelines/preparing-your-manuscript/research
     family: standard
 
   - id: critical-care-medicine
@@ -3045,12 +3189,16 @@ templates:
     publisher: Wolters Kluwer / SCCM
     IF_approx: 8
     word_limit: 3000
-    abstract: structured (Objectives, Design, Setting, Patients, Interventions, Measurements and Main Results, Conclusions), ≤250 words
-    references: ≤40
+    abstract: structured (Objectives, Design, Setting, Patients/Subjects, Interventions, Measurements and Main Results, Conclusions), ≤300 words
+    references: ≤40, Vancouver (Arabic numerals in parentheses on the line; NLM abbreviations)
     figures: ≤6
     tables: ≤4
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - Key Points required (included in main manuscript file after abstract)
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://journals.lww.com/ccmjournal/Pages/information-for-authors
     family: standard
 
   - id: intensive-care-medicine
@@ -3059,13 +3207,16 @@ templates:
     IF_approx: 27
     word_limit: 3000
     abstract: structured (Purpose, Methods, Results, Conclusion), ≤250 words
-    references: ≤40
+    references: ≤30
     figures: ≤5
     tables: ≤3
     sections: "Abstract, Take-home message, Introduction, Methods, Results, Discussion, References"
     special:
-      - "Take-home message required (≤3 sentences)"
+      - Take-home message required (≤65 words)
+      - Exceptions to limits can be requested with reasons in the cover letter
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://link.springer.com/journal/134/submission-guidelines
     family: standard
 
   - id: annals-emergency-medicine
@@ -3121,13 +3272,15 @@ templates:
     IF_approx: 10
     word_limit: 3500
     abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
-    references: ≤50
+    references: ≤50, Vancouver
     figures: ≤6
     tables: ≤4
     sections: "Abstract, Editor's Key Points, Introduction, Methods, Results, Discussion, References"
     special:
       - "Editor's Key Points required (3-5 bullet points)"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/british-journal-of-anaesthesia/publish/guide-for-authors
     family: standard
 
   - id: european-journal-anaesthesiology
@@ -3179,15 +3332,17 @@ templates:
     journal: British Journal of General Practice (BJGP)
     publisher: RCGP
     IF_approx: 5
-    word_limit: 3000
+    word_limit: 2500
     abstract: structured (Background, Aim, Design and setting, Method, Results, Conclusion), ≤250 words
-    references: ≤35
+    references: ≤35, Vancouver
     figures: ≤4
     tables: ≤4
     sections: "Abstract, How this fits in, Introduction, Method, Results, Discussion, References"
     special:
       - "How this fits in box required"
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://bjgp.org/authors/writing-for-bjgp-research
     family: standard
 
   - id: family-medicine-community-health
@@ -3215,33 +3370,39 @@ templates:
     IF_approx: 7
     word_limit: 4000
     abstract: structured (Objective, Methods, Results, Conclusion, Impact), ≤250 words
-    references: ≤50
+    references: ≤50, AMA (numbered consecutively; any consistent readable style accepted at submission)
     figures: ≤6
     tables: ≤4
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Impact Statement required in abstract"
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://academic.oup.com/ptj/pages/Author_Guidelines
     family: standard
 
   - id: archives-pmr
     journal: Archives of Physical Medicine and Rehabilitation
     publisher: Elsevier / ACRM
     IF_approx: 4
-    word_limit: 3500
+    word_limit: 3000
     abstract: structured (Objective, Design, Setting, Participants, Interventions, Main Outcome Measures, Results, Conclusions), ≤250 words
-    references: ≤40
+    references: ≤40, AMA
     figures: ≤6
     tables: ≤4
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - Word count = Introduction through Conclusions; animal-model, healthy-sample and small case-report studies generally not reviewed
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.archives-pmr.org/content/authorinfo
     family: standard
 
   - id: journal-rehabilitation-medicine
     journal: Journal of Rehabilitation Medicine
     publisher: MJS Publishing
     IF_approx: 3
-    word_limit: 3500
+    word_limit: 4000
     abstract: structured (Objective, Design, Participants, Methods, Results, Conclusion), ≤250 words
     references: ≤40
     figures: ≤6
@@ -3251,6 +3412,8 @@ templates:
       - "Lay Abstract required"
       - "Open access"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://medicaljournalssweden.se/jrm/authorguidelines
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -3263,13 +3426,16 @@ templates:
     IF_approx: 7
     word_limit: 4000
     abstract: structured, ≤250 words
-    references: ≤50
+    references: ≤50, Vancouver (numbered in order of citation)
     figures: ≤6
     tables: ≤4
     sections: "Abstract, Study Highlights, Introduction, Methods, Results, Discussion, References"
     special:
-      - "Study Highlights box required (What is the current knowledge/What question did this study address/What does this study add)"
+      - Study Highlights section required after the Discussion (answers to set questions, <250 words excluding the questions)
+      - Author Contributions section required before References; citations in tables/figures count toward reference maximum
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://ascpt.onlinelibrary.wiley.com/page/journal/15326535/guidetoauthors
     family: standard
 
   - id: british-journal-pharmacology
@@ -3292,26 +3458,32 @@ templates:
     journal: Clinical Pharmacokinetics
     publisher: Springer Nature
     IF_approx: 5
-    word_limit: 4000
+    word_limit: 6000
     abstract: unstructured, ≤250 words
     references: ≤50
     figures: ≤6
     tables: ≤5
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
+    special:
+      - Abstract normally 150-250 words; may be extended up to 450 words for original research/systematic reviews when the topic dictates
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://link.springer.com/journal/40262/submission-guidelines
     family: standard
 
   - id: european-journal-clinical-pharmacology
     journal: European Journal of Clinical Pharmacology
     publisher: Springer Nature
     IF_approx: 3
-    word_limit: 4000
+    word_limit: 8–10 printed pages including figures, tables and references (~650 words per page; each figure/table counts as half a page)
     abstract: structured (Purpose, Methods, Results, Conclusions), ≤250 words
     references: ≤40
     figures: ≤6
     tables: ≤4
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://link.springer.com/journal/228/submission-guidelines
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -3322,15 +3494,18 @@ templates:
     journal: International Journal of Nursing Studies
     publisher: Elsevier
     IF_approx: 8
-    word_limit: 5000
-    abstract: structured (Background, Objectives, Design, Participants, Methods, Results, Conclusions, Registration), ≤350 words
-    references: ≤60
+    word_limit: 7000
+    abstract: structured (Background, Objectives, Design, Participants, Methods, Results, Conclusions, Registration), ≤400 words
+    references: ≤60, any consistent style accepted
     figures: ≤6
     tables: ≤5
     sections: "Abstract, What is already known, What this paper adds, Introduction, Background, Methods, Results, Discussion, Conclusions, References"
     special:
       - "What is already known / What this paper adds box required"
+      - Full papers 2000-7000 words excluding references, tables and figures (shorter preferred)
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/international-journal-of-nursing-studies/publish/guide-for-authors
     family: standard
 
   - id: journal-clinical-nursing
@@ -3338,14 +3513,16 @@ templates:
     publisher: Wiley
     IF_approx: 4
     word_limit: 5000
-    abstract: structured (Aim, Background, Design, Methods, Results, Conclusion), ≤350 words
-    references: ≤50
+    abstract: structured (Aim, Background, Design, Methods, Results, Conclusion), ≤300 words
+    references: ≤50, APA
     figures: ≤6
     tables: ≤5
     sections: "Abstract, What does this paper contribute to the wider global clinical community?, Introduction, Background, Methods, Results, Discussion, Conclusion, Relevance to clinical practice, References"
     special:
       - "Impact statement required"
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://onlinelibrary.wiley.com/page/journal/13652702/homepage/forauthors.html
     family: standard
 
   - id: nursing-research
@@ -3366,14 +3543,16 @@ templates:
     publisher: Wiley
     IF_approx: 4
     word_limit: 5000
-    abstract: structured (Aim, Design, Methods, Results, Conclusion), ≤350 words
+    abstract: structured (Aim, Design, Methods, Results, Conclusion), ≤300 words
     references: ≤50
     figures: ≤6
     tables: ≤5
     sections: "Abstract, Impact Statement, Introduction, Background, The Study (Aim, Design, Sample, Data Collection, Analysis, Rigour, Ethical Considerations), Results, Discussion, Conclusion, References"
     special:
-      - "Impact Statement required"
+      - 'Impact statement required (~100 words, bullet points allowed: impact on patients, practice, education, wider society)'
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://onlinelibrary.wiley.com/page/journal/13652648/homepage/forauthors.html
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -3384,14 +3563,18 @@ templates:
     journal: Lancet Public Health
     publisher: Elsevier
     IF_approx: 25
-    word_limit: 3000
+    word_limit: 3500
     abstract: structured (same as Lancet), ≤300 words
-    references: ≤30
+    references: ≤30, Lancet
     sections: same as Lancet
     special:
       - "Research in Context panel required"
       - "Open access"
+      - Randomised controlled trials ≤4500 words
+      - '待核实: figures/tables limit (Information for Authors PDF not reachable; snippets only say figures are encouraged)'
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.thelancet.com/pb-assets/Lancet/authors/tlpubh-info-for-authors.pdf
     family: lancet
 
   - id: bmj-global-health
@@ -3415,27 +3598,34 @@ templates:
     publisher: Oxford University Press
     IF_approx: 5
     word_limit: 3500
-    abstract: structured, ≤250 words
-    references: ≤50
+    abstract: unstructured (research question, methods, results, conclusions), ≤200 words
+    references: ≤50, any format/style accepted at submission
     figures: ≤6
     tables: ≤5
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - Word count excludes abstract, references, tables and figure legends
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://academic.oup.com/aje/pages/author-guidelines
     family: standard
 
   - id: international-journal-epidemiology
     journal: International Journal of Epidemiology
     publisher: Oxford University Press
     IF_approx: 7
-    word_limit: 3500
+    word_limit: 3000
     abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
-    references: ≤50
+    references: ≤50, Vancouver
     figures: ≤6
     tables: ≤5
     sections: "Abstract, Key Messages, Introduction, Methods, Results, Discussion, References"
     special:
-      - "Key Messages box required (3-5 bullet points)"
+      - Key Messages required (3 succinct bullet points, each a single complete sentence)
+      - Word count = main text only (excludes abstract, key messages, declarations, references, tables, figures)
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://academic.oup.com/ije/pages/general_instructions
     family: standard
 
   - id: american-journal-preventive-medicine

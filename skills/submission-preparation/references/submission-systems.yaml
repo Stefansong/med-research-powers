@@ -8,15 +8,16 @@
 # This table is the fallback by publisher family; journals migrate systems — confirm on the
 # journal's "Submit" page before telling the user which portal to use.
 # NOTE: PLOS uses Editorial Manager (Aries), NOT the legacy Bench>Press.
+data_as_of: "2026-09 — fallback mapping by publisher family, not verified journal by journal (most publisher sites were unreachable in the 2026-09 review); JAMA / AHA journals on eJP and NEJM on ScholarOne were checked against their submission portals. The journal's own `system` field and its Submit page take precedence."
 submission_systems:
   - system: "ScholarOne Manuscripts (Clarivate)"
     journals: "NEJM、BMJ、多数 Wiley 和 Taylor & Francis 期刊"
     url_pattern: "mc.manuscriptcentral.com/<journal>"
   - system: "Editorial Manager (Aries / Elsevier)"
-    journals: "Lancet 系列、Cell 系列、Elsevier 期刊、PLOS 系列、多数 Springer 期刊"
+    journals: "Lancet 系列、Cell 系列、Elsevier 期刊、PLOS 系列、多数 Springer 期刊、Annals of the Rheumatic Diseases、European Journal of Anaesthesiology"
     url_pattern: "www.editorialmanager.com/<journal>"
   - system: "eJournalPress (eJP)"
-    journals: "Nature 系列（Nature 自家 MTS 基于 eJP）、JAMA 系列、AHA 期刊（Circulation 等）、Science、PNAS"
+    journals: "Nature 系列（Nature 自家 MTS 基于 eJP）、JAMA 系列、AHA 期刊（Circulation 等）、ASH 期刊（Blood、Blood Advances）、Science、PNAS"
     url_pattern: "mts-<journal>.nature.com / manuscripts.jama.com / <journal>-submit.aha-journals.org / cts.sciencemag.org / www.pnascentral.org"
   - system: "Snapp (Springer Nature Article Processing Platform)"
     journals: "Springer Nature 新刊及陆续迁移的 BMC / Springer 期刊"
