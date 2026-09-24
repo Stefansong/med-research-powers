@@ -423,15 +423,15 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 | 类别 | 标准 |
 |---|---|
 | **临床试验** | CONSORT 2025（30 项，含子项共 42 行）、CONSORT-AI、CONSORT-Cluster、CONSORT 非劣效扩展、TREND（非随机试验）、SPIRIT 2025（34 条目，只用于 protocol）、SPIRIT-AI、TIDieR、CONSORT-Harms |
-| **观察性研究** | STROBE（22 条目）、RECORD、STROCSS |
+| **观察性研究** | STROBE（22 条目）、RECORD、STROCSS 2024（外科队列 / 病例对照） |
 | **系统综述** | PRISMA 2020（27 条目）、PRISMA-P、PRISMA-ScR、PRISMA-S、PRISMA-DTA、PRISMA-NMA、TRIPOD-SRMA（2023）、AMSTAR 2、GRADE |
-| **指南评估** | AGREE II（23 条目） |
+| **指南评估** | AGREE II（2010；6 个领域 23 条目 + 2 项总体评价） |
 | **观察性研究 Meta 分析** | MOOSE（35 条目） |
 | **诊断准确性** | STARD 2015（30 条目） |
 | **AI 与预测** | TRIPOD 2015（22 项，旧版）、TRIPOD+AI 2024（27 条目）、TRIPOD-LLM（2025）、TRIPOD-Cluster（2023，19 条目）、CLAIM 2024（44 条目；取代 CLAIM 2020）、MI-CLAIM、DECIDE-AI（17 条 AI 专属 + 10 条通用）、PROBAST |
-| **外科与器械** | IDEAL 框架（5 阶段） |
+| **外科与器械** | IDEAL 框架（Pre-IDEAL / 第 0 阶段 + 5 阶段） |
 | **定性研究** | COREQ（32 条目）、SRQR（21 条目） |
-| **问卷与量表** | CHERRIES（网络问卷）、CROSS（横断面调查）、COSMIN（测量工具） |
+| **问卷与量表** | CHERRIES（网络问卷）、CROSS（横断面调查）、COSMIN 2.0（2025；测量工具） |
 | **临床前研究** | ARRIVE 2.0（21 条目） |
 | **其他** | CARE（病例报告）、SQUIRE（质量改进）、CHEERS（卫生经济学） |
 | **偏倚评估工具** | Cochrane RoB 2、ROBINS-I、Newcastle-Ottawa 量表（满分 9）、MINORS、QUADAS-2 |
@@ -484,10 +484,10 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 |------|------|------|
 | `assumption_tests.py` | `statistical-analysis/scripts/` | 前提诊断（Shapiro-Wilk / D'Agostino-Pearson、Levene）只作描述，不用来切换检验；给出按设计的默认方法（Welch）和 SAP 预先规定时才用的秩检验备选；Cohen's d 含 CI |
 | `power_analysis.py` | `statistical-analysis/scripts/` | 跨设计的样本量/效能：两组、两组率（合并方差 Fleiss 公式，可选连续性校正）、诊断准确性、生存、相关——含脱落率调整 |
-| `data_profile.py` | `statistical-analysis/scripts/` | 只读数据体检（CSV/XLSX，兼容 GBK）：伪装缺失、"<0.1" 这类截断值、数值存成文本、日期解析失败、重复患者 ID、结局事件总数（同一患者多行时按患者计）、疑似隐私字段（按列名、身份证/手机号样式或"每名患者一个取值"识别，只报列名不显示取值）——不改数据，不计算任何与结局的关系 |
-| `reproduce_check.py` | `statistical-analysis/scripts/` | 在全新进程里把分析命令跑两次并逐个比较输出（表格逐单元格）——退出码 0 一致 / 1 不一致 / 2 运行失败 |
-| `pub_style.py` | `figure-generation/scripts/` | 期刊图表样式（Nature、Lancet、JAMA、NEJM 配色）、色盲友好选项、≥300 DPI 导出、显著性标注 |
-| `export_docx.py` | `manuscript-export/scripts/` | 由期刊模板库驱动，Markdown → 符合期刊排版的 `.docx`；生成 `export-report.md` |
+| `data_profile.py` | `statistical-analysis/scripts/` | 只读数据体检（CSV/XLSX，兼容 GBK）：伪装缺失、"<0.1" 这类截断值、数值存成文本、日期解析失败、重复患者 ID、结局事件总数（同一患者多行时按患者计）、测量值被误判为 ID 时可用 `--not-id`、疑似隐私字段（按列名、身份证/手机号样式或"每名患者一个取值"识别，只报列名不显示取值）——不改数据，不计算任何与结局的关系 |
+| `reproduce_check.py` | `statistical-analysis/scripts/` | 在全新进程里把分析命令跑两次并逐个比较输出（表格逐单元格、xlsx 公式、SVG/.gz 按内容、屏幕输出）——退出码 0 一致 / 1 不一致 / 2 运行失败；中断时放回原有输出；`--exclude`、`--keep-last` |
+| `pub_style.py` | `figure-generation/scripts/` | 期刊图表样式（Nature、Lancet、JAMA、NEJM 配色）、色盲友好选项、按期刊栏宽精确导出（RGB TIFF + PDF，≥300 DPI）、显著性标注（含对数轴） |
+| `export_docx.py` | `manuscript-export/scripts/` | 由期刊模板库驱动，Markdown → 符合期刊排版的 `.docx`（段落、1–6 级标题、嵌套列表、带对齐的表格、代码块、强调、链接）；生成 `export-report.md`（字数、占位符、未转换的引用键） |
 | `get_journal_template.py` | `manuscript-writing/scripts/` | 从 240 本期刊的 YAML 里按 id 抽取单条模板（不整读文件） |
 | `patient_level_split.py` | `data-collection-tools/scripts/` | 患者级训练 / 验证 / 测试集划分（集合之间不泄漏） |
 | `randomization.py` | `data-collection-tools/scripts/` | RCT 的区组 / 分层随机分组表 |

@@ -423,15 +423,15 @@ The full, machine-readable index lives in [`skills/reporting-standards/reference
 | Category | Standards |
 |----------|-----------|
 | **Clinical Trials** | CONSORT 2025 (30 items, 42 rows incl. sub-items), CONSORT-AI, CONSORT-Cluster, CONSORT non-inferiority extension, TREND (non-randomised trials), SPIRIT 2025 (34 items, protocols only), SPIRIT-AI, TIDieR, CONSORT-Harms |
-| **Observational** | STROBE (22 items), RECORD, STROCSS |
+| **Observational** | STROBE (22 items), RECORD, STROCSS 2024 (surgical cohort / case-control) |
 | **Systematic Reviews** | PRISMA 2020 (27 items), PRISMA-P, PRISMA-ScR, PRISMA-S, PRISMA-DTA, PRISMA-NMA, TRIPOD-SRMA (2023), AMSTAR 2, GRADE |
-| **Guidelines Appraisal** | AGREE II (23 items) |
+| **Guidelines Appraisal** | AGREE II (2010; 23 items in 6 domains + 2 overall ratings) |
 | **Meta-analysis of Observational** | MOOSE (35 items) |
 | **Diagnostic** | STARD 2015 (30 items) |
 | **AI & Prediction** | TRIPOD 2015 (22 items, legacy), TRIPOD+AI 2024 (27 items), TRIPOD-LLM (2025), TRIPOD-Cluster (2023, 19 items), CLAIM 2024 (44 items; supersedes CLAIM 2020), MI-CLAIM, DECIDE-AI (17 AI-specific + 10 generic items), PROBAST |
-| **Surgery & Devices** | IDEAL framework (5 stages) |
+| **Surgery & Devices** | IDEAL framework (Pre-IDEAL / Stage 0 + 5 stages) |
 | **Qualitative** | COREQ (32 items), SRQR (21 items) |
-| **Surveys & Instruments** | CHERRIES (web surveys), CROSS (cross-sectional surveys), COSMIN (measurement instruments) |
+| **Surveys & Instruments** | CHERRIES (web surveys), CROSS (cross-sectional surveys), COSMIN 2.0 (2025; measurement instruments) |
 | **Preclinical** | ARRIVE 2.0 (21 items) |
 | **Other** | CARE (case reports), SQUIRE (QI), CHEERS (health economics) |
 | **Bias Assessment Tools** | Cochrane RoB 2, ROBINS-I, Newcastle-Ottawa Scale (max 9), MINORS, QUADAS-2 |
@@ -484,10 +484,10 @@ Only tools and guard-rails live in scripts — formulas that are easy to get sil
 |--------|----------|---------|
 | `assumption_tests.py` | `statistical-analysis/scripts/` | Assumption diagnostics (Shapiro-Wilk / D'Agostino-Pearson, Levene) reported as descriptions — they never switch the test; the design default (Welch) plus the rank-based alternative for when the SAP prespecifies it; Cohen's d with CI |
 | `power_analysis.py` | `statistical-analysis/scripts/` | Sample size / power across designs: two-group, proportions (pooled-variance Fleiss formula, optional continuity correction), diagnostic accuracy, survival, correlation — with dropout adjustment |
-| `data_profile.py` | `statistical-analysis/scripts/` | Read-only data check-up (CSV/XLSX, GBK-aware): disguised missing values, censored strings like "<0.1", numbers stored as text, date failures, repeated patient IDs, outcome event totals (per patient when rows repeat), possible identifier columns (by name, ID-card/phone pattern, or one-value-per-patient; values never printed) — never modifies data, never computes associations with the outcome |
-| `reproduce_check.py` | `statistical-analysis/scripts/` | Runs an analysis command twice in fresh processes and compares every output file (cell-by-cell for tables) — exit 0 identical / 1 different / 2 failed |
-| `pub_style.py` | `figure-generation/scripts/` | Journal figure styling (Nature, Lancet, JAMA, NEJM palettes), colorblind-safe options, ≥300 DPI export, significance bars |
-| `export_docx.py` | `manuscript-export/scripts/` | Markdown → journal-formatted `.docx`, driven by the journal template library; writes `export-report.md` |
+| `data_profile.py` | `statistical-analysis/scripts/` | Read-only data check-up (CSV/XLSX, GBK-aware): disguised missing values, censored strings like "<0.1", numbers stored as text, date failures, repeated patient IDs, outcome event totals (per patient when rows repeat), `--not-id` for measurements mistaken for IDs, possible identifier columns (by name, ID-card/phone pattern, or one-value-per-patient; values never printed) — never modifies data, never computes associations with the outcome |
+| `reproduce_check.py` | `statistical-analysis/scripts/` | Runs an analysis command twice in fresh processes and compares every output (tables cell by cell, xlsx formulas, SVG/.gz by content, screen output) — exit 0 identical / 1 different / 2 failed; Ctrl-C restores earlier outputs; `--exclude`, `--keep-last` |
+| `pub_style.py` | `figure-generation/scripts/` | Journal figure styling (Nature, Lancet, JAMA, NEJM palettes), colorblind-safe options, export at the exact journal column width (RGB TIFF + PDF, ≥300 DPI), significance bars (log axes too) |
+| `export_docx.py` | `manuscript-export/scripts/` | Markdown → journal-formatted `.docx` (paragraphs, headings 1–6, nested lists, tables with alignment, code blocks, emphasis, links), driven by the journal template library; writes `export-report.md` with word counts, placeholders and unconverted citation keys |
 | `get_journal_template.py` | `manuscript-writing/scripts/` | Extract one journal's entry by id from the 240-journal YAML (no whole-file reads) |
 | `patient_level_split.py` | `data-collection-tools/scripts/` | Patient-level train / validation / test split (no leakage across sets) |
 | `randomization.py` | `data-collection-tools/scripts/` | Block / stratified randomization lists for RCTs |
