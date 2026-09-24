@@ -34,7 +34,7 @@ status: confirmed (hard checkpoint 1, 2026-09-21)
 ## 4. 标注流程与一致性
 - Annotators: 2 名泌尿放射亚专科医师（8 年与 12 年经验）
 - Protocol: 标注指南 v1.2；培训 30 例；标注时不看模型输出与病理结果
-- Agreement: 病灶级 Dice、患者级 Cohen's kappa（目标 ≥ 0.80）
+- Agreement: 病灶级 Dice + HD95（毫米；两者都为空掩膜的病例单独计数，不进平均）、患者级 Cohen's kappa（目标 ≥ 0.80）
 - Adjudication: 分歧由第三名资深医师裁决
 
 ## 5. Ground Truth 定义

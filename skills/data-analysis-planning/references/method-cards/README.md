@@ -17,4 +17,4 @@
 | [agreement-and-reliability.md](agreement-and-reliability.md) | 评分者一致性、两种测量方法一致性、标注一致性 |
 | [llm-vlm-evaluation.md](llm-vlm-evaluation.md) | 大语言模型 / 视觉语言模型的医学评测研究 |
 
-每张卡的包名和函数名都核对过 CRAN / PyPI，方法学规则在"参考"节给出文献与 DOI。发现过时或错误，按 CONTRIBUTING.md 提交修正并附出处。
+每张卡的包名和函数名都核对过 CRAN / PyPI；个别参数只有较新版本才有，卡片里就地写明最低版本和旧版本的替代写法（如 `pairwise_tukeyhsd(..., use_var="unequal")` 要 statsmodels 0.15 及以上）。方法学规则在"参考"节给出文献与 DOI。发现过时或错误，按 CONTRIBUTING.md 提交修正并附出处。

@@ -57,9 +57,9 @@ copy them into the SAP, cite the choice and the reason.
 | 两个分类器的错误模式 | McNemar test | `deep_learning_classification.comparison` |
 | 同一测试集上两个分割模型 | Paired Wilcoxon（Dice / HD95 逐例） | `deep_learning_segmentation.comparison` |
 | 多模型 | Bootstrap 或置换检验（≥1000 次） | `model_comparison.multi_model` |
-| AI vs 人类 / AI 辅助人类 | 同一测试集、同等信息、盲法；≥2 周 washout；多读者多病例（MRMC）分析，读者与病例都作随机效应——AI 单独 vs 医生组时 AI 作固定读者；不对每位医生分别做 DeLong（见方法要点卡 `diagnostic-accuracy-and-ai-evaluation.md`） | `model_comparison.human_vs_ai` |
+| AI vs 人类 / AI 辅助人类 | 同一测试集、同等信息、盲法；洗脱期时长预先写明并给理由（本插件下限 ≥2 周，病例容易被记住时更长），或用不需要洗脱期的顺序阅片设计（见方法要点卡）；多读者多病例（MRMC）分析，读者与病例都作随机效应——AI 单独 vs 医生组时 AI 作固定读者；不对每位医生分别做 DeLong（见方法要点卡 `diagnostic-accuracy-and-ai-evaluation.md`） | `model_comparison.human_vs_ai` |
 
-分割任务指标与 study-design metrics 表一致：Dice / IoU 为主，**95th percentile Hausdorff distance (HD95)** 与 average surface distance 为次要，体积一致性用 Bland-Altman。
+分割任务指标与 study-design metrics 表一致：一个重叠指标（Dice）加一个边界指标（**95th percentile Hausdorff distance (HD95)** 或归一化表面 Dice，NSD）为主；IoU 可由 Dice 直接换算，不当作第二个独立证据；average surface distance 为次要，体积一致性用 Bland-Altman。
 
 ## 15. 模型可解释性方案
 

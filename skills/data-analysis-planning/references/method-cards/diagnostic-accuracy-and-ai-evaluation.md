@@ -21,11 +21,11 @@
 - **主要指标与 CI 方法**：灵敏度、特异度用 Wilson 或 Clopper-Pearson（精确法）；AUC 用 DeLong 或 bootstrap（B ≥ 2000，固定并报告种子，见 yaml `resampling`）。
 - **阈值**：在开发/调参集上确定并写死（数值 + 确定准则，如约登指数、固定灵敏度 90%），测试集只用这个阈值。在测试集上另找"最佳阈值"只能作探索性结果（STARD 12a）。
 - **PPV/NPV**：写明用哪个患病率。人为富集阳性的病例–对照式样本，要按目标人群患病率换算，不能直接报样本里的 PPV/NPV。
-- **聚类**：同一患者多个病灶/多张图像时，用按患者重抽样的聚类 bootstrap、Obuchowski 聚类 AUC 方法，或先按患者汇总（细节见 `clustered-and-repeated-data.md`）。
+- **聚类**：同一患者多个病灶/多张图像时，AUC 用按患者重抽样的聚类 bootstrap 或 Obuchowski 聚类 AUC 方法，或先按患者汇总；配对比较灵敏度/特异度时，普通 McNemar 检验假设每名患者只贡献一对结果，多病灶时要改用聚类校正的 McNemar（Obuchowski 1998；Durkalski 2003）或聚类 bootstrap（细节见 `clustered-and-repeated-data.md`）。
 - **数据划分按患者 ID**：同一患者的全部图像/帧只进一个集合（yaml `deep_learning_training.data_split_rules`；用 `patient_level_split.py` 划分并做泄漏检查）。
-- **模型比较**：同一批病例上两个模型（不是模型对医生组）的 AUC 用配对 DeLong；两个分类器在各自预定阈值下的灵敏度（只在有病者中）和特异度（只在无病者中）分别用 McNemar 配对比较。
+- **模型比较**：同一批病例上两个模型（不是模型对医生组）的 AUC 用配对 DeLong；两个分类器在各自预定阈值下的灵敏度（只在有病者中）和特异度（只在无病者中）分别用 McNemar 配对比较（多病灶时用上一条的聚类校正版）。
 - **概率输出**：校准（平滑校准曲线、calibration-in-the-large 与校准斜率、Brier 分数；ECE 只作补充）和决策曲线分析（DCA，decision curve analysis；阈值概率范围预先写明）；细节见 `regression-and-prediction-models.md`。
-- **读片者研究**（多读者多病例，MRMC）：全交叉设计、读者 ≥ 5 名（本插件采用的经验下限，不是规范的硬性数字；读者越少，结论越难推广，具体人数按 MRMC 样本量计算定）；分析用 Obuchowski-Rockette（OR）或 Dorfman-Berbaum-Metz（DBM）法，读者和病例都作随机效应，结论才能推广到"其他医生"。AI 辅助 vs 不辅助：同一批病例、阅片顺序随机、两次阅片之间设洗脱期（时长预先写明；本插件默认 ≥ 2 周，见 yaml `model_comparison.human_vs_ai`）；读者对参考标准设盲。
+- **读片者研究**（多读者多病例，MRMC）：全交叉设计、读者 ≥ 5 名（本插件采用的经验下限，不是规范的硬性数字；读者越少，结论越难推广，具体人数按 MRMC 样本量计算定）；分析用 Obuchowski-Rockette（OR）或 Dorfman-Berbaum-Metz（DBM）法，读者和病例都作随机效应，结论才能推广到"其他医生"。AI 辅助 vs 不辅助：同一批病例、阅片顺序随机、两次阅片之间设洗脱期。洗脱期多长没有统一标准（已发表的读片研究约 2–6 周），预先写明时长和理由；本插件的下限是 ≥ 2 周（yaml `model_comparison.human_vs_ai`），病例少、特征鲜明、容易被记住时要更长。另一种设计是顺序阅片：同一次阅片中先独立读并记录结果，再看 AI 输出后决定是否修改，不需要洗脱期；它回答的是"看到 AI 后会不会改判"，只在 AI 的预期用法就是"先自己读、再参考 AI"时合适——选哪种设计按 AI 的预期用法预先写明。读者对参考标准设盲。
 - **AI 单独 vs 一组医生**（"AI 是否达到医生水平"）：AI 是一个固定的"读者"，医生是从医生群体里抽出的样本，要按读者和病例都随机的 MRMC 方法比较 AI 与医生组的平均表现（如 RJafroc 的 `StSignificanceTestingCadVsRad()`，默认方法 1T-RRRC；iMRMC 也可处理非全交叉设计）。不要拿 AI 和每位医生分别做 DeLong、再数"赢了几位"，也不要把医生的平均 AUC 当成一个没有抽样误差的固定值来比——都会把读者当固定效应，CI 过窄。医生只有 1–2 名时，只能描述性地和这几位比较，结论不推广到"医生"。
 - **检测任务**：写明"命中"的判定规则（如预测框与标注框 IoU ≥ 0.5，或中心点落在病灶内）；报告指标（固定假阳性数下的灵敏度、FROC）。
 - **亚组与公平性**：预先列出亚组和每个亚组要报的指标，做交互检验；未预先列出的一律标"探索性"。
@@ -39,16 +39,16 @@
 | 灵敏度/特异度/PPV/NPV + CI | `epiR::epi.tests(tab, method = "wilson")`；`binom::binom.confint(x, n, methods = "wilson")`（`"exact"` = Clopper-Pearson） | `statsmodels.stats.proportion.proportion_confint(k, n, method="wilson")`（`"beta"` = Clopper-Pearson） |
 | ROC、AUC 及 CI | `pROC::roc()` + `pROC::ci.auc(r, method = "delong")` | `sklearn.metrics.roc_auc_score`；CI 用按患者重抽样的 bootstrap（Python 无公认的 DeLong 实现） |
 | 两个相关 AUC 比较 | `pROC::roc.test(r1, r2, method = "delong", paired = TRUE)` | 无公认成熟包，建议用 R；或配对 bootstrap 求 AUC 差值的 CI |
-| 两分类器配对比较 | `exact2x2::mcnemar.exact(tab)`；`mcnemar.test(tab)` | `statsmodels.stats.contingency_tables.mcnemar(tab, exact=True)` |
+| 两分类器配对比较 | `exact2x2::mcnemar.exact(tab)`；`mcnemar.test(tab)`。多病灶（聚类）：`clust.bin.pair::clust.bin.pair(ak, bk, ck, dk, method = "obuchowski")`（或 `"durkalski"`；每名患者一行 2×2 计数，可用 `paired.to.contingency()` 整理） | `statsmodels.stats.contingency_tables.mcnemar(tab, exact=True)`；多病灶时无公认成熟包，用按患者重抽样的聚类 bootstrap 求差值的 CI |
 | 校准 | `CalibrationCurves::val.prob.ci.2(p, y)`（calibration-in-the-large、斜率、Brier、平滑校准曲线）；`rms::val.prob(p, y)` 的 "Intercept" 不是 calibration-in-the-large（见 `regression-and-prediction-models.md`） | `sklearn.calibration.calibration_curve`（只能分箱）；`sklearn.metrics.brier_score_loss`；calibration-in-the-large 与斜率用 `statsmodels` 分两个模型算（写法见 `regression-and-prediction-models.md`） |
 | DCA | `dcurves::dca(y ~ p, data, thresholds = )` | `dcurves.dca(data, outcome=, modelnames=)` |
 | MRMC 读片者研究 | `MRMCaov::mrmc(empirical_auc(truth, rating), test, reader, case, data)`；`RJafroc::StSignificanceTesting(ds, FOM = "Wilcoxon", method = "OR")` | 无公认成熟包，建议用 R |
 | AI 单独 vs 医生组 | `RJafroc::StSignificanceTestingCadVsRad(ds, FOM = "Wilcoxon")`（AI 作固定读者，医生和病例随机；数据集里第一个读者须是 AI）；`iMRMC::doIMRMC()`（可处理非全交叉设计） | 无公认成熟包，建议用 R |
 | 检测任务（FROC） | `RJafroc::StSignificanceTesting(ds, FOM = "wAFROC")` | 无公认成熟包，建议用 R |
 | 按患者划分 | 用插件脚本 `patient_level_split.py`（Python，命令行调用） | `patient_level_split.py`；`sklearn.model_selection.StratifiedGroupKFold` |
-| 样本量 | `presize::prec_sens(sens, prev = , conf.width = )`、`prec_spec()`、`prec_auc()`；`pROC::power.roc.test()`；MRMC：`RJafroc::SsSampleSizeKGivenJ()`（需预实验数据或方差参数）、`MRMCsamplesize::sampleSize_MRMC()` / `sampleSize_Standalone()` | `statsmodels.stats.proportion.samplesize_confint_proportion()`（得到的是有病或无病人数，再按患病率换算） |
+| 样本量 | `presize::prec_sens(sens, prev = , conf.width = )`、`prec_spec()`、`prec_auc()`（`conf.width` 是 CI 的**全宽**，默认按 Wilson 法）；`pROC::power.roc.test()`；MRMC：`RJafroc::SsSampleSizeKGivenJ()`（需预实验数据或方差参数）、`MRMCsamplesize::sampleSize_MRMC()` / `sampleSize_Standalone()` | `statsmodels.stats.proportion.samplesize_confint_proportion(proportion, half_length)`：第二个参数是 CI 的**半宽**（全宽的一半），且只用 Wald 法，灵敏度/特异度接近 0.9–1 时不准；建议用 R，或在 Python 里用 `proportion_confint(k, n, method="wilson")` 从小到大试 n，取 CI 全宽达标的最小 n。得到的是有病或无病人数，再按患病率换算 |
 
-聚类 bootstrap 没有通用包，要现写：以患者为单位有放回抽样，每次带上该患者的全部病灶/图像，重算指标，B ≥ 2000，取百分位 CI。
+聚类 bootstrap 没有通用包，要现写：以患者为单位有放回抽样，每次带上该患者的全部病灶/图像，重算指标，B ≥ 2000，取百分位 CI。Obuchowski 聚类 AUC 本卡没有核实到成熟的 R/Python 实现，一般就用这种聚类 bootstrap 代替。
 
 ## 4. 常见的坑
 
@@ -89,4 +89,6 @@
 - Leeflang MM, Moons KG, Reitsma JB, Zwinderman AH. Bias in sensitivity and specificity caused by data-driven selection of optimal cutoff values: mechanisms, magnitude, and solutions. *Clin Chem*. 2008;54(4):729-737. doi:10.1373/clinchem.2007.096032
 - Buderer NM. Statistical methodology: I. Incorporating the prevalence of disease into the sample size calculation for sensitivity and specificity. *Acad Emerg Med*. 1996;3(9):895-900. doi:10.1111/j.1553-2712.1996.tb03538.x
 - Sounderajah V, Guni A, Liu X, et al. The STARD-AI reporting guideline for diagnostic accuracy studies using artificial intelligence. *Nat Med*. 2025;31(10):3283-3289. doi:10.1038/s41591-025-03953-8
+- Obuchowski NA. On the comparison of correlated proportions for clustered data. *Stat Med*. 1998;17(13):1495-1507. doi:10.1002/(SICI)1097-0258(19980715)17:13<1495::AID-SIM863>3.0.CO;2-I
+- Durkalski VL, Palesch YY, Lipsitz SR, Rust PF. Analysis of clustered matched-pair data. *Stat Med*. 2003;22(15):2417-2428. doi:10.1002/sim.1438
 - Obuchowski NA, Bullen J. Multireader diagnostic accuracy imaging studies: fundamentals of design and analysis. *Radiology*. 2022;303(1):26-34. doi:10.1148/radiol.211593

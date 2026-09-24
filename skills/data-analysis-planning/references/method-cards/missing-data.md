@@ -4,7 +4,7 @@
 
 ## 1. 计划前先看数据的什么
 
-只看结构和质量。比较"缺失者与非缺失者"的基线特征是为了判断缺失机制，**不借此看**暴露/分组与结局的关系：
+只看结构和质量。比较"缺失者与非缺失者"的基线特征是为了判断缺失机制，**不借此看**暴露/分组与结局的关系；"是否缺失"与结局的关系（如结局在完整者和不完整者中各是多少）也是结局关联，计划前同样不看：
 - 先把伪装缺失找出来：空单元格之外的 "/"、"未查"、"不详"、"NA"、"—"、999/9999、不可能为 0 的指标记成了 0。用只读检查列出每个变量的非数字取值及其频数（`data_profile.py` + 现写的只读检查），逐个确认哪些代表缺失。"<0.1"、">1000" 是截断值，不是缺失，要单独处理并记录。
 - 每个变量的缺失数与比例；不完整病例（分析要用的变量中任一有缺失的患者）占多少——决定插补份数 m。
 - 缺失模式：单调（中途退出后全缺）还是零散；哪些变量总是一起缺（同一项检查的一组指标）；缺失是否集中在某个中心、某个时间段、某个数据来源（如某中心没开展这项检查）。
@@ -20,14 +20,14 @@
   - MCAR（完全随机缺失）无法被证明，只能被否定：Little 检验显著 → 不是 MCAR；不显著也不能说明就是 MCAR。
   - MAR（给定已观测变量之后随机缺失）是多重插补的前提；靠临床知识和辅助变量让它更可信。
   - MNAR（缺失与未观测到的值本身有关，如病情越重越不来复查）不能用数据检验，只能做敏感性分析。
-- **完整病例分析什么时候可以接受**：对多数回归模型，只要"是否完整"与结局无关（给定模型里的协变量之后），完整病例的估计就不偏——即使暴露或混杂是 MNAR；反过来，"是否完整"与结局有关时完整病例有偏（Hughes 2019）。缺失很少且这个条件说得通时可作主要分析，但要写理由，并报告少了多少人。
+- **完整病例分析什么时候可以接受**：对多数回归模型，只要"是否完整"与结局无关（给定模型里的协变量之后），完整病例的估计就不偏——即使暴露或混杂是 MNAR；反过来，"是否完整"与结局有关时完整病例有偏（Hughes 2019）。缺失很少且这个条件说得通时可作主要分析，但要写理由，并报告少了多少人。这个条件在计划阶段只能靠临床知识来论证；如果想用数据检查（如以"是否完整"为因变量、把结局也放进去的 logistic 模型，Hughes 2019 的做法），就把这项检查预先写进 SAP，SAP 批准后再做并报告结果，不能在定计划之前先跑。
 - **多重插补（MICE，链式方程多重插补）**：
   - 插补模型必须包含结局，以及分析模型中的全部变量（暴露、全部协变量，以及交互项、非线性项），再加辅助变量（Hughes 2019；White 2011）；有聚类时插补也要考虑聚类（见 `clustered-and-repeated-data.md`）。生存结局放事件指示变量和 Nelson-Aalen 累积风险，不放原始时间（`mice::nelsonaalen()` 文档引 White & Royston 2009）。
   - 每个变量的插补方法：连续变量用预测均值匹配（PMM），二分类用 logistic，无序多分类用多项 logistic，有序用有序 logistic（mice 的默认设置即如此）；偏态变量用 PMM 可避免插出不可能的值。
   - 派生变量（BMI、eGFR、比值、量表总分、交互项、平方项）二选一并写明：被动插补（先插补原始成分，再按公式算派生变量），或把派生变量当作普通变量一起插补（White 2011）。
   - 插补份数 m：经验规则是 m ≥ 不完整病例的百分比（如 30% 的病例有缺失 → m ≥ 30）（White 2011），与 yaml 的 m ≥ 20 取较大者；写明迭代次数、随机种子和收敛检查（迹线图）。
   - 合并：每份数据分别分析，再用 Rubin 规则合并估计值与方差；OR、HR 在对数尺度上合并；不能把 m 份数据平均成一份再分析。
-  - 与其他步骤的先后顺序要写明：预测模型的 bootstrap 验证、倾向性评分分析在插补数据里怎么做。
+  - 与其他步骤的先后顺序要写明：预测模型的 bootstrap 验证在插补数据里怎么做；倾向性评分分析在每份插补数据里分别估 PS、做匹配/加权和平衡检查、估计效应，再用 Rubin 规则合并各份的效应（插补模型包含结局），不要先把各份的 PS 平均成一个再分析（Leyrat 2019；见 `propensity-score.md`）。
 - **MNAR 敏感性分析**：delta 调整——在插补值上加（或乘）一个偏移 δ，表示"缺失者比同类的已观测者更差或更好"，δ 的取值要有临床依据；tipping point 分析——逐步加大 δ，找到让结论翻转的 δ，并讨论这个 δ 在临床上是否可能（Cro 2020）。
 
 ## 3. 写代码：推荐的成熟包
@@ -88,4 +88,5 @@
 - White IR, Royston P, Wood AM. Multiple imputation using chained equations: issues and guidance for practice. *Stat Med*. 2011;30(4):377-399. doi:10.1002/sim.4067
 - Hughes RA, Heron J, Sterne JAC, Tilling K. Accounting for missing data in statistical analyses: multiple imputation is not always the answer. *Int J Epidemiol*. 2019;48(4):1294-1304. doi:10.1093/ije/dyz032
 - Lee KJ, Tilling KM, Cornish RP, et al. Framework for the treatment and reporting of missing data in observational studies: the Treatment And Reporting of Missing data in Observational Studies framework. *J Clin Epidemiol*. 2021;134:79-88. doi:10.1016/j.jclinepi.2021.01.008
+- Leyrat C, Seaman SR, White IR, et al. Propensity score analysis with partially observed covariates: how should multiple imputation be used? *Stat Methods Med Res*. 2019;28(1):3-19. doi:10.1177/0962280217713032
 - Cro S, Morris TP, Kenward MG, Carpenter JR. Sensitivity analysis for clinical trials with missing continuous outcome data using controlled multiple imputation: a practical guide. *Stat Med*. 2020;39(21):2815-2842. doi:10.1002/sim.8569

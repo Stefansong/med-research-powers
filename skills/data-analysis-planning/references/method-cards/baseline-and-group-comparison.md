@@ -15,7 +15,7 @@
 
 ## 2. 计划里必须预先写明
 
-- **Table 1 写什么**：变量清单；按什么分组、要不要"合计"列；连续变量用均值±SD 还是中位数(IQR) 的判定规则（如明显偏态或有截断值 → 中位数(IQR)），同一变量全文统一；分类变量 n(%)，百分比的分母是否包括缺失者。Table 1 要让读者能判断研究人群是谁、缺失多少（Hayes-Larson 2019）。
+- **Table 1 写什么**：变量清单；按什么分组、要不要"合计"列；连续变量用均值±SD 还是中位数(IQR) 的判定规则（如明显偏态或有截断值 → 中位数(IQR)），同一变量全文统一；分类变量 n(%)，百分比的分母是否包括缺失者。Table 1 要让读者能判断研究人群是谁、缺失多少（Hayes-Larson 2019）。按结局分组的 Table 1（预测模型文章里常见，如"复发 vs 未复发"）本身就是在看变量与结局的关系：只能在 SAP 里预先写好，SAP 批准后再出，不能在定计划之前先做。
 - **RCT 基线不做显著性检验、不放 p 值**：随机分组后的基线差异只能来自机会，p 值既证明不了"随机化成功"，也不能用来挑选调整变量；要调整的基线变量按预后重要性在方案里预先定（de Boer 2015）。需要量化差异时只报标准化均数差（SMD，standardized mean difference）作描述。
 - **观察性研究**：Table 1 以描述为主，组间差异用 SMD 描述。|SMD| ≥ 0.1 常被当作"有意义的不平衡"，但这只是经验值，预后越重要的变量越要求平衡好（Austin 2009）。期刊要求 p 值时注明仅作描述，不据此选混杂。
 - **每个比较的方法与效应量**（分支按 yaml `two_groups` / `multiple_groups`）：
@@ -37,7 +37,7 @@
 | Hedges g + CI | `effectsize::hedges_g(y ~ grp, data = d)` | `statsmodels.stats.meta_analysis.effectsize_smd(...)`（返回校正后的 g 及其方差，可算 CI）；`pingouin.compute_effsize(x, y, eftype="hedges")` 只给点估计 |
 | 非正态位置差 + CI | `wilcox.test(y ~ grp, data = d, conf.int = TRUE)`（Hodges-Lehmann 估计） | `scipy.stats.mannwhitneyu` 只给 p；位置差或中位数差的 CI 用 `scipy.stats.bootstrap` |
 | 二分类 RD / RR / OR + CI | `epiR::epi.2by2(tab, method = "cohort.count")`；RD 的 CI 也可用 `DescTools::BinomDiffCI(x1, n1, x2, n2, method = "mn")` | `statsmodels.stats.contingency_tables.Table2x2(tab)` 的 `riskratio_confint()`、`oddsratio_confint()`；`statsmodels.stats.proportion.confint_proportions_2indep(..., compare="diff")` |
-| 多组事后比较 | `TukeyHSD()`；`rstatix::games_howell_test()`；`rstatix::dunn_test(p.adjust.method = "holm")`；Friedman 之后 `PMCMRplus::frdAllPairsNemenyiTest()`；基于模型的对比 `emmeans::emmeans()` + `contrast(method = "pairwise", adjust = "holm")` | `statsmodels.stats.multicomp.pairwise_tukeyhsd(y, g, use_var="unequal")`（即 Games-Howell）；`scikit_posthocs.posthoc_dunn(df, val_col=..., group_col=..., p_adjust="holm")`；`scikit_posthocs.posthoc_nemenyi_friedman()` |
+| 多组事后比较 | `TukeyHSD()`；`rstatix::games_howell_test()`；`rstatix::dunn_test(p.adjust.method = "holm")`；Friedman 之后 `PMCMRplus::frdAllPairsNemenyiTest()`；基于模型的对比 `emmeans::emmeans()` + `contrast(method = "pairwise", adjust = "holm")` | `statsmodels.stats.multicomp.pairwise_tukeyhsd(y, g, use_var="unequal")`（即 Games-Howell；`use_var` 参数 statsmodels 0.15 起才有，0.14 及更早版本会报 TypeError，这时用 `pingouin.pairwise_gameshowell(data=df, dv="y", between="g")`）；`scikit_posthocs.posthoc_dunn(df, val_col=..., group_col=..., p_adjust="holm")`；`scikit_posthocs.posthoc_nemenyi_friedman()` |
 | p 值校正 | `p.adjust(p, method = "holm")` | `statsmodels.stats.multitest.multipletests(p, method="holm")` |
 | 配对 | `t.test(x, y, paired = TRUE)`；`wilcox.test(x, y, paired = TRUE, conf.int = TRUE)`；`mcnemar.test()`；配对率差的 CI：`exact2x2::mcnemarExactDP()` | `scipy.stats.ttest_rel`；`scipy.stats.wilcoxon`；`statsmodels.stats.contingency_tables.mcnemar(tab, exact=True)` |
 

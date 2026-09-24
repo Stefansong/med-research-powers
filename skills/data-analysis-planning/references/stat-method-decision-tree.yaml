@@ -168,7 +168,7 @@ clustered_data:
   when: "Patients nested within clinics/hospitals, multi-center studies"
   design_phase:
     icc: "Calculate intraclass correlation coefficient"
-    design_effect: "DE = 1 + (m-1)×ICC, where m = cluster size"
+    design_effect: "DE = 1 + (m-1)×ICC holds for equal cluster sizes (m = cluster size); for unequal sizes use DE = 1 + ((CV²+1)×m̄ - 1)×ICC (m̄ = mean cluster size, CV = coefficient of variation of cluster size; negligible difference when CV < 0.23; Eldridge 2006, doi:10.1093/ije/dyl129). Both apply to exposures that vary between clusters; for exposures that vary within clusters (e.g. lesion-level) do not apply them directly — use a design-specific method or simulation"
     sample_size: "Inflate standard sample size by design effect"
   analysis:
     random_intercept: "Linear mixed model with random intercept for cluster"
@@ -246,8 +246,9 @@ deep_learning_classification:
 deep_learning_segmentation:
   task: "Image segmentation (organ/lesion delineation)"
   metrics:
-    primary: [Dice coefficient, IoU (Jaccard)]
-    secondary: ["95th percentile Hausdorff distance (HD95)", Average surface distance]
+    primary: ["One overlap metric (Dice) + one boundary metric (HD95 or normalised surface Dice, NSD, with a stated tolerance in mm)"]
+    secondary: [Average surface distance, "IoU (Jaccard) only if a journal asks — IoU = Dice/(2-Dice), so it adds no independent information"]
+    note: "Metrics Reloaded (Maier-Hein 2024, doi:10.1038/s41592-023-02151-z); empty-mask rules and monai defaults: method-cards/agreement-and-reliability.md"
     volumetric: [Volume correlation, Bland-Altman for volume]
   comparison:
     - {method: Paired Wilcoxon, when: "Compare two models on same test set"}
@@ -289,7 +290,7 @@ model_comparison:
   human_vs_ai:
     design: "Same test set, same information, blinded evaluation"
     groups: ["AI alone", "Human alone", "AI-assisted Human"]
-    washout: "≥2 weeks between unaided and AI-assisted reading"
+    washout: "Prespecify and justify the interval between unaided and AI-assisted reading; this plugin's minimum is ≥2 weeks, longer when cases are few or memorable (published reader studies use about 2-6 weeks; there is no single standard). Alternative: sequential reading (unaided read recorded, then AI shown in the same session) needs no washout but only fits AI intended as a second look"
     analysis: "Multi-reader multi-case (MRMC) methods with readers and cases as random effects — AI alone vs the reader panel: AI as a fixed reader, readers random (e.g. RJafroc::StSignificanceTestingCadVsRad, iMRMC); aided vs unaided: Obuchowski-Rockette / DBM. Not DeLong against each reader or against the mean reader AUC. Details: method-cards/diagnostic-accuracy-and-ai-evaluation.md"
   multi_model:
     method: "Bootstrap (B>=2000) or permutation test (>=1000 permutations) on paired predictions"

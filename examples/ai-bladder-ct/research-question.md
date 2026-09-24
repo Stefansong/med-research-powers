@@ -26,7 +26,7 @@
 |----|----|------|
 | Feasible | 4 | 两中心约 1,800 例增强 CT 已归档，标注需 2 名医师 × 3 个月 |
 | Interesting | 4 | 血尿分流是泌尿科门诊高频问题，误诊代价高 |
-| Novel | 3 | 快速查重（pubmed-search Mode 1，检索式 `("bladder cancer"[MeSH]) AND ("deep learning") AND (CT)`）命中 41 篇，其中外部验证 + 与医生比较者 6 篇，均为单中心 → 双中心外部验证是增量 |
+| Novel | 3 | 快速查重（pubmed-search Mode 1，检索式 `("Urinary Bladder Neoplasms"[MeSH] OR "bladder cancer"[tiab]) AND ("Deep Learning"[MeSH] OR "deep learning"[tiab]) AND ("Tomography, X-Ray Computed"[MeSH] OR CT[tiab])`）命中 41 篇，其中外部验证 + 与医生比较者 6 篇，均为单中心 → 双中心外部验证是增量 |
 | Ethical | 5 | 回顾性影像，去标识，二次使用在伦理批准范围内 |
 | Relevant | 4 | 结果可直接用于分流阈值讨论 |
 

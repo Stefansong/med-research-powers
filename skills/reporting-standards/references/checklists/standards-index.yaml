@@ -7,6 +7,13 @@
 # For all other entries, give the official source (`reference` / EQUATOR Network) and ask the user
 # to verify against the official checklist by hand; do not invent item text.
 # `items` counts for entries without a local file are index metadata only — verify before quoting.
+# `type:` marks the entries that are NOT reporting guidelines (no `type:` = reporting guideline):
+#   bias_tool      — risk-of-bias / quality tools used to appraise included studies (RoB 2, ROBINS-I, NOS,
+#                    MINORS, QUADAS-2, PROBAST)
+#   appraisal_tool — critical-appraisal tools for reviews or guidelines (AMSTAR 2, AGREE II)
+#   framework      — study-staging or evidence-grading frameworks (IDEAL, GRADE)
+# They stay in the index (and in the count of 47) because users look them up here, but they are not
+# checklists for reporting one's own manuscript: never use them for the pre-submission reporting check.
 
 standards:
   # === Clinical Trials ===
@@ -84,9 +91,12 @@ standards:
     use_with: strobe
 
   - id: strocss
-    name: STROCSS 2021
-    items: 17
+    name: STROCSS 2024
+    items: "13 (44 rows incl. sub-items)"
     for: "Surgical cohort/cross-sectional/case-control studies"
+    supersedes: "STROCSS 2021"
+    reference: "Rashid R et al. Int J Surg 2024;110(6):3151-3165 (doi:10.1097/JS9.0000000000001268)"
+    note: "A 2025 update adding an 'Artificial Intelligence' section (Agha RA et al., Premier Journal of Science 2025; reported as 6 new AI items) exists but its full text, item count and DOI were not verified here (待核实) — if the study used AI, check the current checklist on the official STROCSS website"
 
   # === Systematic Reviews ===
   - id: prisma-2020
@@ -126,11 +136,13 @@ standards:
 
   - id: amstar-2
     name: AMSTAR 2 (2017)
+    type: appraisal_tool
     items: 16
     for: "Critical appraisal of systematic reviews"
 
   - id: grade
     name: GRADE framework
+    type: framework
     for: "Evidence quality grading (5 dimensions: risk of bias, inconsistency, indirectness, imprecision, publication bias)"
 
   # === Diagnostic ===
@@ -181,8 +193,10 @@ standards:
 
   - id: mi-claim
     name: MI-CLAIM 2020
-    items: 15
+    items: "6 parts; checklist = 17 check items + input data type + choice of 1 of 4 code-sharing tiers"
     for: "Minimum information about clinical AI modeling"
+    reference: "Norgeot B et al. Nat Med 2020;26(9):1320-1324 (doi:10.1038/s41591-020-1041-y)"
+    note: "Item count taken from the checklist file in the official MI-CLAIM GitHub repository (stated to match the published table). For generative AI see MI-CLAIM-GEN: Miao BY et al. Nat Med 2025;31(5):1394-1398 (doi:10.1038/s41591-024-03470-0)"
 
   - id: decide-ai
     name: DECIDE-AI 2022
@@ -198,16 +212,19 @@ standards:
 
   - id: probast
     name: PROBAST 2019
+    type: bias_tool
     items: 20
     for: "Bias risk in prediction models"
     note: "PROBAST+AI 2025 available for AI models"
 
   # === Surgery & Devices ===
   - id: ideal
-    name: IDEAL 2009/2013
+    name: IDEAL 2009/2013 (updated 2019)
     type: framework
     for: "Surgical/device innovation stages"
+    reference: "Hirst A et al. Ann Surg 2019;269(2):211-220 (doi:10.1097/SLA.0000000000002794) — 2019 update that added the Pre-IDEAL stage"
     stages:
+      - "Pre-IDEAL / Stage 0 (Preclinical): preclinical studies before first-in-human use (added in the 2019 update; for devices see IDEAL-D stage 0: Marcus HJ et al. Ann Surg 2022;275(1):73-79, doi:10.1097/SLA.0000000000004907)"
       - "Stage 1 (Idea): First-in-human, proof of concept, case reports"
       - "Stage 2a (Development): Technical refinement, learning curve studies"
       - "Stage 2b (Exploration): Prospective cohort, feasibility studies"
@@ -231,10 +248,11 @@ standards:
     note: "Consensus-Based Checklist for Reporting of Survey Studies; use CHERRIES in addition for web-based administration"
 
   - id: cosmin
-    name: COSMIN Reporting Guideline 2021
+    name: COSMIN Reporting Guideline 2.0 (2025)
     for: "Studies on measurement properties of patient-reported outcome measures"
-    items: "71 (35 common to all measurement-property studies + property-specific items)"
-    reference: "Gagnier JJ et al. Qual Life Res 2021;30(8):2197-2218 (doi:10.1007/s11136-021-02822-4)"
+    items: "31 general + 37 property-specific items"
+    reference: "Gagnier JJ et al. Qual Life Res 2025;34(7):1901-1911 (doi:10.1007/s11136-025-03950-x); Explanation & Elaboration: Qual Life Res 2025;34(7):1891-1899 (doi:10.1007/s11136-025-03949-4)"
+    supersedes: "COSMIN Reporting Guideline 2021 (version 1.0; 71 items; Gagnier JJ et al. Qual Life Res 2021;30(8):2197-2218, doi:10.1007/s11136-021-02822-4) — the authors recommend no longer using version 1.0"
     note: "Reporting guideline for PROM measurement-property studies (validity, reliability, responsiveness); the COSMIN Risk of Bias checklist is a separate tool"
 
   # === Qualitative ===
@@ -279,10 +297,12 @@ standards:
 
   # === Guidelines Appraisal ===
   - id: agree-ii
-    name: AGREE II (2017)
-    items: 23
+    name: AGREE II (2010)
+    type: appraisal_tool
+    items: "23 (6 domains) + 2 overall assessment items"
     for: "Clinical practice guideline quality appraisal"
-    note: "Use for systematic reviews of clinical guidelines"
+    reference: "Brouwers MC et al. CMAJ 2010;182(18):E839-E842 (doi:10.1503/cmaj.090449)"
+    note: "Use for systematic reviews of clinical guidelines. The instrument dates from 2009/2010; 2017 is the date of the updated user's manual, not a new version"
 
   # === Meta-Analysis Extensions ===
   - id: moose

@@ -2,6 +2,9 @@
 # figure-generation, manuscript-export, data-collection-tools, using-med-research-powers).
 # The skills themselves work without these; the scripts do not.
 #   pip install -r requirements.txt
+# Analysis code written from the method cards may need newer releases than the bundled scripts:
+# pairwise_tukeyhsd(..., use_var="unequal") (Games-Howell) needs statsmodels 0.15 or later (which needs
+# Python 3.10+); on older statsmodels the method card gives pingouin.pairwise_gameshowell() instead.
 scipy
 statsmodels
 matplotlib

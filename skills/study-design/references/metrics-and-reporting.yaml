@@ -20,7 +20,7 @@ classification:
 
 detection_segmentation:
   primary:
-    - {metric: IoU / Dice, description: "Intersection over Union / Dice coefficient", when: "Segmentation tasks"}
+    - {metric: "Dice + a boundary metric (HD95 or NSD)", description: "One overlap metric plus one boundary metric; IoU = Dice/(2-Dice), so report one of the two, not both as separate evidence (Metrics Reloaded, doi:10.1038/s41592-023-02151-z)", when: "Segmentation tasks"}
     - {metric: mAP, description: "Mean Average Precision", when: "Object detection"}
   secondary:
     - {metric: "Sensitivity @ FP rate", description: "Detection sensitivity at fixed false positive rate", when: "Lesion detection"}

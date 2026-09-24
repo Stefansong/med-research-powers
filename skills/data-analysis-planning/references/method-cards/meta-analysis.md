@@ -17,8 +17,8 @@
 
 以下内容写进研究方案并在 PROSPERO 等平台注册，**在提取结果之前**定好：
 - **效应量**：二分类结局用 RR / OR / RD（病例对照研究只能用 OR；RD 表达绝对差别）；连续结局量表相同用 MD，不同用 SMD（Hedges' g）；生存结局用 HR（合并 log HR 及其 SE）。中位数/IQR 换算成均数/SD 的方法预先写明。
-- **模型**：按研究间是否可能存在真实差异预先选定，默认随机效应；不能看了异质性检验结果再改。τ²（研究间方差）用 REML 估计（RevMan 现默认 REML，Cochrane Handbook v6.5 §10.10.4.4），不用 DerSimonian-Laird 默认值；合并效应的 CI 用 Hartung-Knapp-Sidik-Jonkman（HKSJ）法（IntHout 2014；Handbook 建议在 τ² > 0 且研究数 > 2 时使用）。研究只有 2–4 项时说明随机效应估计不稳定。
-- **异质性**：报告 τ²、I²（及其 CI）、Q 检验和 95% 预测区间（研究数约 ≥ 5 项且漏斗图无明显不对称时报告，Handbook §10.10.4.3；IntHout 2016）。
+- **模型**：按研究间是否可能存在真实差异预先选定，默认随机效应；不能看了异质性检验结果再改。τ²（研究间方差）用 REML 估计（RevMan 现默认 REML，Cochrane Handbook v6.5 §10.10.4.4），不用 DerSimonian-Laird 默认值；合并效应的 CI 用 Hartung-Knapp-Sidik-Jonkman（HKSJ）法（IntHout 2014；Handbook 建议在 τ² > 0 且研究数 > 2 时使用）。τ² 估计为 0 或只有 2 项研究时怎么办也要预先写：这时 HKSJ 调整后的标准误可能比普通随机效应的标准误还小，CI 反而变窄；可预先选用校正版——规定调整后的标准误不小于普通标准误（metafor `test = "adhoc"`；meta `adhoc.hakn.ci = "se"`），或改报普通随机效应 CI 并说明理由。研究只有 2–4 项时说明随机效应估计不稳定。
+- **异质性**：报告 τ²、I²（及其 CI）、Q 检验和 95% 预测区间（IntHout 2016 主张常规报告；研究很少时预测区间很宽、也不稳定，照实报告并说明，不要因此省略）。预测区间的算法各软件不同（如 meta 默认 `method.predict = "V"`，用 k − 1 个自由度；`"HTS"` 用 k − 2），写明所用方法。
 - **小研究效应/发表偏倚**：研究数 ≥ 10 项才做漏斗图检验（Sterne 2011）；连续结局用 Egger 检验，OR 用 Harbord 或 Peters 检验，诊断试验用 Deeks 检验；剪补法只作敏感性分析。
 - **亚组与 meta 回归**：只做方案里预先列出的少数几个变量，写明理由和预期方向；用亚组间差异检验（交互），不比较各亚组 P 值；研究数少时不做 meta 回归，结果一律视为跨研究的观察性发现。
 - **敏感性分析**：留一法；剔除高偏倚风险研究；换 τ² 估计方法或固定效应模型；稀有事件换合并方法（Mantel-Haenszel / Peto）和连续性校正方式。
@@ -33,7 +33,7 @@
 | 任务 | R | Python |
 |---|---|---|
 | 效应量计算 | `metafor::escalc(measure = "RR", ai = , bi = , ci = , di = )`（`"OR"`、`"SMD"` 等） | `statsmodels.stats.meta_analysis.effectsize_2proportions()`、`effectsize_smd()` |
-| 随机效应合并（REML + HKSJ） | `metafor::rma(yi, vi, method = "REML", test = "knha")`；`meta::metagen(TE, seTE, sm = "RR", method.tau = "REML", method.random.ci = "HK", prediction = TRUE)` | `statsmodels.stats.meta_analysis.combine_effects(eff, var, method_re="pm", use_t=True)`：τ² 只有 Paule-Mandel/DL，没有 REML，结果表中 "random effect wls" 行为 HKSJ；功能不全，建议用 R |
+| 随机效应合并（REML + HKSJ） | `metafor::rma(yi, vi, method = "REML", test = "knha")`（按计划需要校正版时 `test = "adhoc"`）；`meta::metagen(TE, seTE, sm = "RR", method.tau = "REML", method.random.ci = "HK", prediction = TRUE)`（校正版加 `adhoc.hakn.ci = "se"`） | `statsmodels.stats.meta_analysis.combine_effects(eff, var, method_re="pm", use_t=True)`：τ² 只有 Paule-Mandel/DL，没有 REML，结果表中 "random effect wls" 行为 HKSJ；功能不全，建议用 R |
 | 二分类原始计数 | `meta::metabin(event.e, n.e, event.c, n.c, sm = "RR", method.tau = "REML", method.random.ci = "HK")` | 同上，建议用 R |
 | 预测区间 | `predict(res)`（metafor，看 `pi.lb`/`pi.ub`）；meta 用 `prediction = TRUE` | 无公认成熟包，建议用 R |
 | 漏斗图与检验 | `metafor::funnel()`、`metafor::regtest()`；`meta::metabias(m, method.bias = "Egger", k.min = 10)` | 无公认成熟包，建议用 R |
