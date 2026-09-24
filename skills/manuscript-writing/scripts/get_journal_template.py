@@ -5,8 +5,12 @@ Usage (the YAML is located relative to this script; cwd does not matter):
   get_journal_template.py --id european-urology [--json] [--overrides ./journal-overrides.yaml]
   get_journal_template.py --search urol            # fuzzy match on id / name → candidate list
   get_journal_template.py --list [--specialty urology]
-A project-level overrides file (same `templates:` structure) is searched first.
-Exit code 0 = found, 1 = not found or bad usage.
+A project-level overrides file (same `templates:` structure) is searched first; the
+default ./journal-overrides.yaml is optional, an explicit --overrides path that does not
+exist gives a warning. --id is case-insensitive.
+Exit code 0 = found, 1 = no matching journal, 2 = bad usage, or a missing / unreadable /
+malformed file (--yaml library not found, overrides that are not `templates:` + a list of
+entries with an `id`, invalid YAML) — reported as one "Error: ..." line, no traceback.
 """
 import argparse, json, os, re, sys
 
@@ -19,14 +23,53 @@ DEFAULT_YAML = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "r
 LIST_KEYS = ("id", "journal", "IF_approx", "family", "category")
 
 
-def load(path):
-    """Return (data_as_of, entries); each entry gets `category` from the '# ═══ / # NAME' banners."""
+class TemplateFileError(Exception):
+    """A template file that is missing (when required), unreadable or malformed."""
+
+
+def load(path, required=False):
+    """Return (data_as_of, entries); each entry gets `category` from the '# ═══ / # NAME' banners.
+
+    A missing file gives (None, []) unless required=True. Raises TemplateFileError when the file
+    cannot be read, is not valid YAML, or is not `templates:` + a list of mappings with an `id`
+    (a bare top-level list of such mappings is also accepted; an empty file means no entries).
+    """
     if not path or not os.path.exists(path):
+        if required:
+            raise TemplateFileError(f"file not found: {path}")
         return None, []
-    with open(path, encoding="utf-8") as f:
-        text = f.read()
-    data = yaml.safe_load(text) or {}
-    entries = data if isinstance(data, list) else data.get("templates") or []
+    try:
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+    except (OSError, UnicodeDecodeError) as exc:
+        raise TemplateFileError(f"cannot read {path}: {exc}") from None
+    try:
+        data = yaml.safe_load(text)
+    except yaml.YAMLError as exc:
+        mark = getattr(exc, "problem_mark", None)
+        where = f" (line {mark.line + 1}, column {mark.column + 1})" if mark else ""
+        raise TemplateFileError(f"{path} is not valid YAML{where}: "
+                                f"{getattr(exc, 'problem', None) or ' '.join(str(exc).split())}") from None
+    if data is None:
+        return None, []
+    if isinstance(data, list):
+        entries, data_as_of = data, None
+    elif isinstance(data, dict):
+        if "templates" not in data:
+            raise TemplateFileError(f"{path} has no top-level `templates:` key "
+                                    "(expected `templates:` followed by `- id: ...` entries)")
+        entries, data_as_of = data["templates"] or [], data.get("data_as_of")
+    else:
+        raise TemplateFileError(f"{path} must contain `templates:` with a list of entries, "
+                                f"not a {type(data).__name__}")
+    if not isinstance(entries, list):
+        raise TemplateFileError(f"`templates` in {path} must be a list of entries, not a {type(entries).__name__}")
+    for i, e in enumerate(entries, 1):
+        if not isinstance(e, dict):
+            raise TemplateFileError(f"entry #{i} in {path} is a {type(e).__name__} ({e!r}), not a mapping; "
+                                    "each entry looks like `- id: ...` / `  journal: ...`")
+        if not isinstance(e.get("id"), (str, int)) or not str(e["id"]).strip():
+            raise TemplateFileError(f"entry #{i} in {path} has no `id` (a plain text id such as `the-prostate`)")
     cat, cats, prev = "", {}, ""
     for line in text.splitlines():
         if line.lstrip().startswith("#") and "═" in prev:
@@ -36,7 +79,12 @@ def load(path):
         prev = line
     for e in entries:
         e.setdefault("category", cats.get(e.get("id"), ""))
-    return (None if isinstance(data, list) else data.get("data_as_of")), entries
+    return data_as_of, entries
+
+
+def fail(msg):
+    print(f"Error: {msg}", file=sys.stderr)
+    sys.exit(2)
 
 
 def main():
@@ -44,13 +92,22 @@ def main():
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--id"), g.add_argument("--search"), g.add_argument("--list", action="store_true")
     ap.add_argument("--specialty", help="with --list: filter by category / id / name keyword")
-    ap.add_argument("--json", action="store_true"), ap.add_argument("--overrides", default="journal-overrides.yaml")
+    ap.add_argument("--json", action="store_true")
+    ap.add_argument("--overrides", help="project overrides YAML (default: ./journal-overrides.yaml, optional)")
     ap.add_argument("--yaml", default=DEFAULT_YAML, help="library file (default: bundled)")
     a = ap.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    _, overrides = load(a.overrides)
-    data_as_of, library = load(a.yaml)
+    if a.overrides and not os.path.exists(a.overrides):
+        print(f"Warning: overrides file not found: {a.overrides}; using the library only", file=sys.stderr)
+    try:
+        _, overrides = load(a.overrides or "journal-overrides.yaml")
+    except TemplateFileError as exc:
+        fail(f"overrides file: {exc}")
+    try:
+        data_as_of, library = load(a.yaml, required=True)
+    except TemplateFileError as exc:
+        fail(f"journal library (--yaml): {exc}")
     seen, entries = set(), []
     for e in overrides + library:  # overrides win on duplicate id
         if e.get("id") and e["id"] not in seen:
@@ -60,7 +117,7 @@ def main():
         if not hit:
             sys.exit(f"No template with id '{a.id}'. Try: --search {a.id.split('-')[0]}")
         hit = {**hit, "data_as_of": data_as_of}
-        print(json.dumps(hit, ensure_ascii=False, indent=2) if a.json
+        print(json.dumps(hit, ensure_ascii=False, indent=2, default=str) if a.json
               else yaml.safe_dump(hit, allow_unicode=True, sort_keys=False, width=200), end="")
         return
     key = (a.search or a.specialty or "").lower()
@@ -69,7 +126,7 @@ def main():
     if not rows:
         sys.exit(f"No journal matches '{key}'. Try a shorter keyword, or add it to ./journal-overrides.yaml")
     if a.json:
-        print(json.dumps([{k: e.get(k) for k in LIST_KEYS} for e in rows], ensure_ascii=False, indent=2))
+        print(json.dumps([{k: e.get(k) for k in LIST_KEYS} for e in rows], ensure_ascii=False, indent=2, default=str))
     else:
         print(f"# {len(rows)} match(es); data_as_of: {data_as_of}\n# " + " | ".join(LIST_KEYS))
         for e in rows:

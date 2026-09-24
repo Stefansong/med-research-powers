@@ -108,3 +108,61 @@ def test_runs_under_c_locale(tmp_path):
     r = run("--id", "lancet", cwd=tmp_path, env=env)
     assert r.returncode == 0, r.stderr
     assert "id: lancet" in r.stdout
+
+
+# ─── v6.4.1: malformed / missing files → clear message, exit 2, no traceback ────
+
+@pytest.mark.parametrize("content,expected", [
+    ("templates:\n  - just-a-string\n", "not a mapping"),
+    ("- a\n- b\n", "not a mapping"),                              # bare list of strings
+    ("journal: The Prostate\nword_limit: 4000\n", "no top-level `templates:`"),
+    ("templates:\n  id: x\n", "must be a list"),
+    ("just a scalar\n", "must contain `templates:`"),
+    ("templates: [\n  - id: x\n", "not valid YAML (line 2"),
+    ("templates:\n  - journal: No Id Journal\n", "has no `id`"),
+])
+def test_malformed_overrides_exit_2_with_message(tmp_path, content, expected):
+    (tmp_path / "journal-overrides.yaml").write_text(content, encoding="utf-8")
+    for args in (("--id", "nature"), ("--search", "urol"), ("--list",)):
+        r = run(*args, cwd=tmp_path)
+        assert r.returncode == 2, (args, r.stdout, r.stderr)
+        assert "Traceback" not in r.stderr
+        assert r.stderr.startswith("Error: overrides file:") and expected in r.stderr, r.stderr
+        assert "journal-overrides.yaml" in r.stderr
+
+
+def test_empty_overrides_file_is_fine(tmp_path):
+    (tmp_path / "journal-overrides.yaml").write_text("", encoding="utf-8")
+    r = run("--id", "nature", "--json", cwd=tmp_path)
+    assert r.returncode == 0, r.stderr
+    assert json.loads(r.stdout)["id"] == "nature"
+
+
+def test_wrong_yaml_path_says_file_not_found(tmp_path):
+    r = run("--id", "nature", "--yaml", str(tmp_path / "missing.yaml"), cwd=tmp_path)
+    assert r.returncode == 2
+    assert "file not found" in r.stderr and "missing.yaml" in r.stderr
+    assert "No template with id" not in r.stderr
+    r = run("--list", "--yaml", str(tmp_path), cwd=tmp_path)    # a directory, not a file
+    assert r.returncode == 2 and "cannot read" in r.stderr and "Traceback" not in r.stderr
+
+
+def test_explicit_missing_overrides_warns_but_uses_library(tmp_path):
+    r = run("--id", "nature", "--json", "--overrides", str(tmp_path / "nope.yaml"), cwd=tmp_path)
+    assert r.returncode == 0
+    assert "overrides file not found" in r.stderr
+    assert json.loads(r.stdout)["journal"] == "Nature"
+
+
+def test_id_lookup_is_case_insensitive(tmp_path):
+    r = run("--id", "European-Urology", cwd=tmp_path)
+    assert r.returncode == 0, r.stderr
+    assert "id: european-urology" in r.stdout
+
+
+def test_overrides_with_dates_still_print_json(tmp_path):
+    (tmp_path / "journal-overrides.yaml").write_text(
+        "templates:\n  - id: the-prostate\n    journal: The Prostate\n    checked: 2026-09-01\n", encoding="utf-8")
+    r = run("--id", "the-prostate", "--json", cwd=tmp_path)
+    assert r.returncode == 0, r.stderr
+    assert json.loads(r.stdout)["checked"] == "2026-09-01"

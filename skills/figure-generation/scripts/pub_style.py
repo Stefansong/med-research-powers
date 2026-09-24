@@ -11,8 +11,13 @@ Usage (run from the user's project directory):
     colors, width = setup(journal='nature', single_column=True)   # rcParams + palette + width (inch)
     fig, ax = plt.subplots(figsize=journal_figsize('nature', n_panels=1))
     ...
-    add_significance(ax, x1=0, x2=1, y=y_top, p_value=0.003)      # bracket height = 2% of y-range
-    save_figure(fig, 'figure1')                                    # figure1.tiff (600 dpi, LZW) + figure1.pdf
+    add_significance(ax, x1=0, x2=1, y=y_top, p_value=0.003)      # bracket height = 2% of the axis height (log axes too)
+    save_figure(fig, 'figure1')                                    # figure1.tiff (600 dpi, RGB, LZW) + figure1.pdf
+
+Export keeps the figure size: a journal_figsize('nature') figure is saved exactly 89 mm wide
+(no bbox_inches='tight' cropping). save_figure() lays the figure out inside that fixed size
+(tight_layout, unless the figure already has its own layout, e.g. plt.subplots(layout='constrained'))
+and warns if anything would still be cut off at the edge.
 
 Fonts: rcParams use font.family='sans-serif' with the fallback chain
 Arial → Helvetica → Liberation Sans → DejaVu Sans. If neither Arial nor Helvetica is
@@ -22,6 +27,7 @@ violated silently. Install Arial (e.g. ttf-mscorefonts-installer) for final expo
 Command line: `python3 pub_style.py --check` prints the font / journal-width table.
 """
 
+import math
 import warnings
 
 try:
@@ -139,7 +145,7 @@ def setup(journal='nature', single_column=True, font=None, colorblind_safe=False
         'legend.fontsize': 8,
         'figure.dpi': 150,          # screen preview only; export dpi is set in save_figure
         'savefig.dpi': 600,
-        'savefig.bbox': 'tight',
+        'savefig.bbox': 'standard',  # never crop: the saved width must stay the journal column width
         'savefig.transparent': False,
         'axes.linewidth': 0.8,
         'xtick.major.width': 0.8,
@@ -166,9 +172,56 @@ apply_style = setup   # alias used in some docs
 DPI_BY_KIND = {'line_art': 600, 'combination': 500, 'halftone': 300}   # figure-specs.yaml
 
 
-def save_figure(fig, filename, formats=('tiff', 'pdf'), dpi=None, line_art=True, kind=None):
-    """Save in journal formats. TIFF (LZW) + PDF by default.
+_SUBPLOT_KEYS = ('left', 'right', 'bottom', 'top', 'wspace', 'hspace')
 
+
+def _fit_layout(fig):
+    """Fit labels inside the FIXED figure size, unless the figure already has its own layout.
+
+    Own layout = a layout engine (layout='constrained' / 'compressed', an earlier
+    tight_layout()) or subplots_adjust() values that differ from the rcParams defaults.
+    """
+    if fig.get_layout_engine() is not None:
+        return
+    if any(getattr(fig.subplotpars, k) != mpl.rcParams[f'figure.subplot.{k}'] for k in _SUBPLOT_KEYS):
+        return
+    fig.tight_layout()
+
+
+def _warn_if_clipped(fig, tol_in=0.02):
+    """Warn when drawn content extends past the figure edge (it would be cut off on export)."""
+    fig.draw_without_rendering()
+    tb = fig.get_tightbbox()
+    w, h = fig.get_size_inches()
+    if tb.x0 < -tol_in or tb.y0 < -tol_in or tb.x1 > w + tol_in or tb.y1 > h + tol_in:
+        warnings.warn(
+            "图中内容超出了图幅边界，导出时会被裁掉（图幅固定为期刊栏宽，不再用 bbox_inches='tight' 自动扩边）。"
+            "请用 plt.subplots(..., layout='constrained')、缩短标签/图例，或把图例放进坐标轴内。",
+            UserWarning, stacklevel=3)
+
+
+def _save_tiff_rgb(fig, out, dpi):
+    """TIFF as RGB (no alpha channel) with LZW compression — matplotlib alone writes RGBA."""
+    import io
+    from PIL import Image
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', dpi=dpi)
+    buf.seek(0)
+    with Image.open(buf) as im:
+        im = im.convert('RGBA')
+        rgb = Image.new('RGB', im.size, (255, 255, 255))   # transparent areas → white
+        rgb.paste(im, mask=im.getchannel('A'))
+    rgb.save(out, format='TIFF', compression='tiff_lzw', dpi=(dpi, dpi))
+
+
+def save_figure(fig, filename, formats=('tiff', 'pdf'), dpi=None, line_art=True, kind=None, layout='auto'):
+    """Save in journal formats. TIFF (RGB, LZW) + PDF by default, at the figure's exact size.
+
+    The figure size is NOT changed on export (no bbox_inches='tight'), so a figure made with
+    journal_figsize() is saved at exactly the journal column width.
+    layout: 'auto' (default) → if the figure has no layout of its own, run tight_layout() so the
+            labels fit inside the fixed size; None → leave the figure untouched.
+    A UserWarning is issued if content still extends beyond the figure edge.
     dpi resolution: explicit `dpi` > `kind` ('line_art' 600 / 'combination' 500 / 'halftone' 300)
     > `line_art` flag (True → 600, False → 300). Line art (plots with thin lines/text) needs 600.
     """
@@ -179,47 +232,73 @@ def save_figure(fig, filename, formats=('tiff', 'pdf'), dpi=None, line_art=True,
             dpi = DPI_BY_KIND[kind]
         else:
             dpi = DPI_BY_KIND['line_art'] if line_art else DPI_BY_KIND['halftone']
+    if layout not in ('auto', None):
+        raise ValueError("layout 必须是 'auto' 或 None")
+    if layout == 'auto':
+        _fit_layout(fig)
     saved = []
-    for fmt in formats:
-        kwargs = {}
-        if fmt in ('tiff', 'tif'):
-            try:
-                import PIL  # noqa: F401  (matplotlib writes TIFF through Pillow)
-            except ImportError:
-                raise SystemExit("保存 TIFF 需要 Pillow：pip install pillow")
-            kwargs['pil_kwargs'] = {'compression': 'tiff_lzw'}
-        out = f'{filename}.{fmt}'
-        fig.savefig(out, dpi=dpi, format=fmt, bbox_inches='tight', **kwargs)
-        saved.append(out)
-    print(f"Saved ({dpi} dpi): {', '.join(saved)}")
+    with mpl.rc_context({'savefig.bbox': 'standard'}):   # no cropping, whatever the rcParams say
+        _warn_if_clipped(fig)
+        for fmt in formats:
+            out = f'{filename}.{fmt}'
+            if fmt in ('tiff', 'tif'):
+                try:
+                    import PIL  # noqa: F401  (TIFF is written through Pillow)
+                except ImportError:
+                    raise SystemExit("保存 TIFF 需要 Pillow：pip install pillow")
+                _save_tiff_rgb(fig, out, dpi)
+            else:
+                fig.savefig(out, dpi=dpi, format=fmt)
+            saved.append(out)
+    w_in, h_in = fig.get_size_inches()
+    print(f"Saved ({dpi} dpi, {w_in * MM_PER_INCH:.1f} × {h_in * MM_PER_INCH:.1f} mm): {', '.join(saved)}")
     return saved
 
 
 # ─── annotations ────────────────────────────────────────────────────────────
 
 def p_to_stars(p_value):
-    if p_value < 0.001:
+    """'***' (p<0.001) / '**' (p<0.01) / '*' (p<0.05) / 'ns'.
+
+    A missing or invalid p-value (None, NaN, non-numeric, outside [0, 1]) raises ValueError —
+    it is never shown as 'ns'. Pass text=... to add_significance() to label such a bracket yourself.
+    """
+    try:
+        p = float(p_value)
+    except (TypeError, ValueError):
+        raise ValueError(f"p_value 必须是 0–1 之间的数，收到 {p_value!r}；缺失的 p 值不能标成 'ns'") from None
+    if not math.isfinite(p) or not 0 <= p <= 1:
+        raise ValueError(f"p_value 必须是 0–1 之间的数，收到 {p_value!r}；缺失的 p 值不能标成 'ns'")
+    if p < 0.001:
         return '***'
-    if p_value < 0.01:
+    if p < 0.01:
         return '**'
-    if p_value < 0.05:
+    if p < 0.05:
         return '*'
     return 'ns'
 
 
 def add_significance(ax, x1, x2, y, p_value, height=0.02, text=None, fontsize=8):
-    """Draw a significance bracket between x1 and x2 at data-y `y`.
+    """Draw a significance bracket between x1 and x2 starting at data-y `y`.
 
-    height is a FRACTION OF THE Y-AXIS RANGE (0.02 = 2%), so the bracket is visible
-    whatever the data scale. text defaults to ***/**/*/ns from p_value.
+    height is a FRACTION OF THE Y-AXIS HEIGHT (0.02 = 2%), measured in the axis' scaled
+    space, so the bracket looks the same on linear, log and symlog axes. text defaults to
+    ***/**/*/ns from p_value (p_to_stars; a missing p-value raises ValueError).
     """
-    y0, y1 = ax.get_ylim()
-    h = height * (y1 - y0)
     label = text if text is not None else p_to_stars(p_value)
-    ax.plot([x1, x1, x2, x2], [y, y + h, y + h, y], 'k-', linewidth=0.8, clip_on=False)
-    ax.text((x1 + x2) / 2, y + h, label, ha='center', va='bottom', fontsize=fontsize)
-    if y + 2 * h > y1:                       # make room for the label
-        ax.set_ylim(y0, y + 3 * h)
+    scale = ax.yaxis.get_transform()          # data → scaled (identity / log10 / symlog …)
+    inv = scale.inverted()
+    y0, y1 = ax.get_ylim()
+    s0, s1 = (float(v) for v in scale.transform([y0, y1]))
+    ys = float(scale.transform(y))
+    if (ax.get_yscale() == 'log' and y <= 0) or not all(math.isfinite(v) for v in (s0, s1, ys)):
+        raise ValueError(f"y={y!r} 不在该坐标轴的有效范围内（对数轴要求 y > 0）")
+    hs = height * (s1 - s0)
+    top = float(inv.transform(ys + hs))
+    ax.plot([x1, x1, x2, x2], [y, top, top, y], 'k-', linewidth=0.8, clip_on=False)
+    ax.text((x1 + x2) / 2, top, label, ha='center', va='bottom', fontsize=fontsize)
+    if (ys + 2 * hs - s1) * (1 if s1 >= s0 else -1) > 0:   # make room for the label
+        ax.set_ylim(y0, float(inv.transform(ys + 3 * hs)))
     return label
 
 
