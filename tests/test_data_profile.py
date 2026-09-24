@@ -416,3 +416,266 @@ def test_skip_rows_for_a_title_row(tmp_path):
     text = "某医院 2024 年数据导出,,\nid,age,sex\n1,50,男\n2,60,女\n"
     profile = _run(_csv(tmp_path, "d.csv", text), "--skip-rows", "1")
     assert [c["name"] for c in profile["columns"]] == ["id", "age", "sex"] and profile["n_rows"] == 2
+
+
+# ─── regressions found in the release-6.4.1 audit ───────────────────────────────────
+
+# DP-13: all-different whole numbers may be measurements
+def test_all_different_whole_numbers_get_a_not_id_hint_and_not_id_restores_the_distribution(tmp_path):
+    import random
+    rnd = random.Random(1)
+    cost, plt_ = rnd.sample(range(10000, 99999), 60), rnd.sample(range(100000, 450000), 60)
+    rows = ["pid,住院费用,platelet,age,手术日期"] + [
+        f"{i + 1},{cost[i]},{plt_[i]},{40 + i % 30},{40000 + 3 * i}" for i in range(60)]
+    path = _csv(tmp_path, "d.csv", "\n".join(rows) + "\n")
+    profile = _run(path)
+    cols = _cols(profile)
+    for name in ("住院费用", "platelet"):
+        assert cols[name]["type"] == "id" and cols[name]["id_source"] == "value"
+        assert any("--not-id" in h for h in cols[name]["hints"])
+    assert any("--not-id 住院费用,platelet" in x for x in profile["problems"])
+    assert cols["age"]["type"] == "numeric"                     # a run of ages is not a sequence number
+    assert cols["手术日期"]["type"] == "numeric"                  # a date name: Excel serials, not an ID
+    assert any("Excel 日期序列号" in h for h in cols["手术日期"]["hints"])
+    fixed = _run(path, "--not-id", "住院费用,platelet")
+    cols = _cols(fixed)
+    for name in ("住院费用", "platelet"):
+        assert cols[name]["type"] == "numeric" and cols[name]["numeric"]["n"] == 60 and cols[name]["pii"] is None
+    assert [s["column"] for s in fixed["id_structure"]] == ["pid"]
+    assert not any("--not-id" in x for x in fixed["problems"])
+
+
+def test_a_phone_column_gets_no_not_id_hint(tmp_path):
+    rows = ["pid,contact"] + [f"{i + 1},138001380{i:02d}" for i in range(30)]
+    profile = _run(_csv(tmp_path, "d.csv", "\n".join(rows) + "\n"))
+    assert _cols(profile)["contact"]["pii"]["phone_hits"] == 30
+    assert not any("--not-id" in x for x in profile["problems"])
+
+
+# DP-14: a variable that merely looks like an ID never groups the outcome or a centre
+def _arm_frame():
+    return pd.DataFrame({
+        "arm_id": [str(1 + i % 2) for i in range(60)],
+        "center": ["ABC"[i % 3] for i in range(60)],
+        "ssi": ["1" if i % 2 == 0 and i % 4 == 0 else "0" for i in range(60)],    # events only in arm 1
+        "age": [str(40 + i % 30) for i in range(60)],
+    })
+
+
+def test_an_id_like_variable_never_groups_the_outcome_or_a_cluster():
+    df = _arm_frame()
+    plain = dp.profile_dataframe(df)
+    with_outcome = dp.profile_dataframe(df, outcome_col="ssi")
+    strip = lambda p: json.dumps({k: v for k, v in p.items() if k != "outcomes"}, sort_keys=True, ensure_ascii=False)
+    assert strip(plain) == strip(with_outcome)
+    assert plain["id_structure"][0]["column"] == "arm_id" and plain["id_structure"][0]["as_patient_id"] is False
+    assert [c["column"] for c in plain["clusters"]] == ["center"]
+    assert "ids_per_cluster" not in plain["clusters"][0]           # no centre x arm table
+    assert with_outcome["outcomes"][0]["per_patient"] is None       # no arm x outcome table
+    text = dp.render_markdown(with_outcome)
+    assert "个 ID 出现在多个单位" not in text and "每个单位 1–2 个 ID" not in text
+    assert "不像患者 ID" in text
+    # the same data with a real patient ID: grouping by patient is fine
+    df["patient_id"] = [f"P{i // 2:03d}" for i in range(60)]
+    grouped = dp.profile_dataframe(df, outcome_col="ssi")
+    assert {s["column"]: s["as_patient_id"] for s in grouped["id_structure"]} == {"arm_id": False, "patient_id": True}
+    assert "ids_per_cluster" in grouped["clusters"][0] and grouped["outcomes"][0]["per_patient"] is not None
+
+
+def test_one_column_cannot_take_two_roles(tmp_path):
+    path = _csv(tmp_path, "d.csv", "pid,y,t\n" + "\n".join(f"{i},{i % 2},{i}" for i in range(30)) + "\n")
+    for argv in (["--id", "pid", "--outcome", "pid"], ["--outcome", "y", "--cluster", "y"],
+                 ["--id", "pid", "--not-id", "pid"], ["--outcome", "y", "--time", "y"]):
+        with pytest.raises(SystemExit, match="不能同时用于"):
+            _run(path, *argv)
+
+
+# DP-16: CLI errors are messages with the tool prefix, never tracebacks or silent no-ops
+@pytest.mark.parametrize("make,argv,message", [
+    (lambda d: (d.parent / "fake.xlsx").write_text("a,b\n1,2\n", encoding="utf-8"),     # a CSV renamed .xlsx
+     ["{tmp}/fake.xlsx"], "不是 Excel 格式"),
+    (None, ["{csv}", "--report", "{tmp}/nodir/r.md"], "目录不存在"),
+    (None, ["{csv}", "--range", "Age=0:120"], "不在数据中"),
+    (None, ["{csv}", "--range", "age=120:0"], "下限大于上限"),
+    (None, ["{csv}", "--sheet", "1"], "--sheet 只用于"),
+    (None, ["{csv}", "--encoding", "nosuch"], "未知的编码名"),
+    (None, ["{csv}", "--report", "{tmp}/x.md", "--json", "{tmp}/x.md"], "同一个文件"),
+    (None, ["{csv}", "--report", "{tmp}/notes.md"], "已存在"),
+    (lambda d: (d.parent / "s.dta").write_bytes(b"\x00\x01stata"), ["{tmp}/s.dta"], "暂不支持 .dta"),
+    (lambda d: (d.parent / "bin.csv").write_bytes(b"\x00\x01\x02abc"), ["{tmp}/bin.csv"], "NUL"),
+    (lambda d: (d.parent / "e.csv").write_bytes(b""), ["{tmp}/e.csv"], "空的"),
+    (lambda d: (d.parent / "w.csv").write_bytes("a\ncafé\n".encode("latin-1")),
+     ["{tmp}/w.csv", "--encoding", "ascii"], "--encoding"),
+])
+def test_cli_errors_are_clear_messages(tmp_path, make, argv, message):
+    data = _csv(tmp_path, "d.csv", "pid,age\n" + "\n".join(f"{i},{40 + i % 7}" for i in range(30)) + "\n")
+    (tmp_path / "notes.md").write_text("my own notes\n", encoding="utf-8")
+    if make is not None:
+        make(data)
+    args = [a.format(csv=data, tmp=tmp_path) for a in argv]
+    before = _sha(data)
+    with pytest.raises(SystemExit) as exc:
+        dp.main(args)
+    assert str(exc.value.code).startswith("[数据体检]") and message in str(exc.value.code)
+    assert _sha(data) == before and (tmp_path / "notes.md").read_text(encoding="utf-8") == "my own notes\n"
+
+
+def test_encoding_or_sep_on_an_xlsx_and_negative_max_levels_are_refused(tmp_path):
+    openpyxl = pytest.importorskip("openpyxl")
+    wb = openpyxl.Workbook()
+    wb.active.append(["a"])
+    path = tmp_path / "d.xlsx"
+    wb.save(path)
+    with pytest.raises(SystemExit, match="只用于 CSV"):
+        _run(path, "--encoding", "gbk")
+    with pytest.raises(SystemExit) as exc:
+        _run(path, "--max-levels", "-1")
+    assert exc.value.code == 2                                  # argparse usage error
+
+
+def test_an_old_excel_file_without_its_reader_is_a_clear_message(tmp_path):
+    path = tmp_path / "old.xls"
+    path.write_bytes(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + b"\x00" * 504)
+    with pytest.raises(SystemExit) as exc:
+        _run(path)
+    assert str(exc.value.code).startswith("[数据体检]")
+    assert "xlrd" in str(exc.value.code) or "损坏" in str(exc.value.code)
+
+
+@pytest.mark.skipif(not hasattr(os, "link"), reason="no hard links")
+def test_a_hard_linked_report_path_cannot_overwrite_the_data(tmp_path):
+    path = _csv(tmp_path, "d.csv", "a\n1\n2\n")
+    link = tmp_path / "report.md"
+    os.link(path, link)
+    before = _sha(path)
+    with pytest.raises(SystemExit, match="不能与数据文件同名"):
+        _run(path, "--report", str(link))
+    assert _sha(path) == before
+
+
+def test_an_earlier_report_may_be_overwritten_and_unused_ranges_are_reported(tmp_path):
+    path = _csv(tmp_path, "d.csv", "pid,sex\n" + "\n".join(f"{i},{'男女'[i % 2]}" for i in range(30)) + "\n")
+    md, js = tmp_path / "p.md", tmp_path / "p.json"
+    _run(path, "--report", str(md), "--json", str(js))
+    profile = _run(path, "--report", str(md), "--json", str(js), "--range", "sex=0:1")   # rerun: allowed
+    assert any("--range sex 没有用上" in x for x in profile["problems"])
+
+
+# DP-17: a Western file decoded as GBK is flagged
+def test_cp1252_file_decoded_as_gbk_is_flagged(tmp_path):
+    text = "pid,Crea (µmol/L),Temp (°C)\n" + "\n".join(f"{i},{60 + i},36.{i % 10}" for i in range(30)) + "\n"
+    path = _csv(tmp_path, "w.csv", text, encoding="cp1252")
+    profile = _run(path)
+    assert profile["source"]["encoding"] == "gbk"
+    assert any("--encoding cp1252" in x for x in profile["problems"])
+    fixed = _run(path, "--encoding", "cp1252")
+    assert [c["name"] for c in fixed["columns"]] == ["pid", "Crea (µmol/L)", "Temp (°C)"]
+    assert "encoding_warning" not in fixed["source"]
+
+
+def test_real_gbk_gb18030_and_utf16_files_are_read_without_a_warning(tmp_path):
+    gbk = _run(_gbk_csv(tmp_path))
+    assert gbk["source"]["encoding"] == "gbk" and "encoding_warning" not in gbk["source"]
+    rows = "姓名缩写,诊断\n" + "\n".join(f"A{i},𠀀病{i}" for i in range(10)) + "\n"   # 𠀀 is not in GBK
+    assert _run(_csv(tmp_path, "g.csv", rows, encoding="gb18030"))["source"]["encoding"] == "gb18030"
+    utf16 = _csv(tmp_path, "u.txt", "﻿pid\t肌酐\n1\t80\n2\t95\n", encoding="utf-16-le")
+    profile = _run(utf16)
+    assert profile["source"]["encoding"] == "utf-16（带 BOM）" and [c["name"] for c in profile["columns"]] == ["pid", "肌酐"]
+
+
+# DP-19: line breaks in column names never break a report line
+def test_line_breaks_in_column_names_are_shown_safely(tmp_path, capsys):
+    openpyxl = pytest.importorskip("openpyxl")
+    wb = openpyxl.Workbook()
+    wb.active.append(["pid", "肌酐\n(μmol/L)", "结局\r\n(1=死亡)"])
+    for i in range(30):
+        wb.active.append([i + 1, "未查" if i < 3 else 60 + 2 * i, 1 if i % 5 == 0 else 0])
+    path = tmp_path / "nl.xlsx"
+    wb.save(path)
+    md, js = tmp_path / "p.md", tmp_path / "p.json"
+    profile = _run(path, "--outcome", "结局 (1=死亡)", "--range", "肌酐 (μmol/L)=30:150",
+                   "--report", str(md), "--json", str(js))
+    assert profile["outcomes"][0]["events"] == 6
+    assert all("\n" not in x and "\r" not in x for x in profile["problems"])
+    assert any("列名里有换行" in x for x in profile["problems"])
+    for line in capsys.readouterr().out.splitlines():
+        assert line.startswith("[数据体检]")
+    text = md.read_text(encoding="utf-8")
+    assert "- 伪装缺失：肌酐↵(μmol/L)（未查×3）" in text.splitlines()
+    assert json.loads(js.read_text(encoding="utf-8"))["columns"][1]["name"] == "肌酐\n(μmol/L)"   # the real name
+    assert _run(path, "--outcome", "结局\r\n(1=死亡)")["outcomes"][0]["column"] == "结局\r\n(1=死亡)"
+
+
+# DP-20: complete rows count only the analysable columns
+def test_complete_rows_ignore_empty_id_privacy_and_remarks_columns(tmp_path):
+    rows = ["pid,姓名,age,sex,备注,空列"] + [
+        f"{i},某{i},{'' if i == 5 else 40 + i},{'男女'[i % 2]},{'复查' if i == 3 else ''}," for i in range(30)]
+    md = tmp_path / "p.md"
+    profile = _run(_csv(tmp_path, "d.csv", "\n".join(rows) + "\n"), "--report", str(md))
+    assert profile["n_complete_rows"] == 29
+    basis = profile["complete_rows_basis"]
+    assert basis["n_columns"] == 2 and set(basis["excluded"]) == {"pid", "姓名", "备注", "空列"}
+    assert "只看 2 个可分析列" in md.read_text(encoding="utf-8")
+
+
+# DP-22: branches the earlier tests never reached
+def _edge_frame():
+    n = 40
+    return pd.DataFrame({
+        "pid": [str(i) for i in range(n)],
+        "income": ["1,234", "12,345.5"] + [str(100 + i) for i in range(n - 2)],
+        "eu": ["3,5", "4,25"] + [str(i) for i in range(n - 2)],
+        "hb": ["130g/L", "13g/dL"] + [str(120 + i % 20) for i in range(n - 2)],
+        "surg_date": ["2024-01-05", "2024/01/06", "05/03/2024", "03/25/2024"] + ["2024-02-01"] * (n - 4),
+        "amb_date": ["03/04/2024", "05/06/2024"] * (n // 2),
+        "visit_date": ["2024-01-01"] * (n - 3) + ["45000", "45001", "abc"],
+        "grade": ["G1", "G2", "G3"] * 13 + ["G1"],
+        "const": ["A"] * n,
+        "los": [str(3 + i % 10) for i in range(n)],
+        "comment": [f"患者术后恢复良好但是需要长期随访观察第{i}次复查结果无明显异常" for i in range(n)],
+        "months": ["x"] * n,
+    })
+
+
+def test_loose_numbers_units_and_date_notes():
+    cols = _cols(dp.profile_dataframe(_edge_frame()))
+    assert cols["income"]["numeric_as_text"]["reasons"]["千分位逗号"] == 2
+    assert cols["eu"]["numeric_as_text"]["reasons"]["逗号作小数点"] == 2
+    assert any(h.startswith("同一列出现多种单位") for h in cols["hb"]["hints"])
+    assert "同一列混用多种日期写法" in cols["surg_date"]["date"]["notes"]
+    assert any("日/月顺序无法从数据判断" in x for x in cols["amb_date"]["date"]["notes"])
+    assert any("Excel 日期序列号" in x for x in cols["visit_date"]["date"]["notes"])
+    assert cols["visit_date"]["date"]["n_unparseable"] == 3
+    assert any("常数列" in h for h in cols["const"]["hints"])
+    both = dp.profile_dataframe(pd.DataFrame({"d": ["13/01/2024", "01/13/2024"] * 10}))
+    assert "同一列里既有 日/月/年 又有 月/日/年 写法" in _cols(both)["d"]["date"]["notes"]
+
+
+@pytest.mark.parametrize("outcome,kind,note", [
+    ("grade", "categorical", "多分类结局（3 类）"), ("const", "constant", "结局只有一个取值"),
+    ("los", "numeric", "只有 10 个不同取值"), ("comment", "text", "自由文本"),
+])
+def test_outcome_kinds(outcome, kind, note):
+    o = dp.profile_dataframe(_edge_frame(), outcome_col=outcome)["outcomes"][0]
+    assert o["kind"] == kind and any(note in x for x in o["notes"])
+    if kind == "numeric":
+        assert o["numeric"]["n"] == 40
+
+
+def test_time_duplicates_explicit_cluster_and_separators(tmp_path):
+    df = _edge_frame()
+    o = dp.profile_dataframe(df, outcome_col="grade", time_col="months")["outcomes"][0]
+    assert "随访时间列被识别为分类" in o["time"]["note"]
+    p = dp.profile_dataframe(pd.concat([df, df.iloc[:2]]), cluster_cols="grade", id_col="pid")
+    assert "完全重复的行 2 行（可能是导出重复）" in p["problems"]
+    assert p["clusters"][0]["column"] == "grade" and p["clusters"][0]["ids_per_cluster"]["max"] == 14
+    tab = _csv(tmp_path, "t.txt", "a\tb\n1\t2\n3\t4\n")
+    assert [c["name"] for c in _run(tab, "--sep", "tab")["columns"]] == ["a", "b"]
+    with pytest.raises(SystemExit, match="只能是一个字符"):
+        _run(tab, "--sep", ";;")
+
+
+def test_a_very_long_cell_is_data_not_a_parse_error(tmp_path):
+    path = _csv(tmp_path, "d.csv", "pid,note\n1," + "x" * 200000 + "\n2,short\n")
+    profile = _run(path)
+    assert profile["n_rows"] == 2
