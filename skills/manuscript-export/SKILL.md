@@ -64,7 +64,7 @@ manuscript/
 检查:
   → 哪些文件存在？家族要求的文件缺了（如 JAMA 缺 key-points.md）→ 报告里 ⚠️，不阻断
   → 综述类的 section-N-*.md 不在导出顺序中 → 先合并进 discussion.md，否则报告列为"未导出"
-  → 是否还有 <!-- PLACEHOLDER/TODO/TBD/pending/待补 -->、[TBD]、[TODO]、[pending]、[INSERT、[待补…]、[待填…] 标记？
+  → 是否还有 <!-- PLACEHOLDER/TODO/TBD/pending/待补 -->、[TBD]、[TODO]、[pending]、[INSERT、[待补…]、[待填…]（含全角 【待补…】、［待补…］）标记？
 ```
 
 ### Step 3：生成 .docx
@@ -83,7 +83,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-export/scripts/export_docx.py \
 
 可选参数：`--overrides ./journal-overrides.yaml`（默认就是这个路径）、`--yaml <路径>`（默认用插件内置库）。
 
-退出码：`0` 成功；`2` 期刊 id 不存在（提示用 `get_journal_template.py --search`）；`1` 目录/文件/依赖缺失。
+退出码：`0` 成功；`2` 期刊 id 不存在（提示用 `get_journal_template.py --search`），或 journal-overrides.yaml / 期刊库格式错误（一行 `Error: …`）；`1` 目录/文件/依赖缺失。
 
 脚本自动完成：
 - 按 `family` 设置字体、字号、行距、页边距（Nature/Lancet/standard：Times New Roman 12pt 双倍行距；JAMA 11pt；IEEE 10pt 单倍）
@@ -108,15 +108,20 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-export/scripts/export_docx.py \
 
 | Markdown | docx 元素 |
 |---------|----------|
-| `# / ## / ###` | Heading 1 / 2 / 3（加粗，字号随 family） |
-| `**bold**`、`*italic*` | Bold / Italic run |
+| 连续的多行文字（软换行） | 合并为一个段落（中文字符之间不加空格）；空行分段；行尾两个空格或 `\` 保留换行 |
+| `#` … `######`；文字下一行 `===` / `---` | Heading 1–6（加粗，字号随 family） |
+| `**bold**`、`*italic*`、`***both***`、`__bold__`、`_italic_` | Bold / Italic run，可嵌套（`**a *b* c**`）；`snake_case_names` 这类词内下划线不算强调 |
 | `^x^`、`~x~`（闭合、无空格） | Superscript / Subscript run |
 | 未成对的 `* ^ ~`（如 `~90%`、`2^10`、`marked with *`） | **原样保留** |
-| `- item` | Bullet list |
-| `1. item` | 编号保留为文本 "1. item"（不用 Word 自动编号，参考文献与正文列表不会串号） |
+| `` `code` ``；` ``` ` / `~~~` 围栏代码块 | 等宽字体（Courier New）；代码块内容原样保留（不解析标题/强调、不计字数）；4 空格缩进不算代码块 |
+| `[text](url)`、`<https://…>` | 超链接（显示 text） |
+| `[@key]`、`@key`（Pandoc 引文） | **不转换**，文字原样保留；报告 "Conversion notes" 列出每个 key 及位置 |
+| `- item`（缩进表示嵌套） | List Bullet / List Bullet 2 / List Bullet 3（更深的层级用第 3 级） |
+| `1. item`（缩进表示嵌套） | 编号保留为文本 "1. item"，按层级缩进（List Number / List Number 2 …；不用 Word 自动编号，参考文献与正文列表不会串号） |
 | `> quote` | 缩进斜体段落 |
-| `<!-- comment -->` | 删除；但 `<!-- PLACEHOLDER/TODO/TBD/pending/待补 -->` 会先被记入报告 |
-| `\| table \|` | docx Table（带边框；分隔行 `\|---\|` 跳过） |
+| 单独一行 `---` / `***` / `___` | 水平分隔线（段落下边框，不是文字） |
+| `<!-- comment -->` | 删除（代码块内的保留）；但 `<!-- PLACEHOLDER/TODO/TBD/pending/待补 -->` 会先被记入报告 |
+| `\| table \|` | docx Table（带边框）；对齐行 `\|:-:\|--:\|` 设置列对齐；`\\|` 是单元格内的竖线；有对齐行时可省略首尾 `\|`；某行单元格多于表头 → 表格加宽、不丢内容，报告 ⚠️ |
 | `![alt](path)` | 保留为文字并计入图数；**图片不嵌入**，图文件单独上传 |
 
 ### Step 4：读导出报告
@@ -134,7 +139,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-export/scripts/export_docx.py \
   模板写 "combined" 时按图+表合计比较
 □ 章节：实际顺序、纳入的文件、⚠️ 缺失的家族必需文件、ℹ️ 未导出的多余文件
 □ 模板 special 字段原样列出（Reporting Summary、Patient Summary 等），需人工核对
-□ Placeholder：<!-- PLACEHOLDER/TODO/TBD/pending/待补 -->、[pending]、[TBD]、[TODO]、[INSERT、[待补…]、[待填…]、含 placeholder 的文字 — 覆盖段落、列表、标题、表格单元格，给出 文件:行号
+□ Placeholder：<!-- PLACEHOLDER/TODO/TBD/pending/待补 -->、[pending]、[TBD]、[TODO]、[INSERT、[待补…]、[待填…]（含全角 【待补…】、［待补…］）、含 placeholder 的文字 — 覆盖段落、列表、标题、表格单元格，给出 文件:行号
 ```
 
 脚本**做不到**、需要人工/其他 skill 完成的：页数估算、字体/行距的"验证"（脚本按 family 设置，不再回读核验）、图片嵌入、题页单独文件（部分期刊要求单独上传题页：从 manuscript.docx 复制第一页即可）、参考文献格式正确性（`pubmed-search` Mode 6）。
