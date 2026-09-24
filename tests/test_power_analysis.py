@@ -49,13 +49,26 @@ def test_correlation_r_03():
     assert pa.correlation(0.3)["n"] == 85
 
 
-@needs_statsmodels
 def test_proportion_returns_both_groups_and_total():
     res = pa.proportion(0.30, 0.50, ratio=2.0, dropout=0.0)
-    assert res["n1"] == 70 and res["n2"] == 140
-    assert res["total"] == 210
+    assert res["n1"] == 71 and res["n2"] == 141                 # Fleiss, r = 2 (70.28 → 71)
+    assert res["total"] == 212
     assert res["effect_size_h"] == pytest.approx(-0.412, abs=1e-3)
-    assert "Cohen's h" in pa.proportion.__doc__
+
+
+@pytest.mark.parametrize("p1,p2,n", [
+    (0.30, 0.50, 93),      # R: power.prop.test(p1=.3, p2=.5, power=.8) → n = 92.99
+    (0.01, 0.05, 285),     # rare outcome: Cohen's h gave 250 (−12 %)
+    (0.90, 0.99, 100),     # extreme proportions: Cohen's h gave 80 (−20 %)
+    (0.05, 0.15, 141),     # Cohen's h gave 133
+])
+def test_proportion_matches_the_pooled_variance_formula(p1, p2, n):
+    assert pa.proportion(p1, p2, dropout=0.0)["n1"] == n
+
+
+def test_proportion_continuity_correction():
+    res = pa.proportion(0.30, 0.50, dropout=0.0, continuity_correction=True)
+    assert res["n1"] == 103 and "continuity" in res["method"]
 
 
 def test_diagnostic_with_specificity_takes_max():
@@ -89,6 +102,11 @@ def test_diagnostic_without_specificity_is_backward_compatible():
     lambda: pa.correlation(0.0),
     lambda: pa.correlation(1.0),
     lambda: pa.diagnostic(0.9, prevalence=0.0),
+    lambda: pa.survival(float("inf")),
+    lambda: pa.survival(0.7, ratio=float("nan")),
+    lambda: pa.two_groups(float("inf")),
+    lambda: pa.two_groups(0.5, ratio=float("nan")),
+    lambda: pa.proportion(0.3, float("nan")),
 ])
 def test_boundary_inputs_raise_value_error(call):
     with pytest.raises(ValueError):

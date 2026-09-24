@@ -120,10 +120,18 @@ def _first_int(value):
 
 
 def _parse_limit(value):
-    """'≤40, Vancouver' → 40; 'unlimited' / 'no limit' / None → None."""
+    """'≤40, Vancouver' → 40; '150-250 words' → 250 (the upper bound);
+    'unlimited' / 'no limit' / a page limit ('8 pages', '≤10 pages') / None → None
+    (a page count is not a word count, so it is not checked against words)."""
     s = str(value or "").lower()
     if not s or "unlimited" in s or "no limit" in s or "no strict" in s or "included in" in s:
         return None
+    m = re.search(r"(\d[\d,]*)\s*(?:-|–|—|to)\s*(\d[\d,]*)", s)
+    unit = s[m.end():] if m else s[(re.search(r"\d[\d,]*", s) or re.search(r"$", s)).end():]
+    if re.match(r"\s*(?:pages?|pp\b|页)", unit):
+        return None
+    if m:
+        return int(m.group(2).replace(",", ""))
     return _first_int(s)
 
 

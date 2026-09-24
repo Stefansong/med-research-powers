@@ -12,8 +12,9 @@
 #   ./install.sh --method 1|2    non-interactive
 #   ./install.sh --help
 #
-# When stdin is not a terminal (e.g. `curl ... | bash`) the script never prompts
-# and defaults to method 1.
+# Run it from a clone of the repository (it checks for the plugin files next to
+# itself, so piping it from curl does not work). When stdin is not a terminal (CI,
+# `./install.sh < /dev/null`) the script never prompts and defaults to method 1.
 
 set -eu
 

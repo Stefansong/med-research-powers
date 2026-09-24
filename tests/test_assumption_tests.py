@@ -15,21 +15,53 @@ NORMAL_A = RNG.normal(0, 1, 30)
 NORMAL_B = RNG.normal(0.5, 1, 30)
 
 
-def test_small_groups_force_non_parametric():
+def test_small_groups_are_flagged_but_do_not_switch_the_test():
     res = at.full_check([1, 2, 3, 4, 5], [2, 3, 4, 5, 7])
-    assert res["all_normal"] is False
-    assert res["recommended_test"] == "Mann-Whitney U"
-    assert res["warnings"] and "n < 8" in res["warnings"][0]
+    assert res["all_normal"] is None
+    assert res["recommended_test"] == "Welch's t-test"
+    assert res["rank_based_alternative"] == "Mann-Whitney U"
+    assert res["warnings"] and "< 8" in res["warnings"][0]
     assert all(t["is_normal"] is None for t in res["normality_tests"])
+
+
+def test_welch_is_the_default_whatever_levene_says():
+    rng = np.random.default_rng(1)
+    equal = at.full_check(rng.normal(0, 1, 40), rng.normal(0, 1, 40))
+    unequal = at.full_check(rng.normal(0, 1, 40), rng.normal(0, 5, 40))
+    assert equal["recommended_test"] == unequal["recommended_test"] == "Welch's t-test"
+    assert unequal["homogeneous"] is False                      # still reported, as a description
+    three = at.full_check(NORMAL_A, NORMAL_B, NORMAL_A + 1)
+    assert three["recommended_test"] == "Welch's ANOVA + Games-Howell"
+    assert "SAP" in three["how_to_use"]
 
 
 def test_normal_groups_get_t_test_and_python_bools():
     res = at.full_check(NORMAL_A, NORMAL_B)
-    assert res["recommended_test"] in ("Independent t-test", "Welch's t-test")
+    assert res["recommended_test"] == "Welch's t-test"
     assert type(res["all_normal"]) is bool
     assert type(res["homogeneous"]) is bool
     assert type(res["normality_tests"][0]["is_normal"]) is bool
     json.dumps(res)
+
+
+def test_constant_groups_give_valid_json_and_the_right_warning():
+    res = at.full_check([5.0] * 30, [5.0] * 30)
+    json.dumps(res, allow_nan=False)
+    assert res["homogeneity_test"]["is_homogeneous"] is None
+    assert "方差为 0" in res["warnings"][0] and "< 8" not in res["warnings"][0]
+
+
+def test_cli_rejects_text_values_and_duplicate_paired_rows(tmp_path):
+    import pandas as pd
+    csv = tmp_path / "bad.csv"
+    pd.DataFrame({"arm": ["A", "B"] * 10, "y": ["1.2", "未查"] + ["3"] * 18}).to_csv(csv, index=False)
+    with pytest.raises(SystemExit, match="不是数字"):
+        at.main([str(csv), "--value", "y", "--group", "arm"])
+    dup = tmp_path / "dup.csv"
+    pd.DataFrame({"id": [1, 1, 1, 2, 2], "t": ["pre", "pre", "post", "pre", "post"],
+                  "y": [1.0, 2.0, 3.0, 4.0, 5.0]}).to_csv(dup, index=False)
+    with pytest.raises(SystemExit, match="重复记录"):
+        at.main([str(dup), "--value", "y", "--group", "t", "--paired", "--id", "id"])
 
 
 def test_paired_length_mismatch_raises():
@@ -53,7 +85,8 @@ def test_paired_more_than_two_groups_skips_levene():
     assert res["homogeneity_test"] is None
     assert "Mauchly" in res["homogeneity_note"]
     assert "Greenhouse-Geisser" in res["homogeneity_note"]
-    assert res["recommended_test"].startswith("Repeated-measures ANOVA") or res["recommended_test"] == "Friedman + Nemenyi"
+    assert res["recommended_test"].startswith("Repeated-measures ANOVA")
+    assert res["rank_based_alternative"] == "Friedman + Nemenyi"
 
 
 def test_lists_with_none_are_handled():

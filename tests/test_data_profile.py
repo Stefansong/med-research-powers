@@ -135,12 +135,15 @@ def test_outcome_adds_only_its_own_distribution(tmp_path):
     o = with_outcome["outcomes"][0]
     assert (o["kind"], o["event_label"], o["events"], o["non_events"], o["minority_count"]) == ("binary", "1", 12, 48, 12)
     assert set(o) == {"column", "n_rows", "n_missing", "n_valid", "kind", "levels", "event_label", "events",
-                      "non_events", "minority_count", "numeric", "time", "notes"}
+                      "non_events", "minority_count", "numeric", "time", "per_patient", "notes"}
+    # 20 patients have two rows: events are also counted per patient (the unit that limits predictors)
+    assert o["per_patient"] == {"n_patients": 40, "patients_with_event": 12, "patients_without_event": 28,
+                                "n_patients_mixed": 12}
     assert o["time"]["column"] == "months" and o["time"]["n_valid"] == N
 
     text = dp.render_markdown(with_outcome)
     section = text.split("## 9.")[1].split("## 10.")[0]
-    assert "事件（`1`）12 例" in section
+    assert "事件（`1`）12 行" in section and "40 名患者中 12 名" in section
     for other in OTHER_COLS:                                     # no other variable next to the outcome
         assert f"`{other}`" not in section
     for forbidden in ("p=", "p 值", "P值", "相关系数", "按结局分组的统计：", "OR="):
@@ -226,3 +229,190 @@ def test_library_call_on_a_plain_dataframe_is_json_serialisable():
     assert cols["pid"]["type"] == "id"
     assert cols["x"]["n_missing_total"] == 1 and "常数列" in "".join(cols["x"]["hints"])
     assert cols["grp"]["categorical"]["n_levels"] == 2
+
+
+# ─── regressions found in the v6.4.0 audit ─────────────────────────────────────
+
+def _csv(tmp_path, name, text, encoding="utf-8"):
+    path = tmp_path / name
+    path.write_bytes(text.encode(encoding))
+    return path
+
+
+def _run(path, *args):
+    return dp.main([str(path), *args])
+
+
+@pytest.mark.parametrize("one,zero", [("1.0", "0.0"), ("1.00", "0.00"), ("01", "00")])
+def test_float_coded_binary_outcome_does_not_crash(tmp_path, one, zero):
+    rows = ["pid,age,death"] + [f"{i},{50 + i},{one if i < 6 else zero}" for i in range(30)] + ["30,70,"]
+    profile = _run(_csv(tmp_path, "d.csv", "\n".join(rows) + "\n"), "--id", "pid", "--outcome", "death")
+    o = profile["outcomes"][0]
+    assert (o["event_label"], o["events"], o["non_events"]) == (one, 6, 24)
+
+
+def test_events_are_also_counted_per_patient(tmp_path):
+    rows = ["pid,visit,death"] + [f"{i},{v},{1 if i < 6 else 0}" for i in range(30) for v in range(3)]
+    path = _csv(tmp_path, "d.csv", "\n".join(rows) + "\n")
+    md = tmp_path / "p.md"
+    profile = _run(path, "--id", "pid", "--outcome", "death", "--report", str(md))
+    o = profile["outcomes"][0]
+    assert o["events"] == 18                                      # rows
+    assert o["per_patient"] == {"n_patients": 30, "patients_with_event": 6, "patients_without_event": 24,
+                                "n_patients_mixed": 0}
+    section = md.read_text(encoding="utf-8").split("## 9.")[1].split("## 10.")[0]
+    assert "按患者计的较少一类（6 名患者）" in section
+
+
+def test_identifier_values_are_not_printed_even_when_the_name_gives_nothing_away(tmp_path, capsys):
+    names = ["刘洋", "吴刚", "王芳", "李娜", "张伟", "陈静", "杨磊", "赵敏", "黄勇", "周杰", "徐丽", "孙强"]
+    rows = ["pid,患者,病理号,出生日期,age,复发"]
+    for i, n in enumerate(names):
+        for v in range(4):
+            rows.append(f"{i},{n},{413900 + i},19{50 + i}-03-12,{50 + i},{v % 2}")
+    md, js = tmp_path / "p.md", tmp_path / "p.json"
+    _run(_csv(tmp_path, "phi.csv", "\n".join(rows) + "\n"), "--id", "pid", "--outcome", "复发",
+         "--report", str(md), "--json", str(js))
+    outputs = [md.read_text(encoding="utf-8"), js.read_text(encoding="utf-8"), capsys.readouterr().out]
+    for text in outputs:
+        for value in names + ["413900", "413911", "1950-03-12", "1961-03-12"]:
+            assert value not in text, value
+    profile = json.loads(outputs[1])
+    priv = {x["column"] for x in profile["privacy"]}
+    assert {"患者", "病理号", "出生日期"} <= priv and "pid" not in priv and "age" not in priv
+
+
+def test_patient_level_unique_check_does_not_hide_ordinary_categories(tmp_path):
+    rows = ["pid,sex,stage"] + [f"{i},{'男' if i % 2 else '女'},T{i % 4 + 1}" for i in range(40)]
+    profile = _run(_csv(tmp_path, "d.csv", "\n".join(rows) + "\n"), "--id", "pid")
+    assert profile["privacy"] == []
+    assert _cols(profile)["stage"]["categorical"]["n_levels"] == 4
+
+
+def test_headerless_csv_is_detected_and_its_first_row_never_becomes_column_names(tmp_path, capsys):
+    rows = [f"张{i}明,11010519800101{i:03d}X,139000000{i:02d},{40 + i},{i % 2}" for i in range(30)]
+    md = tmp_path / "p.md"
+    profile = _run(_csv(tmp_path, "nohdr.csv", "\n".join(rows) + "\n"), "--report", str(md))
+    assert profile["n_rows"] == 30
+    assert [c["name"] for c in profile["columns"]] == ["列1", "列2", "列3", "列4", "列5"]
+    assert any("第一行看起来是数据" in x for x in profile["problems"])
+    for text in (md.read_text(encoding="utf-8"), capsys.readouterr().out):
+        assert "11010519800101000X" not in text and "13900000000" not in text and "张0明" not in text
+    forced = _run(_csv(tmp_path, "years.csv", "id,2019,2020\n1,3,4\n2,5,6\n"))
+    assert [c["name"] for c in forced["columns"]] == ["id", "2019", "2020"]      # year columns stay a header
+
+
+def test_more_disguised_missing_spellings(tmp_path):
+    alb = ["未检测", "暂无", "不适用", "待查", "未测定"] * 4 + [f"{35 + i * 0.5:.1f}" for i in range(40)]
+    rows = ["alb"] + alb
+    col = _cols(_run(_csv(tmp_path, "d.csv", "\n".join(rows) + "\n")))["alb"]
+    assert col["type"] == "numeric"
+    assert sum(col["disguised_missing"].values()) == 20 and col["pct_missing_total"] == 33.3
+
+
+def test_none_in_a_numeric_column_is_kept_for_confirmation_not_counted_as_missing(tmp_path):
+    vals = ["无"] * 40 + [str(200 + 15 * i) for i in range(20)]
+    profile = _run(_csv(tmp_path, "d.csv", "输血量ml\n" + "\n".join(vals) + "\n"))
+    col = _cols(profile)["输血量ml"]
+    assert col["type"] == "numeric"
+    assert col["possible_missing_kept"] == {"无": 40} and col["n_missing_total"] == 0
+    assert any("可能表示缺失、也可能是真实取值" in x and "输血量ml" in x for x in profile["problems"])
+    assert not any(x.startswith("缺失 ≥20%") and "输血量ml" in x for x in profile["problems"])
+
+
+def test_grouped_ranges_are_categories_not_censored_values(tmp_path):
+    rows = ["年龄分组,肿瘤大小,crp"]
+    for i in range(60):
+        crp = "<0.5" if i % 10 == 0 else f"{1 + i * 0.3:.1f}"
+        rows.append(f"{'<60' if i % 2 else '≥60'},{['≤2cm', '2-5cm', '>5cm'][i % 3]},{crp}")
+    profile = _run(_csv(tmp_path, "d.csv", "\n".join(rows) + "\n"))
+    cols = _cols(profile)
+    for name in ("年龄分组", "肿瘤大小"):
+        assert cols[name]["type"] == "categorical" and "censored" not in cols[name]
+        assert any("分组区间" in h for h in cols[name]["hints"])
+    assert cols["crp"]["censored"]["n"] == 6                       # a real detection limit is still censored
+
+
+@pytest.mark.parametrize("name,is_cluster", [
+    ("center", True), ("site_id", True), ("Study Site", True), ("hospital_name", True), ("中心编号", True),
+    ("医院名称", True), ("术者", True), ("读片医生", True), ("批次", True),
+    ("hospital_stay", False), ("tumor_site", False), ("surgical_site_infection", False),
+    ("中心静脉置管", False), ("中心型肺癌", False), ("医院感染", False), ("读片结果", False),
+    ("医师诊断", False), ("physician_diagnosis", False), ("Hospital Number", False),
+])
+def test_cluster_names(name, is_cluster):
+    assert dp._is_cluster_name(name) is is_cluster
+
+
+@pytest.mark.parametrize("name,is_pii", [
+    ("姓名", True), ("name", True), ("patient_name", True), ("Hospital Number", True), ("MRN", True),
+    ("出生日期", True), ("DOB", True), ("date_of_birth", True), ("病理号", True),
+    ("drug_name", False), ("hospital_name", False), ("Unnamed: 2", False), ("PD-L1 mRNA", False),
+    ("mRNA_expr", False), ("出生体重", False), ("birth_weight", False), ("tumor_name", False),
+])
+def test_privacy_names(name, is_pii):
+    assert dp._is_pii_name(name) is is_pii
+
+
+def test_privacy_columns_keep_their_quality_checks(tmp_path):
+    rows = ["pid,姓名,x"] + [f"{i},{'未查' if i < 14 else f'某{i}'},{i}" for i in range(40)]
+    profile = _run(_csv(tmp_path, "d.csv", "\n".join(rows) + "\n"), "--id", "pid")
+    assert any(x.startswith("伪装缺失") and "姓名" in x for x in profile["problems"])
+    assert any(x.startswith("缺失 ≥20%") and "姓名" in x for x in profile["problems"])
+
+
+def test_full_width_digits_are_flagged(tmp_path):
+    vals = ["４５", "５０"] + [str(40 + i) for i in range(30)]
+    col = _cols(_run(_csv(tmp_path, "d.csv", "age\n" + "\n".join(vals) + "\n")))["age"]
+    assert col["numeric_as_text"]["reasons"].get("全角字符") == 2
+
+
+def test_unclosed_quote_is_an_error_not_a_silently_short_file(tmp_path):
+    path = _csv(tmp_path, "d.csv", 'a,b\n1,"x\n2,y\n3,z\n')
+    with pytest.raises(SystemExit, match="引号不配对"):
+        _run(path)
+
+
+def test_trailing_blank_rows_are_ignored_and_counted(tmp_path):
+    rows = ["a,b"] + [f"{i},{i * 2}" for i in range(10)] + [",", ",", ""]
+    profile = _run(_csv(tmp_path, "d.csv", "\n".join(rows) + "\n"))
+    assert profile["n_rows"] == 10 and profile["n_duplicate_rows"] == 0
+    assert any("3 行完全空白" in x for x in profile["problems"])
+
+
+def test_month_first_column_is_read_month_first(tmp_path):
+    vals = ["03/25/2024", "04/02/2024", "12/01/2024", "01/15/2024"] * 5
+    col = _cols(_run(_csv(tmp_path, "d.csv", "visit_date\n" + "\n".join(vals) + "\n")))["visit_date"]
+    assert (col["date"]["min"], col["date"]["max"]) == ("2024-01-15", "2024-12-01")
+    assert "同一列混用多种日期写法" not in col["date"]["notes"]
+
+
+def test_an_outcome_is_never_typed_as_an_id(tmp_path):
+    rows = ["cost"] + [str(10000 + 37 * i) for i in range(30)]
+    profile = _run(_csv(tmp_path, "d.csv", "\n".join(rows) + "\n"), "--outcome", "cost")
+    assert _cols(profile)["cost"]["type"] == "numeric"
+    assert profile["outcomes"][0]["kind"] == "numeric"
+
+
+def test_json_output_is_strict_json(tmp_path):
+    rows = ["x"] + ["1e999", "2", "3", "4", "5"]
+    js = tmp_path / "p.json"
+    _run(_csv(tmp_path, "d.csv", "\n".join(rows) + "\n"), "--json", str(js))
+    json.loads(js.read_text(encoding="utf-8"), parse_constant=lambda c: pytest.fail(f"non-JSON constant {c}"))
+
+
+@pytest.mark.skipif(not hasattr(os, "symlink"), reason="no symlinks")
+def test_a_symlinked_report_path_cannot_overwrite_the_data(tmp_path):
+    path = _csv(tmp_path, "d.csv", "a\n1\n2\n")
+    link = tmp_path / "report.md"
+    os.symlink(path, link)
+    before = _sha(path)
+    with pytest.raises(SystemExit):
+        _run(path, "--report", str(link))
+    assert _sha(path) == before
+
+
+def test_skip_rows_for_a_title_row(tmp_path):
+    text = "某医院 2024 年数据导出,,\nid,age,sex\n1,50,男\n2,60,女\n"
+    profile = _run(_csv(tmp_path, "d.csv", text), "--skip-rows", "1")
+    assert [c["name"] for c in profile["columns"]] == ["id", "age", "sex"] and profile["n_rows"] == 2

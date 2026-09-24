@@ -34,7 +34,8 @@ from datetime import date
 from pathlib import Path
 
 STATE_NAME = ".mrp-state.json"
-PROFILE_PATH = Path.home() / ".claude" / "mrp-user-profile.json"
+# the Claude Code config directory (CLAUDE_CONFIG_DIR when set, as install.sh uses it)
+PROFILE_PATH = Path(os.environ.get("CLAUDE_CONFIG_DIR") or (Path.home() / ".claude")).expanduser() / "mrp-user-profile.json"
 
 STATE_SCALARS = {"project", "current_stage", "next_step", "checkpoint_mode", "target_journal"}
 CHECKPOINTS = ("protocol", "sap", "pre_submission")
@@ -66,9 +67,12 @@ def load_json(path: Path, default):
         return default
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
     except (OSError, json.JSONDecodeError) as e:
         sys.exit(f"无法读取 {path}: {e}")
+    if not isinstance(data, dict):
+        sys.exit(f"{path} 的内容不是一个 JSON 对象（{{...}}），无法作为 MRP 状态/档案读取；请检查或删除后重建")
+    return data
 
 
 def save_json(path: Path, data) -> None:
@@ -243,15 +247,15 @@ def cmd_profile(args):
         return
     if args.pcmd == "set":
         if (section, args.field) in PROFILE_LISTS:
-            prof[section][args.field] = [v for v in args.value.split(",") if v.strip()]
+            prof[section][args.field] = [v.strip() for v in args.value.split(",") if v.strip()]
         else:
             prof[section][args.field] = args.value
     elif args.pcmd == "add":
         if (section, args.field) not in PROFILE_LISTS:
             sys.exit(f"{args.field} 不是列表字段，请用 set")
         lst = prof[section].setdefault(args.field, [])
-        if args.value not in lst:
-            lst.append(args.value)
+        if args.value.strip() not in lst:
+            lst.append(args.value.strip())
     prof["updated"] = today()
     save_json(PROFILE_PATH, prof)
     print(f"已写入 {PROFILE_PATH}: {args.field}")

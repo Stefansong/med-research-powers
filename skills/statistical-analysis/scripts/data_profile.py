@@ -14,13 +14,18 @@ What it reports
   unparseable dates; missing % including disguised missing; numeric range, percentiles,
   Z>3 and IQR×1.5 counts (counted, never removed); categorical levels and spellings that
   differ only in case / spaces; repeated IDs and cluster structure (centre, surgeon ...);
-  the outcome's own distribution and event count (--outcome); suspected personal
-  information columns (column name and hit count only -- values are never printed).
+  the outcome's own distribution and event count (--outcome), also per patient when rows
+  repeat; suspected personal information columns -- found by column name, by ID-card / phone
+  number patterns, or because a column holds one value per patient and almost every patient
+  has a different one (a name, record number ...) -- shown by column name and hit count only,
+  their values are never printed. A first row that looks like data (numbers, dates, an ID
+  card or phone number) is not used as column names.
 
 Command line
   python3 data_profile.py data.csv --id patient_id --outcome recurrence --report data-profile.md
   python3 data_profile.py export.xlsx --sheet Sheet2 --outcome death --time months --json profile.json
   python3 data_profile.py data.csv --missing-tokens 拒查,未做 --range age=0:120
+  python3 data_profile.py export.csv --skip-rows 1          # a merged title row above the header
 
 Library use (run from the user's project directory)
   import os, sys
@@ -63,11 +68,14 @@ DEFAULT_MISSING_TOKENS = (
     "#N/A", "#NULL!", "#DIV/0!", "#VALUE!", "#REF!", "#NAME?", "#NUM!",
     ".", "/", "\\", "-", "--", "—", "——", "?", "？",
     "未查", "未测", "未检", "未做", "未知", "不详", "不清", "无", "缺失", "缺", "空",
-    "missing", "unknown",
+    "未检测", "未检查", "未测定", "未测量", "未化验", "未行", "未记录", "未填", "未填写", "未提供",
+    "暂无", "暂缺", "待查", "待定", "不明", "不适用", "无记录", "无数据", "失访",
+    "missing", "unknown", "unk", "not done", "not available", "not applicable", "n.a.",
     "999", "9999", "-99", "-999",
 )
-# These may be real values: "无"/"none" = "no, none" (e.g. 并发症=无); "-" = negative in lab
-# results. They count as missing only in numeric / date / ID columns and stay a level elsewhere.
+# These may be real values: "无"/"none" = "no, none" (并发症=无) or zero (输血量=无); "-" = negative
+# in lab results. They count as missing only in date / ID columns; in numeric and categorical
+# columns they are kept and listed for the user to confirm (numeric statistics leave them out).
 AMBIGUOUS_TOKENS = frozenset({"无", "none", "-"})
 # Tokens pandas.read_csv() already turns into NaN by default (they do not force a text column).
 PANDAS_DEFAULT_NA = frozenset({"", "#N/A", "#N/A N/A", "#NA", "-1.#IND", "-1.#QNAN", "-NaN", "-nan",
@@ -77,7 +85,8 @@ PANDAS_DEFAULT_NA = frozenset({"", "#N/A", "#N/A N/A", "#NA", "-1.#IND", "-1.#QN
 TYPE_LABELS = {"numeric": "数值", "categorical": "分类", "date": "日期", "text": "文本",
                "id": "ID 样式", "empty": "全部缺失"}
 
-_NUM = r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"
+# ASCII digits only: Python's \d also matches full-width "４５", which pandas reads as text.
+_NUM = r"[-+]?(?:[0-9]+\.?[0-9]*|\.[0-9]+)(?:[eE][-+]?[0-9]+)?"
 PLAIN_NUM_RE = re.compile(rf"^{_NUM}$")
 CENSORED_RE = re.compile(
     rf"^(?:<=|>=|≤|≥|⩽|⩾|≦|≧|<|>|小于|大于|低于|高于|不足|超过)\s*{_NUM}(?:\s*[^\d\s].*)?$")
@@ -97,6 +106,9 @@ DATE_FORMATS = ("%Y-%m-%d", "%Y/%m/%d", "%Y.%m.%d", "%Y年%m月%d日", "%Y%m%d",
                 "%Y-%m", "%Y/%m", "%Y年%m月")
 
 DATE_NAME_RE = re.compile(r"date|日期|生日|出生|dob", re.IGNORECASE)
+# date of birth (an identifier) -- but not 出生体重 / birth weight
+BIRTH_NAME_RE = re.compile(r"出生(?:日期|年月日?|时间)?$|生日|birth[\s_\-.]*date|date[\s_\-.]*of[\s_\-.]*birth"
+                           r"|(?:^|[^a-z])dob(?:$|[^a-z])", re.IGNORECASE)
 ID_NAME_RES = (
     re.compile(r"^(?:patient|subject|case|record|study|sample|person|participant)?[\s_\-.]*id$", re.I),
     re.compile(r"^id[\s_\-.]", re.I),
@@ -107,11 +119,24 @@ ID_NAME_RES = (
 CLUSTER_TOKENS = frozenset({"center", "centre", "site", "hospital", "clinic", "surgeon", "operator",
                             "doctor", "physician", "reader", "rater", "batch",
                             "centerid", "centreid", "siteid", "hospitalid", "surgeonid"})
-CLUSTER_SUBSTR = ("中心", "医院", "院区", "科室", "术者", "主刀", "医生", "医师", "读片", "评分者", "批次")
+# A cluster column name is a cluster word plus, at most, these qualifiers ("site_id", "study
+# centre", "hospital name"). Anything else ("hospital_stay", "tumor_site", "surgical_site_infection",
+# "physician_diagnosis") is an ordinary variable that merely contains the word.
+CLUSTER_QUALIFIERS = frozenset({"id", "no", "code", "name", "num", "study", "trial", "recruiting",
+                                "enrolling", "treating", "operating", "attending", "of", "the"})
+CLUSTER_NAME_RE = re.compile(
+    r"^(?:研究|参与|入组|分)?(?:中心|医院|院区|科室)(?:编号|名称|代码|号|id)?$"
+    r"|^(?:术者|主刀(?:医生|医师)?|手术(?:医生|医师)|医生|医师|主治(?:医生|医师)?|"
+    r"(?:读片|阅片)(?:者|医生|医师)?|评分者|评估者|观察者)(?:编号|姓名|代码|号|id)?$"
+    r"|^(?:检测|测序|实验)?批次(?:号|编号)?$", re.IGNORECASE)
 PII_NAME_SUBSTR = ("姓名", "名字", "身份证", "证件号", "手机", "电话", "联系方式", "住址", "地址",
-                   "住院号", "病历号", "病案号", "门诊号", "医保号", "邮箱",
-                   "name", "phone", "mobile", "address", "email", "idcard", "id_card", "id card", "mrn")
-PII_NAME_TOKENS = frozenset({"tel", "addr"})
+                   "住院号", "病历号", "病案号", "门诊号", "医保号", "邮箱", "病理号", "影像号", "联系人",
+                   "phone", "mobile", "address", "email", "idcard", "id_card", "id card")
+PII_NAME_TOKENS = frozenset({"tel", "addr", "mrn", "nhs", "ssn"})
+# a person's name: "name", "patient name", "pt_name", "full name", "姓名" ... — but not "drug_name",
+# "hospital_name" or pandas' "Unnamed: 3"
+PERSON_NAME_RE = re.compile(r"^(?:patient|pt|subject|full|first|last|given|family|sur)?[\s_\-.]*name$"
+                            r"|^(?:患者|病人|家属)$|^hospital[\s_\-.]*(?:number|no)$", re.IGNORECASE)
 ID_CARD_RE = re.compile(
     r"(?<!\d)[1-9]\d{5}(?:18|19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])\d{3}[\dXx](?!\d)")
 MOBILE_RE = re.compile(r"(?:(?<=\+86)|(?<=\+86 )|(?<=\+86-)|(?<!\d))1[3-9]\d{9}(?!\d)")
@@ -150,8 +175,12 @@ def _top(counter, k=5):
 
 
 def _is_cluster_name(name):
+    if _is_pii_name(name):
+        return False
     tokens = set(re.findall(r"[a-z]+", name.lower()))
-    return bool(tokens & CLUSTER_TOKENS) or any(s in name for s in CLUSTER_SUBSTR)
+    if tokens & CLUSTER_TOKENS and not (tokens - CLUSTER_TOKENS - CLUSTER_QUALIFIERS):
+        return True
+    return bool(CLUSTER_NAME_RE.match(name.strip()))
 
 
 def _is_id_name(name):
@@ -159,9 +188,10 @@ def _is_id_name(name):
 
 
 def _is_pii_name(name):
-    low = name.lower()
+    low = name.lower().strip()
     tokens = set(re.findall(r"[a-z]+", low))
-    return any(s in low for s in PII_NAME_SUBSTR) or bool(tokens & PII_NAME_TOKENS)
+    return (any(s in low for s in PII_NAME_SUBSTR) or bool(tokens & PII_NAME_TOKENS)
+            or bool(PERSON_NAME_RE.match(low)) or bool(BIRTH_NAME_RE.search(low)))
 
 
 class _Vocab:
@@ -192,25 +222,63 @@ def _sniff_sep(text):
     return best if counts[best] > 0 else ","
 
 
-def load_table(path, sheet=None, encoding=None, sep=None):
+def load_table(path, sheet=None, encoding=None, sep=None, header=None, skip_rows=0):
     """Read CSV / TSV / TXT / XLSX keeping every value exactly as written. Never writes.
 
     Returns (df, meta). CSV cells are str ('' = empty cell); XLSX cells keep Excel's own
     type (int / float / datetime / str), so numbers typed as text can be detected.
     CSV encodings tried in order: utf-8 (with or without BOM), gbk, gb18030.
+    header     None = first row is the header unless it looks like data (numbers, dates, an ID
+               card or phone number) -- then columns are named 列1, 列2 ... and the row is kept
+               as data; True / False force it.
+    skip_rows  rows to skip before the header (e.g. a merged title row in a Chinese export).
+    Rows that are completely blank are dropped and counted in meta["n_blank_rows"].
     """
     if not os.path.isfile(path):
         raise FileNotFoundError(f"找不到数据文件 {path}（当前目录 {os.getcwd()}）")
     with open(path, "rb") as fh:          # read-only; the file is never opened for writing
         raw = fh.read()
     meta = {"file": os.path.basename(path), "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
+    if skip_rows < 0:
+        raise ValueError("--skip-rows 不能是负数")
     ext = os.path.splitext(path)[1].lower()
     if ext in (".xlsx", ".xlsm", ".xls"):
-        return _load_excel(raw, ext, sheet, meta)
-    return _load_csv(raw, ext, encoding, sep, meta)
+        return _load_excel(raw, ext, sheet, meta, header, skip_rows)
+    return _load_csv(raw, ext, encoding, sep, meta, header, skip_rows)
 
 
-def _load_excel(raw, ext, sheet, meta):
+def _is_blank(v):
+    if v is None:
+        return True
+    if isinstance(v, float) and math.isnan(v):
+        return True
+    return isinstance(v, str) and not v.strip()
+
+
+def _header_looks_like_data(cells):
+    """True when the first row looks like a data row rather than column names."""
+    vals = [_nfkc(c) for c in cells if not _is_blank(c)]
+    if not vals:
+        return False
+    if any(ID_CARD_RE.search(v) or MOBILE_RE.search(v) for v in vals):
+        return True
+    datalike = [v for v in vals if PLAIN_NUM_RE.match(v) or _parse_date(v)]
+    years = [v for v in datalike if re.fullmatch(r"(?:19|20)[0-9]{2}", v)]   # "2019, 2020" year columns
+    return len(datalike) >= 2 and len(datalike) >= 0.5 * len(vals) and len(years) < len(datalike)
+
+
+def _decide_header(first_row, header, meta):
+    """-> True if the first row is the header. Records the decision in meta."""
+    if header is None:
+        use = not _header_looks_like_data(first_row)
+        meta["header_mode"] = "first-row" if use else "auto-none"
+    else:
+        use = bool(header)
+        meta["header_mode"] = "first-row" if use else "none"
+    return use
+
+
+def _load_excel(raw, ext, sheet, meta, header=None, skip_rows=0):
     try:
         book = pd.ExcelFile(io.BytesIO(raw), engine=None if ext == ".xls" else "openpyxl")
     except ImportError:
@@ -226,14 +294,24 @@ def _load_excel(raw, ext, sheet, meta):
         target = names[int(sheet)]
     else:
         raise ValueError(f"找不到工作表 {sheet!r}；可用工作表：{names}")
-    df = book.parse(target, dtype=object, na_filter=False)
-    head = book.parse(target, header=None, nrows=1, dtype=object, na_filter=False)
-    raw_header = ["" if v is None else str(v) for v in head.iloc[0].tolist()] if len(head) else []
-    meta.update(format="xlsx", sheet=target, sheets=names, raw_header=raw_header)
+    grid = book.parse(target, header=None, dtype=object, na_filter=False, skiprows=skip_rows)
+    keep = [i for i in range(len(grid)) if not all(_is_blank(v) for v in grid.iloc[i].tolist())]
+    if not keep:
+        raise ValueError("工作表是空的")
+    first = keep[0]
+    head = grid.iloc[first].tolist()
+    use_header = _decide_header(head, header, meta)
+    raw_header = ["" if _is_blank(v) else str(v) for v in head] if use_header else []
+    body_idx = [i for i in keep if i > first] if use_header else keep
+    n_blank = (len(grid) - first - (1 if use_header else 0)) - len(body_idx)
+    df = grid.iloc[body_idx].reset_index(drop=True)
+    df.columns = _unique_names(raw_header) if use_header else [f"列{j + 1}" for j in range(grid.shape[1])]
+    meta.update(format="xlsx", sheet=target, sheets=names, raw_header=raw_header, n_blank_rows=n_blank,
+                skip_rows=skip_rows)
     return df, meta
 
 
-def _load_csv(raw, ext, encoding, sep, meta):
+def _load_csv(raw, ext, encoding, sep, meta, header=None, skip_rows=0):
     tried = [encoding] if encoding else ["utf-8-sig", "gbk", "gb18030"]
     text = used = None
     for enc in tried:
@@ -257,19 +335,42 @@ def _load_csv(raw, ext, encoding, sep, meta):
     # The csv module (not pandas.read_csv) so that no value is converted and a row with extra
     # fields cannot silently turn the first column into the index.
     try:
-        rows = [r for r in csv.reader(io.StringIO(text), delimiter=sep) if r]
+        reader = csv.reader(io.StringIO(text), delimiter=sep)
+        rows, starts, prev = [], [], 0
+        for r in reader:
+            rows.append(r)
+            starts.append(prev + 1)
+            prev = reader.line_num
     except csv.Error as e:
         raise ValueError(f"CSV 解析失败（常见原因：引号不配对）：{e}")
+    # An opening quote that is never closed makes the csv module read the REST OF THE FILE into
+    # one cell without any error; the strict reader notices.
+    try:
+        for _ in csv.reader(io.StringIO(text), delimiter=sep, strict=True):
+            pass
+    except csv.Error as e:
+        if "unexpected end of data" in str(e):
+            line = starts[-1] if starts else 1
+            raise ValueError(f"CSV 引号不配对：第 {line} 行附近有一个以 \" 开头、却没有结束引号的单元格，"
+                             "后面的所有内容都会被读进这一格。请在原软件里修正后重新导出（或另存为 .xlsx）")
+    rows = rows[skip_rows:]
+    while rows and not any(x.strip() for x in rows[0]):
+        rows.pop(0)
     if not rows:
         raise ValueError("数据文件是空的")
-    raw_header, body = rows[0], rows[1:]
-    width = len(raw_header)
+    use_header = _decide_header(rows[0], header, meta)
+    raw_header = rows[0] if use_header else []
+    rest = rows[1:] if use_header else rows
+    body = [r for r in rest if any(x.strip() for x in r)]
+    width = len(rows[0])
     longer = [r for r in body if len(r) > width]
     counts = {"longer": len(longer), "shorter": sum(1 for r in body if len(r) < width),
               "longer_with_content": sum(1 for r in longer if any(x.strip() for x in r[width:]))}
     data = [r[:width] + [""] * (width - len(r)) for r in body]
-    df = pd.DataFrame(data, columns=_unique_names(raw_header), dtype=object)
-    meta.update(format="csv", encoding=label, sep=sep, raw_header=raw_header, field_counts=counts)
+    columns = _unique_names(raw_header) if use_header else [f"列{j + 1}" for j in range(width)]
+    df = pd.DataFrame(data, columns=columns, dtype=object)
+    meta.update(format="csv", encoding=label, sep=sep, raw_header=raw_header, field_counts=counts,
+                n_blank_rows=len(rest) - len(body), skip_rows=skip_rows)
     return df, meta
 
 
@@ -332,7 +433,7 @@ def _classify(key, vocab, date_hint):
     if tag == "blank":
         return ("blank", None, None)
     if tag == "n":
-        return ("number", float(v), False)
+        return ("number", float(v), False) if math.isfinite(float(v)) else ("text", str(v), None)
     if tag == "d":
         return ("date", v, "日期格式单元格")
     t = v.strip()
@@ -347,7 +448,8 @@ def _classify(key, vocab, date_hint):
             d = _parse_date(t)
             if d:
                 return ("date", d[0], d[1])
-        return ("number", float(t), True)
+        f = float(t)
+        return ("number", f, True) if math.isfinite(f) else ("text", t, None)
     if CENSORED_RE.match(n) or low in CENSORED_WORDS:
         return ("censored", t, None)
     d = _parse_date(n)
@@ -418,21 +520,37 @@ def _looks_like_code_id(labels, counts):
     return all(rx.match(s.strip()) for s in labels)
 
 
-def _profile_column(name, values, vocab, text_numbers_are_issue, max_levels, rng, forced_id):
+def _profile_column(name, values, vocab, text_numbers_are_issue, max_levels, rng, forced_id,
+                    never_id=False):
     n = len(values)
     keys = [_key(v) for v in values]
     counts = collections.Counter(keys)
     date_hint = bool(DATE_NAME_RE.search(name))
     cls = {k: _classify(k, vocab, date_hint) for k in counts}
+    hints = []
+    if _prefer_month_first(counts, cls):
+        hints.append("日期按 月/日/年 解读（该列没有日 > 12 的 日/月/年 写法）")
     kc = collections.Counter()
     for k, c in counts.items():
         kc[cls[k][0]] += c
 
+    # "<60 / ≥60", "≤2cm / 2-5cm / >5cm": pre-binned groups, not detection-limit values. Real
+    # censored lab values are a minority next to plain numbers; grouped columns have (almost) none.
+    n_plain = kc["number"] + kc["loose"]
+    if kc["censored"] and n_plain < 0.2 * (n_plain + kc["censored"]) and \
+            sum(1 for k in counts if cls[k][0] in ("censored", "text", "number", "loose")) <= 12:
+        for k in counts:
+            if cls[k][0] == "censored":
+                cls[k] = ("text", cls[k][1], None)
+        kc = collections.Counter()
+        for k, c in counts.items():
+            kc[cls[k][0]] += c
+        hints.append("取值像分组区间（如 <60 / ≥60），按分类变量处理，不是检测限截断值")
+
     # ── type ──
     n_num = kc["number"] + kc["loose"] + kc["censored"]
     n_def = n_num + kc["date"] + kc["text"]
-    hints = []
-    if forced_id or (n_def and _is_id_name(name)):
+    if forced_id or (n_def and not never_id and _is_id_name(name)):
         ctype = "id"
     elif n_def == 0:
         ctype = "categorical" if kc["amb"] else "empty"
@@ -441,12 +559,12 @@ def _profile_column(name, values, vocab, text_numbers_are_issue, max_levels, rng
     elif n_num >= 0.8 * n_def:
         num_keys = [k for k in counts if cls[k][0] == "number"]
         ctype = "numeric"
-        if kc["loose"] == 0 and kc["censored"] == 0 and _looks_like_int_id(
+        if not never_id and kc["loose"] == 0 and kc["censored"] == 0 and _looks_like_int_id(
                 [cls[k][1] for k in num_keys], [counts[k] for k in num_keys]):
             ctype = "id"
     else:
         text_keys = [k for k in counts if cls[k][0] == "text"]
-        if kc["text"] == n_def and _looks_like_code_id([cls[k][1] for k in text_keys],
+        if not never_id and kc["text"] == n_def and _looks_like_code_id([cls[k][1] for k in text_keys],
                                                       [counts[k] for k in text_keys]):
             ctype = "id"
         else:
@@ -455,7 +573,7 @@ def _profile_column(name, values, vocab, text_numbers_are_issue, max_levels, rng
                 hints.append(f"约 {round(100 * n_num / n_def)}% 是数字、其余是文字，内容可能混杂")
 
     # ── missing: blank + tokens (+ ambiguous tokens / numeric codes where they cannot be values) ──
-    amb_is_missing = ctype in ("numeric", "date", "id", "empty")
+    amb_is_missing = ctype in ("date", "id", "empty")
     missing_by_key = {}
     disguised, codes, kept_amb = collections.Counter(), collections.Counter(), collections.Counter()
     for k, c in counts.items():
@@ -487,7 +605,8 @@ def _profile_column(name, values, vocab, text_numbers_are_issue, max_levels, rng
             phone_hits += c if MOBILE_RE.search(s) else 0
     by_name = _is_pii_name(name)
     pii = by_name or id_hits > 0 or phone_hits > 0
-    col["pii"] = {"by_name": by_name, "id_card_hits": id_hits, "phone_hits": phone_hits} if pii else None
+    col["pii"] = ({"by_name": by_name, "id_card_hits": id_hits, "phone_hits": phone_hits,
+                   "unique_per_patient": False} if pii else None)
 
     # ── censored strings ──
     cens = collections.Counter({cls[k][1]: c for k, c in counts.items() if cls[k][0] == "censored"})
@@ -499,8 +618,10 @@ def _profile_column(name, values, vocab, text_numbers_are_issue, max_levels, rng
         reasons, examples, units = collections.Counter(), collections.Counter(), collections.Counter()
         for k, c in counts.items():
             kind, val, extra = cls[k]
-            if kind in ("token", "amb") and val not in PANDAS_DEFAULT_NA:
+            if kind == "token" and val not in PANDAS_DEFAULT_NA:
                 reasons["伪装缺失（非标准写法）"] += c
+            elif kind == "amb":
+                reasons["文字“无/none/-”（是 0、阴性还是缺失需确认）"] += c
             elif kind == "censored":
                 reasons["截断值"] += c
             elif kind == "loose":
@@ -559,6 +680,84 @@ def _profile_column(name, values, vocab, text_numbers_are_issue, max_levels, rng
     if ctype in ("text", "id"):
         col["n_distinct"] = len({_label(k).strip() for k in counts if not missing_by_key[k]})
     return col, keys, missing_by_key
+
+
+MDY_FORMATS = ("%m/%d/%Y", "%m-%d-%Y", "%m.%d.%Y")
+
+
+def _prefer_month_first(counts, cls):
+    """A column written m/d/Y throughout (some day > 12 in the 2nd place, never in the 1st) has its
+    ambiguous dates (03/04/2024) re-read as m/d/Y. Updates cls in place; True if it did."""
+    dm = md = 0
+    ambiguous = []
+    for k in counts:
+        if k[0] != "s" or cls[k][0] != "date":
+            continue
+        m = DMY_RE.match(_nfkc(k[1]))
+        if not m:
+            continue
+        a, b = int(m.group(1)), int(m.group(2))
+        if a > 12:
+            dm += 1
+        elif b > 12:
+            md += 1
+        else:
+            ambiguous.append(k)
+    if not (md and not dm and ambiguous):
+        return False
+    for k in ambiguous:
+        t = _nfkc(k[1])
+        for fmt in MDY_FORMATS:
+            try:
+                cls[k] = ("date", _dt.datetime.strptime(t, fmt), fmt)
+                break
+            except ValueError:
+                continue
+    return True
+
+
+def _unique_per_patient(col, keys, missing_by_key, id_labels):
+    """True when a column holds one value per patient and (almost) every patient has a different
+    value -- a name, record number or similar, even when its column name gives nothing away."""
+    ctype = col["type"]
+    vals = [None if missing_by_key[k] else _label(k).strip() for k in keys]
+    if ctype == "numeric":
+        present = {v for v in vals if v is not None}
+        if not present or not all(re.fullmatch(r"[0-9]+", v) for v in present) \
+                or len({len(v) for v in present}) != 1 or len(next(iter(present))) < 5:
+            return False                      # only same-length whole numbers of 5+ digits
+    elif ctype not in ("categorical", "text", "id"):
+        return False
+    if id_labels is None:
+        present = [v for v in vals if v is not None]
+        return len(present) >= 5 and len(set(present)) >= 0.9 * len(present)
+    per = collections.defaultdict(set)
+    for pid, v in zip(id_labels, vals):
+        if pid is not None and v is not None:
+            per[pid].add(v)
+    if len(per) < 5:
+        return False
+    constant = sum(1 for vs in per.values() if len(vs) == 1)
+    distinct = len({v for vs in per.values() for v in vs})
+    return constant >= 0.95 * len(per) and distinct >= 0.8 * len(per)
+
+
+def _redact(col):
+    """Keep counts, drop every value of a column that turned out to identify patients."""
+    col["pii"] = dict(col["pii"] or {"by_name": False, "id_card_hits": 0, "phone_hits": 0},
+                      unique_per_patient=True)
+    col["categorical"] = None
+    if col.get("numeric") is not None:
+        col["numeric"] = None
+    if col.get("censored"):
+        col["censored"]["examples"] = []
+    if col.get("numeric_as_text"):
+        col["numeric_as_text"]["examples"], col["numeric_as_text"]["units"] = [], {}
+    if col.get("date"):
+        col["date"]["unparseable_examples"] = []
+        col["date"].pop("min", None)
+        col["date"].pop("max", None)
+    col["hints"] = [h for h in col["hints"] if not h.startswith("只有 ")]
 
 
 def _is_free_text(levels, n_valid):
@@ -662,18 +861,24 @@ def _cluster_structure(name, labels, id_labels):
 def _binary_event(levels):
     """levels: [[label, count], [label, count]] -> (event_label or None)."""
     labs = [str(l) for l, _ in levels]
-    if all(PLAIN_NUM_RE.match(x) for x in labs):
-        return "1" if {float(x) for x in labs} == {0.0, 1.0} else None
+    if all(PLAIN_NUM_RE.match(x.strip()) for x in labs):
+        # the label as written ("1", "1.0", "01"), so it can index the level counts
+        ones = [x for x in labs if float(x) == 1.0]
+        return ones[0] if {float(x) for x in labs} == {0.0, 1.0} and len(ones) == 1 else None
     hits = [x for x in labs if _nfkc(x).lower() in EVENT_WORDS]
     return hits[0] if len(hits) == 1 else None
 
 
-def _outcome_summary(col, time_col):
-    """Only the outcome's OWN distribution. Nothing here looks at any other variable."""
+def _outcome_summary(col, time_col, labels=None, id_labels=None):
+    """Only the outcome's OWN distribution. Nothing here looks at any other variable.
+
+    With a patient ID whose rows repeat, events are also counted per patient: the number of
+    patients with at least one event row is what limits the number of predictors, not the
+    number of rows (the ID only says which rows belong together; it is not a predictor)."""
     out = {"column": col["name"], "n_rows": col["n"], "n_missing": col["n_missing_total"],
            "n_valid": col["n_valid"], "kind": "empty", "levels": None, "event_label": None,
            "events": None, "non_events": None, "minority_count": None, "numeric": None,
-           "time": None, "notes": []}
+           "time": None, "per_patient": None, "notes": []}
     cat = col.get("categorical")
     if col["pii"]:
         out["notes"].append("该列疑似隐私字段，不显示取值")
@@ -684,6 +889,8 @@ def _outcome_summary(col, time_col):
         out["minority_count"] = min(counts.values())
         if ev is not None:
             out.update(event_label=ev, events=counts[ev], non_events=sum(counts.values()) - counts[ev])
+            if labels is not None and id_labels is not None:
+                out["per_patient"] = _events_per_patient(labels, id_labels, ev)
         else:
             out["notes"].append("无法从编码判断哪一类是事件，请确认后按那一类的例数计事件数")
     elif cat and cat["n_levels"] > 2:
@@ -708,10 +915,29 @@ def _outcome_summary(col, time_col):
     return out
 
 
+def _events_per_patient(labels, id_labels, event_label):
+    """Patients with >= 1 event row / without; patients whose rows disagree on the outcome."""
+    per = collections.defaultdict(set)
+    for pid, lab in zip(id_labels, labels):
+        if pid is not None and lab is not None:
+            per[pid].add(lab == str(event_label).strip())
+    if not per or all(len(v) == 1 for v in per.values()) and len(per) == sum(1 for p in id_labels if p is not None):
+        return None                                   # one row per patient: rows = patients
+    with_event = sum(1 for v in per.values() if True in v)
+    return {"n_patients": len(per), "patients_with_event": with_event,
+            "patients_without_event": len(per) - with_event,
+            "n_patients_mixed": sum(1 for v in per.values() if len(v) > 1)}
+
+
 def _header_issues(source, names):
     raw_header = source.get("raw_header")
     header = [str(h) for h in (raw_header if raw_header else names)]
     issues = []
+    if source.get("header_mode") == "auto-none":
+        issues.append("第一行看起来是数据（数字、日期、身份证号或手机号样式），不是列名：已按没有表头处理，"
+                      "列名记为 列1、列2……；如果第一行确实是表头，请加 --header 重新体检")
+    if source.get("n_blank_rows"):
+        issues.append(f"{source['n_blank_rows']} 行完全空白（常见于导出时末尾的空行），已忽略")
     fc = source.get("field_counts") or {}
     if fc.get("longer_with_content"):
         issues.append(f"{fc['longer_with_content']} 行的字段数多于表头，多出的内容没有体检"
@@ -723,7 +949,8 @@ def _header_issues(source, names):
     dups = sorted(h for h, c in collections.Counter(header).items() if c > 1 and h.strip())
     if dups:
         issues.append("列名重复：" + "、".join(dups))
-    empty = sum(1 for h in header if not h.strip() or h.startswith("Unnamed:"))
+    empty = sum(1 for h in header if not h.strip() or h.startswith("Unnamed:")) if raw_header or \
+        source.get("header_mode") in (None, "first-row") else 0
     if empty:
         issues.append(f"{empty} 个列没有列名（表头可能不在第一行，或有合并单元格）")
     spaced = [h for h in header if h.strip() and h != h.strip()]
@@ -767,10 +994,12 @@ def profile_dataframe(df, id_col=None, outcome_col=None, time_col=None, cluster_
     for j, name in enumerate(names):
         col, keys, missing_by_key = _profile_column(
             name, df.iloc[:, j].tolist(), vocab, text_numbers_are_issue, max_levels,
-            ranges.get(name), forced_id=bool(ids) and name == ids[0])
+            ranges.get(name), forced_id=bool(ids) and name == ids[0],
+            never_id=name in outs or name in times)   # an outcome / follow-up time is never an ID
         columns.append(col)
         keys_by[name], miss_by[name] = keys, missing_by_key
-        any_missing |= np.fromiter((missing_by_key[k] for k in keys), dtype=bool, count=n_rows)
+        if col["type"] != "empty":                   # an all-empty column would make every row incomplete
+            any_missing |= np.fromiter((missing_by_key[k] for k in keys), dtype=bool, count=n_rows)
     by_name = {c["name"]: c for c in columns}
 
     row_tuples = collections.Counter(zip(*[keys_by[nm] for nm in names])) if names else collections.Counter()
@@ -781,12 +1010,19 @@ def profile_dataframe(df, id_col=None, outcome_col=None, time_col=None, cluster_
     id_structure = [_id_structure(nm, _row_labels(keys_by[nm], miss_by[nm])) for nm in id_names]
     main_id = id_names[0] if id_names else None
     main_id_labels = _row_labels(keys_by[main_id], miss_by[main_id]) if main_id else None
+
+    # ── identifiers the column name does not give away: one value per patient, all different ──
+    for c in columns:
+        if c["name"] not in id_names and c["name"] not in outs and c["name"] not in times and \
+                _unique_per_patient(c, keys_by[c["name"]], miss_by[c["name"]], main_id_labels):
+            _redact(c)
     if clus:
         cluster_names = clus
     else:
         cluster_names = []
         for c in columns:
-            if c["name"] in id_names or c["name"] in outs or not _is_cluster_name(c["name"]):
+            if c["name"] in id_names or c["name"] in outs or c["name"] in times or c["pii"] \
+                    or not _is_cluster_name(c["name"]):
                 continue
             num = c.get("numeric") or {}
             if c["type"] in ("categorical", "id", "text") or (c["type"] == "numeric" and 0 < num.get("n_distinct", 99) <= 50):
@@ -798,7 +1034,8 @@ def profile_dataframe(df, id_col=None, outcome_col=None, time_col=None, cluster_
     outcomes = []
     for i, nm in enumerate(outs):
         tcol = by_name[times[0]] if (times and i == 0) else None
-        outcomes.append(_outcome_summary(by_name[nm], tcol))
+        outcomes.append(_outcome_summary(by_name[nm], tcol, _row_labels(keys_by[nm], miss_by[nm]),
+                                         main_id_labels if nm != main_id else None))
 
     type_counts = collections.Counter(c["type"] for c in columns)
     profile = {
@@ -816,14 +1053,26 @@ def profile_dataframe(df, id_col=None, outcome_col=None, time_col=None, cluster_
                            "ambiguous": sorted(vocab.ambiguous)},
     }
     profile["problems"] = _problems(profile)
-    return profile
+    return _json_safe(profile)
+
+
+def _json_safe(x):
+    """NaN / Infinity are not valid JSON: turn them into null."""
+    if isinstance(x, dict):
+        return {k: _json_safe(v) for k, v in x.items()}
+    if isinstance(x, (list, tuple)):
+        return [_json_safe(v) for v in x]
+    if isinstance(x, float) and not math.isfinite(x):
+        return None
+    return x
 
 
 def _problems(p):
     """Plain-language list of the issues that need a decision in the SAP / cleaning code."""
     out = list(p["header_issues"])
-    pii_cols = {x["column"] for x in p["privacy"]}
-    cols = [c for c in p["columns"] if c["name"] not in pii_cols]   # privacy columns are listed once, at the end
+    # Privacy columns keep their quality checks: every message below shows counts, vocabulary
+    # tokens or column names only, never a value (their levels / ranges / examples were dropped).
+    cols = p["columns"]
     if p["n_duplicate_rows"]:
         out.append(f"完全重复的行 {p['n_duplicate_rows']} 行（可能是导出重复）")
     dis = []
@@ -866,7 +1115,9 @@ def _problems(p):
             out.append(f"{s['column']}：{s['n_clusters']} 个聚类单位，每个 {s['rows_per_cluster'].get('min')}–"
                        f"{s['rows_per_cluster'].get('max')} 行")
     if p["privacy"]:
-        out.append("疑似隐私字段：" + "、".join(x["column"] for x in p["privacy"]))
+        out.append("疑似隐私字段（不显示取值）：" + "、".join(
+            x["column"] + ("（每名患者一个、几乎各不相同的取值）" if x.get("unique_per_patient") and not x["by_name"] else "")
+            for x in p["privacy"]))
     return out
 
 
@@ -950,9 +1201,9 @@ def render_markdown(p):
         L.append(_table(["列", "空值", "文字型伪装缺失", "数字缺失码", "合计（比例）", "未计入缺失、可能是真实取值"], rows))
     else:
         L.append("没有空值或伪装缺失。")
-    L += ["", "说明：`无`、`none`、`-` 在数值/日期/ID 列按缺失计；在分类列可能表示\"没有\"或\"阴性\"，"
-          "按取值保留并列在最后一列。`999`、`9999`、`-99`、`-999` 只在数值列按缺失码计，"
-          "如果它在该列是真实数值，请在清洗时不要当缺失。"]
+    L += ["", "说明：`无`、`none`、`-` 在日期/ID 列按缺失计；在数值列和分类列可能表示\"没有\"、0 或\"阴性\"，"
+          "按取值保留并列在最后一列（数值列的分布统计不含它们）——是 0、阴性还是缺失，请按数据字典确认。"
+          "`999`、`9999`、`-99`、`-999` 只在数值列按缺失码计，如果它在该列是真实数值，请在清洗时不要当缺失。"]
 
     cens = [c for c in cols if c.get("censored")]
     nat = [c for c in cols if c.get("numeric_as_text")]
@@ -1053,9 +1304,19 @@ def render_markdown(p):
             L.append(f"- {_code(o['column'])}：有效 {o['n_valid']} / {o['n_rows']}，缺失 {o['n_missing']}")
             if o["levels"]:
                 L.append("  - 取值：" + "、".join(f"{_code(lab)} {cnt}" for lab, cnt in o["levels"]))
-            if o["events"] is not None:
+            pp = o.get("per_patient")
+            if o["events"] is not None and pp:
+                L.append(f"  - 事件（{_code(o['event_label'])}）{o['events']} 行、非事件 {o['non_events']} 行——"
+                         f"同一患者有多行：按患者计，{pp['n_patients']} 名患者中 {pp['patients_with_event']} 名"
+                         f"至少有一个事件行，{pp['patients_without_event']} 名没有")
+                if pp["n_patients_mixed"]:
+                    L.append(f"  - {pp['n_patients_mixed']} 名患者的多行结局不一致：结局是按行（随访/病灶）记录的，"
+                             "分析单位（患者还是行）要在 SAP 里写明")
+                L.append(f"  - 可纳入多少个预测变量取决于按患者计的较少一类（"
+                         f"{min(pp['patients_with_event'], pp['patients_without_event'])} 名患者），不是行数")
+            elif o["events"] is not None:
                 L.append(f"  - 事件（{_code(o['event_label'])}）{o['events']} 例，非事件 {o['non_events']} 例")
-            if o["minority_count"] is not None:
+            if o["minority_count"] is not None and not pp:
                 L.append(f"  - 较少一类 {o['minority_count']} 例（可纳入多少个预测变量取决于这个数）")
             if o["numeric"]:
                 s = o["numeric"]
@@ -1074,8 +1335,9 @@ def render_markdown(p):
 
     L += ["", "## 10. 疑似隐私字段（只列列名与命中数，不显示取值）", ""]
     if p["privacy"]:
-        L.append(_table(["列", "列名像隐私字段", "18 位身份证号样式", "11 位手机号样式"], [
-            [_code(x["column"]), "是" if x["by_name"] else "", x["id_card_hits"] or "", x["phone_hits"] or ""]
+        L.append(_table(["列", "列名像隐私字段", "18 位身份证号样式", "11 位手机号样式", "每名患者一个、几乎各不相同"], [
+            [_code(x["column"]), "是" if x["by_name"] else "", x["id_card_hits"] or "", x["phone_hits"] or "",
+             "是" if x.get("unique_per_patient") else ""]
             for x in p["privacy"]]))
         L += ["", "分析前请去标识化（删除或替换为研究编号）；这些列不要进入分析数据集和任何对外共享的文件。"]
     else:
@@ -1105,7 +1367,11 @@ def summary_lines(p):
         lines += [f"  - {x}" for x in p["problems"]]
     for o in p["outcomes"]:
         s = f"结局 {o['column']}：有效 {o['n_valid']}/{o['n_rows']}"
-        if o["events"] is not None:
+        if o["events"] is not None and o.get("per_patient"):
+            pp = o["per_patient"]
+            s += (f"，事件（={o['event_label']}）{o['events']} 行 / {pp['patients_with_event']} 名患者"
+                  f"（共 {pp['n_patients']} 名）")
+        elif o["events"] is not None:
             s += f"，事件（={o['event_label']}）{o['events']} 例"
         elif o["minority_count"] is not None:
             s += f"，较少一类 {o['minority_count']} 例"
@@ -1149,20 +1415,29 @@ def main(argv=None):
     p.add_argument("--json", dest="json_path", help="另存 JSON 结果")
     p.add_argument("--encoding", help="CSV 编码；默认依次尝试 utf-8（含 BOM）、gbk、gb18030")
     p.add_argument("--sep", help="CSV 分隔符；默认自动识别（, 制表符 ; |）")
+    hdr = p.add_mutually_exclusive_group()
+    hdr.add_argument("--header", dest="header", action="store_const", const=True, default=None,
+                     help="第一行一定是列名（默认自动判断：第一行像数据时按没有表头处理）")
+    hdr.add_argument("--no-header", dest="header", action="store_const", const=False,
+                     help="文件没有表头：列名记为 列1、列2……")
+    p.add_argument("--skip-rows", type=int, default=0,
+                   help="表头前要跳过的行数（如导出文件第一行是合并单元格的标题）")
     args = p.parse_args(argv)
 
-    data_abs = os.path.abspath(args.data)
+    data_real = os.path.realpath(args.data)
     for out in (args.report, args.json_path):
         if not out:
             continue
-        if os.path.abspath(out) == data_abs:
+        # realpath: a report path that is a symlink to the data file must not overwrite it
+        if os.path.realpath(out) == data_real:
             raise SystemExit("报告文件不能与数据文件同名：本工具绝不改写数据")
         if os.path.splitext(out)[1].lower() in DATA_EXTS:
             raise SystemExit(f"报告文件 {out} 的扩展名像数据文件；请用 .md / .json，以免覆盖数据")
     tokens = [t for item in args.missing_tokens for t in item.split(",") if t != ""]
     try:
         ranges = _parse_ranges(args.range)
-        df, meta = load_table(args.data, sheet=args.sheet, encoding=args.encoding, sep=args.sep)
+        df, meta = load_table(args.data, sheet=args.sheet, encoding=args.encoding, sep=args.sep,
+                              header=args.header, skip_rows=args.skip_rows)
         profile = profile_dataframe(df, id_col=args.id_col, outcome_col=args.outcome, time_col=args.time_col,
                                     cluster_cols=args.cluster, missing_tokens=tokens, ranges=ranges,
                                     max_levels=args.max_levels, source=meta)
@@ -1174,7 +1449,7 @@ def main(argv=None):
             fh.write(render_markdown(profile))
     if args.json_path:
         with open(args.json_path, "w", encoding="utf-8") as fh:
-            json.dump(profile, fh, ensure_ascii=False, indent=2)
+            json.dump(profile, fh, ensure_ascii=False, indent=2, allow_nan=False)
     for line in summary_lines(profile):
         print(f"[数据体检] {line}")
     written = [x for x in (args.report, args.json_path) if x]

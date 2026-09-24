@@ -199,3 +199,19 @@ def test_inline_formatting_converts_closed_pairs():
     assert ("2", False, False, True, False) in _runs(mod, "10^2^")
     assert ("2", False, False, False, True) in _runs(mod, "H~2~O")
     assert "".join(t for t, *_ in _runs(mod, "H~2~O")) == "H2O"
+
+
+@pytest.mark.parametrize("value,limit", [
+    ("≤40, Vancouver", 40),
+    ("150-250 words", 250),          # a range: the upper bound, not the first number
+    ("200–300 words", 300),
+    ("2,500 words", 2500),
+    ("8 pages", None),               # a page limit is not a word limit (ieee-jbhi)
+    ("≤10 pages", None),             # ieee-tmi
+    ("unlimited", None),
+])
+def test_parse_limit(value, limit):
+    spec = importlib.util.spec_from_file_location("export_docx", SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module._parse_limit(value) == limit

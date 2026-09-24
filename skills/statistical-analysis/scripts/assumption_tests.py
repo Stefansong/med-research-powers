@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """
-Statistical assumption tests and method selection for medical research.
+Assumption diagnostics for medical research: normality, homogeneity of variance, effect size.
+
+The test itself is prespecified in the SAP; these results DESCRIBE the data (write them into
+analysis-log.md next to Q-Q / residual plots) and never switch the test on their p-values.
+Picking Student / Welch / Mann-Whitney from a Levene or Shapiro-Wilk result is a two-stage
+procedure that distorts the type I error (Zimmerman 2004; Rochon 2012), so `recommended_test`
+is the design default -- Welch's t-test for two independent groups, Welch's ANOVA +
+Games-Howell for more -- and `rank_based_alternative` names the test to use only when the
+SAP prespecified it (skewed, ordinal, bounded or very small samples).
 
 Library use (run from the user's project directory):
     import os, sys
@@ -68,40 +76,66 @@ def check_normality(data, alpha=0.05):
 
 
 def check_homogeneity(*groups, alpha=0.05):
-    """Test homogeneity of variance across independent groups (Levene, median-centred)."""
+    """Levene test (median-centred) across independent groups -- a description, not a gate."""
     clean = [_to_array(g) for g in groups]
     if len(clean) < 2:
         raise ValueError("方差齐性检验至少需要 2 组")
     if any(len(g) < 2 for g in clean):
         raise ValueError("每组至少需要 2 个非缺失观测才能做 Levene 检验")
+    if all(float(np.ptp(g)) == 0.0 for g in clean):
+        return {'method': 'Levene', 'statistic': None, 'p_value': None, 'is_homogeneous': None,
+                'note': 'All groups are constant (zero variance) — Levene test not applicable'}
     stat, p = stats.levene(*clean)
+    if not np.isfinite(p):
+        return {'method': 'Levene', 'statistic': None, 'p_value': None, 'is_homogeneous': None,
+                'note': 'Levene test undefined for these data'}
     p = float(p)
     return {
         'method': 'Levene', 'statistic': round(float(stat), 4), 'p_value': round(p, 4),
         'is_homogeneous': bool(p > alpha),
-        'note': 'Equal variances assumed' if p > alpha else 'Use Welch correction or non-parametric',
+        'note': 'Description only: the default Welch test does not assume equal variances',
     }
 
 
-def choose_test(n_groups, paired=False, all_normal=True, homogeneous=True):
-    """Recommend a statistical test from the assumption results."""
+def choose_test(n_groups, paired=False, **_ignored):
+    """The design default to prespecify in the SAP. Assumption-test results are deliberately
+    ignored (extra keyword arguments such as all_normal / homogeneous are accepted and unused)."""
     if n_groups < 2:
-        return 'One-sample t-test' if all_normal else 'Wilcoxon signed-rank (one-sample)'
+        return 'One-sample t-test'
     if n_groups == 2:
-        if all_normal:
-            if paired:
-                return 'Paired t-test'
-            return 'Independent t-test' if homogeneous else "Welch's t-test"
-        return 'Wilcoxon signed-rank' if paired else 'Mann-Whitney U'
-    # > 2 groups
+        return 'Paired t-test' if paired else "Welch's t-test"
     if paired:
-        return ('Repeated-measures ANOVA (check sphericity: Mauchly; Greenhouse-Geisser if violated)'
-                if all_normal else 'Friedman + Nemenyi')
-    if all_normal and homogeneous:
-        return 'One-way ANOVA + Tukey HSD'
-    if all_normal and not homogeneous:
-        return "Welch's ANOVA + Games-Howell"
-    return 'Kruskal-Wallis + Dunn'
+        return ('Repeated-measures ANOVA or linear mixed model '
+                '(check sphericity: Mauchly; Greenhouse-Geisser if violated)')
+    return "Welch's ANOVA + Games-Howell"
+
+
+def rank_alternative(n_groups, paired=False):
+    """The rank-based test to use ONLY if the SAP prespecified it for this variable."""
+    if n_groups < 2:
+        return 'Wilcoxon signed-rank (one-sample)'
+    if n_groups == 2:
+        return 'Wilcoxon signed-rank' if paired else 'Mann-Whitney U'
+    return 'Friedman + Nemenyi' if paired else 'Kruskal-Wallis + Dunn'
+
+
+HOW_TO_USE = ('方法按 SAP 预先规定执行；这里的正态性/方差齐性检验只描述数据（与 Q-Q 图、残差图一起记入 '
+              'analysis-log.md），不按它们的 p 值临时切换检验。SAP 预先规定了偏态/小样本时用秩检验或对数变换的，'
+              '按预定备选执行；没有预定而认为方法不合适的，按"偏离 SAP"写明理由。')
+
+
+def _flags(normality, labels):
+    out = []
+    for lab, r in zip(labels, normality):
+        if r['method'] == 'constant_data':
+            out.append(f"{lab}：所有取值相同（方差为 0）")
+        elif r['is_normal'] is None:
+            out.append(f"{lab}：n = {r['n']} < 8，正态性无法检验；样本很小时结论对分布假设敏感，"
+                       "按 SAP 预定的方法（或预定的秩检验备选）执行")
+        elif not r['is_normal']:
+            out.append(f"{lab}：{r['method']} p = {r['p_value']}，分布可能偏离正态——看 Q-Q 图；"
+                       "样本较大时 t 检验对此稳健")
+    return out
 
 
 # ─── full report ────────────────────────────────────────────────────────────
@@ -127,7 +161,8 @@ def full_check(*groups, paired=False, alpha=0.05):
     Paired, 2 groups   : complete pairs only, then normality of the differences.
     Paired, > 2 groups : complete cases only, normality per condition; Levene is skipped
                          (use Mauchly's sphericity test / Greenhouse-Geisser in RM-ANOVA).
-    Any group with n < 8 -> all_normal=False and a warning (normality untestable).
+    Any group with n < 8 or constant -> all_normal=None and a warning (normality untestable).
+    recommended_test is the design default whatever the diagnostics say (see module docstring).
     """
     warnings = []
     if len(groups) == 0:
@@ -138,11 +173,8 @@ def full_check(*groups, paired=False, alpha=0.05):
         if n_dropped:
             warnings.append(f"已剔除 {n_dropped} 对含缺失值的配对，保留 {n_pairs} 对完整配对")
         diff_normality = check_normality(a - b, alpha)
-        if diff_normality['is_normal'] is None:
-            warnings.append(f"完整配对数 {n_pairs} < 8，差值正态性无法检验，按非参数处理")
-            all_normal = False
-        else:
-            all_normal = bool(diff_normality['is_normal'])
+        warnings += _flags([diff_normality], ['配对差值'])
+        all_normal = None if diff_normality['is_normal'] is None else bool(diff_normality['is_normal'])
         return {
             'design': 'paired_two_groups',
             'n_pairs': n_pairs,
@@ -153,7 +185,9 @@ def full_check(*groups, paired=False, alpha=0.05):
             'homogeneity_note': 'Levene test not applicable for paired data',
             'all_normal': all_normal,
             'homogeneous': None,
-            'recommended_test': choose_test(2, paired=True, all_normal=all_normal, homogeneous=True),
+            'recommended_test': choose_test(2, paired=True),
+            'rank_based_alternative': rank_alternative(2, paired=True),
+            'how_to_use': HOW_TO_USE,
             'alpha': alpha,
             'warnings': warnings,
         }
@@ -163,12 +197,9 @@ def full_check(*groups, paired=False, alpha=0.05):
         if n_dropped:
             warnings.append(f"已剔除 {n_dropped} 个含缺失值的受试者，保留 {n_complete} 个完整病例")
         normality = [check_normality(a, alpha) for a in arrays]
-        untestable = [i + 1 for i, r in enumerate(normality) if r['is_normal'] is None]
-        if untestable:
-            warnings.append(f"条件 {untestable} 的 n < 8，正态性无法检验，按非参数处理")
-            all_normal = False
-        else:
-            all_normal = all(bool(r['is_normal']) for r in normality)
+        warnings += _flags(normality, [f"条件 {i + 1}" for i in range(len(arrays))])
+        all_normal = (None if any(r['is_normal'] is None for r in normality)
+                      else all(bool(r['is_normal']) for r in normality))
         return {
             'design': 'repeated_measures',
             'n_complete': n_complete,
@@ -181,37 +212,33 @@ def full_check(*groups, paired=False, alpha=0.05):
                                  'correction if violated'),
             'all_normal': all_normal,
             'homogeneous': None,
-            'recommended_test': choose_test(len(groups), paired=True, all_normal=all_normal,
-                                            homogeneous=True),
+            'recommended_test': choose_test(len(groups), paired=True),
+            'rank_based_alternative': rank_alternative(len(groups), paired=True),
+            'how_to_use': HOW_TO_USE,
             'alpha': alpha,
             'warnings': warnings,
         }
 
     # independent groups
     normality = [check_normality(g, alpha) for g in groups]
-    untestable = [i + 1 for i, r in enumerate(normality) if r['is_normal'] is None]
-    if untestable:
-        warnings.append(f"组 {untestable} 的 n < 8，正态性无法检验，按非参数处理（all_normal=False）")
-        all_normal = False
-    else:
-        all_normal = all(bool(r['is_normal']) for r in normality)
+    warnings += _flags(normality, [f"组 {i + 1}" for i in range(len(groups))])
+    all_normal = (None if any(r['is_normal'] is None for r in normality)
+                  else all(bool(r['is_normal']) for r in normality))
     homogeneity = None
-    homogeneous = True
     if len(groups) > 1:
         try:
             homogeneity = check_homogeneity(*groups, alpha=alpha)
-            homogeneous = bool(homogeneity['is_homogeneous'])
         except ValueError as e:
             warnings.append(f"Levene 检验未执行：{e}")
-            homogeneous = False
-    recommended = choose_test(len(groups), paired=False, all_normal=all_normal, homogeneous=homogeneous)
     return {
         'design': 'independent_groups',
         'normality_tests': normality,
         'homogeneity_test': homogeneity,
         'all_normal': all_normal,
-        'homogeneous': homogeneous if homogeneity else None,
-        'recommended_test': recommended,
+        'homogeneous': homogeneity['is_homogeneous'] if homogeneity else None,
+        'recommended_test': choose_test(len(groups), paired=False),
+        'rank_based_alternative': rank_alternative(len(groups), paired=False),
+        'how_to_use': HOW_TO_USE,
         'alpha': alpha,
         'warnings': warnings,
     }
@@ -266,9 +293,19 @@ def main(argv=None):
     for col in (args.value, args.group):
         if col not in df.columns:
             raise SystemExit(f"CSV 中没有列 {col!r}；可用列：{list(df.columns)}")
+    numeric = pd.to_numeric(df[args.value], errors='coerce')
+    bad = df[args.value][numeric.isna() & df[args.value].notna()]
+    if len(bad):
+        raise SystemExit(f"列 {args.value!r} 有 {len(bad)} 个不是数字的取值（如 {bad.astype(str).unique()[:3].tolist()}）；"
+                         "请先在清洗代码里按 SAP 处理（伪装缺失、截断值、带单位的数字）")
+    df[args.value] = numeric
     if args.paired:
         if not args.id or args.id not in df.columns:
             raise SystemExit("--paired 需要 --id <受试者ID列>，用于按受试者对齐各条件")
+        dup = int(df.duplicated([args.id, args.group]).sum())
+        if dup:
+            raise SystemExit(f"有 {dup} 行是同一受试者在同一条件下的重复记录；配对分析要求每人每条件一行，"
+                             "请先按 SAP 规定汇总（如取均值）或去重")
         wide = df.pivot_table(index=args.id, columns=args.group, values=args.value, aggfunc='first')
         groups = [wide[c].to_numpy(dtype=float) for c in wide.columns]
         labels = [str(c) for c in wide.columns]
@@ -282,7 +319,7 @@ def main(argv=None):
     except ValueError as e:
         raise SystemExit(f"输入错误：{e}")
     report['group_labels'] = labels
-    print(json.dumps(report, ensure_ascii=False, indent=2))
+    print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
     return report
 
 

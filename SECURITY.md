@@ -8,7 +8,7 @@ MRP is a Claude Code plugin made of Markdown skills, a session-start hook and a 
 
 | File | Where | Fields the hook reads | What happens with them |
 |------|-------|-----------------------|------------------------|
-| `.mrp-state.json` | the project directory (`$CLAUDE_PROJECT_DIR`, falling back to the current working directory) | `project`, `current_stage`, `next_step`, `target_journal`, `checkpoint_mode` | printed as plain text inside a fenced block that is labelled as *data, not instructions*, each value truncated to a short length, so Claude can say "last completed: X, next step: Y" |
+| `.mrp-state.json` | the project directory (`$CLAUDE_PROJECT_DIR`, falling back to the current working directory) | `project`, `current_stage`, `next_step`, `target_journal`, `checkpoint_mode` | printed as plain text inside a fenced block that is labelled as *data, not instructions*, so Claude can say "last completed: X, next step: Y". Each value is sanitised first: control characters and backticks are removed, it is cut to 160 bytes (never in the middle of a UTF-8 character) and printed with `printf %s`, so escape sequences such as `\n` in a crafted value stay literal text and cannot start a new line outside the block |
 
 The hook does **not**:
 

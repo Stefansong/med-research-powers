@@ -10,15 +10,16 @@ Library use (inside a Python session; run from the user's project directory):
 
 Command line (prints JSON):
     python3 power_analysis.py two-groups --effect-size 0.5 --dropout 0.15
-    python3 power_analysis.py proportion --p1 0.30 --p2 0.50
+    python3 power_analysis.py proportion --p1 0.30 --p2 0.50 [--continuity-correction]
     python3 power_analysis.py survival --hr 0.7 --event-rate 0.5
     python3 power_analysis.py diagnostic --sensitivity 0.9 --specificity 0.85 --prevalence 0.3
     python3 power_analysis.py correlation --r 0.3
 
 Formulas
     two_groups  : two-sample t-test power (statsmodels TTestIndPower), effect = Cohen's d
-    proportion  : two-sample test of proportions using Cohen's h (arcsine transform),
-                  normal approximation (statsmodels NormalIndPower)
+    proportion  : two-sample z / chi-square test of proportions, pooled variance under H0
+                  (Fleiss, Levin & Paik 2003; the same formula as R's power.prop.test);
+                  optional continuity correction (Fleiss, Tytun & Ury 1980)
     survival    : Schoenfeld (1983) number of events for the log-rank test
                   D = (z_{1-α/2} + z_{power})² / (ln(HR)² · p1 · p2),  p1 = 1/(1+r), p2 = r/(1+r)
     diagnostic  : Buderer (1996) precision-based n for sensitivity and specificity
@@ -48,7 +49,14 @@ def _require_statsmodels():
     return smp
 
 
+def _finite(name, x):
+    if x is None or not math.isfinite(x):
+        raise ValueError(f"{name} 必须是有限数值，收到 {x}")
+
+
 def _check_common(alpha, power, ratio=1.0, dropout=0.0):
+    for name, x in (('alpha', alpha), ('power', power), ('ratio', ratio), ('dropout', dropout)):
+        _finite(name, x)
     if not 0 < alpha < 1:
         raise ValueError(f"alpha 必须在 (0, 1) 之间，收到 {alpha}")
     if not 0 < power < 1:
@@ -78,7 +86,8 @@ def two_groups(effect_size, alpha=0.05, power=0.80, ratio=1.0, dropout=0.1):
     dropout inflation. Key 'n_per_group' is n1 (kept for backward compatibility).
     """
     _check_common(alpha, power, ratio, dropout)
-    if effect_size is None or effect_size == 0:
+    _finite('effect_size', effect_size)
+    if effect_size == 0:
         raise ValueError("effect_size（Cohen's d）不能为 0：效应为 0 时所需样本量无穷大")
     smp = _require_statsmodels()
     n1 = float(smp.TTestIndPower().solve_power(effect_size=abs(effect_size), alpha=alpha,
@@ -103,30 +112,43 @@ def two_groups(effect_size, alpha=0.05, power=0.80, ratio=1.0, dropout=0.1):
     }
 
 
-def proportion(p1, p2, alpha=0.05, power=0.80, ratio=1.0, dropout=0.1):
-    """Two-group comparison of proportions.
+def proportion(p1, p2, alpha=0.05, power=0.80, ratio=1.0, dropout=0.1, continuity_correction=False):
+    """Two-group comparison of proportions (two-sided z / chi-square test).
 
-    Effect size is Cohen's h = 2·asin(√p1) − 2·asin(√p2) (arcsine transform) and
-    power is computed with the normal approximation (statsmodels NormalIndPower).
-    This is the usual approximation for a chi-square / z test of two proportions;
-    for very small expected counts plan on Fisher's exact test and add margin.
-    ratio = n2 / n1. Returns n1, n2 and total, before and after dropout inflation.
+    n1 = [z_{1-α/2}·√(p̄q̄(1 + 1/r)) + z_{power}·√(p1q1 + p2q2/r)]² / (p1 − p2)²,
+    p̄ = (p1 + r·p2)/(1 + r), r = n2/n1 -- the pooled-variance normal approximation
+    (Fleiss, Levin & Paik 2003; R power.prop.test gives the same n). With
+    continuity_correction=True: n1' = n1/4 · [1 + √(1 + 2(r + 1)/(r·n1·|p1 − p2|))]²
+    (Fleiss, Tytun & Ury 1980), the usual choice when the analysis is a corrected
+    chi-square or Fisher's exact test. p1 = 0.30 vs p2 = 0.50: 93 per group (103 corrected).
+
+    Cohen's h (arcsine) is reported for reference only: sizing with it under-estimates n for
+    rare or extreme proportions (0.01 vs 0.05: 250 instead of 285 per group).
+    Returns n1, n2 and total, before and after dropout inflation.
     """
     _check_common(alpha, power, ratio, dropout)
     for name, p in (('p1', p1), ('p2', p2)):
+        _finite(name, p)
         if not 0 < p < 1:
             raise ValueError(f"{name} 必须在 (0, 1) 之间（比例，不是百分数），收到 {p}")
     if p1 == p2:
         raise ValueError("p1 == p2：两组比例相同，效应为 0，所需样本量无穷大")
-    smp = _require_statsmodels()
+    z_alpha, z_beta = _z(alpha, power)
+    r = ratio
+    p_bar = (p1 + r * p2) / (1 + r)
+    delta = abs(p1 - p2)
+    n1 = (z_alpha * math.sqrt(p_bar * (1 - p_bar) * (1 + 1 / r))
+          + z_beta * math.sqrt(p1 * (1 - p1) + p2 * (1 - p2) / r)) ** 2 / delta ** 2
+    if continuity_correction:
+        n1 = n1 / 4 * (1 + math.sqrt(1 + 2 * (r + 1) / (r * n1 * delta))) ** 2
     h = 2 * (math.asin(math.sqrt(p1)) - math.asin(math.sqrt(p2)))
-    n1 = float(smp.NormalIndPower().solve_power(effect_size=abs(h), alpha=alpha,
-                                                 power=power, ratio=ratio))
-    n1_ceil = int(math.ceil(n1))
-    n2_ceil = int(math.ceil(n1 * ratio))
+    n1_ceil = int(math.ceil(n1 - 1e-9))
+    n2_ceil = int(math.ceil(n1 * r - 1e-9))
     n1_adj, n2_adj = _inflate(n1_ceil, dropout), _inflate(n2_ceil, dropout)
     return {
         'design': 'two_proportions',
+        'method': 'pooled-variance normal approximation (Fleiss)'
+                  + (' with continuity correction' if continuity_correction else ''),
         'n1': n1_ceil,
         'n2': n2_ceil,
         'n_per_group': n1_ceil,
@@ -137,7 +159,7 @@ def proportion(p1, p2, alpha=0.05, power=0.80, ratio=1.0, dropout=0.1):
         'total_adjusted': n1_adj + n2_adj,
         'effect_size_h': round(h, 3),
         'params': {'p1': p1, 'p2': p2, 'alpha': alpha, 'power': power,
-                   'ratio': ratio, 'dropout': dropout},
+                   'ratio': ratio, 'dropout': dropout, 'continuity_correction': continuity_correction},
     }
 
 
@@ -200,7 +222,9 @@ def survival(hazard_ratio, alpha=0.05, power=0.80, ratio=1.0, event_rate=0.5, dr
     power = 0.80 gives ≈ 247 events (not 494 — the old version double-counted).
     """
     _check_common(alpha, power, ratio, dropout)
-    if hazard_ratio is None or hazard_ratio <= 0:
+    _finite('hazard_ratio', hazard_ratio)
+    _finite('event_rate', event_rate)
+    if hazard_ratio <= 0:
         raise ValueError(f"hazard_ratio 必须 > 0，收到 {hazard_ratio}")
     if hazard_ratio == 1:
         raise ValueError("hazard_ratio == 1：无效应，所需事件数无穷大")
@@ -256,9 +280,11 @@ def _build_parser():
     sp.add_argument('--effect-size', type=float, required=True, help="Cohen's d")
     common(sp)
 
-    sp = sub.add_parser('proportion', help="two proportions (Cohen's h)")
+    sp = sub.add_parser('proportion', help="two proportions (pooled-variance z test, Fleiss)")
     sp.add_argument('--p1', type=float, required=True)
     sp.add_argument('--p2', type=float, required=True)
+    sp.add_argument('--continuity-correction', action='store_true',
+                    help='Fleiss-Tytun-Ury continuity correction (corrected chi-square / Fisher analysis)')
     common(sp)
 
     sp = sub.add_parser('survival', help='log-rank / Cox (Schoenfeld events)')
@@ -285,7 +311,8 @@ def main(argv=None):
         if args.design == 'two-groups':
             res = two_groups(args.effect_size, args.alpha, args.power, args.ratio, args.dropout)
         elif args.design == 'proportion':
-            res = proportion(args.p1, args.p2, args.alpha, args.power, args.ratio, args.dropout)
+            res = proportion(args.p1, args.p2, args.alpha, args.power, args.ratio, args.dropout,
+                             args.continuity_correction)
         elif args.design == 'survival':
             res = survival(args.hr, args.alpha, args.power, args.ratio, args.event_rate, args.dropout)
         elif args.design == 'diagnostic':

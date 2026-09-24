@@ -466,6 +466,9 @@ def main(argv=None):
     for o in outputs:
         if o.path == cwd or o.path in cwd.parents:
             return _fail(f"--outputs {o.raw} 是工作目录本身或它的上级目录；只能列出分析生成的文件或目录")
+        if cwd not in o.path.parents:
+            # outside the project the checker would move files it has no business touching
+            return _fail(f"--outputs {o.raw} 不在工作目录 {cwd} 里；只能列出这次分析在项目里生成的文件或目录")
     for a in outputs:
         for b in outputs:
             if a is not b and (a.path == b.path or b.path in a.path.parents):
@@ -528,6 +531,12 @@ def main(argv=None):
     if cmp["never_produced"]:
         result["messages"].append("这些输出路径在各次运行中都没有文件，无法比较（检查 --outputs 是否写对、"
                                   "路径是否相对于 --cwd）：" + "、".join(cmp["never_produced"]))
+        missing = [o for o in outputs if o.raw in cmp["never_produced"]]
+        if pre and any(_files_at(keep / "pre-existing" / o.rel) for o in missing):
+            # the runs never recreated them: put the earlier files back instead of leaving the path empty
+            _copy_back(missing, keep / "pre-existing")
+            result["restored"] = str(keep / "pre-existing")
+            result["messages"].append("这些路径原有的文件已放回原处（运行前被移到了 pre-existing/）")
         result["exit_code"] = 2
     elif cmp["n_files"] == 0:
         result["messages"].append("没有找到任何输出文件")

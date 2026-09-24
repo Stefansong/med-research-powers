@@ -120,3 +120,24 @@ def test_guards(tmp_path):
     assert rc.main(["--cmd", cmd, "--outputs", "results", "--runs", "1", "--cwd", str(tmp_path)]) == 2
     assert rc.main(["--cmd", cmd, "--outputs", "tables/", "--cwd", str(tmp_path)]) == 2       # never produced
     assert (tmp_path / "analysis_script.py").is_file()
+
+
+def test_outputs_outside_the_project_are_refused(tmp_path):
+    proj = tmp_path / "proj"
+    proj.mkdir()
+    (proj / "a.py").write_text("print(1)\n", encoding="utf-8")
+    elsewhere = tmp_path / "elsewhere.csv"
+    elsewhere.write_text("keep me\n", encoding="utf-8")
+    code = rc.main(["--cwd", str(proj), "--outputs", str(elsewhere), "--", PY, "a.py"])
+    assert code == 2
+    assert elsewhere.read_text(encoding="utf-8") == "keep me\n"          # untouched
+
+
+def test_earlier_files_come_back_when_an_output_is_never_produced(tmp_path):
+    proj = tmp_path / "proj"
+    proj.mkdir()
+    (proj / "a.py").write_text("open('real.txt', 'w').write('1')\n", encoding="utf-8")
+    (proj / "typo.csv").write_text("earlier result\n", encoding="utf-8")
+    code = rc.main(["--cwd", str(proj), "--outputs", "real.txt", "typo.csv", "--", PY, "a.py"])
+    assert code == 2
+    assert (proj / "typo.csv").read_text(encoding="utf-8") == "earlier result\n"

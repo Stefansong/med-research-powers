@@ -56,7 +56,7 @@ def main():
         if e.get("id") and e["id"] not in seen:
             seen.add(e["id"]), entries.append(e)
     if a.id:
-        hit = next((e for e in entries if e.get("id") == a.id), None)
+        hit = next((e for e in entries if str(e.get("id", "")).lower() == a.id.lower()), None)
         if not hit:
             sys.exit(f"No template with id '{a.id}'. Try: --search {a.id.split('-')[0]}")
         hit = {**hit, "data_as_of": data_as_of}
