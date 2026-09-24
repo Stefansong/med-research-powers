@@ -14,9 +14,7 @@ description: Use when no analysis-plan.md exists yet and a statistical analysis 
 3. **用户确认**：`analysis-plan.md` 是流水线的**硬确认 2**，用户明确同意后才能进入数据收集与分析。
 4. **交给 `statistical-analysis` 执行**：执行时的任何偏离都记进 `analysis-log.md`。
 
-**计划前看什么**（总调度"结局盲规则"的细则）：**必须看**数据的结构和质量——变量类型、编码与取值范围，缺失的多少和形式（空值、"/"、"未查"、"—"、999），"<0.1" 这类截断值，日期格式，同一患者多条记录（多个病灶、双侧、多次随访）与中心/术者聚类，样本量、**结局事件总数**、各分组人数、单变量分布；**不能看**暴露/分组与结局的交叉表、组间比较、相关、单因素筛选，以及任何模型结果。
-
-看了结构再调整计划是合理且必要的：事件数撑不起 10 个预测变量 → 按临床知识预先减少候选变量、合并类别，并按 Riley 标准核对样本量（惩罚回归能减轻过拟合，但事件很少时它本身也不稳定，代替不了足够的样本量）；同一患者多个结石 → GEE/混合模型或按患者汇总；某变量缺失 40% → 讨论是否纳入。这些调整写进 SAP 第 1 节。
+**计划前看什么**：按总调度的**结局盲规则**——只看数据的结构和质量（Step 1），不看任何变量与结局的关系（交叉表、组间比较、相关、单因素筛选、试跑模型）。看了结构再调整计划是合理且必要的（Step 2 第 3 点），调整写进 SAP 第 1 节。
 
 ## When to Use
 
@@ -35,7 +33,7 @@ description: Use when no analysis-plan.md exists yet and a statistical analysis 
 
 ### Step 0: 读取用户偏好与前置产物
 
-1. 读取 `~/.claude/mrp-user-profile.json` 的 `preferences.preferred_stats_tool`（Python / R / SPSS / Stata）。没有该字段、用户也没说过 → 只问这一个问题（"统计分析主要用 Python、R 还是 SPSS/Stata？"），并问是否保存到该文件供以后使用。SAP 里推荐的包和代码示例按此语言写。
+1. 统计工具：用户已说明就用；否则读 `~/.claude/mrp-user-profile.json` 的 `preferred_stats_tool`（按总调度 User Profile 规则，缺则只问"统计分析主要用 Python、R 还是 SPSS/Stata？"并问是否保存）。SAP 里推荐的包和代码示例按此语言写。
 2. 读取 `study-protocol.md`：研究类型（Type A–E）、主要/次要结局、变量、样本量与先验效应量、分组与分层因素。
    **快速路径**（数据已在手、没有 protocol）：按总调度"缺前置产物时"告知用户；用户选先往下做时，把研究问题、主要结局（定义与时点）、纳入/排除标准一次问清写进 SAP 开头，随硬确认 2 一起锁定。没有伦理记录时提醒（回顾性研究也要审查或豁免）并记为缺口。
 3. 若有 `journal-selection-report.md`（暂定期刊），记下其统计报告要求（如强制 CI、禁止基线 p 值）。
@@ -49,8 +47,9 @@ description: Use when no analysis-plan.md exists yet and a statistical analysis 
    python3 "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/data_profile.py" <数据文件> \
      --id <患者ID列> --outcome <结局列> --report data-profile.md
    ```
-   xlsx 用 `--sheet` 选工作表；生存结局加 `--time <随访时间列>`；中心/术者列可用 `--cluster` 指定。报告内容：列类型、伪装缺失、截断值、数值存成文本、日期问题、缺失比例、数值范围与离群计数、分类取值、重复 ID 与聚类结构、结局事件数（给了 `--id` 时按患者计）、疑似隐私字段（只报列名，不打印取值）。它只报告结局本身的分布，不算任何变量与结局的关系。
-2. 体检没覆盖的结构问题，按需现写**只读**检查代码，例如：多张表按患者 ID 关联后还剩多少人；按患者汇总后的人数和每人记录数；每个中心/术者的例数；每人随访几次。这些代码只统计结构，**不按结局或暴露分组算任何东西**，也不改原始数据。
+   xlsx 用 `--sheet` 选工作表；生存结局加 `--time <随访时间列>`；中心/术者列可用 `--cluster` 指定；报告把某个整数列当成 ID、其实是测量值（费用、计数）时加 `--not-id <列>` 重跑（列名里有换行的，用空格代替）。报告列类型、伪装缺失、截断值、数值存成文本、日期、缺失比例、离群计数、分类取值、重复 ID 与聚类、结局事件数（有 `--id` 时按患者计）、疑似隐私字段（只报列名）；它不算任何变量与结局的关系。
+2. 体检没覆盖的结构问题，按需现写**只读**检查代码（多张表按患者 ID 关联后还剩多少人、每人几条记录、每个中心/术者的例数、每人随访几次）。只统计结构，**不按结局或暴露分组算任何东西**，不改原始数据。
+   预测变量之间的冗余检查（严重共线）只用真正的基线预测变量。随访时间、末次随访日期、复发部位、死亡原因、复发后治疗等**由结局派生或基线之后才产生的变量**不是预测变量：不进冗余检查，也不进候选变量表；发现数据里有这类列，在 SAP 第 2 节写明排除。
 3. 有疑似隐私字段（姓名、身份证号、手机号、住院号等）→ 提醒用户在分析前去标识化；SAP 和后续产物里不出现这些值。
 
 **(b) 数据还没收集（前瞻性研究）**
@@ -78,9 +77,9 @@ description: Use when no analysis-plan.md exists yet and a statistical analysis 
 | LLM/VLM 评测 | `references/method-cards/llm-vlm-evaluation.md` |
 
 3. 每个选择都要回到 Step 1 的现状说明理由，例如：
-   - 事件数 → 多因素模型能纳入几个预测变量（不够就按临床知识减少变量、合并类别；惩罚回归不能弥补事件太少，见回归方法卡）
+   - 事件数 → 多因素模型能纳入几个预测变量（按 Riley 标准核对；不够就按临床知识预先减少变量、合并类别；惩罚回归能减轻过拟合，但事件很少时它本身也不稳定，代替不了足够的样本量，见回归方法卡）
    - 同一患者多条记录 / 多中心 / 同一术者多台手术 → GEE、混合模型，或按患者汇总
-   - 缺失比例与可能的缺失机制 → 完整病例分析还是多重插补（m 份 + Rubin 合并），以及敏感性分析
+   - 缺失比例与可能的缺失机制 → 变量是否还纳入（如缺失 40%）、完整病例分析还是多重插补（m 份 + Rubin 合并），以及敏感性分析
    - 截断值、编码混乱、单位不统一 → 在第 2 节写清处理规则
    - 某组人数很少、某类取值很少 → 精确检验、合并类别或换指标
 
@@ -133,11 +132,11 @@ description: Use when no analysis-plan.md exists yet and a statistical analysis 
 
 ### Step 4: 硬确认 2
 
-把关键锁定项列给用户：第 1 节里最关键的几条"现状 → 选择"、主要结局及其分析方法、亚组清单、缺失/异常值策略、多重比较策略、AI 研究的数据划分与指标。**等用户明确同意**后在文件头写 `status: confirmed` 与日期。auto 模式（"一直做到底"）不等待：照写 `status: confirmed` + `confirmed_by: auto`，摘要里提醒用户这份 SAP 还没人审过。
+把关键锁定项列给用户：第 1 节里最关键的几条"现状 → 选择"、主要结局及其分析方法、亚组清单、缺失/异常值策略、多重比较策略、AI 研究的数据划分与指标。**等用户明确同意**后在文件头写 `status: confirmed` 与日期，并执行 `mrp_state.py checkpoint sap confirmed`。auto 模式按总调度照写 `confirmed_by: auto`，摘要里提醒用户这份 SAP 还没人审过。
 
 ### Step 5: 更新项目状态
 
-输出 3–5 行摘要，然后更新 `.mrp-state.json`（`${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`：`completed_skills` 追加 data-analysis-planning、`artifacts` 登记 `analysis-plan.md`（已有数据时加 `data-profile.md`）、`next_step`：数据还要收集 → data-collection-tools；数据已在手 → statistical-analysis）。
+输出 3–5 行摘要，然后 `python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py done data-analysis-planning --output analysis-plan.md [--output data-profile.md] --next <data-collection-tools（数据还要收集）| statistical-analysis（数据已在手）>`。
 
 ## Output
 
@@ -172,7 +171,7 @@ description: Use when no analysis-plan.md exists yet and a statistical analysis 
 
 ## Red Flags — STOP
 
-- **计划前计算了任何变量与结局的关联**（交叉表、组间比较、相关、单因素筛选、试跑模型）→ 停：这些结果不能用来选方法；告诉用户已经看过什么，并在 SAP 第 1 节如实记录
+- **计划前已经算过变量与结局的关联**（违反结局盲规则）→ 停：这些结果不能用来选方法；告诉用户看过什么，并在 SAP 第 1 节如实记录
 - **禁止在执行分析后修改主要结局或主要分析方法**（偏离须记录在 `analysis-log.md`）
 - **禁止反复尝试多种方法只报告"显著"的那个**（p-hacking）
 - **禁止把未预先指定的亚组分析当作确证性结论**（必须标记 exploratory）

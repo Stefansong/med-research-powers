@@ -266,6 +266,7 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_temp
 | `experiment-templates/` | study-design/references/ | WB、qPCR、动物实验设计模板 |
 | `journal-templates.yaml` | manuscript-writing/references/ | 240 本期刊格式模板 |
 | `state-schemas.md` | using-med-research-powers/references/ | `.mrp-state.json` 与用户画像的 schema |
+| `backtracking.md` | using-med-research-powers/references/ | 发现上游问题时回到哪个 skill（当前阶段 × 问题 → 回溯目标） |
 
 ---
 

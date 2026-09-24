@@ -22,8 +22,8 @@ MRP 是一套覆盖"选题 → 设计 → 分析 → 写作 → 投稿 → 修�
 3. **决定**：关键选择给用户看；硬确认节点必须等用户同意。
 4. **执行**：按确认后的计划现写代码或内容，执行后自检，偏离计划处记录理由。
 
-**结局盲规则**（各 skill 引用这一条）：计划前**可以看**数据的结构和质量（变量、编码、缺失形式、事件总数、同一患者多条记录等），**不能看**变量与结局的关系（包括暴露/分组与结局，含按组画的结局图）——这些只能在分析计划确认后按计划执行，否则就成了看结果选方法。只在预测变量之间、不涉及结局的冗余检查可以做。用户明确要探索性分析时可以做，但标明 exploratory，不再拿它选 SAP 的方法。
-插件里的固定脚本只做四类事：容易算错的公式（样本量）、防止致命错误的护栏（患者级划分、随机分组）、与数据无关的基础设施（状态、期刊模板、导出）、只报告不做决定的检查工具（数据体检、前提检验、重跑一致性）。分析代码本身由 AI 针对具体数据现写。
+**结局盲规则**（全文只在这里；其他 skill 用一行引用）：分析计划确认前**可以看**数据的结构和质量（变量、编码、缺失形式、截断值、事件总数、各组人数、同一患者多条记录、聚类）；**不能看**任何变量与结局的关系——暴露/分组与结局的交叉表、组间比较、相关、单因素筛选、试跑模型、按组画的结局图。这些只能在 SAP 确认后按计划做，否则就成了看结果选方法。例外一：真正的基线预测变量之间、不涉及结局的冗余检查（如严重共线）可以做；随访时间、末次随访日期、复发部位、死亡原因、复发后治疗这类由结局派生或基线之后才产生的变量不是合法的预测变量，不能进冗余检查（拿它们查冗余等于在看结局）。例外二：用户明确要探索性分析时可以做，标明 exploratory，不再拿它选 SAP 的方法。已经看过的，如实告诉用户并记进 SAP 第 1 节。
+插件里的固定脚本只放工具和护栏（样本量公式、患者级划分与随机分组、状态/期刊模板/导出、只报告不做决定的检查）；分析代码由 AI 针对具体数据现写。
 
 ## When to Use
 
@@ -42,12 +42,12 @@ MRP 是一套覆盖"选题 → 设计 → 分析 → 写作 → 投稿 → 修�
 ```
 1. 会话开始
    - 项目目录有 .mrp-state.json → 一句话告知："上次完成到 [current_stage]，下一步是 [next_step]。继续？"
-   - 没有 → 正常路由；第一个主线 skill 完成时创建状态文件（mrp_state.py init）
+   - 没有 → 直接按第 2 步路由；第一个主线 skill 完成时创建状态文件（mrp_state.py init）
 
 2. 收到用户消息
-   - 研究流程级任务 → 查 Skill Routing 表 → 宣布 "Using [skill] to [目的]" → **用 Skill 工具调用该 skill**（如 `mrp:data-analysis-planning`），按它的完整流程执行；不要凭本表的一行摘要自己动手
+   - 研究流程级任务 → 查 Skill Routing 表 → 宣布 "Using [skill] to [目的]" → **先用 Skill 工具调用该 skill**（如 `mrp:data-analysis-planning`），再按它的完整流程执行；不要凭本表的一行摘要自己动手。路由这一步不检查输入文件：即使项目目录是空的，也先调用目标 skill，缺什么由它按"缺前置产物时"处理
    - 单点小问题 → 直接回答
-   - 找输入文件时只在当前项目目录（和用户指明的路径）里找；找不到就直接问用户放在哪，不要在整个磁盘上搜索
+   - 调用之后，目标 skill 找输入文件时只在当前项目目录（和用户指明的路径）里找，不在整个磁盘上搜索；找不到时由它问用户放在哪或按"缺前置产物时"给选择
 
 3. 每个主线 skill 完成后（由该 skill 自己执行，本表是统一约定）
    a. 输出 3–5 行摘要（格式见下）
@@ -77,7 +77,7 @@ MRP 是一套覆盖"选题 → 设计 → 分析 → 写作 → 投稿 → 修�
 | `step` | 每步出摘要后等用户说"继续" | 用户说"逐步确认 / 每步问我" |
 | `auto` | 硬确认也只提示不等待：锁定内容照常写入，文件头记 `status: confirmed` + `confirmed_by: auto`，下游照常接受 | 用户说"一直做到底 / 不用问我" |
 
-用户切换模式时执行 `mrp_state.py set checkpoint_mode=<mode>`；用户同意时也可存入全局画像。
+skill 内部的**计划**（工具清单、图表计划、写作提纲等）同样按模式处理：`step` 等用户确认后再做；`light` / `auto` 展示计划后直接做，用户随时可以改。用户切换模式时执行 `mrp_state.py set checkpoint_mode=<mode>`；用户同意时也可存入全局画像。
 
 ### 三个硬确认（任何模式下都要展示锁定内容）
 
@@ -124,7 +124,7 @@ research-question-formulation
 
 辅助 skill（不在主线上，被调用或随时可用）：`pubmed-search`（被 literature-synthesis / pre-submission-verification Gate 3 / manuscript-writing 调用）、`reporting-standards`（被 Gate 1 调用）、`team-collaboration`（需要并行子代理时）、`writing-mrp-skills`（改进 MRP 自身）、本 skill。
 
-用户可以从中间任何一步进入（例如已有数据直接做分析）。**缺前置产物时**（各 skill 的"前置依赖"都按这条办，不拒绝）：一句话告诉用户缺什么、为什么要紧；给两个选择——现在补（说出最快的补法），或先往下做并记下缺口（`mrp_state.py done … --note "缺 X"`，涉及分析的同时写进 `analysis-log.md`）；按用户的选择办，auto 模式默认先往下做。
+用户可以从中间任何一步进入（例如已有数据直接做分析）。**缺前置产物时**（由被调用的 skill 在自己的流程里按这条办，不拒绝；路由前不因缺文件而不调用）：一句话告诉用户缺什么、为什么要紧；给两个选择——现在补（说出最快的补法），或先往下做并记下缺口（`mrp_state.py done … --note "缺 X"`，涉及分析的同时写进 `analysis-log.md`）；按用户的选择办，auto 模式默认先往下做。
 硬确认不因此跳过：确证性分析前 SAP 必须已确认（已有数据时走 `data-analysis-planning` 快速路径，研究问题和主要结局直接写进 SAP 一起确认；不要 SAP 就只能做标明 exploratory 的分析）；投稿和投稿版导出前必须过 6-Gate。已收集好的数据不走 `data-collection-tools`，SAP 确认后直接 `statistical-analysis`。
 
 ## Skill Routing
@@ -156,23 +156,7 @@ research-question-formulation
 
 ## Pipeline 回溯（Backward Links）
 
-| 当前阶段 | 发现的问题 | 回到 |
-|----------|------------|------|
-| 任何阶段 | 研究问题定义不准确 | research-question-formulation |
-| statistical-analysis | 前提假设不满足 / 需改方法 | data-analysis-planning（修改 SAP，记录偏离理由） |
-| manuscript-writing | 分析方法需调整 | data-analysis-planning → statistical-analysis |
-| peer-review-simulation | 方法学 Critical 问题 | study-design（只能改写法与局限，不能改已锁定的主要结局） |
-| pre-submission Gate 1（报告规范） | 条目缺失 | manuscript-writing，再跑 reporting-standards |
-| pre-submission Gate 2（统计） | 统计不完整 / 与 SAP 不符 | statistical-analysis |
-| pre-submission Gate 3（引用与数据） | 引用不存在 / 数字不一致 | pubmed-search Mode 3 → manuscript-writing |
-| pre-submission Gate 4（图表） | 图表不合规 | figure-generation |
-| pre-submission Gate 5（伦理） | 伦理声明缺失 | research-ethics |
-| pre-submission Gate 6（形式） | 字数 / 引用数 / 图表数超限 | manuscript-writing（或换期刊 → journal-selection） |
-| revision-response | 审稿人要求补充分析 | statistical-analysis（标注 post hoc，写入 SAP 偏离记录） |
-| revision-response | 被拒需改投 | journal-selection → manuscript-export |
-| data-collection-tools | protocol 缺变量定义 | study-design |
-
-回溯规则：修改后的产物标注修改原因和日期；下游依赖它的产物标记"需重新验证"。
+发现上游问题、要回到前面的 skill 时，按 [`references/backtracking.md`](references/backtracking.md) 的表（当前阶段 × 发现的问题 → 回到哪个 skill）处理。回溯规则：修改后的产物标注修改原因和日期；下游依赖它的产物标记"需重新验证"；已锁定的主要结局不因回溯而改（只能改写法与局限）。
 
 ## Session State（项目状态）
 
@@ -192,15 +176,7 @@ hook 只读其中 5 个字符串字段（见仓库 SECURITY.md）。
 
 ## User Profile（用户画像，全局）
 
-文件：`~/.claude/mrp-user-profile.json`（按人不按项目，所有项目共用）。
-**不在会话开始时集中提问。** 只有下面三个 skill 在用到某字段时读一次；缺就只问这一个问题，并问用户要不要保存：
-
-| Skill | 字段 | 命令 |
-|-------|------|------|
-| journal-selection | `favorite_journals` | `mrp_state.py profile get favorite_journals`（exit 3 = 未设置） |
-| data-analysis-planning | `preferred_stats_tool` | `mrp_state.py profile get preferred_stats_tool` |
-| figure-generation | `preferred_figure_style` | `mrp_state.py profile get preferred_figure_style` |
-
+文件：`~/.claude/mrp-user-profile.json`（按人不按项目，所有项目共用）。**不在会话开始时集中提问。** 只有用到某字段的 skill 读一次：`favorite_journals`（journal-selection；未选刊时的 manuscript-writing）、`preferred_stats_tool`（data-analysis-planning）、`preferred_figure_style`（figure-generation）。读：`mrp_state.py profile get <field>`（exit 3 = 未设置）；未设置且用户没说过 → 只问这一个问题，并问要不要保存；用户跳过就不保存。
 写入：`mrp_state.py profile set <field> <value>` / `profile add <列表字段> <值>`。其他字段（role、research_domains、methods_familiar 等）只在用户主动提到时记录。
 
 隐私：文件只在本机；用户可以随时说"忘记我的 X"（对应字段清空）或删除文件；不记录密码、患者数据、伦理批件号。
@@ -218,7 +194,6 @@ hook 只读其中 5 个字符串字段（见仓库 SECURITY.md）。
 | "记住用户偏好就先问 5 个问题" | 用到哪个字段再问哪个；没人用的字段不采集 |
 | "状态文件让 Claude 记在心里就行" | 状态只以 `.mrp-state.json` 为准，且只用脚本写，否则新会话无法恢复 |
 | "论文写完就可以投了" | 必须经过 pre-submission-verification 的 6 个 Gate |
-| "拿个现成模板/脚本改改就能用" | 数据的编码、缺失、聚类结构和研究需求各不相同；先分析真实情况再定制，模板只用来查漏 |
 
 ## Convergence
 

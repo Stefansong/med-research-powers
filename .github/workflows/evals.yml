@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Only run cases with this tag (empty = all)"
+        description: "Tags to run, space-separated (smoke | routing | negative | coverage | overtrigger | behavior). Empty = routing + negative"
         default: "smoke"
       runs:
         description: "Runs per case"
@@ -27,13 +27,25 @@ jobs:
           node-version: "22"
       - name: Install Claude Code
         run: npm install -g @anthropic-ai/claude-code
+      - name: Sandbox tools for the behaviour case
+        # data-first-planning runs data_profile.py through Bash, which the evaluator only allows
+        # inside its OS sandbox (bubblewrap + socat).
+        if: contains(inputs.tag, 'behavior')
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq bubblewrap socat
       - name: Run evals
+        env:
+          TAGS: ${{ inputs.tag }}
+          RUNS: ${{ inputs.runs }}
         run: |
           set -eu
-          TAG_ARG=""
-          if [ -n "${{ inputs.tag }}" ]; then TAG_ARG="--tag ${{ inputs.tag }}"; fi
+          TAGS="${TAGS:-routing negative}"
+          set --
+          for t in $TAGS; do set -- "$@" --tag "$t"; done
+          case " $TAGS " in
+            *" behavior "*) set -- "$@" --scaffold --allow-tools "Bash(python3 *)" ;;
+          esac
           claude plugin eval . --trust-plugin --json results.json --threshold 0.8 \
-            --runs "${{ inputs.runs }}" --ablation none --no-publish --max-cost-usd 10 $TAG_ARG
+            --runs "$RUNS" --ablation none --no-publish --max-cost-usd 20 "$@"
       - uses: actions/upload-artifact@v7
         if: always()
         with:

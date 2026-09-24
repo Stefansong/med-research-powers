@@ -27,7 +27,8 @@ description: Use when checking a manuscript item by item against its reporting g
 
 1. 先看 `study-protocol.md` 的 `type:` 字段和 Methods 里的设计描述；不确定就问用户，不要猜。
 2. 加载 `references/checklists/standards-index.yaml`（47 条规范）查找对应条目；主规范 + `use_with`
-   扩展一起列出。
+   扩展一起列出。带 `type:` 字段的条目（`bias_tool` / `appraisal_tool` / `framework`，如 RoB 2、ROBINS-I、NOS、
+   QUADAS-2、AMSTAR 2、GRADE、IDEAL）用来评价纳入研究或证据，不是报告规范，不能用来做稿件的报告完整性检查（Gate 1）。
 
 核心路由（常用）：
 

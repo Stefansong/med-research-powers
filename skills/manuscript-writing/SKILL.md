@@ -51,7 +51,7 @@ description: Use when drafting a manuscript or one section (original research, o
 
 ### Step 0：读取用户画像（懒采集）
 
-已有 `journal-selection-report.md` 或 `target_journal` 时跳过本步。否则读取 `~/.claude/mrp-user-profile.json` 的 `preferences.favorite_journals`。文件或字段不存在 → 只问这一个问题（"你常投的期刊有哪些？"），并问是否保存到该文件；用户跳过则不保存。它只用于 Step 2 的默认候选，不替代 `journal-selection`。
+已有 `journal-selection-report.md` 或 `target_journal` 时跳过本步。否则读 `~/.claude/mrp-user-profile.json` 的 `favorite_journals`（按总调度 User Profile 规则，缺则只问"你常投的期刊有哪些？"并问是否保存）。它只用于 Step 2 的默认候选，不替代 `journal-selection`。
 
 ### Step 1：确定文章类型
 
@@ -59,9 +59,7 @@ description: Use when drafting a manuscript or one section (original research, o
 
 ### Step 2：确定目标期刊并加载模板（软确认）
 
-目标期刊来源优先级：`journal-selection-report.md` 首选 → `.mrp-state.json` 的 `target_journal` → 画像的 `favorite_journals` → 询问用户。写作前**复核一次**："目标期刊仍是 X 吗？"——这是软确认，用户随时可换，换刊后重新加载模板即可，不需要回头重跑流程。
-
-加载模板只用脚本（见下方 Journal Template 节），**禁止整读 `journal-templates.yaml`**。
+目标期刊来源优先级：`journal-selection-report.md` 首选 → `.mrp-state.json` 的 `target_journal` → 画像的 `favorite_journals` → 询问用户。写作前**复核一次**："目标期刊仍是 X 吗？"——这是软确认，用户随时可换，换刊后重新加载模板即可，不需要回头重跑流程。模板只用脚本加载（见 Journal Template 节）。
 
 ### Step 3：盘点实际产物 → 列要点提纲 → 按 checkpoint_mode 确认
 
@@ -72,7 +70,7 @@ description: Use when drafting a manuscript or one section (original research, o
    | 产物 | 写作时用来做什么 |
    |------|----------------|
    | `results-summary.md` 及分析输出的结果表 | Results、Abstract 里的每个数字 |
-   | `analysis-log.md` | 与 SAP 的偏离——每条在 Methods 写明改了什么、为什么（Gate 2 查这里），影响结论的再在 Limitations 讨论 |
+   | `analysis-log.md` | 与 SAP 的偏离（Gate 2 查这里） |
    | `figure-legends.md`、图文件、`figure-plan.md` | 图表编号，正文 / 补充材料的分配 |
    | `study-protocol.md` | 设计、纳排、结局定义、样本量依据、"真实条件与设计理由" |
    | `analysis-plan.md` | 统计方法 |
@@ -81,16 +79,16 @@ description: Use when drafting a manuscript or one section (original research, o
    缺哪个就在提纲里标出，对应内容写 `[待补：来源]`，不编造。
 2. **目标期刊要求**：Step 2 取到的 `word_limit`、`abstract` 格式、`figures` / `tables` 上限、`sections` 顺序、`special`。
 3. **读者是谁**：期刊的主要读者（专科医生 / 全科临床医生 / 方法学或 AI 研究者）决定背景写多深、术语解释到什么程度、临床意义怎么讲。
-4. **写 `manuscript-outline.md`**（项目根目录）：每一节列要点，每条要点标明出处（产物文件 + 节 / 表 / 图；数字写到具体位置，如"主要结局效应量 → `results-summary.md` 的 Primary Outcome 表"），并按期刊字数限制给各节分配字数。SAP 偏离逐条列进 Methods 的要点（影响结论的同时列进 Limitations）。
-5. 把提纲给用户看，按 `checkpoint_mode`：`step` 等用户确认后再写全文；`light` / `auto` 展示后直接写，用户随时可以改。只写某一节（如只写 Methods）时，只列这一节的提纲。
+4. **写 `manuscript-outline.md`**（项目根目录）：每一节列要点，每条要点标明出处（产物文件 + 节 / 表 / 图；数字写到具体位置，如"主要结局效应量 → `results-summary.md` 的 Primary Outcome 表"），并按期刊字数限制给各节分配字数。`analysis-log.md` 的每条 SAP 偏离列进 Methods 要点（写明改了什么、为什么），影响结论的同时列进 Limitations。
+5. 把提纲给用户看，按总调度的 checkpoint_mode 处理计划确认。只写某一节（如只写 Methods）时，只列这一节的提纲。
 
 ### Step 4：按提纲和类型文件的写作顺序逐章写作
 
 - 每章写入 `manuscript/<section>.md`（文件名见 Output）；写作时对照类型文件的章节规则与报告规范条目。
 - 内容来自本项目的实际产物：每句话要么有产物支撑，要么是有引用的已有知识；不写没有具体信息的套话（如只说"具有重要临床意义"而不说意义在哪）。
-- Results 的每个数字都要能在 `results-summary.md` 或分析输出里找到出处（提纲里的出处保留到自检）；`analysis-log.md` 里的每条 SAP 偏离，在 Methods 如实写明改了什么、为什么；对结论可能有影响的，再在 Limitations 讨论。
+- Results 的每个数字都要能在 `results-summary.md` 或分析输出里找到出处（提纲里的出处保留到自检）；SAP 偏离按提纲写进 Methods / Limitations。
 - 每写完一章，对照模板的 `word_limit` / `abstract` 字数**实时检查**，超限先删冗余再压缩。
-- 缺数据或未定稿处用 `[待补：来源]`、`<!-- PLACEHOLDER: 说明 -->` 或 `[TBD]` 标注，**不要用看起来像真数据的占位值**（导出脚本会把 `[待补…]`、`[TBD]`、`<!-- PLACEHOLDER … -->` 等占位标记列进导出报告，完整清单见 `manuscript-export`；Step 6 先自查一遍）。
+- 缺数据或未定稿处用 `[待补：来源]`、`<!-- PLACEHOLDER: 说明 -->` 或 `[TBD]` 标注，**不要用看起来像真数据的占位值**。导出脚本会把这些占位列进导出报告：`[待补…]` / `[待填…]`、全角的 `【待补…】` / `［待补…］`（及待填写法）、`[TBD]` / `[TODO]` / `[pending]` / `[insert…]`，以及 HTML 注释里的 PLACEHOLDER / TODO / TBD / 待补（完整清单见 `manuscript-export`）；Step 6 先自查一遍。
 - 引用：写作时标记来源（PMID/DOI）；格式化用 `pubmed-search` Mode 6，写综述 Methods 检索策略可用 Mode 1；PubMed MCP 的写法和 5 种引用状态标记以 `pubmed-search` 为准；最终逐条验证由 `pre-submission-verification` Gate 3 完成。
 
 ### Step 5：期刊特殊元素
@@ -101,9 +99,9 @@ description: Use when drafting a manuscript or one section (original research, o
 
 1. 对照 Convergence 逐条自检；语言规则检查（见 Language Rules）。
 2. 数字溯源：逐个核对 Results / Abstract / Key Points 里的数字，都能在 `results-summary.md` 或分析输出里找到（找不到的删掉，或回 `statistical-analysis` 补）；`analysis-log.md` 的每条 SAP 偏离都已写进 Methods。
-3. 查占位：`grep -rnE "待补|TBD|PLACEHOLDER" manuscript/`，剩下的占位逐条列进摘要的"需要注意"。
+3. 查占位：`grep -rniE "待补|待填|TBD|TODO|PLACEHOLDER|\[pending|\[insert" manuscript/`，剩下的占位逐条列进摘要的"需要注意"。
 4. 输出 3–5 行摘要（产物清单、目标期刊与字数、待注意的 placeholder），按 checkpoint_mode 进入下一步（只写某一节时交付后停下）。
-5. 更新项目目录 `.mrp-state.json`（`python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`，记录 `completed_skills` 与 `artifacts.manuscript/`）。
+5. `python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py done manuscript-writing --output manuscript/ --next peer-review-simulation`（只写某一节时 `--next` 写用户接下来要做的事）。
 6. 整篇完成后的下一步 → `peer-review-simulation`。
 
 ## Journal Template（期刊排版规范）
@@ -122,7 +120,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_temp
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --id nature --json
 ```
 
-找不到 id 时脚本 exit 1 并提示 `--search`。输出里的 `IF_approx` 年份看条目的 `IF_year`（没有则为 **JCR 2022** 旧值）、APC 看 `apc_year`（规则见 `data_as_of`），引用时必须标年份与来源，选刊结论以 `journal-selection` 的 WebSearch 复核为准。
+找不到 id 时脚本 exit 1 并提示 `--search`；`journal-overrides.yaml` 格式有误或 `--yaml` 指定的文件不存在时输出一行 `Error: …` 并 exit 2——按提示改好文件再运行，不要原样重试。输出里的 `IF_approx` 年份看条目的 `IF_year`（没有则为 **JCR 2022** 旧值）、APC 看 `apc_year`（规则见 `data_as_of`），引用时必须标年份与来源，选刊结论以 `journal-selection` 的 WebSearch 复核为准。
 
 **目标期刊不在库中：** 用 WebSearch 找期刊 "Instructions for Authors"，把提取到的规范写入**项目目录**的 `journal-overrides.yaml`（与库文件相同结构：`templates:` 下一条含 `id / journal / publisher / word_limit / abstract / references / figures / tables / sections / special / system / family`），字段不确定的写 `verify`。脚本默认读取 `./journal-overrides.yaml`（或 `--overrides <路径>`），同 id 时覆盖库内条目。**不要改插件安装目录里的 `journal-templates.yaml`**——更新插件会丢失。
 
@@ -149,13 +147,7 @@ manuscript/
 
 文件名与 `manuscript-export` 的 section id 一一对应：`key-points` 与 `research-in-context` 由导出脚本按期刊 `family` 决定是否纳入及位置（JAMA：Key Points 在 Abstract 之前；Lancet：Research in Context 在 Introduction 之前；其他家族有这两个文件也不会导出，报告里会提示）。综述类的 `section-N-*.md` 导出前需合并进 `discussion.md`。
 
-数据表格需要 Excel 时（可选）：
-
-```python
-import pandas as pd
-with pd.ExcelWriter("manuscript_tables.xlsx", engine="openpyxl") as writer:
-    table1.to_excel(writer, sheet_name="Table 1", index=False)
-```
+数据表格需要 Excel 时（可选）：用 pandas `ExcelWriter`（openpyxl）从分析输出的结果表写出，每张表一个 sheet，不手抄数字。
 
 ## Language Rules（所有类型通用）
 

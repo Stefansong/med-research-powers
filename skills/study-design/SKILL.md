@@ -7,7 +7,7 @@ description: Use when designing any research study protocol (clinical/basic/AI-M
 
 ## Overview
 
-所有类型研究的方案设计——临床、基础、AI/ML、定性、问卷调查。**设计由真实条件决定**：先分析病例/数据来源、事件数、资源等真实条件（Step 0），再判断研究类型，读取对应模块文件（`references/modules/` 下五个文件，见 Router 表），最终统一产出 `study-protocol.md`（文件内 `type:` 字段区分五类）。模板和模块里的表格是必须覆盖的清单，不是填空表。本文件只放路由、通用流程与通用规则；各类型的决策树、专属规则和专属 Common Mistakes / Convergence / Red Flags 都在模块文件里。
+所有类型研究的方案设计——临床、基础、AI/ML、定性、问卷调查。**设计由真实条件决定**：先分析病例/数据来源、事件数、资源等真实条件（Step 0），再判断研究类型、只读对应的模块文件（见 Router 表），统一产出 `study-protocol.md`（`type:` 字段区分五类）。模板和模块里的表格是必须覆盖的清单，不是填空表；各类型的决策树、专属规则和专属 Common Mistakes / Convergence / Red Flags 在模块文件里。
 
 ## Study Type Router
 
@@ -92,7 +92,7 @@ description: Use when designing any research study protocol (clinical/basic/AI-M
 - **预期效应量 / 事件率 / 比例必须有真实来源**：相近人群、相近设计的文献（写 PMID，并说明为什么能借用）；本中心预实验或历史数据（写时间段与例数）；或临床上有意义的最小差异（写依据）。"常用值"（如"取中等效应量""事件率按一半估计"）不是来源。
 - 按模块逻辑给出数字：power analysis（效应量、α、β、脱落率；生存结局按事件数）/ 生物学重复数 / 数据划分方案 + 外部验证（AI/预测模型的样本量用 Riley 标准 pmsampsize、敏感度/特异度精度法 Buderer、阅片研究 MRMC，见 Type C 模板第 2 节）/ 信息饱和范围 / 调查公式。样本量脚本统一用 `${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py`。
 - **用 Step 0 的可获得病例数核对可行性**：计划期内能不能达到所需例数 / 事件数。达不到就改设计（多中心、延长入组期、换结局、减少变量）并写理由，**不要反过来改小参数去凑手头的例数**。
-- 回顾性研究的例数由已有数据决定：用真实的可用例数与事件数说明能支撑什么分析（能纳入几个变量、能检出多大的差异——在看结果之前按固定例数计算，不是用观察到的效应算"事后 power"）。
+- 回顾性研究的例数由已有数据决定：用真实的可用例数与事件数说明能支撑什么分析（能纳入几个变量、能检出多大的差异——在看结果之前按固定例数计算，只用总例数和总事件数（需要时加各组人数），不按暴露/分组去数事件或看结局，也不是用观察到的效应算"事后 power"）。
 - 写不出依据 → 不要编一个数字，改写"需预实验 / 需文献效应量"并列为待办。
 
 ### Step 4: 定义结局、变量与偏倚控制
@@ -107,27 +107,13 @@ description: Use when designing any research study protocol (clinical/basic/AI-M
 1. 按 `references/protocol-templates.md` 中对应 `type:` 的章节清单写 `study-protocol.md`：清单只用来查漏，内容按本研究的真实条件写；不适用的章节写"不适用 + 理由"；确实未知的写 `TBD: [需要什么]`；不照抄模板或模块里的示例数字、例数和措辞
 2. 按模块的 Convergence 与本文件的通用 Convergence 自查
 3. 进入 **Hard Checkpoint**（见下），等待用户明确确认
-4. 确认后把 `status:` 改为 `confirmed`，然后更新 `.mrp-state.json`（`${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`：`completed_skills` 追加 study-design、`artifacts` 登记 `study-protocol.md`、`next_step` 设为 research-ethics）
+4. 确认后把 `status:` 改为 `confirmed`，然后 `python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py done study-design --output study-protocol.md --next research-ethics`（并 `checkpoint protocol confirmed`）
 
 ## Output
 
 **唯一产物：`study-protocol.md`**（五类同名，`type:` 字段区分：`clinical` / `basic` / `ai-ml` / `qualitative` / `survey`）。
 
-章节清单按类型取自 `references/protocol-templates.md` 的 A–E 部分（用来查漏，不是填空表）。无论哪一类，文件都必须含：
-
-| 章节 | 内容 |
-|------|------|
-| 头部 | `type` / `title` / `version` / `research_question` / `registration` / `status` |
-| 真实条件与设计理由 | Step 0 的条件清单；选了什么设计、依据哪些条件、为什么不选更强的设计 |
-| 研究概要 | 设计类型、场景、报告规范 |
-| 研究对象 / 数据来源 | 纳入排除、招募或数据获取方式 |
-| 比较 / 对照 | 按类型（对照组 / 实验对照 / 基线模型 / 抽样策略） |
-| 样本量 / 数据规模 | 数字 + 依据 + 参数来源 |
-| 结局 / 变量 / 评估 | 主要与次要结局、评估时点、变量定义 |
-| 偏倚控制 | 随机化/盲法/混杂 或 划分/标注 或 可信度 或 应答率 |
-| 分析概要 | 一段话；详细 SAP 交给 `data-analysis-planning` |
-| 伦理与注册 | 批准状态、同意/豁免、注册号；详细核对交给 `research-ethics` |
-| 报告规范映射 | 规范名 → protocol 章节 |
+章节清单按类型取自 `references/protocol-templates.md` 的 A–E 部分（用来查漏，不是填空表）。无论哪一类都必须有：头部（`type` / `title` / `version` / `research_question` / `registration` / `status`）、真实条件与设计理由（Step 0 的条件清单；选了什么设计、依据哪些条件、为什么不选更强的设计）、研究概要（设计类型、场景、报告规范）、研究对象 / 数据来源、比较 / 对照、样本量 / 数据规模（数字 + 依据 + 参数来源）、结局 / 变量 / 评估时点、偏倚控制、分析概要（一段话，详细 SAP 交给 `data-analysis-planning`）、伦理与注册（详细核对交给 `research-ethics`）、报告规范映射（规范名 → protocol 章节）。
 
 下游读取方：`research-ethics`（伦理与注册章节）、`journal-selection`（研究概要）、`data-analysis-planning`（结局、变量、分析概要；前瞻性研究还读"真实条件"里的预计事件数与数据结构）、`data-collection-tools`（变量表、数据来源、标注流程、Prompt 标准化章节）、`manuscript-writing`（Methods，含设计理由）。
 
@@ -182,9 +168,7 @@ description: Use when designing any research study protocol (clinical/basic/AI-M
 请审阅方案，回复"确认"以继续；如需修改请说明具体调整内容。
 ```
 
-为什么必须等确认：研究类型决定后续所有分析方法、报告规范、审稿标准；主要结局一旦确定不能随意更改；样本量决定可行性与统计功效；protocol 注册后不可大幅更改。
-
-确认方式按用户设定的 `checkpoint_mode`：默认等待明确同意；"一直做到底"模式下只提示不等待，但锁定内容照样写进 `study-protocol.md`（文件头 `status: confirmed` + `confirmed_by: auto`）。
+确认方式按总调度的 `checkpoint_mode`（auto 模式只提示不等待，锁定内容照写，文件头 `status: confirmed` + `confirmed_by: auto`）。
 
 ## 衔接规则
 

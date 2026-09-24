@@ -7,7 +7,7 @@ description: Use when creating publication-quality statistical figures from anal
 
 ## Overview
 
-每张图必须达到直接投稿的质量，而且每张图都要有存在的理由。顺序固定：先分析实际结果、论文主线和目标期刊的图表限制 → 写图表计划（`figure-plan.md`）→ 按 checkpoint_mode 确认 → 按实际数据现写作图代码。`${CLAUDE_PLUGIN_ROOT}/skills/figure-generation/scripts/pub_style.py` 只负责期刊样式（字体、尺寸、dpi、配色、导出格式），不决定画什么、怎么画（运行目录是用户项目，不是插件目录，必须用 `${CLAUDE_PLUGIN_ROOT}` 定位）。数据只能来自 `results-summary.md` / 分析产出，绝不编造数据点。
+每张图必须达到直接投稿的质量，而且每张图都要有存在的理由。顺序固定：先分析实际结果、论文主线和目标期刊的图表限制 → 写图表计划（`figure-plan.md`）→ 按 checkpoint_mode 确认 → 按实际数据现写作图代码（`pub_style.py` 只管样式，见 Step 3）。数据只能来自 `results-summary.md` / 分析产出，绝不编造数据点。
 
 ## When to Use
 
@@ -16,7 +16,7 @@ description: Use when creating publication-quality statistical figures from anal
 
 ## When NOT to Use
 
-- 数据探索阶段的草图（不走本 skill）；按组画的结局图（如分组 KM 曲线）受总调度结局盲规则约束：SAP 确认前只在用户明确要探索性分析时画，标 exploratory
+- 数据探索阶段的草图（不走本 skill）；SAP 确认前按组画的结局图（如分组 KM 曲线）受总调度结局盲规则约束，只在用户明确要探索性分析时画，标 exploratory
 - 流程图 / 架构图（CONSORT、PRISMA、STROBE 参与者流程图等）→ 不属于统计作图，用 graphviz / draw.io / PowerPoint 手工绘制；流程图**内容**要求由 `reporting-standards` 给出
 - 要从原始数据画结局相关的图但还没有分析结果 → 先 `statistical-analysis`（没有 SAP 时走 `data-analysis-planning` 快速路径）
 
@@ -24,7 +24,7 @@ description: Use when creating publication-quality statistical figures from anal
 
 ### Step 0: 读取用户偏好
 
-读取 `~/.claude/mrp-user-profile.json` 的 `preferences.preferred_figure_style`（取值 nature / lancet / jama / nejm / default，对应 `COLORS` 的 key）。没有该字段 → 只问这一个问题（"图表配色风格用 Nature / Lancet / JAMA / NEJM 哪一种？"），并问是否保存到该文件供以后使用。目标期刊已定（`.mrp-state.json` 的 `target_journal`）时以期刊要求优先。
+目标期刊已定（`.mrp-state.json` 的 `target_journal`）时以期刊要求为准；否则读 `~/.claude/mrp-user-profile.json` 的 `preferred_figure_style`（nature / lancet / jama / nejm / default，对应 `COLORS` 的 key；按总调度 User Profile 规则，缺则只问"图表配色风格用 Nature / Lancet / JAMA / NEJM 哪一种？"并问是否保存）。
 
 ### Step 1: 分析实际结果、论文主线和期刊限制
 
@@ -43,11 +43,11 @@ description: Use when creating publication-quality statistical figures from anal
 
 末尾核对数量：正文图表总数不超过期刊上限（流程图也占名额；图表合并计数的期刊把表也算上），超出的移到补充材料或合并面板。
 
-把计划和理由给用户看，按 `checkpoint_mode`：`step` 等用户确认后再画；`light` / `auto` 展示后直接画，用户随时可以改计划。
+把计划和理由给用户看，按总调度的 checkpoint_mode 处理计划确认。
 
 ### Step 3: 样式设置
 
-`pub_style.py` 只管期刊样式：字体、字号、线宽、配色、栏宽尺寸、导出格式与 dpi、显著性标注。画什么、用什么图型、数据怎么整理，由 Step 2 的计划和实际数据决定，作图代码现写。
+`${CLAUDE_PLUGIN_ROOT}/skills/figure-generation/scripts/pub_style.py` 只管期刊样式：字体、字号、线宽、配色、栏宽尺寸、导出格式与 dpi、显著性标注。画什么、用什么图型、数据怎么整理，由 Step 2 的计划和实际数据决定，作图代码现写（运行目录是用户项目，必须用 `${CLAUDE_PLUGIN_ROOT}` 定位脚本）。
 
 ```python
 import os, sys
@@ -62,12 +62,15 @@ import matplotlib.pyplot as plt
 colors, width = setup(journal='nature', single_column=True)
 
 # 按期刊和面板数选图尺寸：nature 89/183 mm；lancet/bmj/jama 约 85/175 mm；未知期刊用通用 85/170 mm
-fig, ax = plt.subplots(figsize=journal_figsize(journal='nature', n_panels=1))
+# layout='constrained' 可用；不要传 bbox_inches='tight'（导出按这个尺寸原样保存，保证正好是期刊栏宽）
+fig, ax = plt.subplots(figsize=journal_figsize(journal='nature', n_panels=1), layout='constrained')
 
-# 组间比较图上添加显著性桥（***/**/*/ns；height 是 y 轴范围的比例，默认 2%）
+# 组间比较图上添加显著性桥（***/**/*/ns；height 是坐标轴高度的比例，默认 2%，对数轴按数量级算）
+# p 值缺失、NaN 或不在 0–1 之间时 p_to_stars 会报 ValueError：这时自己传 text=（不要标成 ns）
 # add_significance(ax, x1=0, x2=1, y=y_top, p_value=0.003)
 
-# 保存为投稿格式：TIFF (LZW) + PDF；线条图默认 600 dpi，照片/热图用 line_art=False → 300 dpi
+# 保存为投稿格式：TIFF（RGB、无透明通道、LZW 压缩）+ PDF，尺寸与图幅一致、不裁边；
+# 线条图默认 600 dpi，照片/热图用 line_art=False → 300 dpi；内容超出图幅时会警告
 save_figure(fig, 'figure1')                       # → figure1.tiff + figure1.pdf
 ```
 
@@ -89,11 +92,11 @@ save_figure(fig, 'figure1')                       # → figure1.tiff + figure1.p
 
 ### Step 6: 图注 + 更新状态
 
-把每张图的图注写进 `figure-legends.md`；输出 3–5 行摘要，然后更新 `.mrp-state.json`（`${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`：`completed_skills` 追加 figure-generation 及产物、`next_step` 设为 manuscript-writing），按 checkpoint_mode 进入 `manuscript-writing`。
+把每张图的图注写进 `figure-legends.md`；输出 3–5 行摘要，然后 `python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py done figure-generation --output figure-legends.md [--output figure-plan.md] --next manuscript-writing`，按 checkpoint_mode 进入 `manuscript-writing`。
 
 ## Journal Requirements
 
-完整的格式 / 分辨率 / 字体 / 栏宽 / 颜色规范见 `references/figure-specs.yaml`（TIFF 首选；线条图 600 DPI、半色调 300 DPI；Arial/Helvetica ≥6pt；栏宽按期刊，通用 85/170 mm；色盲友好）。目标期刊的图表数量限制按 Step 1 用脚本取（不要整读 `journal-templates.yaml`），并以其 "Instructions for Authors" 为准。
+完整的格式 / 分辨率 / 字体 / 栏宽 / 颜色规范见 `references/figure-specs.yaml`；图表数量限制按 Step 1 用脚本取（不要整读 `journal-templates.yaml`），并以期刊 "Instructions for Authors" 为准。
 
 ## Common Figure Types（参考，不是必须清单）
 

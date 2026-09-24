@@ -118,14 +118,14 @@ SAP item that prescribes it and to the code that performs it.
 
 | SAP item | Planned analysis | Code location | Result location | Status |
 |----------|------------------|---------------|-----------------|--------|
-| [4.1] | [计划的分析] | [文件 `# SAP 4.1`] | [results/xxx.csv 或输出行] | [已做 / 未做：理由 / 有偏离：见下表 #] |
+| [4.1] | [计划的分析] | [文件 `# SAP 4.1`] | [results/xxx.csv 的行/列（结果必须在文件里，不能只在屏幕输出）] | [已做 / 未做：理由 / 有偏离：见下表 #] |
 | [5.1] | ... | ... | ... | ... |
 
 ## 自检结果
 
 ### 重跑一致性
-- Command: [reproduce_check.py 的完整命令]
-- Result: [一致 / 不一致 → 修改后一致]；比较文件 [N] 个；报告 [reproduce-check.md]
+- Command: [reproduce_check.py 的完整命令，含 `--compare-stdout`；清洗脚本单独时两步串起来，清洗后数据也列进 `--outputs`]
+- Result: [一致 / 不一致 → 修改后一致]；比较文件 [N] 个 + 屏幕输出；报告 [reproduce-check.md]
 
 ### 人数流（可直接画 CONSORT / STROBE 流程图）
 
@@ -171,6 +171,7 @@ SAP item that prescribes it and to the code that performs it.
 **Research Question:** [一句话]
 **Date:** [日期]
 **Analysis Script:** analysis_script.py
+**Result files:** [results/ 下的 .csv / .json；下面每个数字都取自这些文件，不取自屏幕输出]
 
 ## Sample Characteristics
 

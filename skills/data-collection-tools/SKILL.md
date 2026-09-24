@@ -7,7 +7,7 @@ description: Use when data still have to be collected and collection tools must 
 
 ## Overview
 
-根据已确认的研究方案（`study-protocol.md`）、分析计划（`analysis-plan.md`）和**真实的数据来源**，生成本研究真正需要的数据收集工具——标注模板、推理脚本、数据录入表、随机分组表、数据划分脚本等。顺序固定：先分析要收哪些变量、数据实际从哪来、谁来填 → 列出工具清单和理由 → 按 checkpoint_mode 确认 → 再生成。`references/tool-catalog.yaml` 只是可选工具目录，不是必须全套生成。填补 data-analysis-planning → statistical-analysis 之间的执行空白：工具的变量名、格式、分组、划分都要和 SAP 对得上，否则分析阶段要返工。
+根据已确认的 `study-protocol.md`、`analysis-plan.md` 和**真实的数据来源**，生成本研究真正需要的数据收集工具（标注模板、推理脚本、CRF、随机分组表、数据划分等）。顺序固定：先分析要收哪些变量、数据实际从哪来、谁来填 → 列出工具清单和理由 → 按 checkpoint_mode 确认 → 再生成。工具的变量名、格式、分组、划分都要和 SAP 对得上，否则分析阶段要返工。
 
 ## When to Use
 
@@ -33,27 +33,13 @@ description: Use when data still have to be collected and collection tools must 
 | `patient_level_split.py` | 患者级 train/val/test 或 K 折划分，可按标签分层，固定 seed，输出各集类别分布 + 泄漏检查 | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/patient_level_split.py" labels.csv --patient-col patient_id --label-col label --seed 42 --out-dir data/splits` |
 | `randomization.py` | 简单 / 区组 / 分层随机分组表 + 汇总（seed 的规矩见 C 节） | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/randomization.py" --method stratified --n-per-stratum 40 --strata site=A,B sex=M,F --arms Control,Treatment --out tools/allocation.csv` |
 
-这两个是护栏脚本（出错会让研究作废，而且肉眼很难发现），所以固定下来；其余工具（CRF、数据字典、提取表、推理脚本等）都按本研究的真实数据来源现写。表中命令的参数只是示例：列名、分层因素、每层例数、划分的 seed 一律按 protocol / SAP 填（随机分组的 seed 见 C 节）。
+其余工具（CRF、数据字典、提取表、推理脚本等）都按本研究的真实数据来源现写。表中命令的参数只是示例：列名、分层因素、每层例数、划分的 seed 一律按 protocol / SAP 填（随机分组的 seed 见 C 节）。
 
 样本量不在本 skill 算：protocol 的先验样本量用 `${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py`（见 `references/tool-catalog.yaml`）。
 
 ## Study Type Router
 
-常见工具组合如下，只作参考；实际要哪些，由 Step 2 的真实数据来源分析和 Step 3 的清单决定。
-
-```
-研究类型（study-protocol.md 的 type 字段）？
-├── AI/ML Benchmark（VLM/LLM 评估）
-│     → Prompt 模板 + 推理脚本 + 标注表 + 评分表 + 分析脚本
-├── AI 诊断/预测模型
-│     → 数据提取表 + 标注表（Ground Truth）+ 患者级划分脚本 + 评估脚本
-├── 临床研究（RCT / 队列 / 横断面）
-│     → CRF（病例报告表）+ 数据字典 + 筛选表 + 随机分组表（RCT）
-├── 基础实验
-│     → 实验记录表 + 数据录入模板 + 图像采集规范
-└── 系统综述 / Meta 分析
-      → 数据提取表 + 偏倚评估表 + PRISMA 流程图模板
-```
+按 `study-protocol.md` 的 `type` 找 `references/tool-catalog.yaml` 里的常见工具组合（只作参考，实际要哪些由 Step 2–3 决定）：AI/ML Benchmark → `ai_ml_benchmark`；AI 诊断/预测 → `ai_diagnostic_prediction`；临床（RCT / 队列 / 横断面）→ `clinical`；基础实验 → `basic_experiment`；系统综述 / Meta → `systematic_review_meta`。
 
 ## Workflow
 
@@ -81,19 +67,15 @@ description: Use when data still have to be collected and collection tools must 
 
 ### Step 3: 列出工具清单和理由 → 按 checkpoint_mode 确认
 
-把计划写进 `tools/README.md` 的"工具清单"一节，每个工具写：用途、覆盖哪些变量 / SAP 条目、为什么需要（为什么不能直接用现成表格或系统导出）、谁在什么时候用。同时写明**不生成**哪些常见工具及原因（例如变量都能从 HIS 导出 → 不做手填 CRF，只做数据字典和导出字段对照）。
+把计划写进 `tools/README.md` 的"工具清单"一节，每个工具写：用途、覆盖哪些变量 / SAP 条目、为什么需要（为什么不能直接用现成表格或系统导出）、谁在什么时候用。同时写明**不生成**哪些常见工具及原因（例如变量都能从 HIS 导出 → 不做手填 CRF，只做数据字典和导出字段对照）。`tool-catalog.yaml` 只用来查漏，**不是必须全套生成**。
 
-`references/tool-catalog.yaml` 是可选工具目录，用来查漏，**不是必须全套生成**。
-
-按 `checkpoint_mode`：`step` 等用户确认清单后再生成；`light` / `auto` 在摘要里列出清单后直接生成，用户随时可以改。Step 2 没问到的来源假设标"待核实"写进 `tools/README.md`。
+清单按总调度的 checkpoint_mode 处理计划确认。Step 2 没问到的来源假设标"待核实"写进 `tools/README.md`。
 
 ### Step 4: 按确认的清单生成工具
 
-下面按研究类型写生成要点；每类的常见工具见 `references/tool-catalog.yaml` 对应条目，只生成 Step 3 确认过的。
+下面按研究类型写生成要点；只生成 Step 3 确认过的工具。
 
 #### A. AI/ML Benchmark 研究
-
-常见工具见 `references/tool-catalog.yaml` 的 `ai_ml_benchmark`。生成逻辑：
 
 **Prompt 模板：** 从 `study-protocol.md` 的 Type C 模块提取任务维度列表、每个任务的题型（MCQ / 开放题）、选项池（按术式/类别分组）→ 组装为 JSON，包含 3 种 Prompt 变体（简洁/标准/详细）用于敏感性分析。
 
@@ -101,13 +83,9 @@ description: Use when data still have to be collected and collection tools must 
 
 #### B. AI 诊断/预测模型
 
-常见工具见 `references/tool-catalog.yaml` 的 `ai_diagnostic_prediction`。
-
 **数据划分脚本 = `patient_level_split.py`**：把它复制为项目的 `tools/data_split.py`（或在 `tools/README.md` 写明调用命令），按 SAP 第 10 节（数据划分方案）的方案（hold-out / K 折）、分层标签、seed 运行；把生成的 `split_summary.json`（各集患者数、类别分布、泄漏检查 passed）附到 SAP。
 
 #### C. 临床研究
-
-常见工具见 `references/tool-catalog.yaml` 的 `clinical`。
 
 **CRF / 数据字典生成逻辑：** 字段来自 Step 1 的变量需求清单（纳入/排除判定、基线特征、干预/暴露、主要/次要结局、各时点），不从通用模板复制字段。变量名与 SAP 一致；编码、单位、取值范围按 Step 2 的真实来源定（如 LIS 导出的单位和"<0.1"写法、HIS 的诊断编码版本、系统里"未查"的写法），数据字典逐项写明"来源系统 / 原始字段名 / 原始写法 → 分析用变量名与编码"。表格结构按数据结构定：每位患者一条记录 → 宽表（每行一个患者）；同一患者有多个病灶或多次随访 → 长表或分表，保留患者 ID 与记录 ID。
 
@@ -115,11 +93,11 @@ description: Use when data still have to be collected and collection tools must 
 
 #### D. 基础实验
 
-常见工具见 `references/tool-catalog.yaml` 的 `basic_experiment`；记录表的字段按本实验的读数、仪器导出格式和操作者来定。
+记录表的字段按本实验的读数、仪器导出格式和操作者来定。
 
 #### E. 系统综述 / Meta 分析
 
-常见工具见 `references/tool-catalog.yaml` 的 `systematic_review_meta`；提取表的字段按本综述的 PICO、结局指标和计划的合并方法来定。
+提取表的字段按本综述的 PICO、结局指标和计划的合并方法来定。
 
 ### Step 5: 生成数据目录结构
 
@@ -127,23 +105,15 @@ description: Use when data still have to be collected and collection tools must 
 
 ### Step 6: 输出清单 + 使用指南 + 更新状态
 
-补全 `tools/README.md`：数据来源分析（Step 2）、确认后的工具清单（Step 3）、每个工具的用途和使用方法（含上面两个脚本的调用命令）。输出 3–5 行摘要，然后更新 `.mrp-state.json`（`${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`：`completed_skills` 追加 data-collection-tools 及产物、`next_step` 设为 statistical-analysis，`current_stage` 标记为"用户收集数据中"）。
+补全 `tools/README.md`：数据来源分析（Step 2）、确认后的工具清单（Step 3）、每个工具的用途和使用方法（含上面两个脚本的调用命令）。输出 3–5 行摘要，然后 `python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py done data-collection-tools --output tools/README.md --next statistical-analysis --stage "用户收集数据中"`。
 
 ## Output
 
-除 `tools/README.md` 外，下表其余文件只在 Step 3 确认的清单里有时才生成；表中是常见文件名，不是必交清单。
-
-| 文件 | 必须 / 常见于 | 说明 |
+| 文件 | 必须 / 条件 | 说明 |
 |------|---------|------|
 | `tools/README.md` | 必须 | 数据来源分析 + 工具清单与理由 + 使用指南 |
-| `tools/prompts.json` | AI Benchmark | Prompt 模板 |
-| `tools/vlm_inference.py` | AI Benchmark | 推理脚本 |
-| `tools/annotation_template.csv` | AI Benchmark / AI 诊断 | 标注模板 |
-| `tools/scoring_template.csv` | AI Benchmark | 评分模板 |
-| `tools/analysis_pipeline.py` | AI Benchmark | 结果汇总脚本（与 `tool-catalog.yaml` 一致；正式统计分析由 `statistical-analysis` 生成 `analysis_script.py`） |
+| Step 3 清单里的工具 | 按清单 | 常见文件名见 `references/tool-catalog.yaml`（如 `tools/CRF.xlsx`、`tools/data_dictionary.md`、`tools/prompts.json`）；AI 研究的结果汇总脚本不代替 `statistical-analysis` 的 `analysis_script.py` |
 | `tools/data_split.py` + `data/splits/split_summary.json` | AI 诊断 | 患者级划分（来自 `patient_level_split.py`） |
-| `tools/CRF.xlsx` | 临床研究 | 病例报告表 |
-| `tools/data_dictionary.md` | 临床研究 | 数据字典 |
 | `tools/allocation.csv` + `*_summary.json` | RCT | 随机分组表与含 seed 的汇总（`randomization.py`，受限保管） |
 | `data/` 目录结构 | 所有类型 | 按本研究裁剪的项目目录 |
 

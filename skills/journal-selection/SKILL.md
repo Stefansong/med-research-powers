@@ -26,7 +26,7 @@ description: Use when choosing or re-checking a target journal (tentative after 
 
 ### Step 0：读取用户画像（懒采集）
 
-读取 `~/.claude/mrp-user-profile.json` 的 `preferences.favorite_journals`。文件或字段不存在 → 只问这一个问题（"你常投的期刊有哪些？"），并问是否保存；用户跳过则不保存。`favorite_journals` 只作为候选来源之一，仍要走 Step 2 评分，不能因为"常投"就直接推荐。
+读 `~/.claude/mrp-user-profile.json` 的 `favorite_journals`（按总调度 User Profile 规则，缺则只问"你常投的期刊有哪些？"并问是否保存）。`favorite_journals` 只作为候选来源之一，仍要走 Step 2 评分，不能因为"常投"就直接推荐。
 
 ### Step 1：研究画像分析
 
@@ -38,14 +38,14 @@ description: Use when choosing or re-checking a target journal (tentative after 
 - **临床可转化性**：直接改变实践 / 间接影响 / 基础机制
 - **时间需求**：毕业 / 结题 / 抢发 → 决定对审稿周期的要求
 
-据此给出**论文水平档位**（用于 Step 3 分梯队）：
+据此给出**论文水平档位**（用于 Step 3 分梯队）。档位看问题的重要性、偏倚控制、样本量与事件数、有无外部验证、创新程度的**综合**，**不按设计标签定**：回顾性研究设计严谨、多中心或有外部验证，同样可以是 A/B；前瞻性研究偏倚控制差、样本小，也可能是 D。
 
 | 档位 | 典型特征 | 对应期刊层级 |
 |------|---------|-------------|
 | A | 多中心 / 外部验证 / 改变实践的证据 / 方法创新 | 学科 Q1 前半（Top 10%） |
-| B | 单中心大样本、设计严谨、增量创新 | 学科 Q1 |
+| B | 设计严谨、样本与事件数充足、增量创新（前瞻或回顾均可） | 学科 Q1 |
 | C | 单中心中等样本、验证性、无外部验证 | 学科 Q2 |
-| D | 小样本 / 回顾性 / 探索性 | 学科 Q3–Q4 |
+| D | 样本或事件数少、偏倚控制弱、以探索或描述为主 | 学科 Q3–Q4 |
 
 ### 数据来源规则（Step 2 之前必读）
 
