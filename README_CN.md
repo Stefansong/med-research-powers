@@ -8,7 +8,7 @@ Med-Research-Powers（MRP）是一个 [Claude Code](https://claude.ai/code) 插�
 
 灵感来自 [Superpowers](https://github.com/obra/superpowers)（软件工程方法论），针对临床与生物医学研究做了改造。
 
-> **版本 6.4.0** · 20 个 skill · 7 个斜杠命令 · MIT 许可 · 作者 BTCH Uro AI Lab
+> **版本 6.4.1** · 20 个 skill · 7 个斜杠命令 · MIT 许可 · 作者 BTCH Uro AI Lab
 
 ---
 
@@ -22,7 +22,7 @@ Med-Research-Powers（MRP）是一个 [Claude Code](https://claude.ai/code) 插�
 | **报告规范** | 47 项报告规范 —— CONSORT 2025、SPIRIT 2025、STROBE、PRISMA 2020、TRIPOD+AI 2024、DECIDE-AI、CLAIM 2024、IDEAL、ARRIVE 2.0、COREQ、CHERRIES、COSMIN …… |
 | **期刊模板** | 240 本期刊，覆盖 30+ 专科 |
 | **统计方法** | 15+ 类方法，配前提假设驱动的决策树 |
-| **Python 脚本** | 10 个内置脚本（前提检验、样本量、数据清洗、分析脚手架、绘图样式、.docx 导出、期刊模板抽取、患者级划分、随机分组、流程状态） |
+| **Python 脚本** | 10 个内置脚本（前提检验、样本量、数据体检、重跑核对、绘图样式、.docx 导出、期刊模板抽取、患者级划分、随机分组、流程状态） |
 | **投稿前检查** | 6 道关卡，含 PubMed MCP 引用核验 |
 | **同行评审** | 4 位审稿人模拟，0–100 量化评分，覆盖 8 个维度 |
 | **必须确认的节点** | 3 个决策一定会等你明确同意：研究方案、分析计划、投稿前核验报告 |
@@ -50,7 +50,7 @@ AI 科研智能体每次都会犯同样的错。MRP 用有引导的流程取代"
 1. **先定义，再设计** —— PICO/FINER，没有假设不做分析。
 2. **先计划，再执行** —— 任何检验前先有统计分析计划（SAP）。
 3. **先核验，再投稿** —— 6 道投稿前关卡；CONSORT 2025 合规。
-4. **脚本优于提示** —— 前提检验、样本量、绘图、导出都用可复用 Python。
+4. **先看数据，再定计划** —— 先给真实数据做体检，按体检结果写分析计划，再针对这份数据现写分析代码；内置脚本只做固定的事（数据体检、前提检验、样本量、绘图样式、导出）。
 
 MRP 是提示词层面的引导：流水线、确认节点和关卡都是 Claude 遵循的指令，不是拦截工具调用的代码。它让跳步骤变得不容易、并且看得见——但不是绝对不可能。
 
@@ -133,7 +133,7 @@ research-question-formulation
 → research-ethics                   （伦理批准 / 注册必须在收集数据之前）
 → journal-selection                 （暂定目标期刊——软确认）
 → data-analysis-planning            [确认节点 2：analysis-plan.md]
-→ data-collection-tools
+→ data-collection-tools             （只在数据还没收集时）
 → [你收集数据]
 → statistical-analysis
 → figure-generation
@@ -472,7 +472,7 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 
 每个模板包含：字数限制、摘要格式（结构化/非结构化）、参考文献格式及上限、图表限制、章节结构、特殊要求（Key Points 框、Research in Context 面板、Reporting Summary）、投稿系统和 ORCID 政策。期刊家族规则（Lancet / JAMA / Nature 子刊）只保存在这个文件里。
 
-库里的影响因子和 APC 都带数据年份：41 本常投期刊（泌尿、影像、AI/数字健康、顶级综合与肿瘤刊）有 `IF_year`/`IF_source` 字段，是出版社官网公布的 JCR 2025 或 2024 值；其余仍是 JCR 2022 值（规则见 `data_as_of`）。各 skill 引用时会标年份并建议先上网复核。若某期刊未收录，MRP 会通过网络检索其"Instructions for Authors"。
+库里的影响因子和 APC 都带数据年份：42 本常投期刊（泌尿、影像、AI/数字健康、顶级综合与肿瘤刊）有 `IF_year`/`IF_source` 字段，是出版社官网公布的 JCR 2025 或 2024 值；其余仍是 JCR 2022 值（规则见 `data_as_of`）。各 skill 引用时会标年份并建议先上网复核。若某期刊未收录，MRP 会通过网络检索其"Instructions for Authors"。
 
 ---
 
@@ -482,9 +482,9 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 
 | 脚本 | 位置 | 用途 |
 |------|------|------|
-| `assumption_tests.py` | `statistical-analysis/scripts/` | 正态性（Shapiro-Wilk、D'Agostino-Pearson）、方差齐性（Levene's）、自动推荐检验、Cohen's d 含 CI |
-| `power_analysis.py` | `statistical-analysis/scripts/` | 跨设计的样本量/效能：两组、比例、诊断准确性、生存、相关——含脱落率调整 |
-| `data_profile.py` | `statistical-analysis/scripts/` | 只读数据体检（CSV/XLSX，兼容 GBK）：伪装缺失、"<0.1" 这类截断值、数值存成文本、日期解析失败、重复患者 ID、结局事件总数、疑似隐私字段——不改数据，不计算任何与结局的关系 |
+| `assumption_tests.py` | `statistical-analysis/scripts/` | 前提诊断（Shapiro-Wilk / D'Agostino-Pearson、Levene）只作描述，不用来切换检验；给出按设计的默认方法（Welch）和 SAP 预先规定时才用的秩检验备选；Cohen's d 含 CI |
+| `power_analysis.py` | `statistical-analysis/scripts/` | 跨设计的样本量/效能：两组、两组率（合并方差 Fleiss 公式，可选连续性校正）、诊断准确性、生存、相关——含脱落率调整 |
+| `data_profile.py` | `statistical-analysis/scripts/` | 只读数据体检（CSV/XLSX，兼容 GBK）：伪装缺失、"<0.1" 这类截断值、数值存成文本、日期解析失败、重复患者 ID、结局事件总数（同一患者多行时按患者计）、疑似隐私字段（按列名、身份证/手机号样式或"每名患者一个取值"识别，只报列名不显示取值）——不改数据，不计算任何与结局的关系 |
 | `reproduce_check.py` | `statistical-analysis/scripts/` | 在全新进程里把分析命令跑两次并逐个比较输出（表格逐单元格）——退出码 0 一致 / 1 不一致 / 2 运行失败 |
 | `pub_style.py` | `figure-generation/scripts/` | 期刊图表样式（Nature、Lancet、JAMA、NEJM 配色）、色盲友好选项、≥300 DPI 导出、显著性标注 |
 | `export_docx.py` | `manuscript-export/scripts/` | 由期刊模板库驱动，Markdown → 符合期刊排版的 `.docx`；生成 `export-report.md` |
@@ -502,7 +502,11 @@ sys.path.insert(0, os.path.join(os.environ.get("CLAUDE_PLUGIN_ROOT", "."), "skil
 
 from assumption_tests import full_check          # 前提检验
 result = full_check(group1, group2, paired=False)
-print(f"Recommended test: {result['recommended_test']}")
+print(f"Recommended test: {result['recommended_test']}")  # 只作描述；用哪个检验以 SAP 为准（默认 Welch）
+
+# 数据体检和重跑核对是命令行工具：
+#   python3 "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/data_profile.py" data.xlsx --id patient_id --outcome recurrence --report data-profile.md
+#   python3 "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/reproduce_check.py" --cmd "Rscript analysis.R" --outputs results/
 
 from power_analysis import two_groups            # 样本量计算
 result = two_groups(effect_size=0.5, power=0.80, dropout=0.15)

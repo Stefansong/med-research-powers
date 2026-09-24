@@ -1,5 +1,42 @@
 # Changelog
 
+## v6.4.1 (2026-09-24)
+
+Fix release after a repository-wide audit of 6.4 (7 parallel reviews, each verified by an independent reviewer; every finding below was reproduced or checked against its source). No new skills; three script CLIs gain options.
+
+### Security and privacy
+- `hooks/session-start.sh` printed `.mrp-state.json` values with dash `echo`, which interprets `\n` / `\c`: a crafted state file in a cloned repository could put a line **outside** the "data, not instructions" fence. Values are now printed with `printf %s`, control characters and backticks are dropped, and the 160-byte cut never splits a UTF-8 character. After a mid-task compaction Claude is told to continue instead of stopping to report the project state.
+- `data_profile.py` printed identifier values whenever the column name was not on its fixed list (e.g. every patient name in a column called `患者`, a pathology-number range, dates of birth), and a headerless CSV turned the first patient's ID-card and phone numbers into column names. Identifiers are now also found by value (one value per patient, almost all different) and date of birth is always an identifier — their values are never printed; a first row that looks like data is not used as a header (`--header` / `--no-header` / `--skip-rows`). Privacy columns keep their quality checks; `drug_name`, `mRNA`, `Unnamed: 3` are no longer taken for names.
+
+### Results that were silently wrong
+- `data_profile.py`: a binary outcome coded `1.0/0.0` (any float export with a missing value) crashed `--outcome`; events were counted per row, so 6 patients with 3 rows each showed 18 events — now also per patient, the number that limits predictors. `未检测 / 暂无 / 不适用 / 待查 …` were not recognised as missing; `无` in a numeric column (transfusion volume) was always counted as missing — now kept and listed for confirmation; grouped ranges (`<60 / ≥60`) were reported as detection-limit values; `hospital_stay`, `tumor_site`, `中心静脉置管` were taken for centres and triggered GEE advice. Also: full-width digits, unmatched quotes (swallowed the rest of the file), trailing blank rows, month-first dates, strict JSON, symlinked report path.
+- `patient_level_split.py`: per-stratum floor cuts sent strata of one patient to the test set (a continuous label gave `{test: 200}`), gave 21/5/4 for 0.7/0.2/0.1 of 30, and put every k-fold remainder in the last fold; missing labels crashed or left rows unassigned while the leakage check passed. Split sizes now follow the fractions exactly and every stratum is spread proportionally; missing labels form their own stratum; `--kfold 0` is an error; an existing `split` column is not overwritten.
+- `power_analysis.proportion()` sized with Cohen's h, which under-sizes rare or extreme proportions (0.01 vs 0.05: 250 instead of 285 per group). It now uses the pooled-variance formula (Fleiss; the same n as R's `power.prop.test`), with `--continuity-correction`; NaN / infinite inputs are rejected.
+- `randomization.py` defaulted to the public seed 42 and told users to write the seed and block sizes into `study-protocol.md`, which defeats allocation concealment. Without `--seed` an unpredictable seed is drawn (`secrets`) and kept only in the concealed summary; strata use independent random streams (seed + i made stratum 2 of seed 42 equal stratum 1 of seed 43); block lists end on a whole block when n allows.
+- `assumption_tests.py` chose Student / Welch / Mann-Whitney from Levene and normality p-values. It now reports those tests as diagnostics only, recommends the design default (Welch; Welch ANOVA + Games-Howell) and names the rank-based alternative for use only when the SAP prespecifies it.
+- `reproduce_check.py` accepted outputs outside `--cwd` and left a path empty when an output was never produced; `export_docx.py` read "8 pages" as an 8-word limit and "150-250 words" as 150.
+- Smaller: `get_journal_template.py --id` is case-insensitive; `mrp_state.py` honours `CLAUDE_CONFIG_DIR`, strips list values and explains a state file that is not a JSON object; `install.sh` no longer advertises `curl … | bash`.
+
+### Methodology
+- Decision tree and method cards agree: Welch by default, no Shapiro-Wilk/Levene pre-test route; rank-based tests chosen in the SAP on design grounds. Cochran-Armitage correctly described for 2×K tables; proportional-odds regression added. Batch effects modelled as a covariate (ComBat / `removeBatchEffect` for visualisation only).
+- Calibration intercept (calibration-in-the-large), slope and a flexible curve are the primary calibration measures everywhere (ECE/MCE secondary); caveats on NRI/IDI and on SMOTE/oversampling; time-to-event calibration and decision curves for prognostic models.
+- Method-card recipes that gave wrong answers fixed: the Python calibration intercept (it computed the joint recalibration intercept), a rank-deficient patsy spline, sklearn L1 without standardisation; penalised regression is no longer presented as a cure for too few events; no global `na_values` with `999`. Binomial-GLMM DTA meta-analysis, AI-versus-reader-panel MRMC guidance, PROBAST+AI, QUADAS-C, CHART and STARD-AI (Nat Med 2025) added, each checked on PubMed.
+- Study design: the Type C protocol template has a sample-size section (Riley/pmsampsize, Buderer, MRMC); the protocol states the randomisation method, not the seed or block sizes (SPIRIT 2025 item 21b); explainability no longer attributed to DECIDE-AI; optional-stopping advice removed. Human genetic resources are administered by 国家卫生健康委员会 since 2024-05-01. Gate 2 multiplicity follows the SAP; calibration and error-rate parity replace demographic parity.
+- Example project: illustrative numbers labelled, external test set justified with Buderer, 6-reader MRMC design instead of two-reader DeLong, STARD mapping redone from the local checklist, 60/20/20 split.
+
+### Workflow
+- Missing prerequisites no longer block: Claude says what is missing and why, offers to create it or to continue with the gap recorded, and follows the user's choice. The three hard checkpoints stay.
+- Existing retrospective data take a quick SAP path and go straight to `statistical-analysis`; `data-collection-tools` is only for data still to be collected. Light mode no longer waits for tool-list approval; auto mode records `confirmed_by: auto`; a request for one artifact (a section, a figure, a SAP) stops after delivering it.
+- `figure-generation`: restyling an existing figure needs no SAP; outcome-by-group plots before the SAP only as labelled exploratory work.
+- Trigger words tightened ("写完了", "docx", "注册", "帮我算" …); English triggers added; conducting a systematic review routes to `literature-synthesis`, not `manuscript-writing`.
+
+### Data and evals
+- Journal data: all JAMA-family journals and Circulation / Circulation Research on eJournalPress (were ScholarOne); NEJM on ScholarOne in `submission-systems.yaml` (JAMA and NEJM were swapped); Modern Pathology and Laboratory Investigation published by Elsevier; Blood published by Elsevier for ASH; Nature Medicine limits marked 待核实.
+- Evals: the negative graders now also catch an MRP skill invoked without the `mrp:` prefix; `data-first-planning` numbers corrected (400 patients, 668 rows, 23 patient-level events) and its judge no longer rewards skipping prerequisites.
+- Tests: 236 (was 116), incl. `tests/test_mrp_state.py`.
+
+---
+
 ## v6.4.0 (2026-09-23)
 
 **Analyse first, then plan, then decide, then execute.** Wherever the work depends on real data or real needs, MRP no longer applies a template or a canned script: Claude first examines the actual situation, then tailors the plan, the user decides, and only then is code or content written — followed by a self-check.

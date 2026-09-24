@@ -1,6 +1,6 @@
 ---
 name: team-collaboration
-description: Use when a research project benefits from multi-agent parallel work on independent subtasks. Triggers on "多人协作"、"并行分析"、"分工"、"同时做"、"parallel"、"子代理".
+description: Use when a research project benefits from multi-agent parallel work on independent subtasks. Triggers on "多人协作"、"并行分析"、"分工"、"子代理"、"parallel subagents".
 ---
 
 # Team Collaboration

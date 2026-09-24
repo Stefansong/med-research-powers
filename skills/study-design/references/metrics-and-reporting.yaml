@@ -53,14 +53,14 @@ risk_prediction:
     - {metric: Brier Score, description: "Overall accuracy of probabilistic predictions", when: "Always"}
   secondary:
     - {metric: DCA, description: "Decision Curve Analysis — clinical net benefit across thresholds", when: "MANDATORY for clinical prediction models"}
-    - {metric: NRI / IDI, description: "Reclassification / discrimination improvement vs existing model", when: "Only when comparing to an established model; report with caution"}
+    - {metric: NRI / IDI, description: "Reclassification / discrimination improvement vs existing model — not proper performance measures (a miscalibrated model can look better)", when: "Only if a journal asks, when comparing to an established model; report next to DCA / net benefit and the change in calibration and AUROC, never alone"}
 
 fairness_and_bias:
   metrics:
-    - {metric: Demographic Parity, description: "Equal positive prediction rate across groups", when: "Any model deployed across demographics"}
-    - {metric: Equalized Odds, description: "Equal TPR and FPR across groups", when: "Fairness-critical applications"}
-    - {metric: Calibration by Subgroup, description: "Calibration curves stratified by race/sex/age", when: "Always for clinical deployment"}
+    - {metric: Calibration by Subgroup, description: "Calibration intercept, slope and curve stratified by sex/age/race/centre — predicted risk should mean the same in every group", when: "Always for clinical deployment (preferred fairness criterion for risk models)"}
+    - {metric: Error-rate parity (Equalized Odds), description: "Sensitivity (TPR) and false-positive rate (FPR) by group at the prespecified threshold, with CIs", when: "Always when a threshold is used for decisions"}
     - {metric: Subgroup AUROC, description: "AUROC stratified by demographic groups", when: "Always — aggregate AUROC hides disparities"}
+    - {metric: Demographic Parity, description: "Equal positive prediction rate across groups", when: "Not a target for clinical models: when disease prevalence truly differs between groups, a well-calibrated, accurate model SHOULD flag more people in the higher-prevalence group; forcing equal positive rates miscalibrates the model and adds missed cases or false alarms. Report positive rates only descriptively next to group prevalence"}
   reporting:
     - "Report performance stratified by sex, age, race/ethnicity at minimum"
     - "Report dataset composition vs target population demographics"
@@ -80,18 +80,19 @@ robustness:
 
 calibration_extended:
   metrics:
-    - {metric: ECE, description: "Expected Calibration Error", when: "Any model outputting probabilities"}
-    - {metric: MCE, description: "Maximum Calibration Error", when: "Safety-critical — worst-case miscalibration"}
-    - {metric: Reliability Diagram, description: "Visual calibration plot (predicted vs observed)", when: "Always include as figure"}
+    - {metric: "Calibration intercept + slope", description: "Primary: calibration-in-the-large (logit(p) as offset) and calibration slope, with CIs", when: "Any model outputting probabilities"}
+    - {metric: Flexible Calibration Curve, description: "Smoothed (loess / spline) predicted vs observed plot with CI", when: "Always include as figure"}
+    - {metric: ECE, description: "Expected Calibration Error — secondary; depends on the binning (report the bins)", when: "Optional, alongside the primary measures"}
+    - {metric: MCE, description: "Maximum Calibration Error — secondary; unstable with few cases per bin", when: "Optional, safety-critical settings"}
   note: "A model can have high AUROC but terrible calibration — both must be assessed"
 
 ## Study Type → Reporting Standard Map
 
 mapping:
-  - {study: "AI-assisted diagnosis (diagnostic accuracy)", primary: "STARD 2015 + CLAIM 2024", supplement: "MI-CLAIM; STARD-AI (no local checklist — verify manually); QUADAS-2 for bias"}
+  - {study: "AI-assisted diagnosis (diagnostic accuracy)", primary: "STARD 2015 + CLAIM 2024", supplement: "STARD-AI (Nat Med 2025, doi:10.1038/s41591-025-03953-8; no local checklist and not in standards-index — verify manually against the official text); MI-CLAIM; QUADAS-2 (QUADAS-C for comparative accuracy) for bias"}
   - {study: "AI clinical trial (RCT)", primary: "CONSORT 2025 + CONSORT-AI 2020", supplement: "SPIRIT 2025 + SPIRIT-AI 2020 for the protocol"}
   - {study: "AI decision support early evaluation", primary: "DECIDE-AI 2022", supplement: "CONSORT-AI if progressing to RCT"}
-  - {study: "Prediction model development / validation", primary: "TRIPOD+AI 2024", supplement: "PROBAST for bias; TRIPOD-Cluster (BMJ 2023) if clustered data"}
+  - {study: "Prediction model development / validation", primary: "TRIPOD+AI 2024", supplement: "PROBAST / PROBAST+AI for bias; TRIPOD-Cluster (BMJ 2023) if clustered data"}
   - {study: "LLM/VLM medical evaluation", primary: "TRIPOD-LLM (Nat Med 2025)", supplement: "Journal-specific; report prompt standardization section"}
   - {study: "Surgical video AI", primary: "STARD 2015 (if diagnostic framing)", supplement: "CLAIM 2024 (no dedicated surgical-video standard exists; apply imaging-AI reporting + DECIDE-AI if decision support)"}
   - {study: "Medical device/instrument innovation", primary: "IDEAL framework", supplement: "ISO 14155 (no local checklist — verify manually)"}

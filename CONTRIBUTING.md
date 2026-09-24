@@ -62,8 +62,8 @@ pytest tests/ -q                     # 内置脚本的单元测试
 | 你新增的是 | 必须同步更新 |
 |-----------|-------------|
 | **一个 skill** | `skills/<name>/SKILL.md`（frontmatter `name` = 目录名、description 以 "Use when" 开头且 ≤200 字符、≤500 行）；`README.md` 与 `README_CN.md` 的 "20 Skills" 表和仓库结构；`docs/architecture.md` 的 Skills 子图；`skills/using-med-research-powers/SKILL.md` 的路由表；`hooks/session-start.sh` 的路由表（如有）；`tools/check_consistency.py` 里的 `EXPECTED["skills"]`；版本号 |
-| **一条报告规范** | `skills/reporting-standards/references/checklists/standards-index.yaml`（如有逐条清单，再加 `checklists/<id>.yaml`）；`README.md` / `README_CN.md` 的 "Reporting Standards" 表；`docs/architecture.md` 的 mindmap；`EXPECTED["standards"]`；所有写着 "46 reporting standards / 46 项报告规范" 的地方（守卫会逐一报错）；版本号 |
-| **一本期刊** | `skills/manuscript-writing/references/journal-templates.yaml`（含 `family:` 字段与 IF/APC 年份）；`EXPECTED["journals"]`；所有写着 "234 journals / 234 本期刊" 的地方；版本号 |
+| **一条报告规范** | `skills/reporting-standards/references/checklists/standards-index.yaml`（如有逐条清单，再加 `checklists/<id>.yaml`）；`README.md` / `README_CN.md` 的 "Reporting Standards" 表；`docs/architecture.md` 的 mindmap；`EXPECTED["standards"]`；所有写着 "47 reporting standards / 47 项报告规范" 的地方（守卫会逐一报错）；版本号 |
+| **一本期刊** | `skills/manuscript-writing/references/journal-templates.yaml`（含 `family:` 字段与 IF/APC 年份）；`EXPECTED["journals"]`；所有写着 "240 journals / 240 本期刊" 的地方；版本号 |
 | **一个命令** | `commands/<name>.md`（不能与任何 skill 同名；frontmatter 加 `disable-model-invocation: true`）；两份 README 的 "7 Slash Commands" 表；`install.sh` 结尾的命令列表；`EXPECTED["commands"]`；版本号 |
 | **一张方法要点卡** | `skills/data-analysis-planning/references/method-cards/<file>.md`（固定 7 节结构，包名核实 CRAN/PyPI，规则附文献 DOI）+ 同目录 `README.md` 索引 + `data-analysis-planning/SKILL.md` 的卡片清单；版本号 |
 | **一个脚本**（只限工具与护栏：易算错的公式、防致命错误的检查、基础设施、只报告的检查工具；**分析代码不做成脚本**） | `skills/<skill>/scripts/<file>.py` + `tests/test_<file>.py`；两份 README 的 "Bundled Python Scripts" 表（守卫会比对表和磁盘）；SKILL.md 里用 `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/scripts/<file>.py` 调用；`requirements.txt`（如有新依赖）；`EXPECTED["scripts"]`；版本号 |

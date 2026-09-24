@@ -36,7 +36,7 @@ study_type_tools:
       - { tool: "病例报告表",   file: "tools/CRF.xlsx 或 tools/CRF.csv", note: "每个变量一列，含数据字典" }
       - { tool: "数据字典",     file: "tools/data_dictionary.md",        note: "变量名、类型、取值范围、编码规则" }
       - { tool: "筛选表",       file: "tools/screening_log.csv",         note: "纳入/排除标准逐条判定" }
-      - { tool: "随机分组表",   file: "tools/allocation.csv",            note: "简单/区组/分层随机（仅 RCT），由 ${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/randomization.py 生成，固定 seed；分配表由与入组无关的人员保管" }
+      - { tool: "随机分组表",   file: "tools/allocation.csv",            note: "简单/区组/分层随机（仅 RCT），由 ${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/randomization.py 生成（不给 --seed 时自动取不可预测的 seed，记在 *_summary.json）；分配表、seed、区组大小由与入组无关的人员单独受限保管，不写进 study-protocol.md" }
       - { tool: "样本量复核",   file: "(不单独生成)",                    note: "先验样本量已在 study-protocol.md；复核用 ${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py，禁止事后 power" }
 
   basic_experiment:

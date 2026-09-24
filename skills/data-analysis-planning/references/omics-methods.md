@@ -46,7 +46,7 @@
 1. 质控（FastQC）
 2. 比对（HISAT2 / STAR）
 3. 定量（featureCounts / HTSeq）
-4. 差异表达（DESeq2 / edgeR / limma-voom）
+4. 差异表达（DESeq2 / edgeR / limma-voom）；有批次时把批次写进模型（如 DESeq2 `design = ~ batch + condition`），ComBat / `removeBatchEffect` 校正后的数据只用于 PCA、聚类和热图（见 yaml `omics.batch_effect`）
 5. 基因集富集分析（GSEA / clusterProfiler）
 6. 通路分析（KEGG / Reactome）
 

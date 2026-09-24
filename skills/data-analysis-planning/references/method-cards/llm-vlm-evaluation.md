@@ -72,11 +72,13 @@ lme4::glmer(correct ~ model + (1 | question_id), family = binomial, data = d)  #
 ## 6. 对应报告规范
 
 - `tripod-llm`（TRIPOD-LLM 2025）：仓库索引有条目，暂无本地清单。按官方网站 https://tripod-llm.vercel.app/ 的最新版逐条人工核对，并注明所用版本（它是持续更新的"活文档"）。
+- 评价聊天机器人给出的健康建议、总结临床证据（医学问答类研究）：另按 CHART（Chatbot Assessment Reporting Tool，2025；12 条 39 小条，含模型标识、提示词工程、提问策略、样本量）逐条核对。仓库索引无条目、无本地清单，按原文人工核对。
 - VLM 处理医学影像：另按 `claim`（CLAIM 2024）核对图像来源、预处理和参考标准相关条目。
 - 以诊断准确性为框架的评测：`stard`；进入临床流程的早期评价：`decide-ai`。
 
 ## 参考
 
+- CHART Collaborative. Reporting guideline for chatbot health advice studies: the Chatbot Assessment Reporting Tool (CHART) statement. *BMJ Med*. 2025;4(1):e001632. doi:10.1136/bmjmed-2025-001632
 - Gallifant J, Afshar M, Ameen S, et al. The TRIPOD-LLM reporting guideline for studies using large language models. *Nat Med*. 2025;31(1):60-69. doi:10.1038/s41591-024-03425-5
 - Miller E. Adding error bars to evals: a statistical approach to language model evaluations. arXiv:2411.00640 [预印本]. 2024. doi:10.48550/arXiv.2411.00640
 - Tam TYC, Sivarajkumar S, Kapoor S, et al. A framework for human evaluation of large language models in healthcare derived from literature review. *NPJ Digit Med*. 2024;7(1):258. doi:10.1038/s41746-024-01258-7

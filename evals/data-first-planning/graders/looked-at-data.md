@@ -7,3 +7,4 @@ min: 1
 
 PASS if the assistant opened data.csv (looked at the real data) before writing the plan. The case grants no shell, so
 the read-only check-up has to be done with Read/Grep instead of data_profile.py; in normal use the skill runs data_profile.py.
+A no-plugin baseline told that data.csv exists can pass this grader too, so it shows diligence, not plugin value.

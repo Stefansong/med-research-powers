@@ -24,6 +24,7 @@
     "study-protocol.md": {"skill": "study-design", "date": "2026-09-21"}
   },
   "notes": [
-    {"date": "2026-09-21", "skill": "study-design", "note": "Primary outcome locked: AUROC on the external test set; patient-level split, seed 20260921"}
+    {"date": "2026-09-18", "skill": "literature-synthesis", "note": "Example folder only: search-strategy.md and literature-synthesis-summary.md are recorded here as the skill would record them, but are not included in examples/ai-bladder-ct/ (kept small)"},
+    {"date": "2026-09-21", "skill": "study-design", "note": "Primary outcome locked: AUROC on the external test set, model vs a 6-reader panel (MRMC); patient-level split, seed 20260921"}
   ]
 }

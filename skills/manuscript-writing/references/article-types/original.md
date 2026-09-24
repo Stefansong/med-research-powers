@@ -15,7 +15,7 @@
 | Abstract | 全文各章节已完成 | 必须 |
 | Title | Abstract 已完成 | 推荐 |
 
-**可以在没有 `results-summary.md` 的情况下先写 Methods 和 Introduction。** 分析完成后，按 `analysis-log.md` 回头补写 Methods 中与 SAP 的偏离。
+**可以在没有 `results-summary.md` 的情况下先写 Methods 和 Introduction。** 缺其他必须项时按 SKILL.md Step 1 处理（告知用户、给选择，先写时缺的内容写 `[待补：来源]`）。分析完成后，按 `analysis-log.md` 回头补写 Methods 中与 SAP 的偏离。
 
 ## 写作顺序（按效率，不按论文顺序）
 
@@ -29,7 +29,7 @@
 
 ## 章节规则
 
-**Methods**：研究设计、参与者（纳入/排除、时间地点）、变量定义、统计方法（可复现程度：软件与版本、模型、缺失数据处理）、样本量依据、伦理批准与知情同意声明、试验/研究注册号（如适用）。与 `study-protocol.md` / `analysis-plan.md` 不一致处必须说明原因并标注"与预注册分析计划的偏离"——逐条对应 `analysis-log.md` 的偏离表，写在 Methods（改了什么、为什么）或 Limitations（对结论可能的影响），不能略去或只放补充材料。
+**Methods**：研究设计、参与者（纳入/排除、时间地点）、变量定义、统计方法（可复现程度：软件与版本、模型、缺失数据处理）、样本量依据、伦理批准与知情同意声明、试验/研究注册号（如适用）。与 `study-protocol.md` / `analysis-plan.md` 不一致处必须说明原因并标注"与预注册分析计划的偏离"——逐条对应 `analysis-log.md` 的偏离表，每条都写在 Methods（改了什么、为什么；Gate 2 查这里），对结论可能有影响的再在 Limitations 讨论，不能略去或只放补充材料。
 
 **Results**：参与者流程图 → 基线表 → 主要结局 → 次要结局 → 亚组/敏感性分析。**禁止**在 Results 讨论意义；每个数字都必须能在 `results-summary.md` 或分析输出里找到出处，**禁止**出现找不到出处的数字。效应量必须带 95% CI。
 

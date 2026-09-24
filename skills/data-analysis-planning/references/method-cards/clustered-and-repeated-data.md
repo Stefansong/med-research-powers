@@ -34,13 +34,13 @@
 |---|---|---|
 | GEE | `geepack::geeglm(y ~ x, id = patient_id, family = binomial, corstr = "exchangeable")`（数据须先按 id 排序，同一聚类的行连在一起） | `statsmodels.formula.api.gee("y ~ x", groups="patient_id", data=df, family=sm.families.Binomial(), cov_struct=sm.cov_struct.Exchangeable())` |
 | GEE 小样本校正 | `glmtoolbox::glmgee()` 后 `vcov(fit, type = "bias-corrected")`（Mancl-DeRouen）；`geesmv::GEE.var.kc()` / `geesmv::GEE.var.fg()` | `GEE(...).fit(cov_type="bias_reduced")`（Mancl-DeRouen） |
-| 线性混合模型 | `lme4::lmer()`（公式见表下）；自由度与 P 值：`lmerTest` 的 `summary(fit, ddf = "Kenward-Roger")` | `statsmodels.formula.api.mixedlm("y ~ x", df, groups="surgeon_id")` |
+| 线性混合模型 | 用 `lmerTest::lmer()` 拟合（公式见表下；语法与 `lme4::lmer()` 相同），自由度与 P 值：`summary(fit, ddf = "Kenward-Roger")`（需要装 `pbkrtest`）。直接用 `lme4::lmer()` 拟合时 `summary()` 会静默忽略 `ddf`，只给 t 值、不给自由度和 P 值；已拟合的对象可先 `lmerTest::as_lmerModLmerTest(fit)` 转换 | `statsmodels.formula.api.mixedlm("y ~ x", df, groups="surgeon_id")` |
 | 二分类/计数结局的混合模型 | `lme4::glmer(..., family = binomial)`（公式见表下） | 无公认成熟的频率学派实现（`BinomialBayesMixedGLM` 是贝叶斯近似），建议用 R，或改用 GEE |
 | 由模型算 ICC | `performance::icc(fit)` | 由 `MixedLM` 的方差分量现算：随机截距方差 ÷（随机截距方差 + 残差方差） |
 | 按患者/术者划分 | 用插件脚本 `patient_level_split.py`（Python，命令行调用） | `patient_level_split.py`；`sklearn.model_selection.GroupKFold` / `StratifiedGroupKFold` |
 
 ```r
-lme4::lmer(y ~ x + (1 | surgeon_id), data = d)                      # 术者随机截距
+lmerTest::lmer(y ~ x + (1 | surgeon_id), data = d)                  # 术者随机截距；summary(fit, ddf = "Kenward-Roger")
 lme4::glmer(y ~ x + (1 | patient_id), family = binomial, data = d)  # 二分类结局
 ```
 

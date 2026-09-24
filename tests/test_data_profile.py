@@ -231,7 +231,7 @@ def test_library_call_on_a_plain_dataframe_is_json_serialisable():
     assert cols["grp"]["categorical"]["n_levels"] == 2
 
 
-# ─── regressions found in the v6.4.0 audit ─────────────────────────────────────
+# ─── regressions found in the release-6.4 audit ─────────────────────────────────────
 
 def _csv(tmp_path, name, text, encoding="utf-8"):
     path = tmp_path / name

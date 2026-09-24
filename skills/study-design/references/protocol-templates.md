@@ -67,7 +67,7 @@ status: draft
 - 观察性研究：Exposure definition [定义、测量、时间窗] / Comparison group [定义]
 
 ## 4. 随机化、分配隐藏与盲法（干预性研究必填）
-- Sequence generation: [方法（计算机随机 / 区组 / 分层，区组长度）]
+- Sequence generation: [谁生成、用什么方法（计算机随机 / 简单 / 区组 / 分层）、分层因素（如"按中心分层，区组长度随机可变"）]。**随机种子和具体区组长度不写进本 protocol**：它们记在单独的分配隐藏文件里，由不参与入组和分配的人保管（SPIRIT 2025 第 21b 条）——知道种子和区组设置的人可以重新生成整张分配表
 - Allocation concealment: [中心化随机系统 / 密封不透光信封 / …]
 - Implementation: [谁生成序列、谁入组、谁分配]
 - Blinding: [谁被盲（受试者 / 实施者 / 结局评估者 / 统计师）；无法盲时的替代（评估者盲、客观结局）]
@@ -196,13 +196,19 @@ status: draft
 - Study type: [开发+验证 / 外部验证 / 诊断准确性评估 / LLM-VLM benchmark / AI RCT / DECIDE-AI 早期评估 / 数据集构建]
 - Task: [分类 / 检测 / 分割 / 回归 / 风险预测 / 生成式问答]
 - Intended use: [使用场景、目标用户、在临床流程中的位置]
-- Reporting standard: [TRIPOD+AI 2024 / CLAIM 2024 / STARD 2015 / DECIDE-AI 2022 / CONSORT-AI 2020 / TRIPOD-LLM]
+- Reporting standard: [TRIPOD+AI 2024 / CLAIM 2024 / STARD 2015（AI 指标检查另加 STARD-AI 2025，无本地清单）/ DECIDE-AI 2022 / CONSORT-AI 2020 / TRIPOD-LLM]
 
-## 2. 数据集来源与纳排
+## 2. 数据集来源、纳排与样本量
 - Sources: [中心 / 数据库 / 公开数据集名称与版本]
 - Time window: [ ]
-- Inclusion / exclusion: [患者级 + 数据级（如图像质量）]
+- Inclusion / exclusion: [患者级 + 数据级（如图像质量）]；纳入方式: [连续 / 随机 / 方便样本]
 - Data volume: [患者数 / 样本数 / 类别分布]
+- Sample size（MANDATORY，按研究类型选依据；第 3 节的按 n 分档只决定怎么划分数据，不能代替样本量依据）:
+  - 风险预测模型开发：Riley 方法（`pmsampsize`：候选参数数、结局发生率、预期 R² 或既往 C 统计量）；外部验证用 `pmvalsampsize`
+  - 诊断准确性：按预期灵敏度/特异度和可接受的 95% CI 宽度，先算需要的有病、无病人数，再按患病率换算总人数（Buderer 1996；`power_analysis.py` 的 diagnostic 模式）
+  - 读片者研究（AI vs 医生组、AI 辅助 vs 不辅助）：MRMC 样本量——读者数 × 病例数，方差参数来自预实验或同类研究，写明来源
+  - 做法和 R / Python 包见 `${CLAUDE_PLUGIN_ROOT}/skills/data-analysis-planning/references/method-cards/` 的 `regression-and-prediction-models.md`、`diagnostic-accuracy-and-ai-evaluation.md`
+  - [所用方法 + 每个输入值及出处 → 所需人数 / 事件数；与可获得的数据量对照]
 - De-identification: [方式]；数据使用许可 / 伦理批准范围（二次使用需在批准范围内）
 
 ## 3. 患者级数据划分
@@ -232,9 +238,9 @@ status: draft
 ## 7. 评估指标与校准 / DCA
 - Primary metric: [按 references/metrics-and-reporting.yaml 的任务类型选]
 - Secondary metrics: [ ]
-- Calibration: [校准曲线、Brier、ECE]（概率输出模型必填）
+- Calibration: [calibration-in-the-large（校准截距）、校准斜率、平滑校准曲线、Brier；ECE 只作补充]（概率输出模型必填；生存结局在预先定的时间点上做）
 - Clinical utility: [DCA]（临床预测模型必填）
-- Comparison: [vs 现有模型 / vs 人类专家（AI alone / human alone / AI-assisted）]
+- Comparison: [vs 现有模型 / vs 人类专家（AI alone / human alone / AI-assisted）；与医生比较时写读者人数、年资、是否全交叉，分析用 MRMC 方法（读者和病例都作随机效应）]
 - Statistical analysis: [Bootstrap CI、DeLong、配对检验；详细 → `data-analysis-planning`]
 - Subgroup / fairness: [按性别、年龄、中心分层]
 

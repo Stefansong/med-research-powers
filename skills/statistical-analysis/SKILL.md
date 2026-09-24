@@ -1,6 +1,6 @@
 ---
 name: statistical-analysis
-description: Use when analysis-plan.md already exists and the analysis must now be run on collected data（已有分析计划时执行分析）. Triggers on "跑分析"、"统计检验"、"回归"、"生存分析"、"差异分析"、"帮我算".
+description: Use when analysis-plan.md already exists and the analysis must now be run on collected data（已有分析计划时执行分析）. Triggers on "跑分析"、"统计检验"、"回归"、"生存分析"、"run the analysis"、"regression"、"survival analysis".
 ---
 
 # Statistical Analysis
@@ -26,10 +26,12 @@ description: Use when analysis-plan.md already exists and the analysis must now 
 
 | 脚本 | 用途 | 一行可运行示例 |
 |------|------|---------------|
-| `data_profile.py` | 数据体检（只读）：列类型、伪装缺失、截断值、数值存成文本、日期、缺失比例、离群计数、分类取值、重复 ID/聚类、结局事件数、疑似隐私字段 | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/data_profile.py" data.csv --id patient_id --outcome recurrence --report data-profile.md` |
-| `assumption_tests.py` | 正态性 / 方差齐性 / 配对差值检验 + 方法推荐（JSON） | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/assumption_tests.py" data_clean.csv --value outcome --group arm` |
+| `data_profile.py` | 数据体检（只读）：列类型、伪装缺失、截断值、数值存成文本、日期、缺失比例、离群计数、分类取值、重复 ID/聚类、结局事件数（有 `--id` 时按患者计）、疑似隐私字段（只报列名） | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/data_profile.py" data.csv --id patient_id --outcome recurrence --report data-profile.md` |
+| `assumption_tests.py` | 前提诊断（JSON）：正态性、方差齐性、配对差值只作描述；两组默认推荐 Welch t 检验 | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/assumption_tests.py" data_clean.csv --value outcome --group arm` |
 | `power_analysis.py` | 只复核 protocol 的先验样本量（two-groups / proportion / survival / diagnostic / correlation） | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py" survival --hr 0.7 --event-rate 0.5` |
 | `reproduce_check.py` | 在全新子进程里把分析从头跑 N 次，比较输出是否一致（退出码 0 一致 / 1 不一致 / 2 运行失败） | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/reproduce_check.py" --cmd "python3 analysis_script.py" --outputs results/` |
+
+已有数据的 AI/预测模型研究不经过 data-collection-tools：SAP 规定划分训练/验证/测试集时，直接调用护栏脚本 `python3 "${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/patient_level_split.py" labels.csv --patient-col patient_id --label-col label`，不要现写划分代码。
 
 在 Python 里调用前提检验时同样不能写相对路径：
 
@@ -46,9 +48,9 @@ from assumption_tests import full_check, effect_size_cohens_d
 
 ### Step 0: 核对前置条件
 
-1. 读取 `analysis-plan.md`（`status: confirmed`），列出全部计划分析（主要、次要、亚组、敏感性）及各自的 SAP 编号、方法、前提假设
+1. 读取 `analysis-plan.md`（`status: confirmed`，auto 模式的 `confirmed_by: auto` 同样有效），列出全部计划分析（主要、次要、亚组、敏感性）及各自的 SAP 编号、方法、前提假设
 2. 确认原始数据文件存在（默认 `data.csv`，也可能是 xlsx 或多张表），变量名与 SAP 一致
-3. 缺任一项 → 停，不要"先跑着看看"
+3. 没有已确认的 SAP → 不做确证性分析：告诉用户，转 `data-analysis-planning`（已有数据走快速路径）；用户只想先看看 → 只做标明 exploratory 的分析。找不到数据 → 问用户
 
 ### Step 1: 数据体检并对照 SAP
 
@@ -71,7 +73,7 @@ from assumption_tests import full_check, effect_size_cohens_d
 ### Step 2: 现写清洗代码（按 SAP 第 2 节）
 
 根据体检结果和 SAP 第 2 节现写，放在 `analysis_script.py`（或 `.R`）开头或单独的清洗脚本里：
-- 常见动作：把"未查""/"999 等写法转成缺失；"<0.1" 按 SAP 规定处理；统一单位与编码；合并多张表；按患者汇总；生成派生变量
+- 常见动作：把"未查""/"等写法转成缺失（`999` 这类数字码只在数据字典确认它代表缺失的那几列转换，不要全表统一替换）；"<0.1" 按 SAP 规定处理；统一单位与编码；合并多张表；按患者汇总；生成派生变量
 - 每个动作在代码注释（`# SAP 2.x: ...`）和 `data-cleaning-log.md` 里写明对应的 SAP 条目和影响的行数
 - 原始数据永不修改；清洗后另存（如 `data_clean.csv`），后续分析只读清洗后的数据
 - SAP 没写到的清洗需求：小问题处理后记为偏离；影响主要分析的按 Step 1 第 3 点停下来
@@ -81,14 +83,16 @@ from assumption_tests import full_check, effect_size_cohens_d
 - **异常值**：只按 SAP 预先规定处理（保留并标注 / Winsorize / 移除 + 敏感性分析），**禁止不说明理由地删除**
 - 产出：清洗后数据 + `data-cleaning-log.md`（格式见 `references/output-templates.md` §1）
 
-### Step 3: 前提假设检验
+### Step 3: 前提假设诊断
+
+方法已由 SAP 定好（独立两组默认 Welch t 检验），这一步只诊断，不按检验的 p 值重新挑方法：
 
 ```python
-result = full_check(group1, group2, paired=False)    # 或 paired=True（自动按完整配对过滤、检验差值正态性）
-print(result['recommended_test'], result['warnings'])
+result = full_check(group1, group2, paired=False)    # 或 paired=True（按完整配对过滤、看差值分布）
+print(result)                                         # 诊断结果写进 analysis-log.md
 ```
 
-规则：任一组 n<8 → 正态性无法检验，脚本按非参数处理并给 warning；配对 >2 组 → 不做 Levene，改在 RM-ANOVA 里用 Mauchly 球形检验 / Greenhouse-Geisser 校正。**前提不满足就换成 SAP 写好的备选方法**，并把切换记录为 SAP 偏离。方法对照表：`${CLAUDE_PLUGIN_ROOT}/skills/data-analysis-planning/references/stat-method-decision-tree.yaml`。
+看残差图、Q-Q 图和脚本输出（检验的 p 值只作描述：小样本查不出问题，大样本微小偏离也"显著"）。诊断显示计划方法明显不适合时，才换 SAP 写好的备选方法并记为偏离。方法对照表：`${CLAUDE_PLUGIN_ROOT}/skills/data-analysis-planning/references/stat-method-decision-tree.yaml`。
 
 ### Step 4: 现写分析代码（按 SAP 逐条）
 
@@ -134,7 +138,7 @@ print(result['recommended_test'], result['warnings'])
 
 ### Step 7: 更新项目状态
 
-输出 3–5 行摘要（产物、关键决策、自检结果、待注意），然后更新 `.mrp-state.json`（`${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`：`completed_skills` 追加 statistical-analysis 及产物、`artifacts` 登记 `results-summary.md` 与 `analysis-log.md`、`next_step` 设为 figure-generation），直接进入 `figure-generation`（默认轻量确认，不等待）。
+输出 3–5 行摘要（产物、关键决策、自检结果、待注意），然后更新 `.mrp-state.json`（`${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`：`completed_skills` 追加 statistical-analysis 及产物、`artifacts` 登记 `results-summary.md` 与 `analysis-log.md`、`next_step` 设为 figure-generation），按 checkpoint_mode 进入 `figure-generation`。
 
 ## Output
 
@@ -154,13 +158,11 @@ print(result['recommended_test'], result['warnings'])
 |------|------|
 | "拿现成脚本改改变量名就跑" | 数据的编码、缺失形式、聚类结构不同，必须按体检结果现写 |
 | "跑通就算完成" | 必须自检：重跑一致、人数对得上、SAP 条目都有着落 |
-| "计划阶段体检过了，不用再看" | 数据可能已更新；执行前再体检并对照 SAP 第 1 节 |
-| "数据看起来正态的" | 用 Shapiro-Wilk / D'Agostino 检验，不要肉眼判断 |
+| "先做正态性检验，不显著就用 t 检验" | 方法由 SAP 预先定；前提检验只作诊断（看残差和 Q-Q 图） |
 | "p=0.06 接近显著" | 不显著就是不显著，报告精确值 |
 | "多做几个检验总有显著的" | p-hacking，必须做多重比较校正 |
 | "只报 p<0.05" | 必须报精确 p 值 + 效应量 + CI |
 | "IterativeImputer 跑一次就是多重插补" | 一次只是单次插补；要 m 份 + Rubin 合并 |
-| "结果不显著，算个事后 power 说明样本不够" | 事后 power 是 p 值的换算，没有信息量；写进 Limitations 即可 |
 | "用 Excel 算就行" | 生成可复现的 Python/R 脚本 |
 | "不做敏感性分析也行" | 审稿人一定会要求，主动做 |
 
@@ -169,7 +171,7 @@ print(result['recommended_test'], result['warnings'])
 当以下条件全部满足时完成：
 1. 执行前已体检并对照 SAP 第 1 节；影响主要分析的偏差已由用户决定并记录
 2. `analysis-plan.md` 中每个预定分析都已执行，或写明了没做的理由
-3. 所有前提假设已验证并记录在 `analysis-log.md`
+3. 所有前提假设已诊断并记录在 `analysis-log.md`
 4. 效应量 + 95% CI 已计算；敏感性分析已完成
 5. 自检四项全部通过：`reproduce_check.py` 退出码 0、人数流连得上、SAP 对照表完整、偏离已记录
 6. Output 表中的文件全部生成
@@ -177,9 +179,9 @@ print(result['recommended_test'], result['warnings'])
 
 ## Red Flags — STOP
 
-- 没有 `analysis-plan.md` → **停止执行**，先做计划
+- 没有已确认的 SAP 却要做确证性分析 → 停，见 Step 0
 - 体检发现与 SAP 假设不符且影响主要分析 → 停，回 `data-analysis-planning` 由用户决定
-- 跳过假设检验直接用参数方法 → 停，先检验
+- 没做前提诊断就报结果 → 停，先看残差 / Q-Q 图并记录
 - 只报告"显著"的结果 → 必须报告所有预定分析
 - 在原始数据上直接分析或改写原始数据 → 停，走 Step 2
 - 看到结果后想换方法 / 换主要结局 → 停，回 SAP 并记录偏离
@@ -187,9 +189,9 @@ print(result['recommended_test'], result['warnings'])
 
 ## 衔接规则
 
-### 前置依赖（不满足则阻止）
-- **必须**有 `analysis-plan.md`（`data-analysis-planning` 生成，硬确认 2 已通过）
-- **必须**有数据文件（用户按 `data-collection-tools` 生成的工具收集完毕，或回顾性研究已有的数据）
+### 前置依赖（缺了按总调度"缺前置产物时"处理；SAP 是硬确认，见 Step 0）
+- 已确认的 `analysis-plan.md`（`data-analysis-planning` 生成，硬确认 2）
+- 数据文件（用户按 `data-collection-tools` 生成的工具收集完毕，或回顾性研究已有的数据）
 
 ### 强制衔接（不可跳过）
 - 完成后 → `figure-generation`（读取 `results-summary.md` 的"Figures Needed"）

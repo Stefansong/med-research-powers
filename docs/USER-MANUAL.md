@@ -1,6 +1,6 @@
 # Med-Research-Powers 用户手册
 
-> **版本**: v6.4.0 | **仓库**: https://github.com/Stefansong/med-research-powers
+> **版本**: v6.4.1 | **仓库**: https://github.com/Stefansong/med-research-powers
 
 本手册只讲"怎么装、怎么用、出了问题怎么办"。skill 清单、命令表、报告规范表、期刊库这些参考内容都在 [README_CN.md](../README_CN.md)（英文版 [README.md](../README.md)），这里只给链接，不再复制一遍。
 
@@ -111,7 +111,7 @@ claude plugin list
 
 ### Python 依赖（可选）
 
-MRP 的 skill 本身不依赖 Python。要用内置脚本（前提检验、样本量、清洗、绘图、.docx 导出、期刊模板抽取、患者级划分、随机分组、流程状态）时安装：
+MRP 的 skill 本身不依赖 Python。要用内置脚本（数据体检、重跑核对、前提检验、样本量、绘图、.docx 导出、期刊模板抽取、患者级划分、随机分组、流程状态）时安装：
 
 ```bash
 pip install -r requirements.txt
@@ -163,7 +163,7 @@ research-question-formulation
 → research-ethics                   （伦理批准 / 注册在收集数据之前）
 → journal-selection                 （暂定目标期刊，软确认，随时可换）
 → data-analysis-planning            [确认节点 2：analysis-plan.md]
-→ data-collection-tools
+→ data-collection-tools             （只在数据还没收集时；已有数据跳过）
 → [你收集数据]
 → statistical-analysis
 → figure-generation
@@ -231,6 +231,7 @@ sys.path.insert(0, os.path.join(os.environ.get("CLAUDE_PLUGIN_ROOT", "."), "skil
 from assumption_tests import full_check, effect_size_cohens_d
 result = full_check(group1, group2, paired=False)
 print(result['recommended_test'])          # e.g. "Independent t-test"
+# ↑ 只作描述、记入分析日志；用哪个检验以 SAP 为准（两组独立默认 Welch），不按这里的推荐临时换检验
 d = effect_size_cohens_d(group1, group2)
 print(f"Cohen's d = {d['cohens_d']} ({d['magnitude']})")
 
@@ -382,7 +383,7 @@ CONSORT 2025 从 2010 版的 25 项变为 30 项（含子项共 42 行），新�
 
 ```
 med-research-powers/
-├── .claude-plugin/                   # plugin.json（name: mrp, v6.4.0）、marketplace.json
+├── .claude-plugin/                   # plugin.json（name: mrp, v6.4.1）、marketplace.json
 ├── .github/workflows/ci.yml          # 一致性守卫、pytest、shellcheck、plugin validate、hook 冒烟
 ├── hooks/session-start.sh            # 启动时读取 .mrp-state.json，报告恢复点
 ├── commands/ (7)                     # 斜杠命令（薄路由 → skill）

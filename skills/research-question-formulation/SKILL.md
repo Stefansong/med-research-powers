@@ -1,6 +1,6 @@
 ---
 name: research-question-formulation
-description: Use when a user has a vague research idea and needs to define a clear question and hypothesis. Triggers on "我想研究..."、"这个课题怎么样"、"帮我想想选题"、"研究方向"、"科学问题".
+description: Use when a user has a vague research idea and needs to define a clear question and hypothesis. Triggers on "我想研究..."、"这个课题怎么样"、"帮我想想选题"、"研究方向"、"科学问题"、"research question"、"PICO".
 ---
 
 # Research Question Formulation
@@ -108,7 +108,7 @@ description: Use when a user has a vague research idea and needs to define a cle
 - 完成后**必须进入 `literature-synthesis`（了解现状、找 gap）或 `study-design`（设计研究）之一，不可直接跳到分析/写作**。默认顺序：`literature-synthesis` → `study-design`；用户已有充分文献基础时可直接 `study-design`
 - Round 2 的 N 项 → 调用 `pubmed-search` Mode 1 快速查重
 
-### 前置依赖（不满足则阻止）
+### 前置依赖
 - 无——本 skill 是流程起点，可独立运行
 
 ### 可选衔接

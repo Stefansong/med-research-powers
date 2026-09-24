@@ -11,4 +11,4 @@ Invoke the `manuscript-writing` skill with the user's context: $ARGUMENTS
 The skill owns the prerequisites, writing order and per-section rules — follow it, do not improvise.
 
 - **Output:** `manuscript/*.md` (one file per section)
-- **Next step:** `peer-review-simulation` (`/mrp:peer-review`), then `pre-submission-verification` (`/mrp:pre-submission`) before any submission.
+- **Next step:** once the whole manuscript is drafted, `peer-review-simulation` (`/mrp:peer-review`), then `pre-submission-verification` (`/mrp:pre-submission`) before any submission. If the user asked for one section only, stop after it and just name the next step.

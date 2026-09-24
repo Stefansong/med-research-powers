@@ -1,5 +1,5 @@
 #!/bin/sh
-# Med-Research-Powers (MRP) v6.4.0 — SessionStart hook
+# Med-Research-Powers (MRP) v6.4.1 — SessionStart hook
 # Fires on: startup, clear, compact (registered in .claude-plugin/plugin.json)
 #
 # Prints a few lines of plain text into Claude's context. It reads ONLY the
@@ -40,7 +40,7 @@ field() {
 }
 
 echo "<mrp-session-start>"
-echo "Med-Research-Powers (MRP) v6.4.0 is installed — a medical research methodology framework (20 skills)."
+echo "Med-Research-Powers (MRP) v6.4.1 is installed — a medical research methodology framework (20 skills)."
 echo "Research-process tasks (topic, study design, analysis, figures, manuscript, submission, revision) go through the using-med-research-powers skill, which routes to the right MRP skill. Single small questions are answered directly, without the pipeline."
 
 if [ -f "$state" ]; then

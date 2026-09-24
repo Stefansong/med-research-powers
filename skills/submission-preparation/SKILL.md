@@ -97,8 +97,8 @@ Cover Letter 是编辑看到的第一样东西。一封好的 Cover Letter 让�
 
 先用 `${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --id <期刊id>`
 读该刊的 `system` 字段；没有条目时按出版商家族查 `references/submission-systems.yaml`
-（`submission_systems`）：ScholarOne（JAMA 系列、BMJ、多数 Wiley/T&F）、Editorial Manager（Lancet 系列、
-Cell、Elsevier、PLOS、多数 Springer）、eJournalPress（Nature 系列 MTS、Science、NEJM、PNAS）、
+（`submission_systems`）：ScholarOne（NEJM、BMJ、多数 Wiley/T&F）、Editorial Manager（Lancet 系列、
+Cell、Elsevier、PLOS、多数 Springer）、eJournalPress（Nature 系列 MTS、JAMA 系列、AHA 期刊、Science、PNAS）、
 Snapp（Springer Nature 新刊）、OJS（部分开源期刊）。期刊会迁移系统，**以期刊 Submit 页为准**。
 
 #### 2.2: 文件准备
@@ -189,10 +189,10 @@ COI、suggested/excluded reviewers、trial registration 等。**article type 选
 - 投稿后收到审稿意见 → `revision-response`
 - 完成后 → 更新 `.mrp-state.json`
 
-### 前置依赖（不满足则阻止）
-- **必须**有完成的论文（`manuscript-writing`）与导出稿（`manuscript-export`）
-- **必须**有确定的目标期刊（`journal-selection`，投稿前复核一次）
-- **必须**有 `submission-readiness-report.md` 且 6 Gate 全部通过
+### 前置依赖（6-Gate 是硬确认 3；其余缺了按总调度"缺前置产物时"处理）
+- 完成的论文（`manuscript-writing`）与导出稿（`manuscript-export`）
+- 确定的目标期刊（`journal-selection`，投稿前复核一次）
+- **投稿前必须**有 `submission-readiness-report.md` 且 6 Gate 全部通过；之前只能起草 cover letter，标明草稿
 
 ### 可选衔接
 - 论文被拒后需要改投 → 由 `revision-response` 做改投决策 → `journal-selection` 重选 → 本 skill 重写 cover letter

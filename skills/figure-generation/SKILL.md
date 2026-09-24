@@ -16,9 +16,9 @@ description: Use when creating publication-quality statistical figures from anal
 
 ## When NOT to Use
 
-- 数据探索阶段的草图（用默认样式即可，不走本 skill）
+- 数据探索阶段的草图（不走本 skill）；按组画的结局图（如分组 KM 曲线）受总调度结局盲规则约束：SAP 确认前只在用户明确要探索性分析时画，标 exploratory
 - 流程图 / 架构图（CONSORT、PRISMA、STROBE 参与者流程图等）→ 不属于统计作图，用 graphviz / draw.io / PowerPoint 手工绘制；流程图**内容**要求由 `reporting-standards` 给出
-- 还没有分析结果 → 先 `statistical-analysis`
+- 要从原始数据画结局相关的图但还没有分析结果 → 先 `statistical-analysis`（没有 SAP 时走 `data-analysis-planning` 快速路径）
 
 ## Workflow
 
@@ -28,7 +28,7 @@ description: Use when creating publication-quality statistical figures from anal
 
 ### Step 1: 分析实际结果、论文主线和期刊限制
 
-画图之前先弄清楚下面几件事（只读已有产物，不重新分析数据；只是把已有的图改成期刊格式时，跳过 Step 1–2，直接 Step 3）：
+画图之前先弄清楚下面几件事（只读已有产物，不重新分析数据）。**只改已有图的格式**（不改数据和内容）时不需要 `results-summary.md`、SAP 和 `figure-plan.md`：跳过 Step 1–2，从 Step 3 开始，与 `figure-plan.md` 有关的检查项免查。
 - **实际结果**：读 `results-summary.md`——主要结局的结果与效应大小，次要 / 亚组 / 敏感性结果各有哪些，哪些结论稳健。其中的 "Figures Needed"（如有）只是分析阶段的初步建议，不是最终清单。
 - **论文主线**：从 `study-protocol.md` 的研究问题和主要结局出发，想清楚论文要讲的那条线（例如主要结局 → 支持它的次要结果 → 稳健性），每张图都要服务这条线。
 - **目标期刊限制**：取 `.mrp-state.json` 的 `target_journal`，用 `python3 "${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py" --id <期刊id>` 取该刊的 `figures` / `tables` 字段（正文图表数量上限、图和表是否合并计数、多面板限制、补充材料规则）。期刊不在库里 → 按 `manuscript-writing` 的规则写项目目录的 `journal-overrides.yaml`；还没暂定期刊 → 提醒用户（可先走 `journal-selection`），计划里注明"期刊定后复核数量"。
@@ -89,11 +89,11 @@ save_figure(fig, 'figure1')                       # → figure1.tiff + figure1.p
 
 ### Step 6: 图注 + 更新状态
 
-把每张图的图注写进 `figure-legends.md`；输出 3–5 行摘要，然后更新 `.mrp-state.json`（`${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`：`completed_skills` 追加 figure-generation 及产物、`next_step` 设为 manuscript-writing），直接进入 `manuscript-writing`。
+把每张图的图注写进 `figure-legends.md`；输出 3–5 行摘要，然后更新 `.mrp-state.json`（`${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`：`completed_skills` 追加 figure-generation 及产物、`next_step` 设为 manuscript-writing），按 checkpoint_mode 进入 `manuscript-writing`。
 
 ## Journal Requirements
 
-完整的格式 / 分辨率 / 字体 / 栏宽 / 颜色规范见 `references/figure-specs.yaml`（TIFF 首选；线条图 600 DPI、半色调 300 DPI；Arial/Helvetica ≥6pt；栏宽按期刊，通用 85/170 mm；色盲友好）。目标期刊的具体要求用 `python3 "${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py" --id <期刊id>` 取该刊的 `figures` / `tables` 字段（不要整读 `journal-templates.yaml`），并以其 "Instructions for Authors" 为准。
+完整的格式 / 分辨率 / 字体 / 栏宽 / 颜色规范见 `references/figure-specs.yaml`（TIFF 首选；线条图 600 DPI、半色调 300 DPI；Arial/Helvetica ≥6pt；栏宽按期刊，通用 85/170 mm；色盲友好）。目标期刊的图表数量限制按 Step 1 用脚本取（不要整读 `journal-templates.yaml`），并以其 "Instructions for Authors" 为准。
 
 ## Common Figure Types（参考，不是必须清单）
 
@@ -112,7 +112,7 @@ save_figure(fig, 'figure1')                       # → figure1.tiff + figure1.p
 
 | 产出 | 必须/可选 | 说明 |
 |------|---------|------|
-| `figure-plan.md` | 必须 | 图表计划：每张图 / 表回答的问题、数据来源、图型及理由、正文 / 补充、期刊数量核对 |
+| `figure-plan.md` | 必须（只改格式时不需要） | 图表计划：每张图 / 表回答的问题、数据来源、图型及理由、正文 / 补充、期刊数量核对 |
 | `figureN.tiff` | 必须 | 投稿主格式，线条图 600 DPI / 半色调 300 DPI，LZW 压缩 |
 | `figureN.pdf` | 必须 | 矢量备份格式，便于排版与缩放（字体以 TrueType 嵌入，可编辑） |
 | `figure-legends.md` | 必须 | 每张图配独立图注：标题句 + 各 panel 说明 + 缩写 + 统计方法 + 样本量 + 显著性符号含义；按图号排列，交付给 `manuscript-writing` |
@@ -154,8 +154,8 @@ save_figure(fig, 'figure1')                       # → figure1.tiff + figure1.p
 
 ## 衔接规则
 
-### 前置依赖（不满足则阻止）
-- **必须**有 `results-summary.md`（`statistical-analysis` 生成）
+### 前置依赖（缺了按总调度"缺前置产物时"处理）
+- 新画统计图：`results-summary.md`（`statistical-analysis` 生成）；只改已有图的格式不需要
 
 ### 强制衔接（不可跳过）
 - 完成后 → `manuscript-writing`（图文件 + `figure-legends.md`）
@@ -163,6 +163,6 @@ save_figure(fig, 'figure1')                       # → figure1.tiff + figure1.p
 - `figure-plan.md`（正文 / 补充的分配）→ `manuscript-writing` 列提纲时对照
 
 ### 可选衔接
-- 目标期刊有特殊图形规范 → 用 `${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --id <期刊id>` 取该期刊条目；换期刊时由 `journal-selection` 更新 `target_journal`，并按新期刊的限制复核 `figure-plan.md`
+- 换期刊时由 `journal-selection` 更新 `target_journal`，并按新期刊的限制复核 `figure-plan.md`
 - 报告规范对图的要求（如 TRIPOD 的校准图、PRISMA/CONSORT 流程图内容）→ `reporting-standards`
 - 投稿前的图形合规复核 → `pre-submission-verification`

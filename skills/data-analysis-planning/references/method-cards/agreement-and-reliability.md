@@ -37,7 +37,7 @@
 | Cohen's kappa / 加权 kappa | `irr::kappa2(ratings, weight = "squared")`（`"equal"` = 线性权重；`"unweighted"` = 不加权） | `sklearn.metrics.cohen_kappa_score(y1, y2, weights="quadratic")`；要 CI 用 `statsmodels.stats.inter_rater.cohens_kappa(table, wt="quadratic")`（输入列联表） |
 | Fleiss' kappa | `irr::kappam.fleiss(ratings, detail = TRUE)` | `statsmodels.stats.inter_rater.fleiss_kappa(aggregate_raters(data)[0])` |
 | ICC | `irr::icc(ratings, model = "twoway", type = "agreement", unit = "single")`；`psych::ICC(x)`（一次给出 6 种） | `pingouin.intraclass_corr(data, targets=, raters=, ratings=)`（0.6 版输出 ICC(1,1)、ICC(A,1)、ICC(C,1) 及 k 个平均的版本，含 95% CI） |
-| Bland-Altman | `SimplyAgree::agreement_limit(x, y, data = d, data_type = "simple", prop_bias = TRUE)`（每人多次测量用 `"reps"`，嵌套数据用 `"nest"`） | `pingouin.plot_blandaltman(x, y, confidence=0.95)`；`statsmodels.graphics.agreement.mean_diff_plot(m1, m2)`（比例误差需现算） |
+| Bland-Altman | `SimplyAgree::agreement_limit(x = "x", y = "y", data = d, data_type = "simple", prop_bias = TRUE)`；每人多次测量用 `data_type = "reps"`、嵌套数据用 `"nest"`，这两种都必须同时给受试者编号 `id = "id"`（否则无法按人处理重复测量） | `pingouin.plot_blandaltman(x, y, confidence=0.95)`；`statsmodels.graphics.agreement.mean_diff_plot(m1, m2)`（比例误差需现算） |
 | 分割一致性 | 无常用 R 包，建议用 Python | `monai.metrics.compute_dice`、`compute_iou`、`compute_hausdorff_distance(..., percentile=95, spacing=)`；`medpy.metric.binary.dc`、`jc`、`hd95(result, reference, voxelspacing=)` |
 | 样本量（按 CI 宽度） | `presize::prec_kappa(kappa, raters = , n_category = , props = , conf.width = )`；`presize::prec_icc(rho, k, conf.width = )` | 无公认成熟包，建议用 R |
 

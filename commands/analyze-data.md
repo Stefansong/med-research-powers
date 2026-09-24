@@ -9,7 +9,7 @@ disable-model-invocation: true
 Route by whether a Statistical Analysis Plan already exists. User context: $ARGUMENTS
 
 - **No `analysis-plan.md` in the project** → invoke the `data-analysis-planning` skill.
-  Output: `analysis-plan.md`. This is mandatory checkpoint 2 — wait for the user's explicit approval of the plan before any test runs.
+  Output: `analysis-plan.md`. This is mandatory checkpoint 2 — wait for the user's explicit approval of the plan before any confirmatory test runs (in auto mode the plan is written with `confirmed_by: auto`). Data already collected → no `data-collection-tools` step; go on to `statistical-analysis` once the plan is approved.
 - **`analysis-plan.md` already exists (approved)** → invoke the `statistical-analysis` skill.
   Output: `results-summary.md` + `analysis-log.md`.
 - **Next step:** `figure-generation` (`/mrp:figure-generation`), then `manuscript-writing`.

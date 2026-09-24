@@ -85,6 +85,7 @@ templates:
       - "Data availability statement required"
       - "Code availability statement required"
       - "Life Sciences Reporting Summary required"
+      - "待核实: word/figure/table/reference limits above were not re-checked against nature.com/nm/content (page not reachable in the 2026-09 review); confirm there before relying on them"
     cover_letter: required
     orcid: required
     system: Nature MTS (eJournalPress)
@@ -153,7 +154,7 @@ templates:
       - "Structured abstract with 7 headings"
     cover_letter: required
     orcid: recommended
-    system: ScholarOne
+    system: eJournalPress (manuscripts.jama.com)
     family: jama
 
   - id: bmj
@@ -290,7 +291,7 @@ templates:
     special:
       - "Key Points box required"
       - "JAMA formatting rules apply"
-    system: ScholarOne
+    system: eJournalPress (JAMA Network)
     family: jama
 
   - id: annals-oncology
@@ -362,7 +363,7 @@ templates:
     sections: same as JAMA
     special:
       - "Key Points box required"
-    system: ScholarOne
+    system: eJournalPress (JAMA Network)
     family: jama
 
   - id: bjs
@@ -503,7 +504,7 @@ templates:
     sections: "Abstract, Clinical Perspective (What is New, What are the Clinical Implications), Introduction, Methods, Results, Discussion, References"
     special:
       - "Clinical Perspective box required (What is New + Clinical Implications)"
-    system: ScholarOne
+    system: eJournalPress (circ-submit.aha-journals.org)
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -647,7 +648,7 @@ templates:
     sections: same as JAMA
     special:
       - "Key Points box required"
-    system: ScholarOne
+    system: eJournalPress (JAMA Network)
     family: jama
 
   # ═══════════════════════════════════════════════
@@ -819,7 +820,7 @@ templates:
     sections: same as JAMA
     special:
       - "Key Points box required"
-    system: ScholarOne
+    system: eJournalPress (JAMA Network)
     family: jama
 
   - id: pediatrics
@@ -901,7 +902,7 @@ templates:
     sections: same as JAMA
     special:
       - "Key Points box required"
-    system: ScholarOne
+    system: eJournalPress (JAMA Network)
     family: jama
 
   # ═══════════════════════════════════════════════
@@ -918,7 +919,7 @@ templates:
     sections: same as JAMA
     special:
       - "Key Points box required"
-    system: ScholarOne
+    system: eJournalPress (JAMA Network)
     family: jama
 
   - id: bjd
@@ -942,7 +943,7 @@ templates:
 
   - id: modern-pathology
     journal: Modern Pathology
-    publisher: Springer Nature
+    publisher: Elsevier (for USCAP, since 2023)
     IF_approx: 7
     word_limit: 4000
     abstract: unstructured, ≤250 words
@@ -1075,7 +1076,7 @@ templates:
     sections: same as JAMA
     special:
       - "Key Points box required"
-    system: ScholarOne
+    system: eJournalPress (JAMA Network)
     family: jama
 
   # ═══════════════════════════════════════════════
@@ -1342,7 +1343,7 @@ templates:
     special:
       - "Key Points box required (Question, Findings, Meaning)"
       - "JAMA family formatting rules apply"
-    system: ScholarOne
+    system: eJournalPress (manuscripts.jamainternalmed.com)
     family: jama
 
   - id: jama-network-open
@@ -1359,7 +1360,7 @@ templates:
       - "Key Points box required"
       - "Open access, APC ~$3000"
       - "JAMA family formatting"
-    system: ScholarOne
+    system: eJournalPress (manuscripts.jamanetworkopen.com)
     family: jama
 
   - id: elife
@@ -1593,7 +1594,7 @@ templates:
     sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - "Key Points box required (Question, Findings, Meaning)"
-    system: ScholarOne
+    system: eJournalPress (JAMA Network)
     family: jama
 
   - id: european-journal-heart-failure
@@ -1654,7 +1655,7 @@ templates:
     special:
       - "Novelty and Significance box required"
       - "Major Resources Table for reagents"
-    system: ScholarOne
+    system: eJournalPress (circres-submit.aha-journals.org)
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -2006,7 +2007,7 @@ templates:
 
   - id: blood
     journal: Blood
-    publisher: ASH
+    publisher: ASH (published by Elsevier since 2021)
     IF_approx: 21
     word_limit: 4000
     abstract: unstructured, ≤200 words
@@ -2050,7 +2051,7 @@ templates:
 
   - id: blood-advances
     journal: Blood Advances
-    publisher: ASH
+    publisher: ASH (published by Elsevier since 2021)
     IF_approx: 7
     word_limit: 4000
     abstract: unstructured, ≤200 words
@@ -3646,7 +3647,7 @@ templates:
 
   - id: laboratory-investigation
     journal: Laboratory Investigation
-    publisher: Springer Nature
+    publisher: Elsevier (for USCAP, since 2023)
     IF_approx: 5
     word_limit: 4000
     abstract: unstructured, ≤250 words
@@ -3686,7 +3687,7 @@ templates:
     sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - "Key Points box required (Question, Findings, Meaning)"
-    system: ScholarOne
+    system: eJournalPress (JAMA Network)
     family: jama
 
   - id: laryngoscope

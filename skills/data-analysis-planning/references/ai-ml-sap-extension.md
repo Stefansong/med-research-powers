@@ -38,6 +38,7 @@ copy them into the SAP, cite the choice and the reason.
 ## 12. 类别不平衡处理
 
 - 数据层（过采样 / 欠采样 / SMOTE）或损失层（weighted CE / focal / dice / combo）——预先选定
+- **模型要输出风险概率时慎用**：重采样和类别加权会把预测概率整体推向少数类，校准变差，AUROC 并不提高（van den Goorbergh 2022，doi:10.1093/jamia/ocac093）。优先不做校正、改用阈值调整灵敏度；确要校正时，在未重采样的数据上重新校准，并报告重新校准后的校准指标（yaml `deep_learning_training.class_imbalance.warning`）
 - 评估层面**不用 accuracy**：主指标 AUROC / AUPRC / F1（yaml `deep_learning_training.class_imbalance`）
 
 ## 13. 消融实验
@@ -56,7 +57,7 @@ copy them into the SAP, cite the choice and the reason.
 | 两个分类器的错误模式 | McNemar test | `deep_learning_classification.comparison` |
 | 同一测试集上两个分割模型 | Paired Wilcoxon（Dice / HD95 逐例） | `deep_learning_segmentation.comparison` |
 | 多模型 | Bootstrap 或置换检验（≥1000 次） | `model_comparison.multi_model` |
-| AI vs 人类 / AI 辅助人类 | 同一测试集、同等信息、盲法；≥2 周 washout | `model_comparison.human_vs_ai` |
+| AI vs 人类 / AI 辅助人类 | 同一测试集、同等信息、盲法；≥2 周 washout；多读者多病例（MRMC）分析，读者与病例都作随机效应——AI 单独 vs 医生组时 AI 作固定读者；不对每位医生分别做 DeLong（见方法要点卡 `diagnostic-accuracy-and-ai-evaluation.md`） | `model_comparison.human_vs_ai` |
 
 分割任务指标与 study-design metrics 表一致：Dice / IoU 为主，**95th percentile Hausdorff distance (HD95)** 与 average surface distance 为次要，体积一致性用 Bland-Altman。
 
@@ -68,12 +69,13 @@ copy them into the SAP, cite the choice and the reason.
 ## 16. 不确定性量化
 
 - 安全关键应用（手术导航、诊断、治疗规划）必须做：MC Dropout（N ≥ 30 次前向）/ Deep Ensembles（M = 5）/ TTA——yaml `uncertainty_quantification`
-- 校准：ECE + MCE + reliability diagram；临床预测模型另加 DCA（净获益）
+- 校准（输出概率的模型都要做）：以 calibration-in-the-large（校准截距）、校准斜率和平滑校准曲线为主，另报 Brier；ECE / MCE 依赖分箱方式，只作补充并写明分箱（yaml `deep_learning_classification.calibration`；做法见方法要点卡 `regression-and-prediction-models.md`）；临床预测模型另加 DCA（净获益）。NRI / IDI 不是恰当的性能指标，只在期刊要求时与 DCA 一起作补充
 
 ---
 
 ## SAP 特有判断（yaml 里没有的）
 
 - 指标、划分、Ground Truth 必须与 Type C protocol 一致；新增指标标记为 post-hoc / exploratory
-- 报告规范对应：影像 AI → CLAIM 2024（44 项）；预测模型 → TRIPOD+AI；诊断准确性 → STARD-AI；LLM → TRIPOD-LLM（Nat Med 2025）——由 `reporting-standards` 给出逐条清单
+- 样本量：沿用 protocol 已锁定的计算——风险预测模型按 Riley 方法（`pmsampsize`），灵敏度/特异度按可接受的 CI 宽度（Buderer 法），读片者研究按 MRMC 方法；第 10 节的按 n 分档只决定怎么划分数据，不能代替样本量依据（做法见方法要点卡 `regression-and-prediction-models.md`、`diagnostic-accuracy-and-ai-evaluation.md`）
+- 报告规范对应：影像 AI → CLAIM 2024（44 项）；预测模型 → TRIPOD+AI；诊断准确性 → STARD-AI（Nat Med 2025，doi:10.1038/s41591-025-03953-8）+ STARD 2015；LLM → TRIPOD-LLM（Nat Med 2025）。`reporting-standards` 有 CLAIM 2024、TRIPOD+AI、STARD 2015 的本地逐条清单；**STARD-AI 和 TRIPOD-LLM 没有本地清单**（STARD-AI 也不在规范索引里），要对照官方全文人工核对
 - 公平性与稳健性（按性别 / 年龄 / 中心分层的 AUROC 与校准，跨中心 / 跨时间验证）在 SAP 里预先列为次要分析（yaml 无此节；见 study-design `metrics-and-reporting.yaml` 的 `fairness_and_bias` / `robustness`）

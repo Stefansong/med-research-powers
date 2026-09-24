@@ -1,6 +1,6 @@
 # 生存分析 — 方法要点卡
 
-> 适用：结局是"从某个起点到某事件发生的时间"，且有删失（随访结束或失访时事件尚未发生）的数据：总生存、无复发生存、结石复发时间、移植物失功时间等。　不适用：固定时间点的二分类结局且没有删失（见 `baseline-and-group-comparison.md`、`regression-and-prediction-models.md`）；同一患者可以多次发生的复发事件（需复发事件模型，另议）；建立预后预测模型时，除本卡外还要遵守 `regression-and-prediction-models.md`。
+> 适用：结局是"从某个起点到某事件发生的时间"，且有删失（随访结束或失访时事件尚未发生）的数据：总生存、无复发生存、结石复发时间、移植物失功时间等。　不适用：固定时间点的二分类结局且没有删失（见 `baseline-and-group-comparison.md`、`regression-and-prediction-models.md`）；同一患者可以多次发生的复发事件（需复发事件模型，另议）；建立预后预测模型时，除本卡外还要遵守 `regression-and-prediction-models.md`（其中有固定时间点 t 的校准与 DCA 做法，生存模型不能套用二分类结局的校准和 DCA）。
 
 ## 1. 计划前先看数据的什么
 
@@ -33,11 +33,11 @@
 | KM 曲线 + 风险人数表 | `survival::survfit(Surv(time, status) ~ grp, data = d)`，再 `ggsurvfit::ggsurvfit()` + `add_risktable()`；或 `survminer::ggsurvplot(fit, risk.table = TRUE)` | `lifelines.KaplanMeierFitter` + `lifelines.plotting.add_at_risk_counts()` |
 | log-rank | `survival::survdiff(Surv(time, status) ~ grp, data = d)` | `lifelines.statistics.logrank_test()`；多组 `multivariate_logrank_test()` |
 | Cox + PH 检验 | `survival::coxph()` 后 `cox.zph(fit)`，并 `plot(cox.zph(fit))` 看残差图 | `lifelines.CoxPHFitter` 后 `check_assumptions()`；或 `lifelines.statistics.proportional_hazard_test()` |
-| PH 不满足时 | 分层 `coxph(Surv(time, status) ~ trt + strata(center))`；时间交互 `coxph(..., tt = function(x, t, ...) x * log(t))`；RMST `survRM2::rmst2(time, status, arm, tau = <τ>)` | 分层 `CoxPHFitter().fit(..., strata=["center"])`；RMST `lifelines.utils.restricted_mean_survival_time(kmf, t=<τ>, return_variance=True)`（组间差值的 CI 需自己算或 bootstrap） |
+| PH 不满足时 | 分层 `coxph(Surv(time, status) ~ trt + strata(center))`；时间交互 `coxph(Surv(time, status) ~ trt + tt(trt), data = d, tt = function(x, t, ...) x * log(t))`（公式里必须写 `tt(trt)` 项，否则 `tt =` 参数被静默忽略、不报错）；RMST `survRM2::rmst2(time, status, arm, tau = <τ>)` | 分层 `CoxPHFitter().fit(..., strata=["center"])`；RMST `lifelines.utils.restricted_mean_survival_time(kmf, t=<τ>, return_variance=True)`（组间差值的 CI 需自己算或 bootstrap） |
 | 竞争风险：CIF 与 Gray 检验 | `cmprsk::cuminc(ftime, fstatus, group)` | CIF：`lifelines.AalenJohansenFitter` 或 `sksurv.nonparametric.cumulative_incidence_competing_risks`；Gray 检验无公认成熟包 |
 | Fine-Gray / 病因别 Cox | `cmprsk::crr(ftime, fstatus, cov1, failcode = 1, cencode = 0)`，或 `survival::finegray()` 生成数据后 `coxph()`；病因别：`coxph()`，竞争事件设为删失 | Fine-Gray 无公认成熟包，建议用 R；病因别 Cox 用 `CoxPHFitter`（竞争事件设为删失） |
 | 时间依赖协变量 | `survival::tmerge()` 生成 start–stop 数据后 `coxph(Surv(tstart, tstop, event) ~ ...)` | `lifelines.utils.to_long_format()` + `add_covariate_to_timeline()`，再用 `lifelines.CoxTimeVaryingFitter` |
-| 中位随访（反向 KM） | `survfit(Surv(time, status == 0) ~ 1, data = d)` | `KaplanMeierFitter().fit(T, event_observed=1 - E)` |
+| 中位随访（反向 KM） | `survfit(Surv(time, status == 0) ~ 1, data = d)` | `KaplanMeierFitter().fit(T, event_observed=(E == 0))`（只有删失才算"事件"；不要写 `1 - E`：按 0/1/2 编码竞争风险时，竞争事件会变成 −1，lifelines 不报错但结果错） |
 
 ## 4. 常见的坑
 

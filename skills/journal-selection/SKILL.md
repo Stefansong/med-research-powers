@@ -53,7 +53,7 @@ description: Use when choosing or re-checking a target journal (tentative after 
 - 库内没有分区、接收率、审稿周期、ORCID 要求等字段。**报告前必须用 WebSearch 复核 Top 3 期刊的最新 IF 与 JCR/中科院分区**，并写明年份与来源 URL。
 - 无法查到的数据一律写 **N/A**，禁止凭印象填数。
 
-取库内模板一律用脚本（**禁止整读 `journal-templates.yaml`**，3600 多行会被截断）：
+取库内模板一律用脚本（**禁止整读 `journal-templates.yaml`**，文件超过 Read 默认的 2000 行，会被截断）：
 
 ```bash
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --list --specialty urology
@@ -106,7 +106,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_temp
 ```
 1. WebSearch("[期刊名] instructions for authors")
    → 定位 "Instructions for Authors" / "Guide for Authors" 页面
-2. WebFetch(URL) 提取：journal, publisher, IF_approx（标年份与来源；新刊写"新刊，无 IF"）,
+2. WebFetch(URL) 提取：journal, publisher, IF_approx + IF_year + IF_source（新刊写 IF_approx: null，special 注明"新刊，无 IF"）,
    word_limit, abstract, references, figures, tables, sections, special, system, apc
 3. 写成 YAML 条目并保存到 **项目目录** ./journal-overrides.yaml（与库文件相同结构；
    family 按规则填：名称含 lancet → lancet；jama → jama；nature/npj → nature；ieee → ieee；其余 standard）：
@@ -114,7 +114,9 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_temp
      - id: [kebab-case-id]
        journal: [全名]
        publisher: [出版社]
-       IF_approx: "[值] (JCR [年份], 来源: [URL])"
+       IF_approx: [数值，不加引号和文字]
+       IF_year: [JCR 年份]
+       IF_source: "[URL]"
        word_limit: ...
        family: standard
    → manuscript-writing / manuscript-export 的脚本会优先读取该文件；不确定的字段写 verify

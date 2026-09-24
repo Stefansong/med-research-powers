@@ -10,7 +10,7 @@
 |---------|----------|
 | 注册信息：PROSPERO 等注册号，**或**明确说明未注册及原因（PRISMA 2020 item 24a 要求报告注册信息，未注册须写明） | 必须 |
 | `search-strategy.md` + `screening-log.md`（`literature-synthesis` 产物） | 必须 |
-| `literature-references.md` / `evidence-table.md` | 必须 |
+| `literature-references.md`（`literature-synthesis` Systematic 模式产物：逐篇研究类型、样本量、核心发现、偏倚风险） | 必须 |
 | PRISMA 2020 Checklist（`reporting-standards` 提供） | 必须 |
 | 偏倚风险评估结果（RoB 2 / ROBINS-I / NOS（满分 9）/ QUADAS-2（诊断准确性）/ PROBAST（预测模型）） | 必须 |
 
@@ -38,7 +38,7 @@
 
 **Results**
 - Study Selection → **PRISMA 2020 Flow Diagram（必须）**，各环节数字与 `screening-log.md` 一致
-- Study Characteristics → 纳入研究汇总表（`evidence-table.md`）
+- Study Characteristics → 纳入研究汇总表（从 `literature-references.md` 整理）
 - Risk of Bias → 汇总图/表
 - Synthesis Results → 按结局分组报告；叙述性综合不得用"票数法"（多少研究显著）代替效应方向与大小
 

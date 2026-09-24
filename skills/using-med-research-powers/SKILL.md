@@ -22,7 +22,7 @@ MRP 是一套覆盖"选题 → 设计 → 分析 → 写作 → 投稿 → 修�
 3. **决定**：关键选择给用户看；硬确认节点必须等用户同意。
 4. **执行**：按确认后的计划现写代码或内容，执行后自检，偏离计划处记录理由。
 
-计划前**可以看**数据的结构和质量（变量、编码、缺失形式、事件总数、同一患者多条记录等），**不能看**变量与结局的关系（包括暴露/分组与结局）——这些只能在分析计划确认后按计划执行，否则就成了看结果选方法。只在预测变量之间、不涉及结局的冗余检查可以做。
+**结局盲规则**（各 skill 引用这一条）：计划前**可以看**数据的结构和质量（变量、编码、缺失形式、事件总数、同一患者多条记录等），**不能看**变量与结局的关系（包括暴露/分组与结局，含按组画的结局图）——这些只能在分析计划确认后按计划执行，否则就成了看结果选方法。只在预测变量之间、不涉及结局的冗余检查可以做。用户明确要探索性分析时可以做，但标明 exploratory，不再拿它选 SAP 的方法。
 插件里的固定脚本只做四类事：容易算错的公式（样本量）、防止致命错误的护栏（患者级划分、随机分组）、与数据无关的基础设施（状态、期刊模板、导出）、只报告不做决定的检查工具（数据体检、前提检验、重跑一致性）。分析代码本身由 AI 针对具体数据现写。
 
 ## When to Use
@@ -33,7 +33,7 @@ MRP 是一套覆盖"选题 → 设计 → 分析 → 写作 → 投稿 → 修�
 
 ## When NOT to Use
 
-- 单点小问题：改一句话、解释一个统计概念、算一个数、改一处格式。直接回答，不进流程。
+- 单点小问题：改一句话、解释一个统计概念、算一个数、改一处格式。直接回答，不进流程（按组比较结局不算小问题，受结局盲规则约束）。
 - 与科研无关的任务（写代码、处理文件等）。
 - 用户明确说"不用走 MRP 流程"。
 
@@ -67,7 +67,7 @@ MRP 是一套覆盖"选题 → 设计 → 分析 → 写作 → 投稿 → 修�
 ➡️ 建议下一步：[下一个 skill] — 做什么
 ```
 
-轻量模式下紧接着直接进入下一步，不额外提问；逐步模式下末尾加一句"继续，还是先修改？"。
+轻量模式下紧接着直接进入下一步，不额外提问；逐步模式下末尾加一句"继续，还是先修改？"。用户只要一个产物（一节 Methods、一张图、一份 SAP）时不自动推进：交付后停下，摘要里提示下一步。
 
 ## 确认方式（checkpoint_mode）
 
@@ -75,7 +75,7 @@ MRP 是一套覆盖"选题 → 设计 → 分析 → 写作 → 投稿 → 修�
 |------|------|--------|
 | `light`（默认） | 每步只出摘要并自动推进；只在 3 个硬确认处停下等用户 | 大多数情况 |
 | `step` | 每步出摘要后等用户说"继续" | 用户说"逐步确认 / 每步问我" |
-| `auto` | 硬确认也只提示不等待，但锁定内容照常写入产物与状态文件 | 用户说"一直做到底 / 不用问我" |
+| `auto` | 硬确认也只提示不等待：锁定内容照常写入，文件头记 `status: confirmed` + `confirmed_by: auto`，下游照常接受 | 用户说"一直做到底 / 不用问我" |
 
 用户切换模式时执行 `mrp_state.py set checkpoint_mode=<mode>`；用户同意时也可存入全局画像。
 
@@ -110,7 +110,7 @@ research-question-formulation
 → research-ethics                   （伦理审查 / 注册，必须在收集数据前）
 → journal-selection                 （暂定目标期刊，软确认）
 → data-analysis-planning            [硬确认 2：analysis-plan.md]
-→ data-collection-tools
+→ data-collection-tools             （只在还要收集数据时；数据已在手则跳过）
 → [用户收集数据]
 → statistical-analysis
 → figure-generation
@@ -124,27 +124,28 @@ research-question-formulation
 
 辅助 skill（不在主线上，被调用或随时可用）：`pubmed-search`（被 literature-synthesis / pre-submission-verification Gate 3 / manuscript-writing 调用）、`reporting-standards`（被 Gate 1 调用）、`team-collaboration`（需要并行子代理时）、`writing-mrp-skills`（改进 MRP 自身）、本 skill。
 
-用户可以从中间任何一步进入（例如已有数据直接做分析），缺失的前置产物由该 skill 的"前置依赖"规则处理。
+用户可以从中间任何一步进入（例如已有数据直接做分析）。**缺前置产物时**（各 skill 的"前置依赖"都按这条办，不拒绝）：一句话告诉用户缺什么、为什么要紧；给两个选择——现在补（说出最快的补法），或先往下做并记下缺口（`mrp_state.py done … --note "缺 X"`，涉及分析的同时写进 `analysis-log.md`）；按用户的选择办，auto 模式默认先往下做。
+硬确认不因此跳过：确证性分析前 SAP 必须已确认（已有数据时走 `data-analysis-planning` 快速路径，研究问题和主要结局直接写进 SAP 一起确认；不要 SAP 就只能做标明 exploratory 的分析）；投稿和投稿版导出前必须过 6-Gate。已收集好的数据不走 `data-collection-tools`，SAP 确认后直接 `statistical-analysis`。
 
 ## Skill Routing
 
 | Skill | 触发 |
 |-------|------|
 | research-question-formulation | 模糊研究想法、要明确假设、PICO |
-| literature-synthesis | 查文献做综合、research gap、综述证据表（不写作） |
+| literature-synthesis | 查文献做综合、research gap、系统综述 / Meta 分析的检索与筛选（不写作） |
 | pubmed-search | PMID / 引用验证 / 检索式 / MeSH / 单库快速检索 |
 | study-design | 研究设计、样本量、protocol（临床 / 基础 / AI / 定性 / 问卷，内置 Type A–E 路由） |
 | research-ethics | 伦理、IRB、知情同意、注册、隐私、人类遗传资源 |
 | journal-selection | 投哪个期刊、选刊、期刊要求 |
 | data-analysis-planning | 没有 analysis-plan.md 时"帮我分析数据"、制定 SAP |
-| data-collection-tools | CRF、标注表、患者级数据划分、随机分组脚本 |
+| data-collection-tools | 收集数据前：CRF、标注表、患者级数据划分、随机分组脚本 |
 | statistical-analysis | 已有 analysis-plan.md 时执行分析、跑统计 |
 | figure-generation | 画图 / 作图 / 出图、期刊图规范 |
-| manuscript-writing | 写论文各章节（原始研究 + 5 种综述） |
+| manuscript-writing | 写论文各章节（原始研究 + 5 种综述的成稿） |
 | manuscript-export | Markdown → .docx、期刊排版、字数/图表数检查 |
 | reporting-standards | CONSORT / STROBE / PRISMA 等报告规范逐条检查 |
 | peer-review-simulation | 模拟审稿、审稿人会挑什么毛病 |
-| pre-submission-verification | 写完了 / 可以投了 / 定稿（6-Gate，强制） |
+| pre-submission-verification | 论文写完了 / 可以投了 / 定稿（6-Gate，强制） |
 | submission-preparation | Cover letter、投稿系统操作 |
 | revision-response | 审稿意见怎么改、逐条回复 |
 | team-collaboration | 多子代理并行（多库检索、4 审稿人、并行修稿） |
@@ -227,8 +228,7 @@ hook 只读其中 5 个字符串字段（见仓库 SECURITY.md）。
 
 | 想法 | 现实 |
 |------|------|
-| "直接跑个 t 检验就行" | 先确认分布、样本量、前提假设 |
-| "先看看哪些变量和结局有关，再定分析方法" | 计划前只能看数据结构和质量；看了关系再选方法就是事后假设 |
+| "直接跑个 t 检验就行" | 方法来自已确认的 SAP，不临场挑检验；先看哪些变量和结局有关再定方法就是事后假设 |
 | "这个分析很简单不需要计划" | 无 SAP = p-hacking 温床 |
 | "样本量够大没问题" | 必须有正式的先验样本量计算 |
 | "p < 0.05 就是显著" | 效应量 + CI + 临床意义综合判断 |
@@ -237,7 +237,6 @@ hook 只读其中 5 个字符串字段（见仓库 SECURITY.md）。
 | "回顾性不需要伦理" | 需要伦理审查或书面豁免，且在收集数据前 |
 | "用 CONSORT 2010 就行" | CONSORT 2025 已取代 2010（30 项，含子项共 42 行） |
 | "主要结局改一下没关系" | protocol 确认后主要结局锁定；改动 = 需公开说明的 protocol 修改 |
-| "论文写完就可以投了" | 必须过 pre-submission-verification |
 
 ## 衔接规则
 
@@ -246,7 +245,7 @@ hook 只读其中 5 个字符串字段（见仓库 SECURITY.md）。
 - 3 个硬确认节点必须得到用户明确同意（auto 模式除外，但锁定内容照常写入）。
 
 ### 前置依赖
-- 本 skill 本身无前置；各 skill 的前置产物缺失时，由该 skill 的"前置依赖"规则决定是补做还是询问。
+- 本 skill 本身无前置；各 skill 的前置产物缺失时，按 Pipeline 节的"缺前置产物时"规则处理。
 
 ### 可选衔接
 - 需要并行（多库检索、4 审稿人、并行修稿）→ `team-collaboration`。

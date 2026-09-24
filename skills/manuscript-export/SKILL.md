@@ -1,6 +1,6 @@
 ---
 name: manuscript-export
-description: Use when exporting manuscript markdown into a journal-formatted .docx after pre-submission checks pass. Triggers on "导出Word"、"生成docx"、"排版"、"格式化论文"、"export manuscript"、"docx".
+description: Use when exporting manuscript markdown into a journal-formatted .docx after pre-submission checks pass. Triggers on "导出Word"、"生成docx"、"论文按期刊排版"、"格式化论文"、"export manuscript to docx".
 ---
 
 # Manuscript Export
@@ -42,7 +42,7 @@ description: Use when exporting manuscript markdown into a journal-formatted .do
 4. 向用户确认：期刊 id + family（决定章节顺序和特殊元素）
 ```
 
-期刊数据只有一处：`${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/references/journal-templates.yaml`（234 刊，顶层 `data_as_of` 标明 IF/APC 年份）。每条的 `family` 字段（lancet / jama / nature / ieee / standard）决定导出行为；缺该字段时脚本按 id/名称关键词推断。
+期刊数据只有一处：`${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/references/journal-templates.yaml`（240 刊，顶层 `data_as_of` 标明 IF/APC 年份）。每条的 `family` 字段（lancet / jama / nature / ieee / standard）决定导出行为；缺该字段时脚本按 id/名称关键词推断。
 
 ### Step 2：收集稿件文件
 
@@ -64,7 +64,7 @@ manuscript/
 检查:
   → 哪些文件存在？家族要求的文件缺了（如 JAMA 缺 key-points.md）→ 报告里 ⚠️，不阻断
   → 综述类的 section-N-*.md 不在导出顺序中 → 先合并进 discussion.md，否则报告列为"未导出"
-  → 是否还有 <!-- PLACEHOLDER -->、[TBD]、[TODO]、[pending]、[待补充] 标记？
+  → 是否还有 <!-- PLACEHOLDER/TODO/TBD/pending/待补 -->、[TBD]、[TODO]、[pending]、[INSERT、[待补…]、[待填…] 标记？
 ```
 
 ### Step 3：生成 .docx
@@ -115,7 +115,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-export/scripts/export_docx.py \
 | `- item` | Bullet list |
 | `1. item` | 编号保留为文本 "1. item"（不用 Word 自动编号，参考文献与正文列表不会串号） |
 | `> quote` | 缩进斜体段落 |
-| `<!-- comment -->` | 删除；但 `<!-- PLACEHOLDER/TODO/TBD -->` 会先被记入报告 |
+| `<!-- comment -->` | 删除；但 `<!-- PLACEHOLDER/TODO/TBD/pending/待补 -->` 会先被记入报告 |
 | `\| table \|` | docx Table（带边框；分隔行 `\|---\|` 跳过） |
 | `![alt](path)` | 保留为文字并计入图数；**图片不嵌入**，图文件单独上传 |
 
@@ -134,7 +134,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-export/scripts/export_docx.py \
   模板写 "combined" 时按图+表合计比较
 □ 章节：实际顺序、纳入的文件、⚠️ 缺失的家族必需文件、ℹ️ 未导出的多余文件
 □ 模板 special 字段原样列出（Reporting Summary、Patient Summary 等），需人工核对
-□ Placeholder：<!-- PLACEHOLDER/TODO/TBD -->、[pending]、[TBD]、[TODO]、[INSERT、[待补充] — 覆盖段落、列表、标题、表格单元格，给出 文件:行号
+□ Placeholder：<!-- PLACEHOLDER/TODO/TBD/pending/待补 -->、[pending]、[TBD]、[TODO]、[INSERT、[待补…]、[待填…]、含 placeholder 的文字 — 覆盖段落、列表、标题、表格单元格，给出 文件:行号
 ```
 
 脚本**做不到**、需要人工/其他 skill 完成的：页数估算、字体/行距的"验证"（脚本按 family 设置，不再回读核验）、图片嵌入、题页单独文件（部分期刊要求单独上传题页：从 manuscript.docx 复制第一页即可）、参考文献格式正确性（`pubmed-search` Mode 6）。
@@ -206,9 +206,9 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-export/scripts/export_docx.py \
 
 ## 衔接规则
 
-### 前置依赖（不满足则阻止）
-- **必须**有 `manuscript/` 下至少 1 个章节 .md
-- **必须**已通过 `pre-submission-verification`（`submission-readiness-report.md` 6-Gate 全过）
+### 前置依赖（缺了按总调度"缺前置产物时"处理；6-Gate 是硬确认 3）
+- `manuscript/` 下至少 1 个章节 .md
+- 投稿版必须已通过 `pre-submission-verification`（`submission-readiness-report.md` 6-Gate 全过）；没通过时只导出给合作者看的草稿（文件名加 `-draft`，告诉用户不能用来投稿）
 - **推荐**有 `journal-selection-report.md`（确定期刊 id）
 
 ### 强制衔接（不可跳过）

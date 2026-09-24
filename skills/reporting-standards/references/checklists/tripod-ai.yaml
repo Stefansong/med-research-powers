@@ -27,7 +27,7 @@ reference: "Collins et al. BMJ 2024;385:e078378 (doi:10.1136/bmj-2023-078378)"
 website: "https://www.tripod-statement.org/"
 abstract_checklist: "TRIPOD+AI for Abstracts — 13 items (Table 3 of the statement)"
 use_with: ["TRIPOD-Cluster (clustered data / heterogeneity across centres; BMJ 2023)", "PROBAST / PROBAST+AI (risk of bias, not a reporting guideline)"]
-related: ["TRIPOD-LLM (Nat Med 2025) for large language model studies", "CLAIM 2024 for medical imaging AI", "DECIDE-AI for early clinical evaluation of AI decision support", "STARD-AI (in development)"]
+related: ["TRIPOD-LLM (Nat Med 2025) for large language model studies", "CLAIM 2024 for medical imaging AI", "DECIDE-AI for early clinical evaluation of AI decision support", "STARD-AI (Nat Med 2025, doi:10.1038/s41591-025-03953-8; no local checklist) for AI diagnostic accuracy studies"]
 
 sections:
   - name: Title

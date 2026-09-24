@@ -110,7 +110,7 @@ def test_randomization_cli(tmp_path):
     assert out.exists() and (tmp_path / "alloc_summary.json").exists()
 
 
-# ─── patient split regressions found in the v6.4.0 audit ─────────────────────────
+# ─── patient split regressions found in the release-6.4 audit ─────────────────────────
 
 def _one_row_per_patient(labels):
     return pd.DataFrame({"patient_id": np.arange(len(labels)), "label": labels})
@@ -167,7 +167,7 @@ def test_kfold_zero_is_an_error_and_existing_split_column_is_not_overwritten(tmp
         pls.split_patients(df, "patient_id")
 
 
-# ─── randomisation regressions found in the v6.4.0 audit ─────────────────────────
+# ─── randomisation regressions found in the release-6.4 audit ─────────────────────────
 
 def test_cli_draws_an_unpredictable_seed_and_the_summary_regenerates_the_list(tmp_path):
     a, b = tmp_path / "a.csv", tmp_path / "b.csv"

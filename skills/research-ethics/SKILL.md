@@ -1,6 +1,6 @@
 ---
 name: research-ethics
-description: Use when checking ethical compliance of research involving human subjects, animals, or patient data. Triggers on "伦理"、"IRB"、"知情同意"、"数据隐私"、"IACUC"、"利益冲突"、"人类遗传资源"、"注册".
+description: Use when checking ethical compliance of research involving human subjects, animals, or patient data. Triggers on "伦理"、"IRB"、"知情同意"、"数据隐私"、"IACUC"、"利益冲突"、"人类遗传资源"、"临床试验注册".
 ---
 
 # Research Ethics
@@ -97,7 +97,7 @@ description: Use when checking ethical compliance of research involving human su
 - `pre-submission-verification` Gate 5 → 读取 `ethics-statement.md` 复核批准号、同意/豁免、利益冲突、资金、数据可用性、注册号；失败回到本 skill
 - `manuscript-writing` 写 Methods → 引用 `ethics-statement.md` 的声明段落
 
-### 前置依赖（不满足则阻止）
+### 前置依赖（缺了按总调度"缺前置产物时"处理）
 - 有已确认的 `study-protocol.md`（`type:` 与"伦理与注册"章节）；用户单独咨询伦理问题时可不依赖 protocol，但要先问清研究类型与数据来源
 
 ### 可选衔接

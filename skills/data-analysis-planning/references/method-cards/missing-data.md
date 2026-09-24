@@ -34,19 +34,31 @@
 
 | 任务 | R | Python |
 |---|---|---|
-| 伪装缺失转为缺失值 | 读入时 `read.csv(..., na.strings = c("", "/", "未查", "不详"))`；已读入的用 `naniar::replace_with_na(d, replace = list(x = c(999, 9999)))` | `pandas.read_csv(..., na_values=["/", "未查", "不详", "999"])`；已读入的用 `df.replace({...})` |
+| 伪装缺失转为缺失值 | 读入时 `read.csv(..., na.strings = c("", "/", "未查", "不详"))`；已读入的用 `naniar::replace_with_na(d, replace = list(x = c(999, 9999)))` | 按列写：`pandas.read_csv(..., na_values={"plt": ["/", "未查", "999"], "crea": ["/", "未查"]})`；已读入的用 `df["plt"] = df["plt"].replace(999, np.nan)`。不要给 `na_values` 传一个全表通用的列表并在里面放 999：编号、计数、化验值里真实的 999（连同 999.0）会被一起变成缺失，而且不报错。每列哪些写法代表缺失，先对照编码手册和 `data_profile.py` 的结果逐列确认 |
 | 缺失概况与模式 | `naniar::miss_var_summary()`、`gg_miss_upset()`；`mice::md.pattern()` | `missingno.matrix()`、`missingno.heatmap()`；`df.isna().mean()` |
 | Little MCAR 检验 | `naniar::mcar_test(d)` | `pyampute.exploration.mcar_statistical_tests.MCARTest(method="little").little_mcar_test(df)` |
 | 多重插补 | `mice::mice(d, m = <m>, method = <按变量指定>, predictorMatrix = <矩阵>, maxit = <迭代次数>, seed = <种子>)` | `statsmodels.imputation.mice.MICEData(df)` + `MICE(formula, model_class, imp_data).fit(n_burnin=..., n_imputations=<m>)`；或 `sklearn` 的 `IterativeImputer(sample_posterior=True, random_state=i)` 循环 m 次 |
 | 预测变量矩阵 | `mice::make.predictorMatrix()`；`mice::quickpred(d, include = c(<结局>, <分析变量>))`（用 `include` 强制纳入结局和分析变量） | `MICEData.set_imputer(<变量名>, formula=...)` 逐个指定插补公式 |
 | 生存结局的插补 | `d$H0 <- mice::nelsonaalen(d, time, status)`，把 `H0` 和事件指示变量放进插补模型 | 无专门工具：用 `lifelines.NelsonAalenFitter` 算出每人的累积风险，作为插补变量 |
-| 合并（Rubin 规则） | `with(imp, glm(...))` 后 `mice::pool()` | `MICE.fit()` 已内置合并；`IterativeImputer` 路线要手写 Rubin 公式（见 statistical-analysis 的 SKILL.md 示例） |
+| 合并（Rubin 规则） | `with(imp, glm(...))` 后 `mice::pool()`（默认用 Barnard-Rubin 小样本自由度） | `MICE.fit()` 已内置合并；`IterativeImputer` 路线要自己按 Rubin 规则合并（公式见表下） |
 | 派生变量被动插补 | `meth["bmi"] <- "~I(weight / height^2)"`，并在 predictorMatrix 里不让 BMI 反过来预测身高、体重 | 无公认成熟包：插补原始成分后，在每份数据里重新计算派生变量 |
 | MNAR delta / tipping point | `mice(..., post = <表达式>)` 在插补值上加 δ，对一组 δ 循环 | 无公认成熟包：插补后在插补位置加 δ 再分析，对一组 δ 循环（手写） |
 
+`IterativeImputer` 路线的 Rubin 规则：第 i 份插补数据（i = 1…m）得到估计值 q_i 和它的方差 U_i（SE 的平方；OR、HR 先取对数）。
+
+```text
+合并估计   q̄ = mean(q_i)
+组内方差   Ū = mean(U_i)            组间方差 B = var(q_i)（分母 m − 1）
+总方差     T = Ū + (1 + 1/m)·B      合并 SE = √T
+自由度     λ = (1 + 1/m)·B / T;  ν_old = (m − 1) / λ²
+           ν_obs = (ν_com + 1)/(ν_com + 3) · ν_com · (1 − λ)   （ν_com：数据没有缺失时的残差自由度，n − 参数数）
+           ν = ν_old · ν_obs / (ν_old + ν_obs)                 （Barnard-Rubin 小样本校正，与 mice::pool() 一致）
+95% CI     q̄ ± t(ν, 0.975) · √T      （对数尺度上算完再取指数）
+```
+
 ## 4. 常见的坑
 
-- "/"、"未查"、999 没转成缺失就进入分析（999 被当成真实数值）；或把截断值 "<0.1" 当缺失删掉。
+- "/"、"未查"、999 没转成缺失就进入分析（999 被当成真实数值）；或反过来，全表统一把 999 当缺失，把真实的 999 也删了；或把截断值 "<0.1" 当缺失删掉。
 - 默认删除缺失（软件自动做完整病例分析）却不报告删了多少、为什么；不同模型的样本量不一样也不说明。
 - 单次插补（均值/中位数填补、`IterativeImputer` 只跑一次、末次观测结转 LOCF）当主要分析：低估不确定性，还可能有偏。
 - 插补模型不包含结局：会把协变量与结局的关联拉向 0（White 2011）。

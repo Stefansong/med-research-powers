@@ -3,10 +3,15 @@
 #  * several rows per patient (one row per stone)       -> patient-level aggregation / GEE / mixed model
 #  * disguised missing codes "未查" and "/"               -> recode to missing, handle in imputation plan
 #  * censored lab strings like "<0.1"                     -> prespecified rule
-#  * only ~30 recurrences for 12 candidate predictors     -> reduce predictors or penalise; Riley sample size
+#  * 400 patients / 668 stone rows, only 23 patients with a recurrence (37 rows if counted per stone; seed 7)
+#    for 12 candidate predictors                        -> count events per patient; reduce predictors or penalise; Riley
+# The protocol is confirmed and an ethics record exists, so the skill's prerequisites are met and a faithful run
+# goes straight to the data check-up and the SAP (hard checkpoint 2); the data are already collected, so the next
+# step after the SAP is statistical-analysis, not data-collection-tools.
 set -eu
 cat > study-protocol.md <<'P'
 # Study Protocol
+status: confirmed
 type: clinical
 title: 输尿管软镜碎石术后 2 年结石复发的预测模型（回顾性，单中心）
 primary_outcome: 术后 2 年内影像学复发（recurrence_2y，0/1）
@@ -14,13 +19,17 @@ candidate_predictors: age, sex, bmi, diabetes, hypertension, stone_count, max_st
 design: 回顾性队列，2018–2023 年行输尿管软镜碎石的患者
 analysis_intent: 建立并内部验证临床预测模型，绘制列线图
 P
+cat > ethics-statement.md <<'E'
+# Ethics Statement (synthetic, for the eval)
+本院伦理委员会已批准本回顾性研究（批号：EVAL-0000，虚构），豁免知情同意；数据已去标识化。
+E
 python3 - <<'PY'
 import random, csv
 random.seed(7)
 rows=[]
 for pid in range(1, 401):
     n_stones = random.choice([1,1,1,2,2,3])
-    rec = 1 if random.random() < 0.075 else 0          # ~30 events in 400 patients
+    rec = 1 if random.random() < 0.075 else 0          # seed 7 -> 23 patients with an event (37 stone rows)
     base = dict(patient_id=f"P{pid:04d}", age=random.randint(22,80), sex=random.choice(["男","女"]),
                 bmi=round(random.uniform(18,34),1), diabetes=random.choice([0,0,0,1]),
                 hypertension=random.choice([0,0,1]), urine_ph=round(random.uniform(5.0,7.5),1),

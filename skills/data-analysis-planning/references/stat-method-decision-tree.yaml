@@ -1,26 +1,26 @@
 # Statistical Method Decision Tree
 
 ## Two Groups
-# Order of decisions: paired? -> (paired) normality of the DIFFERENCES
-#                             -> (unpaired) normality of each group -> homogeneity of variance
+# The test is fixed in the SAP from the design and the expected shape of the outcome — NOT chosen by a
+# significance pre-test (Shapiro-Wilk / Levene) on the same data. Two-stage "pre-test, then pick the test"
+# procedures can distort the type I error of the final test (Zimmerman 2004, doi:10.1348/000711004849222;
+# Rochon 2012, doi:10.1186/1471-2288-12-81). Plots (histogram, Q-Q) describe the data; they do not switch tests.
 two_groups:
   continuous:
     paired:
-      step_1: "Test normality of the paired differences (not of each group); no variance-homogeneity step"
-      differences_normal: "Paired t-test"
-      differences_non_normal: "Wilcoxon signed-rank test"
+      default: "Paired t-test on the within-pair differences (prespecified)"
+      rank_based: "Wilcoxon signed-rank test (report the Hodges-Lehmann estimate + CI) — chosen in the SAP when the differences are expected to be clearly skewed, ordinal or bounded, or n is very small; not chosen by a normality pre-test"
     unpaired:
-      step_1: "Test normality of each group (Shapiro-Wilk n<50, D'Agostino-Pearson n>=50)"
-      normal:
-        step_2: "Test homogeneity of variance (Levene)"
-        equal_variance: "Independent t-test"
-        unequal_variance: "Welch's t-test"
-      non_normal: "Mann-Whitney U test (no homogeneity step needed)"
+      default: "Welch's t-test (unequal-variance t-test), prespecified — no Levene step; report mean difference + 95% CI"
+      student_t: "Student's t-test only when the SAP gives a reason to assume equal variances; with equal group sizes the Welch and Student t statistics are identical"
+      rank_based_or_transform: "Mann-Whitney U (report the Hodges-Lehmann shift + CI) or analysis on a transformed scale (e.g. log for right-skewed lab values) — chosen in the SAP on design grounds (clearly skewed, ordinal, bounded or censored outcome; very small n), not by a normality pre-test"
   categorical:
     binary_outcome:
       expected_freq_ge_5: "Chi-squared test"
       expected_freq_lt_5: "Fisher's exact test"
-    ordinal_outcome: "Mann-Whitney U / Wilcoxon rank-sum (equivalently Cochran-Mantel-Haenszel row-mean-score test); Cochran-Armitage is NOT for this case"
+    ordinal_outcome:
+      unadjusted: "Mann-Whitney U / Wilcoxon rank-sum (equivalently the Cochran-Mantel-Haenszel row-mean-score test). A 2 x K table with ordered K may also be tested with the Cochran-Armitage trend test: its statistic does not depend on which margin is called the outcome, it is (up to a factor N/(N-1)) the linear-by-linear association test with the same scores, and with mid-rank scores it gives almost the same result as Mann-Whitney"
+      adjusted_or_effect_size: "Proportional-odds (ordinal logistic) regression — common OR + 95% CI, allows covariate adjustment (e.g. mRS at 90 days); check the proportional-odds assumption. R: MASS::polr() or ordinal::clm(); Python: statsmodels OrderedModel with distr='logit' (its default is probit)"
   survival:
     test: "Log-rank test"
     model: "Cox proportional hazards regression"
@@ -29,23 +29,22 @@ two_groups:
 ordered_groups_binary_outcome:
   trend_test: "Cochran-Armitage trend test (linear trend in proportions across ordered groups)"
   alternative: "Logistic regression with the ordered group as a numeric score (reports OR per level)"
-  note: "Use only when the GROUPS are ordered and the OUTCOME is binary; two groups x ordinal outcome -> two_groups.categorical.ordinal_outcome"
+  note: "Built for ordered groups x binary outcome. For any 2 x K table the statistic is symmetric in the two margins, so two groups x ordinal outcome may use it too (see two_groups.categorical.ordinal_outcome); for covariate adjustment use proportional-odds regression"
 
 ## Multiple Groups (>2)
+# Same rule as two groups: fix the method in the SAP; do not pick it from normality / Levene pre-tests.
 multiple_groups:
   continuous:
-    # paired / repeated measures: Levene is not applicable — check sphericity (Mauchly) instead
-    normal_and_homogeneous:
-      unpaired: "One-way ANOVA + Tukey HSD post-hoc"
-      paired: "Repeated-measures ANOVA (Mauchly's sphericity test; Greenhouse-Geisser correction if violated)"
-    normal_not_homogeneous:
-      unpaired: "Welch's ANOVA + Games-Howell post-hoc"
-      paired: "Repeated-measures ANOVA — homogeneity step does not apply; use sphericity check as above (or a linear mixed model)"
-    non_normal:
-      unpaired: "Kruskal-Wallis + Dunn's post-hoc"
-      paired: "Friedman test + Nemenyi post-hoc"
+    unpaired:
+      default: "Welch's ANOVA + Games-Howell post-hoc (prespecified; does not assume equal variances)"
+      equal_variance_assumed: "One-way ANOVA + Tukey HSD — only when the SAP gives a reason to assume equal variances"
+      rank_based: "Kruskal-Wallis + Dunn's post-hoc — chosen in the SAP on design grounds (clearly skewed / ordinal / bounded outcome, very small n), not by a normality pre-test"
+    paired:
+      default: "Linear mixed model (preferred with missing or unbalanced data), or repeated-measures ANOVA with the Greenhouse-Geisser correction prespecified (Levene does not apply to paired data)"
+      rank_based: "Friedman test + Nemenyi post-hoc — chosen on design grounds, as above"
   categorical:
     test: "Chi-squared test (or Fisher if sparse cells)"
+    ordinal_outcome: "Kruskal-Wallis, or proportional-odds regression when adjustment or a common OR is needed"
 
 ## Association / Correlation
 association:
@@ -55,6 +54,7 @@ association:
   adjust_confounders:
     continuous_outcome: "Multiple linear regression"
     binary_outcome: "Multiple logistic regression"
+    ordinal_outcome: "Proportional-odds (ordinal logistic) regression"
     survival_outcome: "Cox regression"
     count_outcome: "Poisson / Negative binomial regression"
 
@@ -196,7 +196,10 @@ omics:
     proteomics: "limma (moderated t-test)"
     metabolomics: "t-test or Wilcoxon with FDR correction"
   multiple_testing: "Benjamini-Hochberg FDR (q<0.05); report both raw and adjusted p"
-  batch_effect: "ComBat or limma::removeBatchEffect before analysis"
+  batch_effect:
+    analysis: "Put batch in the model as a covariate: DESeq2 design = ~ batch + condition; limma / edgeR design matrix with a batch term"
+    visualisation_only: "ComBat / limma::removeBatchEffect only for PCA, clustering and heatmaps — never on the data that go into differential testing (the limma help page says removeBatchEffect is not intended for use before linear modelling; pre-corrected data give over-confident results when groups are unbalanced across batches, Nygaard 2016, doi:10.1093/biostatistics/kxv027)"
+    design: "If batch is completely confounded with group, no method can separate them — spread groups across batches at the design stage"
   validation: "Split-sample or independent cohort validation"
 
 ## Interrupted Time Series
@@ -207,13 +210,16 @@ time_series:
   controls: "Add control series if available (controlled ITS)"
 
 ## Assumption Tests (use ${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/assumption_tests.py)
+# These describe and document the data. They do not decide the main test after the fact: the method and its
+# fallback are fixed in the SAP (see two_groups / multiple_groups). If a check shows the planned method is clearly
+# wrong for the data, record it as a deviation from the SAP with the reason.
 assumptions:
   normality:
     n_lt_50: "Shapiro-Wilk test"
     n_ge_50: "D'Agostino-Pearson test"
-    visual: "Q-Q plot (supplementary, not standalone)"
-    caution: "With n<50, normality tests have low power; consider pre-specifying non-parametric"
-  homogeneity: "Levene's test (not applicable for paired data — test difference normality instead)"
+    visual: "Histogram / Q-Q plot of the outcome or of the model residuals"
+    caution: "Small n: tests have little power; large n: trivial departures are 'significant'. Decide on design grounds in the SAP (e.g. rank-based or log scale for outcomes known to be skewed)"
+  homogeneity: "Levene's test — descriptive only; Welch's t-test / Welch's ANOVA are the prespecified default, so no Levene step is needed (not applicable for paired data)"
   independence: "Study design ensures this (not testable post-hoc)"
   sphericity: "Mauchly's test (for repeated-measures ANOVA); if violated use Greenhouse-Geisser correction"
   proportional_hazards: "Schoenfeld residuals test + log-log survival plot"
@@ -229,8 +235,13 @@ deep_learning_classification:
     - {method: DeLong test, when: "Compare two ROC curves"}
     - {method: Bootstrap CI, when: "Confidence interval for any metric (B=2000)"}
     - {method: McNemar test, when: "Compare error patterns of two classifiers"}
-  calibration: [ECE, MCE, Reliability Diagram]
-  clinical: [DCA, NRI, IDI]
+  calibration:
+    primary: ["Calibration intercept (calibration-in-the-large: logistic model with logit(p) as offset)", "Calibration slope", "Flexible (loess / spline) calibration curve with CI", "Brier score"]
+    secondary: ["ECE / MCE (bin-dependent summaries; report the binning, never as the only calibration measure)"]
+    note: "Details and code: method-cards/regression-and-prediction-models.md (Van Calster 2019, doi:10.1186/s12916-019-1466-7)"
+  clinical:
+    primary: ["DCA (net benefit over a prespecified threshold range)"]
+    caveat: "NRI / IDI are not proper performance measures — a miscalibrated model can look better (Hilden 2014, doi:10.1002/sim.5804; Kerr 2014, doi:10.1097/EDE.0000000000000018). If a journal asks for them, report them only next to DCA / net benefit and changes in calibration and discrimination, with bootstrap CIs"
 
 deep_learning_segmentation:
   task: "Image segmentation (organ/lesion delineation)"
@@ -271,6 +282,7 @@ deep_learning_training:
   class_imbalance:
     data_level: [oversampling, undersampling, SMOTE]
     loss_level: [weighted_CE, focal_loss, dice_loss, combo_loss]
+    warning: "Resampling (over/undersampling, SMOTE) and class weights shift predicted probabilities towards the minority class — the model becomes miscalibrated without gaining AUROC (van den Goorbergh 2022, doi:10.1093/jamia/ocac093). When predicted risks are used, prefer no correction and move the decision threshold instead; if a correction is used, recalibrate on untouched (non-resampled) data and report calibration after recalibration"
     evaluation: "Never use accuracy alone; use AUROC/AUPRC/F1"
 
 model_comparison:
@@ -278,6 +290,7 @@ model_comparison:
     design: "Same test set, same information, blinded evaluation"
     groups: ["AI alone", "Human alone", "AI-assisted Human"]
     washout: "≥2 weeks between unaided and AI-assisted reading"
+    analysis: "Multi-reader multi-case (MRMC) methods with readers and cases as random effects — AI alone vs the reader panel: AI as a fixed reader, readers random (e.g. RJafroc::StSignificanceTestingCadVsRad, iMRMC); aided vs unaided: Obuchowski-Rockette / DBM. Not DeLong against each reader or against the mean reader AUC. Details: method-cards/diagnostic-accuracy-and-ai-evaluation.md"
   multi_model:
     method: "Bootstrap (B>=2000) or permutation test (>=1000 permutations) on paired predictions"
     report: "Point estimate + 95% CI for each model"
@@ -288,9 +301,10 @@ uncertainty_quantification:
     - {name: Deep Ensembles, description: "Train M=5 independent models, use prediction disagreement"}
     - {name: TTA, description: "Apply augmentations at inference, use prediction variability"}
   calibration:
-    - {metric: ECE, description: "Expected Calibration Error — gap between confidence and accuracy"}
-    - {metric: MCE, description: "Maximum Calibration Error — worst-case miscalibration"}
-    - {visualization: "Reliability diagram (predicted probability vs observed frequency)"}
+    - {metric: "Calibration intercept + slope", description: "Primary — see deep_learning_classification.calibration"}
+    - {visualization: "Flexible calibration curve (predicted probability vs observed frequency, with CI)"}
+    - {metric: ECE, description: "Secondary — Expected Calibration Error; depends on the binning, report the bins"}
+    - {metric: MCE, description: "Secondary — Maximum Calibration Error; unstable with few cases per bin"}
   when: "Safety-critical applications (surgical guidance, diagnosis, treatment planning)"
 
 explainability:

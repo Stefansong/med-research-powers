@@ -14,37 +14,30 @@ description: Use when no analysis-plan.md exists yet and a statistical analysis 
 3. **用户确认**：`analysis-plan.md` 是流水线的**硬确认 2**，用户明确同意后才能进入数据收集与分析。
 4. **交给 `statistical-analysis` 执行**：执行时的任何偏离都记进 `analysis-log.md`。
 
-**计划前可以看什么、不能看什么**（防止"先分析"变成 p-hacking）：
+**计划前看什么**（总调度"结局盲规则"的细则）：**必须看**数据的结构和质量——变量类型、编码与取值范围，缺失的多少和形式（空值、"/"、"未查"、"—"、999），"<0.1" 这类截断值，日期格式，同一患者多条记录（多个病灶、双侧、多次随访）与中心/术者聚类，样本量、**结局事件总数**、各分组人数、单变量分布；**不能看**暴露/分组与结局的交叉表、组间比较、相关、单因素筛选，以及任何模型结果。
 
-| 可以看，而且必须看：数据的结构和质量 | 不能看：变量与结局的关系（含暴露/分组与结局） |
-|---|---|
-| 有哪些变量、类型与编码、取值范围；缺失的多少和形式（空值、"/"、"未查"、"NA"、"—"、999）；"<0.1" ">1000" 这类截断值；日期格式 | 暴露/分组与结局的关联：交叉表、组间比较、相关、单因素筛选 |
-| 同一患者是否有多条记录（多个结石/病灶、双侧肾、多次随访）、多中心、同一术者多台手术 | 主要模型或任何模型的结果 |
-| 样本量、**结局事件总数**、各分组人数、单个变量的分布 | 换几种方法或模型挑"好看"的那个 |
-
-只在预测变量之间、完全不涉及结局的冗余检查（同一指标两种单位、派生变量与原始变量并存、严重共线）可以做，它不会泄露结局信息。
-
-看了结构再调整计划是合理且必要的：事件数撑不起 10 个预测变量 → 减少变量或用惩罚回归；同一患者多个结石 → GEE/混合模型或按患者汇总；某变量缺失 40% → 讨论是否纳入。这些调整写进 SAP 第 1 节。变量间的关联和模型结果只能在 SAP 确认后按计划去算。
+看了结构再调整计划是合理且必要的：事件数撑不起 10 个预测变量 → 按临床知识预先减少候选变量、合并类别，并按 Riley 标准核对样本量（惩罚回归能减轻过拟合，但事件很少时它本身也不稳定，代替不了足够的样本量）；同一患者多个结石 → GEE/混合模型或按患者汇总；某变量缺失 40% → 讨论是否纳入。这些调整写进 SAP 第 1 节。
 
 ## When to Use
 
 - 研究方案（`study-protocol.md`）已确认，要在收集或分析数据之前定统计方法
-- 回顾性研究的数据已经在手，但还没有 `analysis-plan.md`
+- 回顾性研究的数据已经在手，但还没有 `analysis-plan.md`（没有 protocol 时走 Step 0 的快速路径）
 - 用户说"帮我分析数据"但项目里还没有 `analysis-plan.md`
 - 审稿人要求补充 SAP
 
 ## When NOT to Use
 
 - 已有确认的 `analysis-plan.md`，要执行分析 → `statistical-analysis`
-- 还没有研究方案 → `study-design`（SAP 里的结局、变量、样本量都来自 protocol）
+- 还没有研究方案、数据也还没收集 → `study-design`（SAP 里的结局、变量、样本量都来自 protocol）
 - 还没有明确的研究问题 → `research-question-formulation`
 
 ## Workflow
 
 ### Step 0: 读取用户偏好与前置产物
 
-1. 读取 `~/.claude/mrp-user-profile.json` 的 `preferences.preferred_stats_tool`（Python / R / SPSS / Stata）。没有该字段 → 只问这一个问题（"统计分析主要用 Python、R 还是 SPSS/Stata？"），并问是否保存到该文件供以后使用。SAP 里推荐的包和代码示例按此语言写。
+1. 读取 `~/.claude/mrp-user-profile.json` 的 `preferences.preferred_stats_tool`（Python / R / SPSS / Stata）。没有该字段、用户也没说过 → 只问这一个问题（"统计分析主要用 Python、R 还是 SPSS/Stata？"），并问是否保存到该文件供以后使用。SAP 里推荐的包和代码示例按此语言写。
 2. 读取 `study-protocol.md`：研究类型（Type A–E）、主要/次要结局、变量、样本量与先验效应量、分组与分层因素。
+   **快速路径**（数据已在手、没有 protocol）：按总调度"缺前置产物时"告知用户；用户选先往下做时，把研究问题、主要结局（定义与时点）、纳入/排除标准一次问清写进 SAP 开头，随硬确认 2 一起锁定。没有伦理记录时提醒（回顾性研究也要审查或豁免）并记为缺口。
 3. 若有 `journal-selection-report.md`（暂定期刊），记下其统计报告要求（如强制 CI、禁止基线 p 值）。
 
 ### Step 1: 数据现状分析（写 SAP 之前必须做）
@@ -56,7 +49,7 @@ description: Use when no analysis-plan.md exists yet and a statistical analysis 
    python3 "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/data_profile.py" <数据文件> \
      --id <患者ID列> --outcome <结局列> --report data-profile.md
    ```
-   xlsx 用 `--sheet` 选工作表；生存结局加 `--time <随访时间列>`；中心/术者列可用 `--cluster` 指定。报告内容：列类型、伪装缺失、截断值、数值存成文本、日期问题、缺失比例、数值范围与离群计数、分类取值、重复 ID 与聚类结构、结局事件数、疑似隐私字段。它只报告结局本身的分布，不算任何变量与结局的关系。
+   xlsx 用 `--sheet` 选工作表；生存结局加 `--time <随访时间列>`；中心/术者列可用 `--cluster` 指定。报告内容：列类型、伪装缺失、截断值、数值存成文本、日期问题、缺失比例、数值范围与离群计数、分类取值、重复 ID 与聚类结构、结局事件数（给了 `--id` 时按患者计）、疑似隐私字段（只报列名，不打印取值）。它只报告结局本身的分布，不算任何变量与结局的关系。
 2. 体检没覆盖的结构问题，按需现写**只读**检查代码，例如：多张表按患者 ID 关联后还剩多少人；按患者汇总后的人数和每人记录数；每个中心/术者的例数；每人随访几次。这些代码只统计结构，**不按结局或暴露分组算任何东西**，也不改原始数据。
 3. 有疑似隐私字段（姓名、身份证号、手机号、住院号等）→ 提醒用户在分析前去标识化；SAP 和后续产物里不出现这些值。
 
@@ -68,7 +61,7 @@ description: Use when no analysis-plan.md exists yet and a statistical analysis 
 
 ### Step 2: 选方法
 
-1. 用 `references/stat-method-decision-tree.yaml` 缩小范围：两组连续变量先分配对/独立（配对看差值正态性，独立先正态性再方差齐性）；两组 × 有序结局用 Mann-Whitney / CMH；有序分组 × 二分类结局才用 Cochran-Armitage。缺失数据的规则**只在** yaml 的 `missing_data` 维护。
+1. 用 `references/stat-method-decision-tree.yaml` 缩小范围：两组连续变量先分配对/独立，独立两组默认 Welch t 检验，预期明显偏态、有序或有界时才预先改用秩检验或变换（不按前提检验的 p 值挑）；两组 × 有序结局用 Mann-Whitney / CMH；有序分组 × 二分类结局才用 Cochran-Armitage。缺失数据的规则**只在** yaml 的 `missing_data` 维护。
 2. 只读本研究用到的方法要点卡（每张写了计划前看数据的什么、计划里必须写明什么、推荐的成熟包、常见的坑、必须报告的指标）：
 
 | 分析内容 | 要点卡 |
@@ -85,13 +78,13 @@ description: Use when no analysis-plan.md exists yet and a statistical analysis 
 | LLM/VLM 评测 | `references/method-cards/llm-vlm-evaluation.md` |
 
 3. 每个选择都要回到 Step 1 的现状说明理由，例如：
-   - 事件数 → 多因素模型能纳入几个预测变量（不够就减少变量、合并类别或用惩罚回归）
+   - 事件数 → 多因素模型能纳入几个预测变量（不够就按临床知识减少变量、合并类别；惩罚回归不能弥补事件太少，见回归方法卡）
    - 同一患者多条记录 / 多中心 / 同一术者多台手术 → GEE、混合模型，或按患者汇总
    - 缺失比例与可能的缺失机制 → 完整病例分析还是多重插补（m 份 + Rubin 合并），以及敏感性分析
    - 截断值、编码混乱、单位不统一 → 在第 2 节写清处理规则
    - 某组人数很少、某类取值很少 → 精确检验、合并类别或换指标
 
-   前提检验统一用 `${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/assumption_tests.py`。
+   前提假设在 SAP 里写明怎么诊断（残差图、Q-Q 图、`${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/assumption_tests.py`）和明显偏离时的预定备选。
 
 ### Step 3: 写 `analysis-plan.md`
 
@@ -113,7 +106,7 @@ description: Use when no analysis-plan.md exists yet and a statistical analysis 
 - 组间基线比较：RCT 用 SMD、不做 p 值检验；观察性研究可报 p 值或 SMD
 
 #### 4. 主要分析
-为每个研究目标写明：统计方法及选择理由（对应第 1 节）、前提假设及验证方式（正态性 / 方差齐性 / 配对差值 / 比例风险 / 球形性）、前提不满足时的备选方法、效应量指标 + 95% CI、协变量与调整策略、执行时要读的方法要点卡。
+为每个研究目标写明：统计方法及选择理由（对应第 1 节）、前提假设及诊断方式（残差 / Q-Q 图、配对差值、比例风险、球形性）、明显偏离时的预定备选方法、效应量指标 + 95% CI、协变量与调整策略、执行时要读的方法要点卡。
 
 #### 5. 次要分析和亚组分析
 预先指定的亚组及其合理性说明、交互效应检验（报告交互 p 值，不只报亚组内 p 值）、亚组数 >3 时的校正。
@@ -140,11 +133,11 @@ description: Use when no analysis-plan.md exists yet and a statistical analysis 
 
 ### Step 4: 硬确认 2
 
-把关键锁定项列给用户：第 1 节里最关键的几条"现状 → 选择"、主要结局及其分析方法、亚组清单、缺失/异常值策略、多重比较策略、AI 研究的数据划分与指标。**等用户明确同意**后在文件头写 `status: confirmed` 与日期。用户说"一直做到底"时不等待，但仍把锁定内容写进文件。
+把关键锁定项列给用户：第 1 节里最关键的几条"现状 → 选择"、主要结局及其分析方法、亚组清单、缺失/异常值策略、多重比较策略、AI 研究的数据划分与指标。**等用户明确同意**后在文件头写 `status: confirmed` 与日期。auto 模式（"一直做到底"）不等待：照写 `status: confirmed` + `confirmed_by: auto`，摘要里提醒用户这份 SAP 还没人审过。
 
 ### Step 5: 更新项目状态
 
-输出 3–5 行摘要，然后更新 `.mrp-state.json`（`${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`：`completed_skills` 追加 data-analysis-planning、`artifacts` 登记 `analysis-plan.md`（已有数据时加 `data-profile.md`）、`next_step` 设为 data-collection-tools），进入 `data-collection-tools`。
+输出 3–5 行摘要，然后更新 `.mrp-state.json`（`${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`：`completed_skills` 追加 data-analysis-planning、`artifacts` 登记 `analysis-plan.md`（已有数据时加 `data-profile.md`）、`next_step`：数据还要收集 → data-collection-tools；数据已在手 → statistical-analysis）。
 
 ## Output
 
@@ -159,13 +152,11 @@ description: Use when no analysis-plan.md exists yet and a statistical analysis 
 | 想法 | 现实 |
 |------|------|
 | "分析很简单不需要计划" | 无计划 = p-hacking 的温床 |
-| "不看数据就按模板写 SAP" | 事件数、聚类结构、缺失形式会直接决定方法，必须先体检 |
-| "看了结局和分组的关系再选方法" | 这是事后假设（HARKing），计划前只能看结构和质量 |
 | "'未查'、'/'、999 读进来就是正常值" | 先体检；哪些写法算缺失、截断值怎么处理要在第 2 节写明 |
 | "只分析主要结局就行" | 必须预先指定所有计划分析 |
 | "缺失数据直接删掉" | 必须按比例 + 机制选策略（yaml `missing_data`）并预先写明 |
-| "两组比较先看方差齐不齐" | 先分配对/独立：配对只看差值正态性，根本不做方差齐性 |
-| "有序结局用趋势检验" | 两组 × 有序结局是 Mann-Whitney/CMH；Cochran-Armitage 是有序分组 × 二分类结局 |
+| "两组比较先做正态性、方差齐性检验再挑方法" | 方法在 SAP 里预先定：独立两组默认 Welch，配对看差值；前提检验只作诊断 |
+| "有序结局只能用某一种检验" | 两组 × 有序结局用 Mann-Whitney/CMH 或比例优势（有序 logistic）回归；2×K 表的 Cochran-Armitage 趋势检验两个方向都成立，结果与 Mann-Whitney 接近 |
 | "不需要敏感性分析" | 审稿人一定会要求 |
 
 ## Convergence
@@ -182,25 +173,24 @@ description: Use when no analysis-plan.md exists yet and a statistical analysis 
 ## Red Flags — STOP
 
 - **计划前计算了任何变量与结局的关联**（交叉表、组间比较、相关、单因素筛选、试跑模型）→ 停：这些结果不能用来选方法；告诉用户已经看过什么，并在 SAP 第 1 节如实记录
-- **禁止看过变量间关系或分析结果后再选择统计方法或假设**（事后假设 = HARKing）；看数据的结构和质量不在此列，而且必须做
 - **禁止在执行分析后修改主要结局或主要分析方法**（偏离须记录在 `analysis-log.md`）
 - **禁止反复尝试多种方法只报告"显著"的那个**（p-hacking）
 - **禁止把未预先指定的亚组分析当作确证性结论**（必须标记 exploratory）
 - **AI/ML：禁止用测试集调参或在测试集上做数据增强**（数据泄漏）
 - **AI/ML：禁止只报告点估计**（必须有 95% CI 和统计检验）
-- 没有 `study-protocol.md` 就写 SAP → 停，先 `study-design`
+- 没有 `study-protocol.md`、也没问清主要结局就写 SAP → 停，先走快速路径或 `study-design`
 - 已有数据却没做 Step 1 体检就写 SAP → 停，先体检
 
 ## 衔接规则
 
-### 前置依赖（不满足则阻止）
-- **必须**有已确认的 `study-protocol.md`（`study-design`，硬确认 1）
-- **必须**已完成 `research-ethics`（伦理/注册在收集数据之前）
+### 前置依赖（缺了按总调度"缺前置产物时"处理）
+- 已确认的 `study-protocol.md`（`study-design`，硬确认 1）；数据已在手时可走 Step 0 快速路径
+- 已完成 `research-ethics`（伦理/注册在收集数据之前；回顾性数据也要审查或豁免）
 - **推荐**有 `journal-selection-report.md`（暂定期刊的统计报告要求，软确认，可随时更换）
 - 已有数据时数据文件必须可读（Step 1a）；还没有数据时按 Step 1b 分析 protocol 与 CRF
 
 ### 强制衔接（不可跳过）
-- `analysis-plan.md` 经硬确认 2 后 → `data-collection-tools`（按 SAP 的变量名与数据格式生成收集工具）
+- `analysis-plan.md` 经硬确认 2 后 → 数据还要收集：`data-collection-tools`（按 SAP 的变量名与数据格式生成收集工具）；数据已在手：直接 `statistical-analysis`
 - 数据收集完成后 → `statistical-analysis` 按本计划执行（开头会再体检一次，对照 SAP 第 1 节）
 - 最后一步固定为更新 `.mrp-state.json`（Step 5）
 

@@ -1,6 +1,6 @@
 ---
 name: pre-submission-verification
-description: Use when a manuscript is declared complete and must pass the 6-gate check before export (mandatory checkpoint 3). Triggers on "写完了"、"可以投了"、"定稿"、"六道门"、"pre-submission"、"readiness".
+description: Use when a manuscript is declared complete and must pass the 6-gate check before export (mandatory checkpoint 3). Triggers on "论文写完了"、"可以投了"、"定稿"、"六道门"、"pre-submission"、"readiness".
 ---
 
 # Pre-Submission Verification

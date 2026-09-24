@@ -17,7 +17,7 @@
 │     ├── 有临床验证？ → 开发+验证研究（TRIPOD+AI；外部验证）
 │     └── 仅技术验证？ → 技术开发研究（仍需独立测试集）
 ├── 评估已有 AI 模型/工具？
-│     ├── 诊断准确性？ → STARD 2015（STARD-AI 无本地清单，需人工核对）
+│     ├── 诊断准确性？ → STARD-AI（Nat Med 2025，无本地清单，需人工核对）+ STARD 2015
 │     ├── 临床效果？ → RCT（CONSORT 2025 + CONSORT-AI 2020）
 │     ├── 多模型对比 / LLM 评估？ → Benchmark（TRIPOD-LLM）
 │     ├── 可用性？ → 人因工程（混合方法，定性部分走 Module D）
@@ -54,6 +54,12 @@
 - 使用迁移学习时报告预训练数据集和微调策略
 - n < 50 时深度学习样本不足：外部验证为**强制**项，并在 Limitations 充分讨论
 
+**样本量**（hard checkpoint 1 锁定；上面的分档只决定怎么划分数据，不能代替样本量依据）：
+- 风险预测模型（输出个体风险概率）：按 Riley 方法用 `pmsampsize` 算，"每个变量 10 个事件"不够；外部验证用 `pmvalsampsize`
+- 诊断准确性（灵敏度/特异度）：按预期值和可接受的 95% CI 宽度算有病、无病各需多少人，再按患病率换算（Buderer 1996；`power_analysis.py` 的 diagnostic 模式）
+- 与医生比较的读片者研究：按多读者多病例（MRMC）方法定读者数和病例数
+- 输入值、出处和 R / Python 包见 `${CLAUDE_PLUGIN_ROOT}/skills/data-analysis-planning/references/method-cards/regression-and-prediction-models.md` 与 `diagnostic-accuracy-and-ai-evaluation.md`；写入 protocol 模板 C 第 2 节
+
 ### 2. Ground Truth
 
 - 标注者资历和数量
@@ -72,6 +78,7 @@
 - 说明专家水平（年资、例数）
 - 最好三组：AI alone / Human alone / AI-assisted Human
 - 阅片 washout period
+- 读者要够多（本插件建议 ≥ 5 名、全交叉），分析用 MRMC 方法（读者和病例都作随机效应）；只和 1–2 名医生比较时，结论不能推广为"AI 达到医生水平"
 
 ### 5. Reproducibility
 
@@ -104,7 +111,7 @@
 
   | 方案 | 方法 | 适用场景 |
   |------|------|---------|
-  | 数据层面 | Oversampling (SMOTE) / Undersampling | 中度不平衡 (1:3~1:10) |
+  | 数据层面 | Oversampling (SMOTE) / Undersampling | 中度不平衡 (1:3~1:10)；模型要输出风险概率时慎用——会让预测概率整体偏高、校准变差，需在未重采样的数据上重新校准（van den Goorbergh 2022） |
   | 损失函数 | Weighted CE / Focal Loss / Dice Loss | 严重不平衡 (>1:10) |
   | 采样策略 | Balanced batch sampling | 训练时平衡各类别 |
   | 评估层面 | **不用 Accuracy**，用 AUROC/AUPRC/F1 | 所有不平衡场景 |
@@ -113,7 +120,7 @@
 
 ### 9. Model Interpretability / Explainability（模型可解释性）
 
-- **临床 AI 研究必须报告可解释性**（DECIDE-AI 要求）
+- **用了可解释性方法就要报告方法和参数**（CLAIM 2024 第 31 条：Methods for explainability or interpretability）。可解释性不是 DECIDE-AI 的条目；DECIDE-AI 要求的是人因评价（第 7、14a、14b 条）、AI 输出如何呈现给用户（第 4c 条）和用户与 AI 的一致性（第 12 条）
 - 方法选择：
 
   | 任务 | 方法 | 用途 |
@@ -139,7 +146,7 @@
 | "AUROC 高就有临床价值" | 必须做校准 + DCA 评估临床净获益 |
 | "这是 AI 研究不需要临床规范" | 需要同时满足技术和临床两套规范 |
 | "我的器械直接做 RCT" | 先用 IDEAL 定位阶段，Stage 1-2 不适合 RCT |
-| "黑箱模型也能发表 / AI 评估不用报告可用性" | DECIDE-AI 要求报告可解释性、人机交互和用户体验 |
+| "黑箱模型也能发表 / AI 评估不用报告可用性" | 用了可解释性方法要按 CLAIM 2024 第 31 条报告；进入临床流程的早期评价按 DECIDE-AI 报告人因（可用性、学习曲线）、输出如何呈现和用户与 AI 的一致性 |
 | "数据增强不需要报告" | 增强策略和参数必须完整报告，可复现 |
 | "200 例够 train/val/test 三分了" | 200 例应考虑 5-fold CV + 迁移学习 |
 | "LLM 的 prompt 随手写就行" | Prompt、参数、模型版本都是方法的一部分，必须标准化并报告 |

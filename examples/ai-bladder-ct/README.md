@@ -11,6 +11,8 @@ ai-bladder-ct/
 └── README.md
 ```
 
+`.mrp-state.json` also lists `search-strategy.md` and `literature-synthesis-summary.md` (outputs of `literature-synthesis`); they are left out of this folder to keep it small, and a note in the state file says so.
+
 What the next steps would produce (not included): `ethics-statement.md` (research-ethics),
 `journal-selection-report.md` (journal-selection, provisional), `analysis-plan.md` (data-analysis-planning,
 hard checkpoint 2), `tools/` (data-collection-tools), `results-summary.md` + `analysis-log.md`

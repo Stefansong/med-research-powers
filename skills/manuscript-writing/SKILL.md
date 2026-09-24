@@ -1,6 +1,6 @@
 ---
 name: manuscript-writing
-description: Use when drafting a medical research manuscript (original research or review). Triggers on "写论文"、"写稿子"、"写Methods"、"写综述"、"manuscript"、"systematic review"、"meta-analysis"、"narrative review".
+description: Use when drafting a manuscript or one section (original research, or writing up a review; running the review is literature-synthesis). Triggers on "写论文"、"写稿子"、"写Methods"、"写综述"、"manuscript".
 ---
 
 # Manuscript Writing
@@ -51,11 +51,11 @@ description: Use when drafting a medical research manuscript (original research 
 
 ### Step 0：读取用户画像（懒采集）
 
-读取 `~/.claude/mrp-user-profile.json` 的 `preferences.favorite_journals`。文件或字段不存在 → 只问这一个问题（"你常投的期刊有哪些？"），并问是否保存到该文件；用户跳过则不保存。它只用于 Step 2 的默认候选，不替代 `journal-selection`。
+已有 `journal-selection-report.md` 或 `target_journal` 时跳过本步。否则读取 `~/.claude/mrp-user-profile.json` 的 `preferences.favorite_journals`。文件或字段不存在 → 只问这一个问题（"你常投的期刊有哪些？"），并问是否保存到该文件；用户跳过则不保存。它只用于 Step 2 的默认候选，不替代 `journal-selection`。
 
 ### Step 1：确定文章类型
 
-按 Router 判定类型 → 读取对应 `references/article-types/<type>.md` → 按其"前置依赖"表检查文件是否齐全。缺必须项 → 停，先补齐（原始研究例外：Methods 和 Introduction 不依赖 `results-summary.md`，可以先写）。
+按 Router 判定类型 → 读取对应 `references/article-types/<type>.md` → 按其"前置依赖"表检查文件是否齐全。缺必须项 → 按总调度"缺前置产物时"处理（告知 → 给选择 → 照办）；用户选先写时，缺的内容写 `[待补：来源]`，不编造（原始研究的 Methods 和 Introduction 不依赖 `results-summary.md`）。
 
 ### Step 2：确定目标期刊并加载模板（软确认）
 
@@ -72,7 +72,7 @@ description: Use when drafting a medical research manuscript (original research 
    | 产物 | 写作时用来做什么 |
    |------|----------------|
    | `results-summary.md` 及分析输出的结果表 | Results、Abstract 里的每个数字 |
-   | `analysis-log.md` | 与 SAP 的偏离——每条都要在 Methods 或 Limitations 如实写明 |
+   | `analysis-log.md` | 与 SAP 的偏离——每条在 Methods 写明改了什么、为什么（Gate 2 查这里），影响结论的再在 Limitations 讨论 |
    | `figure-legends.md`、图文件、`figure-plan.md` | 图表编号，正文 / 补充材料的分配 |
    | `study-protocol.md` | 设计、纳排、结局定义、样本量依据、"真实条件与设计理由" |
    | `analysis-plan.md` | 统计方法 |
@@ -81,17 +81,17 @@ description: Use when drafting a medical research manuscript (original research 
    缺哪个就在提纲里标出，对应内容写 `[待补：来源]`，不编造。
 2. **目标期刊要求**：Step 2 取到的 `word_limit`、`abstract` 格式、`figures` / `tables` 上限、`sections` 顺序、`special`。
 3. **读者是谁**：期刊的主要读者（专科医生 / 全科临床医生 / 方法学或 AI 研究者）决定背景写多深、术语解释到什么程度、临床意义怎么讲。
-4. **写 `manuscript-outline.md`**（项目根目录）：每一节列要点，每条要点标明出处（产物文件 + 节 / 表 / 图；数字写到具体位置，如"主要结局效应量 → `results-summary.md` 的 Primary Outcome 表"），并按期刊字数限制给各节分配字数。SAP 偏离逐条列进 Methods 或 Limitations 的要点。
+4. **写 `manuscript-outline.md`**（项目根目录）：每一节列要点，每条要点标明出处（产物文件 + 节 / 表 / 图；数字写到具体位置，如"主要结局效应量 → `results-summary.md` 的 Primary Outcome 表"），并按期刊字数限制给各节分配字数。SAP 偏离逐条列进 Methods 的要点（影响结论的同时列进 Limitations）。
 5. 把提纲给用户看，按 `checkpoint_mode`：`step` 等用户确认后再写全文；`light` / `auto` 展示后直接写，用户随时可以改。只写某一节（如只写 Methods）时，只列这一节的提纲。
 
 ### Step 4：按提纲和类型文件的写作顺序逐章写作
 
 - 每章写入 `manuscript/<section>.md`（文件名见 Output）；写作时对照类型文件的章节规则与报告规范条目。
 - 内容来自本项目的实际产物：每句话要么有产物支撑，要么是有引用的已有知识；不写没有具体信息的套话（如只说"具有重要临床意义"而不说意义在哪）。
-- Results 的每个数字都要能在 `results-summary.md` 或分析输出里找到出处（提纲里的出处保留到自检）；`analysis-log.md` 里的每条 SAP 偏离，在 Methods（改了什么、为什么）或 Limitations（对结论可能的影响）中如实写明。
+- Results 的每个数字都要能在 `results-summary.md` 或分析输出里找到出处（提纲里的出处保留到自检）；`analysis-log.md` 里的每条 SAP 偏离，在 Methods 如实写明改了什么、为什么；对结论可能有影响的，再在 Limitations 讨论。
 - 每写完一章，对照模板的 `word_limit` / `abstract` 字数**实时检查**，超限先删冗余再压缩。
-- 缺数据或未定稿处用 `[待补：来源]`、`<!-- PLACEHOLDER: 说明 -->` 或 `[TBD]` 标注，**不要用看起来像真数据的占位值**（导出脚本检测 `PLACEHOLDER` / `[TBD]` 等标记；`[待补：…]` 由 Step 6 的自检查找）。
-- 引用：写作时标记来源（PMID/DOI）；格式化用 `pubmed-search` Mode 6；写综述 Methods 检索策略可用 Mode 1。调用 PubMed MCP 时写法为 `mcp__<server名>__get_article_metadata(pmids=[...])`，server 名以当前会话工具列表为准（claude.ai 连接器为 `claude_ai_PubMed`，本地常见为 `PubMed`）。引用状态标记：✅ Verified / ⚠️ Not found / ❌ Mismatch / ⏳ Unverified (tool error，重试) / ℹ️ Non-PubMed（用 DOI/WebSearch 核对）；最终逐条验证由 `pre-submission-verification` Gate 3 完成。
+- 缺数据或未定稿处用 `[待补：来源]`、`<!-- PLACEHOLDER: 说明 -->` 或 `[TBD]` 标注，**不要用看起来像真数据的占位值**（导出脚本会把 `[待补…]`、`[TBD]`、`<!-- PLACEHOLDER … -->` 等占位标记列进导出报告，完整清单见 `manuscript-export`；Step 6 先自查一遍）。
+- 引用：写作时标记来源（PMID/DOI）；格式化用 `pubmed-search` Mode 6，写综述 Methods 检索策略可用 Mode 1；PubMed MCP 的写法和 5 种引用状态标记以 `pubmed-search` 为准；最终逐条验证由 `pre-submission-verification` Gate 3 完成。
 
 ### Step 5：期刊特殊元素
 
@@ -100,17 +100,17 @@ description: Use when drafting a medical research manuscript (original research 
 ### Step 6：自检与收尾
 
 1. 对照 Convergence 逐条自检；语言规则检查（见 Language Rules）。
-2. 数字溯源：逐个核对 Results / Abstract / Key Points 里的数字，都能在 `results-summary.md` 或分析输出里找到（找不到的删掉，或回 `statistical-analysis` 补）；`analysis-log.md` 的每条 SAP 偏离都已写进 Methods 或 Limitations。
+2. 数字溯源：逐个核对 Results / Abstract / Key Points 里的数字，都能在 `results-summary.md` 或分析输出里找到（找不到的删掉，或回 `statistical-analysis` 补）；`analysis-log.md` 的每条 SAP 偏离都已写进 Methods。
 3. 查占位：`grep -rnE "待补|TBD|PLACEHOLDER" manuscript/`，剩下的占位逐条列进摘要的"需要注意"。
-4. 输出 3–5 行摘要（产物清单、目标期刊与字数、待注意的 placeholder），默认直接进入下一步；用户要求"逐步确认"时等确认。
+4. 输出 3–5 行摘要（产物清单、目标期刊与字数、待注意的 placeholder），按 checkpoint_mode 进入下一步（只写某一节时交付后停下）。
 5. 更新项目目录 `.mrp-state.json`（`python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`，记录 `completed_skills` 与 `artifacts.manuscript/`）。
-6. 下一步 → `peer-review-simulation`。
+6. 整篇完成后的下一步 → `peer-review-simulation`。
 
 ## Journal Template（期刊排版规范）
 
 模板库：`references/journal-templates.yaml`，240 个期刊（顶层键 `data_as_of` + `templates`），按专科分区。它是字数、摘要格式、参考文献样式、特殊要求、投稿系统、期刊家族（`family`）的**唯一数据源**——不要在本文件重复期刊清单。
 
-**只用脚本读取（文件 3600 多行，整读会截断且浪费上下文）：**
+**只用脚本读取（文件超过 Read 默认的 2000 行，整读会截断且浪费上下文）：**
 
 ```bash
 # 精确取一条（默认同时查项目目录 ./journal-overrides.yaml，命中则优先）
@@ -181,16 +181,14 @@ with pd.ExcelWriter("manuscript_tables.xlsx", engine="openpyxl") as writer:
 | "Systematic Review 不需要注册" | PRISMA 2020 item 24a 要求报告注册信息；未注册必须写明 |
 | "Scoping Review 需要偏倚评估" | Scoping Review 明确不做质量评价 |
 | "I²>50% 就改用随机效应" | 模型预先指定；I² 只用于报告异质性，不是事后换模型的依据 |
-| "把整个 journal-templates.yaml 读进来看" | 3600 多行，Read 会截断到前 2000 行，后半部分期刊会被误判"不在库中"；只用脚本取一条 |
 | "期刊不在库里就改插件目录的 YAML" | 写项目目录 `journal-overrides.yaml`，更新插件不丢失 |
-| "没有数据就不能开始写论文" | Methods 和 Introduction 不依赖数据，可以先写 |
 
 ## Convergence
 
 当以下条件全部满足时完成：
 1. `manuscript-outline.md` 已写好（每条要点标出处）并按 checkpoint_mode 确认
-2. 所有章节均已完成（按类型文件的 Output Structure）
-3. Results / Abstract 的每个数字都能在 `results-summary.md` 或分析输出里找到出处；`analysis-log.md` 的 SAP 偏离已在 Methods 或 Limitations 如实写明
+2. 所有章节均已完成（按类型文件的 Output Structure；只写某一节时只查这一节）
+3. Results / Abstract 的每个数字都能在 `results-summary.md` 或分析输出里找到出处；`analysis-log.md` 的 SAP 偏离已在 Methods 如实写明（影响结论的在 Limitations 讨论）
 4. 所有图表已在正文引用，编号连续
 5. 参考文献完整、每条有 PMID/DOI 或标注 ℹ️ Non-PubMed
 6. 语言规范检查通过
@@ -202,9 +200,9 @@ with pd.ExcelWriter("manuscript_tables.xlsx", engine="openpyxl") as writer:
 ## Red Flags — STOP
 
 - Results 中没有的数字出现在 Discussion / Abstract → 停，禁止引入未分析的数据
-- Results 的数字在 `results-summary.md` / 分析输出里找不到出处，或 `analysis-log.md` 记录的 SAP 偏离在 Methods / Limitations 中没写 → 停，补出处或如实写明
+- Results 的数字在 `results-summary.md` / 分析输出里找不到出处，或 `analysis-log.md` 记录的 SAP 偏离在 Methods 中没写 → 停，补出处或如实写明
 - 虚构数据、结果或参考文献 → 绝对禁止，立即停止
-- 缺少必须的前置文件（按类型文件的前置依赖表）就开始写对应章节 → 停，先补齐
+- 缺少必须的前置文件（按类型文件的前置依赖表）却写出了具体数字或结果 → 停，改成 `[待补：来源]` 并告知用户
 - "significantly" 用于非统计学语境 / "prove" 表述 → 停，改为规范措辞
 - 准备整读 `journal-templates.yaml` → 停，改用 `get_journal_template.py`
 
@@ -212,12 +210,12 @@ with pd.ExcelWriter("manuscript_tables.xlsx", engine="openpyxl") as writer:
 
 ## 衔接规则
 
-### 前置依赖（不满足则阻止）
+### 前置依赖（缺了按总调度"缺前置产物时"处理，见 Step 1）
 - 按类型文件的前置依赖表（原始研究：`study-protocol.md` + `analysis-plan.md` + `results-summary.md`；综述：`literature-synthesis` 产物）
 - 目标期刊：来自 `journal-selection-report.md`（软确认，可随时更换）
 
 ### 强制衔接（不可跳过）
-- 完成后 → `peer-review-simulation`（模拟审稿）→ `pre-submission-verification`（6-Gate 硬确认）→ `manuscript-export`（.docx）→ `submission-preparation`
+- 整篇完成后 → `peer-review-simulation`（模拟审稿）→ `pre-submission-verification`（6-Gate 硬确认）→ `manuscript-export`（.docx）→ `submission-preparation`
 - 写作前 → 复核目标期刊一次（软确认；未选刊则先 `journal-selection`）
 - 完成后 → 更新 `.mrp-state.json`
 

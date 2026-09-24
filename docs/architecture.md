@@ -1,4 +1,4 @@
-# Med-Research-Powers v6.4.0 Architecture
+# Med-Research-Powers v6.4.1 Architecture
 
 ## 1. Full Pipeline Flow
 
@@ -20,7 +20,7 @@ flowchart TD
 
     subgraph PHASE2["Phase 2: Analysis Engine"]
         DAP[data-analysis-planning<br/>SAP: 7-Section Analysis Plan]
-        DCT[data-collection-tools<br/>CRFs / Annotation Templates / Split + Randomization Scripts]
+        DCT[data-collection-tools<br/>only when data are still to be collected<br/>CRFs / Annotation Templates / Split + Randomization Scripts]
         COLLECT([You collect data])
         SA[statistical-analysis<br/>Cleaning + Assumptions + Execution + Scripts]
         FG[figure-generation<br/>pub_style.py + Journal Palettes]
@@ -215,7 +215,7 @@ flowchart TD
         S2["literature-synthesis"]
         S3["research-ethics"]
         S4["journal-selection<br/>(soft: provisional journal, changeable)"]
-        S5["data-collection-tools"]
+        S5["data-collection-tools<br/>(data still to be collected)"]
         S6["statistical-analysis"]
         S7["figure-generation"]
         S8["manuscript-writing"]
@@ -249,7 +249,7 @@ Modes (`checkpoint_mode` in `.mrp-state.json`): **light** (default, above) · **
 ```mermaid
 flowchart TD
     subgraph PLUGIN["mrp (plugin) — marketplace med-research-powers"]
-        PJ[".claude-plugin/plugin.json<br/>name: mrp · v6.4.0 · SessionStart hook<br/>commands/ and skills/ are auto-discovered"]
+        PJ[".claude-plugin/plugin.json<br/>name: mrp · v6.4.1 · SessionStart hook<br/>commands/ and skills/ are auto-discovered"]
         HOOK["hooks/session-start.sh<br/>Reads whitelisted fields of .mrp-state.json,<br/>reports the resume point"]
         META["skills/using-med-research-powers<br/>Orchestrator: routing + checkpoints + mrp_state.py"]
     end

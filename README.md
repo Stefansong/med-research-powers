@@ -8,7 +8,7 @@ Med-Research-Powers (MRP) is a [Claude Code](https://claude.ai/code) plugin that
 
 Inspired by [Superpowers](https://github.com/obra/superpowers) (software-engineering methodology), adapted for clinical and biomedical research.
 
-> **Version 6.4.0** · 20 skills · 7 slash commands · MIT License · by BTCH Uro AI Lab
+> **Version 6.4.1** · 20 skills · 7 slash commands · MIT License · by BTCH Uro AI Lab
 
 ---
 
@@ -22,7 +22,7 @@ Inspired by [Superpowers](https://github.com/obra/superpowers) (software-enginee
 | **Reporting Standards** | 47 standards — CONSORT 2025, SPIRIT 2025, STROBE, PRISMA 2020, TRIPOD+AI 2024, DECIDE-AI, CLAIM 2024, IDEAL, ARRIVE 2.0, COREQ, CHERRIES, COSMIN … |
 | **Journal Templates** | 240 journals across 30+ specialties |
 | **Statistical Methods** | 15+ method categories with an assumption-driven decision tree |
-| **Python Scripts** | 10 bundled scripts (assumptions, power, cleaning, analysis scaffold, figure styling, .docx export, journal-template lookup, patient-level split, randomization, pipeline state) |
+| **Python Scripts** | 10 bundled scripts (assumptions, power, data profile, reproduce check, figure styling, .docx export, journal-template lookup, patient-level split, randomization, pipeline state) |
 | **Pre-Submission** | 6-gate verification with PubMed MCP citation checking |
 | **Peer Review** | 4-reviewer simulation with 0–100 quantitative scoring across 8 dimensions |
 | **Mandatory Checkpoints** | 3 decisions that always wait for your explicit approval: protocol, analysis plan, pre-submission report |
@@ -50,7 +50,7 @@ AI research agents make the same mistakes every time. MRP replaces "best-effort 
 1. **Define before design** — PICO/FINER framework; no analysis without a hypothesis.
 2. **Plan before execute** — a Statistical Analysis Plan (SAP) before any test runs.
 3. **Verify before submit** — 6-gate pre-submission check; CONSORT 2025 compliance.
-4. **Scripts over prompts** — reusable Python for assumption tests, sample size, figures, and export.
+4. **Look at the data before planning** — profile the real data, plan from what it shows, and write analysis code for this dataset; bundled scripts only do fixed jobs (data profile, assumption checks, sample size, figure style, export).
 
 MRP is prompt-level guidance: the pipeline, checkpoints and gates are instructions Claude follows, not code that intercepts tool calls. It makes skipping steps unlikely and visible — it does not make it impossible.
 
@@ -133,7 +133,7 @@ research-question-formulation
 → research-ethics                   (approval / registration before any data collection)
 → journal-selection                 (provisional target journal — soft confirmation)
 → data-analysis-planning            [checkpoint 2: analysis-plan.md]
-→ data-collection-tools
+→ data-collection-tools             (only when the data are still to be collected)
 → [you collect data]
 → statistical-analysis
 → figure-generation
@@ -472,7 +472,7 @@ Formatting requirements (word limits, abstract format, reference style, section 
 
 Each template includes: word limit, abstract format (structured/unstructured), reference style and limit, figure/table limits, section structure, special requirements (Key Points box, Research in Context panel, Reporting Summary), submission system, and ORCID policy. The journal-family rules (Lancet / JAMA / Nature sub-journals) are kept in that file only.
 
-Impact factors and APCs carry their vintage: 41 frequently targeted journals (urology, radiology, AI/digital health, top general and oncology titles) have `IF_year`/`IF_source` fields with the publisher-reported JCR 2025 or 2024 value; the rest still hold JCR 2022 values (`data_as_of` explains the rule). Skills always state the year and re-check the top candidates on the web before you rely on them. If a journal isn't listed, MRP fetches its "Instructions for Authors" via web search.
+Impact factors and APCs carry their vintage: 42 frequently targeted journals (urology, radiology, AI/digital health, top general and oncology titles) have `IF_year`/`IF_source` fields with the publisher-reported JCR 2025 or 2024 value; the rest still hold JCR 2022 values (`data_as_of` explains the rule). Skills always state the year and re-check the top candidates on the web before you rely on them. If a journal isn't listed, MRP fetches its "Instructions for Authors" via web search.
 
 ---
 
@@ -482,9 +482,9 @@ Only tools and guard-rails live in scripts — formulas that are easy to get sil
 
 | Script | Location | Purpose |
 |--------|----------|---------|
-| `assumption_tests.py` | `statistical-analysis/scripts/` | Normality (Shapiro-Wilk, D'Agostino-Pearson), homogeneity (Levene's), automatic test recommendation, Cohen's d with CI |
-| `power_analysis.py` | `statistical-analysis/scripts/` | Sample size / power across designs: two-group, proportion, diagnostic accuracy, survival, correlation — with dropout adjustment |
-| `data_profile.py` | `statistical-analysis/scripts/` | Read-only data check-up (CSV/XLSX, GBK-aware): disguised missing values, censored strings like "<0.1", numbers stored as text, date failures, repeated patient IDs, outcome event totals, possible identifier columns — never modifies data, never computes associations with the outcome |
+| `assumption_tests.py` | `statistical-analysis/scripts/` | Assumption diagnostics (Shapiro-Wilk / D'Agostino-Pearson, Levene) reported as descriptions — they never switch the test; the design default (Welch) plus the rank-based alternative for when the SAP prespecifies it; Cohen's d with CI |
+| `power_analysis.py` | `statistical-analysis/scripts/` | Sample size / power across designs: two-group, proportions (pooled-variance Fleiss formula, optional continuity correction), diagnostic accuracy, survival, correlation — with dropout adjustment |
+| `data_profile.py` | `statistical-analysis/scripts/` | Read-only data check-up (CSV/XLSX, GBK-aware): disguised missing values, censored strings like "<0.1", numbers stored as text, date failures, repeated patient IDs, outcome event totals (per patient when rows repeat), possible identifier columns (by name, ID-card/phone pattern, or one-value-per-patient; values never printed) — never modifies data, never computes associations with the outcome |
 | `reproduce_check.py` | `statistical-analysis/scripts/` | Runs an analysis command twice in fresh processes and compares every output file (cell-by-cell for tables) — exit 0 identical / 1 different / 2 failed |
 | `pub_style.py` | `figure-generation/scripts/` | Journal figure styling (Nature, Lancet, JAMA, NEJM palettes), colorblind-safe options, ≥300 DPI export, significance bars |
 | `export_docx.py` | `manuscript-export/scripts/` | Markdown → journal-formatted `.docx`, driven by the journal template library; writes `export-report.md` |
@@ -502,7 +502,7 @@ sys.path.insert(0, os.path.join(os.environ.get("CLAUDE_PLUGIN_ROOT", "."), "skil
 
 from assumption_tests import full_check          # assumption testing
 result = full_check(group1, group2, paired=False)
-print(f"Recommended test: {result['recommended_test']}")
+print(f"Recommended test: {result['recommended_test']}")  # descriptive only — the SAP fixes the test (Welch by default)
 
 # data check-up and re-run check are command-line tools:
 #   python3 "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/data_profile.py" data.xlsx --id patient_id --outcome recurrence --report data-profile.md

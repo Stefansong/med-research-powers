@@ -22,7 +22,7 @@ supersedes: "STARD 2003"
 reference: "Bossuyt et al. BMJ 2015;351:h5527 (doi:10.1136/bmj.h5527)"
 website: "https://www.equator-network.org/reporting-guidelines/stard/"
 flow_diagram: "Required — prototypical STARD diagram of participant flow (item 19)"
-related: ["STARD-AI (AI-based diagnostic tests, in development)", "STARD for Abstracts", "QUADAS-2 (risk of bias tool, not a reporting guideline)"]
+related: ["STARD-AI (AI-based diagnostic tests; published: Sounderajah et al. Nat Med 2025;31(10):3283-3289, doi:10.1038/s41591-025-03953-8 — 18 new or modified items on top of STARD 2015; no local checklist in this plugin, check manually against the official text)", "STARD for Abstracts", "QUADAS-2 (risk of bias tool, not a reporting guideline)"]
 
 sections:
   - name: Title or abstract

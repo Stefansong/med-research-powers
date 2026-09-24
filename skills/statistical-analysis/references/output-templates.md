@@ -100,8 +100,8 @@ SAP item that prescribes it and to the code that performs it.
 |-------|--------|--------|
 | Missing data (%) | [变量: X%] | [处理方式] |
 | Outliers detected | [N] in [变量] | [保留/移除/Winsorize，理由] |
-| Normality (Shapiro-Wilk) | Group A: p=[X], Group B: p=[X] | [参数/非参数] |
-| Homogeneity (Levene) | p=[X] | [t-test/Welch's] |
+| Distribution / residuals (Q-Q plot, histogram；检验结果只作描述) | [所见，如 右偏、有离群点] | [SAP 方法照用 / 明显不适合 → 换 SAP 预定备选，记入偏离表] |
+| Variances (SD by group；Levene 只作描述) | [SD A / SD B] | [SAP 方法照用（两组默认 Welch）] |
 
 ## Analysis Execution
 
@@ -146,7 +146,7 @@ SAP item that prescribes it and to the code that performs it.
 
 | # | SAP item | Planned | Actual | Reason | Impact on results |
 |---|----------|---------|--------|--------|-------------------|
-| 1 | [4.x] | [计划方法] | [实际方法] | [如 前提检验不满足：Levene p=[X]] | [对结论的影响] |
+| 1 | [4.x] | [计划方法] | [实际方法] | [如 残差图显示严重右偏，改用 SAP 预定的对数尺度分析] | [对结论的影响] |
 | 2 | [ ] | [ ] | [ ] | [ ] | [ ] |
 
 ## Sensitivity Analysis Results

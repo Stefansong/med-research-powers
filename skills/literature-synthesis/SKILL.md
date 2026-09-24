@@ -1,6 +1,6 @@
 ---
 name: literature-synthesis
-description: Use when searching several databases and synthesizing evidence into a gap map (retrieval + synthesis, no writing). Triggers on "帮我查文献"、"文献综述"、"research gap"、"相关研究"、"这个领域有什么研究"、"快速调研".
+description: Use when searching several databases and synthesizing evidence into a gap map (retrieval + synthesis, no writing). Triggers on "帮我查文献"、"文献综述"、"做系统综述"、"做Meta分析"、"research gap"、"这个领域有什么研究"、"快速调研".
 ---
 
 # Literature Synthesis
@@ -190,7 +190,7 @@ Verified 状态统一用 5 态：✅ Verified / ⚠️ Not found / ❌ Mismatch 
 - 完成后 → `study-design`（读取 `literature-synthesis-summary.md` 做 gap 定位与效应量先例）
 - 产物被以下 skill 读取：`manuscript-writing`（Introduction、Methods 检索描述、引用）、`pre-submission-verification` Gate 3（`literature-references.md`）、`reporting-standards`（PRISMA / PRISMA-S）、`figure-generation`（PRISMA 流程图）
 
-### 前置依赖（不满足则阻止）
+### 前置依赖（缺了按总调度"缺前置产物时"处理）
 - 建议先有 `research-question.md`（`research-question-formulation`）；没有时可独立使用，但必须先和用户确认一句话研究问题再检索
 
 ### 可选衔接

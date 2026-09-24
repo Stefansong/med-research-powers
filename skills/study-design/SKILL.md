@@ -32,7 +32,7 @@ description: Use when designing any research study protocol (clinical/basic/AI-M
 |------|-----------|---------|-----------|-------------|
 | Clinical Research | `clinical` | `references/modules/clinical.md` | Power analysis | CONSORT 2025 / STROBE / STARD / TRIPOD+AI |
 | Basic Science | `basic` | `references/modules/basic-science.md` | 生物学重复 >= 3 + power（动物） | ARRIVE 2.0 |
-| AI/ML Medical | `ai-ml` | `references/modules/ai-ml.md` | 患者级数据划分 + 外部验证 | TRIPOD+AI / CLAIM 2024 / CONSORT-AI / DECIDE-AI |
+| AI/ML Medical | `ai-ml` | `references/modules/ai-ml.md` | 患者级数据划分 + 外部验证；样本量用 Riley/pmsampsize、Buderer 或 MRMC | TRIPOD+AI / CLAIM 2024 / CONSORT-AI / DECIDE-AI |
 | Qualitative | `qualitative` | `references/modules/qualitative.md` | 信息饱和 | COREQ / SRQR |
 | Survey/Delphi | `survey` | `references/modules/survey-delphi.md` | 公式计算 / 专家数 | CHERRIES / CROSS / STROBE / COSMIN |
 
@@ -40,11 +40,6 @@ description: Use when designing any research study protocol (clinical/basic/AI-M
 - 既有临床数据又有 AI 模型 → 以"论文的主要贡献是什么"定：贡献是模型 → C；贡献是临床结论、AI 只是分析工具 → A，并加载 C 的数据划分与可复现性要求。
 - 混合方法 → 主模块 D，定量部分再读 A 或 E。
 - 判定后**只读取对应模块**，不要把五个模块全部加载。
-
-## Prerequisites
-
-- **必须**有明确的研究问题（`research-question.md`，来自 `research-question-formulation`）
-- **推荐**已有文献综合（`literature-synthesis-summary.md`，用于 gap 定位与效应量来源）
 
 ## When to Use
 
@@ -95,7 +90,7 @@ description: Use when designing any research study protocol (clinical/basic/AI-M
 
 先写参数从哪来，再算数字：
 - **预期效应量 / 事件率 / 比例必须有真实来源**：相近人群、相近设计的文献（写 PMID，并说明为什么能借用）；本中心预实验或历史数据（写时间段与例数）；或临床上有意义的最小差异（写依据）。"常用值"（如"取中等效应量""事件率按一半估计"）不是来源。
-- 按模块逻辑给出数字：power analysis（效应量、α、β、脱落率；生存结局按事件数）/ 生物学重复数 / 数据划分方案 + 外部验证 / 信息饱和范围 / 调查公式。样本量脚本统一用 `${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py`。
+- 按模块逻辑给出数字：power analysis（效应量、α、β、脱落率；生存结局按事件数）/ 生物学重复数 / 数据划分方案 + 外部验证（AI/预测模型的样本量用 Riley 标准 pmsampsize、敏感度/特异度精度法 Buderer、阅片研究 MRMC，见 Type C 模板第 2 节）/ 信息饱和范围 / 调查公式。样本量脚本统一用 `${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py`。
 - **用 Step 0 的可获得病例数核对可行性**：计划期内能不能达到所需例数 / 事件数。达不到就改设计（多中心、延长入组期、换结局、减少变量）并写理由，**不要反过来改小参数去凑手头的例数**。
 - 回顾性研究的例数由已有数据决定：用真实的可用例数与事件数说明能支撑什么分析（能纳入几个变量、能检出多大的差异——在看结果之前按固定例数计算，不是用观察到的效应算"事后 power"）。
 - 写不出依据 → 不要编一个数字，改写"需预实验 / 需文献效应量"并列为待办。
@@ -168,7 +163,7 @@ description: Use when designing any research study protocol (clinical/basic/AI-M
 - **禁止事后更换主要结局指标**（outcome switching = 学术不端）
 - **禁止跳过 Hard Checkpoint 直接进入 SAP 或数据收集**
 - **禁止用一个模块的规则套另一类研究**（如用 power analysis 定定性样本量、用 kappa 评反思性主题分析）
-- 用户要求"先把 protocol 写出来再定研究问题" → STOP，回到 `research-question-formulation`
+- 研究问题还没定就要写 protocol → 先说明主要结局会反复改的风险，问清研究问题再写，或回 `research-question-formulation`
 
 ## Hard Checkpoint：研究方案审批
 
@@ -189,7 +184,7 @@ description: Use when designing any research study protocol (clinical/basic/AI-M
 
 为什么必须等确认：研究类型决定后续所有分析方法、报告规范、审稿标准；主要结局一旦确定不能随意更改；样本量决定可行性与统计功效；protocol 注册后不可大幅更改。
 
-确认方式按用户设定的 `checkpoint_mode`：默认等待明确同意；"一直做到底"模式下只提示不等待，但锁定内容照样写进 `study-protocol.md`。
+确认方式按用户设定的 `checkpoint_mode`：默认等待明确同意；"一直做到底"模式下只提示不等待，但锁定内容照样写进 `study-protocol.md`（文件头 `status: confirmed` + `confirmed_by: auto`）。
 
 ## 衔接规则
 
@@ -200,8 +195,8 @@ description: Use when designing any research study protocol (clinical/basic/AI-M
 - 涉及动物实验 → protocol 必须按 ARRIVE 2.0 写，投稿前由 `reporting-standards` 检查
 - C 类涉及手术/器械创新 → 必须按 IDEAL 框架定位阶段后再选设计
 
-### 前置依赖（不满足则阻止）
-- **必须**有 `research-question.md`（`research-question-formulation`）；没有就先回去做，不要在本 skill 里临时凑 PICO
+### 前置依赖（缺了按总调度"缺前置产物时"处理）
+- `research-question.md`（`research-question-formulation`）；用户选先往下做时，在 Step 0 把研究问题（PICO/PECO）问清写进 protocol 开头，不凭空凑
 - **推荐**有 `literature-synthesis-summary.md`（缺少时提醒：效应量与 gap 定位缺文献支撑）
 
 ### 可选衔接
