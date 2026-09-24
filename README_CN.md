@@ -8,7 +8,7 @@ Med-Research-Powers（MRP）是一个 [Claude Code](https://claude.ai/code) 插�
 
 灵感来自 [Superpowers](https://github.com/obra/superpowers)（软件工程方法论），针对临床与生物医学研究做了改造。
 
-> **版本 6.3.1** · 20 个 skill · 7 个斜杠命令 · MIT 许可 · 作者 BTCH Uro AI Lab
+> **版本 6.4.0** · 20 个 skill · 7 个斜杠命令 · MIT 许可 · 作者 BTCH Uro AI Lab
 
 ---
 
@@ -178,7 +178,7 @@ Skill 根据自然语言意图自动触发——你无需记住名字；每个 s
 |---|-------|---------|------|
 | 1 | **research-question-formulation** | 模糊想法需要明确的问题 + 假设（PICO/PIRD/FINER）。 | `research-question.md` |
 | 2 | **literature-synthesis** | 系统检索与综述文献、寻找 research gap（PRISMA 流程）。 | `search-strategy.md`、`screening-log.md`、`literature-references.md`、`literature-synthesis-summary.md` |
-| 3 | **study-design** | 设计任意研究方案——临床/基础/AI-ML/定性/问卷（Type A–E 路由）。 | `study-protocol.md` |
+| 3 | **study-design** | 根据真实条件（病例来源、预计事件数、资源）设计研究方案——临床/基础/AI-ML/定性/问卷（Type A–E 路由）。 | `study-protocol.md` |
 | 4 | **research-ethics** | 收集数据前检查 IRB/IACUC、知情同意、隐私、注册、COI；起草伦理声明。 | `ethics-statement.md` |
 | 5 | **journal-selection** | 选暂定目标期刊（评分匹配 + 三梯队级联策略）。 | `journal-selection-report.md` |
 
@@ -186,16 +186,16 @@ Skill 根据自然语言意图自动触发——你无需记住名字；每个 s
 
 | # | Skill | 何时使用 | 输出 |
 |---|-------|---------|------|
-| 6 | **data-analysis-planning** | 在任何检验**之前**撰写 SAP（statistical-analysis 的前置）。 | `analysis-plan.md` |
-| 7 | **data-collection-tools** | 根据 protocol 生成 CRF、标注表、REDCap 表、推理/评估脚本。 | `tools/` 目录（脚本、模板、README） |
-| 8 | **statistical-analysis** | 在真实数据上执行分析（需要已批准的 SAP）。 | `results-summary.md` + `analysis-log.md`（另有 `analysis_script.py`、`data-cleaning-log.md`） |
-| 9 | **figure-generation** | 出版级图表（期刊样式、≥300 DPI、色盲友好）。 | 出版级 TIFF/PDF 文件 |
+| 6 | **data-analysis-planning** | 先给真实数据做体检（只看结构和质量），再在任何检验**之前**定制 SAP。 | `analysis-plan.md`（+ `data-profile.md`） |
+| 7 | **data-collection-tools** | 先分析数据真实来源（HIS/PACS/LIS 导出、谁在什么时候记录），再只生成研究需要的工具。 | `tools/` 目录（工具清单及理由、CRF/数据字典、脚本） |
+| 8 | **statistical-analysis** | 按已批准的 SAP 针对这份数据现写清洗和分析代码，再自检（重跑、人数流、SAP 对照）。 | `results-summary.md` + `analysis-log.md`（另有 `analysis_script.py`/`.R`、`data-cleaning-log.md`） |
+| 9 | **figure-generation** | 先按实际结果定图表计划，再按期刊样式出图（≥300 DPI、色盲友好）。 | `figure-plan.md` + TIFF/PDF 文件 |
 
 ### 稿件层（Manuscript）
 
 | # | Skill | 何时使用 | 输出 |
 |---|-------|---------|------|
-| 10 | **manuscript-writing** | 撰写原始研究或综述（5 种综述类型）。 | `manuscript/` 目录（IMRaD 或综述结构） |
+| 10 | **manuscript-writing** | 先按项目实际产物列提纲，再撰写原始研究或综述（5 种综述类型）。 | `manuscript-outline.md` + `manuscript/` 目录 |
 | 11 | **peer-review-simulation** | 过关卡之前模拟同行评审（4 审稿人 + 8 维度 0–100 评分）。 | `peer-review-simulation-report.md` |
 | 12 | **pre-submission-verification** | 最终 6 道关卡检查——确认节点 3。 | `submission-readiness-report.md` |
 | 13 | **manuscript-export** | 关卡通过后把 Markdown 导出为符合期刊排版的 `.docx`。 | `manuscript.docx` + `export-report.md` |
@@ -385,9 +385,12 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 
 ## 统计方法覆盖范围
 
-- **先计划**：`data-analysis-planning` 产出你在确认节点 2 批准的 SAP；没有 SAP，`statistical-analysis` 不会开跑。
-- **前提驱动**：[前提检验决策树](skills/data-analysis-planning/references/stat-method-decision-tree.yaml)选择参数 vs 非参数方法。
-- **可复现输出**：分析流水线共 6 步——加载 → 清洗（缺失数据、异常值、类型验证）→ 假设检验 → 执行分析 → 样本量计算 → 生成输出——产出 `data-cleaning-log.md`、`analysis_script.py`、`analysis-log.md`、`results-summary.md`，全部在 `data_clean.csv` 上运行。
+**先分析，再计划，再决定，再执行——不用现成的分析脚本。**真实临床数据的编码、伪装缺失（"/"、"未查"、999）、截断检验值（"<0.1"）、同一患者多条记录、事件数各不相同，所以 MRP 不会拿一个通用脚本去套：
+
+- **分析**：`data-analysis-planning` 先用只读的 `data_profile.py` 给真实数据做体检（只看结构和质量——变量、编码、缺失、事件总数、聚类结构；**绝不**看变量与结局的关系）；前瞻性研究则分析 protocol 和 CRF。
+- **计划**：你在确认节点 2 批准的 SAP 第 1 节就是"数据现状与由此做出的选择"（例如事件数决定能放几个预测变量、同一患者多个结石要用 GEE/混合模型）。方法用[决策树](skills/data-analysis-planning/references/stat-method-decision-tree.yaml)加 10 张[方法要点卡](skills/data-analysis-planning/references/method-cards/README.md)来选——每张写明必做步骤、常见坑、核实过的 R/Python 包和必报内容。
+- **执行**：`statistical-analysis` 先对照 SAP 再体检一次数据，然后**针对这份数据**用你习惯的语言（R 或 Python）现写清洗和分析代码，每段注明对应 SAP 的第几条。
+- **自检**：用 `reproduce_check.py` 从头重跑、结果必须一致；每一步人数连得上、能直接画流程图；SAP → 代码 → 结果逐条对照；所有偏离写进 `analysis-log.md`。
 
 决策树覆盖 15+ 类方法：
 
@@ -475,14 +478,14 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 
 ## 内置 Python 脚本
 
-可复用、可调用的代码（不必每次从提示重写）。各 skill 通过 `${CLAUDE_PLUGIN_ROOT}` 调用它们——这是 Claude Code 设置的插件安装目录。
+脚本里只放工具和护栏：容易算错且错了看不出来的公式（样本量）、防止研究作废的检查（患者级划分泄漏、随机分组）、基础设施（状态、期刊查询、导出）、只报告的检查工具。**分析代码本身由 Claude 针对每份数据现写。**各 skill 通过 `${CLAUDE_PLUGIN_ROOT}` 调用这些脚本——这是 Claude Code 设置的插件安装目录。
 
 | 脚本 | 位置 | 用途 |
 |------|------|------|
 | `assumption_tests.py` | `statistical-analysis/scripts/` | 正态性（Shapiro-Wilk、D'Agostino-Pearson）、方差齐性（Levene's）、自动推荐检验、Cohen's d 含 CI |
 | `power_analysis.py` | `statistical-analysis/scripts/` | 跨设计的样本量/效能：两组、比例、诊断准确性、生存、相关——含脱落率调整 |
-| `analysis_template.py` | `statistical-analysis/scripts/` | 在 `data_clean.csv` 上运行的可复现分析脚手架 |
-| `data_cleaning.py` | `statistical-analysis/scripts/` | 缺失数据、异常值、类型验证的清洗，附审计日志（`data-cleaning-log.md`） |
+| `data_profile.py` | `statistical-analysis/scripts/` | 只读数据体检（CSV/XLSX，兼容 GBK）：伪装缺失、"<0.1" 这类截断值、数值存成文本、日期解析失败、重复患者 ID、结局事件总数、疑似隐私字段——不改数据，不计算任何与结局的关系 |
+| `reproduce_check.py` | `statistical-analysis/scripts/` | 在全新进程里把分析命令跑两次并逐个比较输出（表格逐单元格）——退出码 0 一致 / 1 不一致 / 2 运行失败 |
 | `pub_style.py` | `figure-generation/scripts/` | 期刊图表样式（Nature、Lancet、JAMA、NEJM 配色）、色盲友好选项、≥300 DPI 导出、显著性标注 |
 | `export_docx.py` | `manuscript-export/scripts/` | 由期刊模板库驱动，Markdown → 符合期刊排版的 `.docx`；生成 `export-report.md` |
 | `get_journal_template.py` | `manuscript-writing/scripts/` | 从 240 本期刊的 YAML 里按 id 抽取单条模板（不整读文件） |

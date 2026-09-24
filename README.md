@@ -8,7 +8,7 @@ Med-Research-Powers (MRP) is a [Claude Code](https://claude.ai/code) plugin that
 
 Inspired by [Superpowers](https://github.com/obra/superpowers) (software-engineering methodology), adapted for clinical and biomedical research.
 
-> **Version 6.3.1** · 20 skills · 7 slash commands · MIT License · by BTCH Uro AI Lab
+> **Version 6.4.0** · 20 skills · 7 slash commands · MIT License · by BTCH Uro AI Lab
 
 ---
 
@@ -178,7 +178,7 @@ Skills trigger from natural-language intent — you do not need to memorize name
 |---|-------|--------------|--------|
 | 1 | **research-question-formulation** | A vague idea needs a clear question + hypothesis (PICO/PIRD/FINER). | `research-question.md` |
 | 2 | **literature-synthesis** | Searching & synthesizing literature; finding the research gap (PRISMA flow). | `search-strategy.md`, `screening-log.md`, `literature-references.md`, `literature-synthesis-summary.md` |
-| 3 | **study-design** | Designing any protocol — clinical / basic / AI-ML / qualitative / survey (Type A–E router). | `study-protocol.md` |
+| 3 | **study-design** | Designing any protocol from the real conditions (case sources, expected events, resources) — clinical / basic / AI-ML / qualitative / survey (Type A–E router). | `study-protocol.md` |
 | 4 | **research-ethics** | Checking IRB/IACUC, consent, privacy, registration, COI before data collection; drafting the ethics statement. | `ethics-statement.md` |
 | 5 | **journal-selection** | Choosing a provisional target journal (scored matching + 3-tier cascade strategy). | `journal-selection-report.md` |
 
@@ -186,16 +186,16 @@ Skills trigger from natural-language intent — you do not need to memorize name
 
 | # | Skill | Use it when… | Output |
 |---|-------|--------------|--------|
-| 6 | **data-analysis-planning** | Writing the SAP **before** any test runs (prerequisite for statistical-analysis). | `analysis-plan.md` |
-| 7 | **data-collection-tools** | Generating CRFs, annotation templates, REDCap forms, inference/eval scripts from the protocol. | `tools/` directory (scripts, templates, README) |
-| 8 | **statistical-analysis** | Executing the analysis on real data (requires an approved SAP). | `results-summary.md` + `analysis-log.md` (plus `analysis_script.py`, `data-cleaning-log.md`) |
-| 9 | **figure-generation** | Producing publication-quality figures (journal styles, ≥300 DPI, colorblind-safe). | Publication-ready TIFF/PDF files |
+| 6 | **data-analysis-planning** | Profiling the real data (structure and quality only), then writing a tailored SAP **before** any test runs. | `analysis-plan.md` (+ `data-profile.md`) |
+| 7 | **data-collection-tools** | Analysing where the data really come from (HIS/PACS/LIS exports, who records what), then generating only the tools the study needs. | `tools/` directory (tools list with reasons, CRF/dictionary, scripts) |
+| 8 | **statistical-analysis** | Writing cleaning and analysis code for this dataset per the approved SAP, then self-checking (re-run, patient flow, SAP table). | `results-summary.md` + `analysis-log.md` (plus `analysis_script.py`/`.R`, `data-cleaning-log.md`) |
+| 9 | **figure-generation** | Planning which figures the actual results need, then drawing them in journal style (≥300 DPI, colorblind-safe). | `figure-plan.md` + TIFF/PDF files |
 
 ### Manuscript Layer
 
 | # | Skill | Use it when… | Output |
 |---|-------|--------------|--------|
-| 10 | **manuscript-writing** | Drafting original research or a review (5 review types). | `manuscript/` directory (IMRaD or review structure) |
+| 10 | **manuscript-writing** | Outlining from the project's actual outputs, then drafting original research or a review (5 review types). | `manuscript-outline.md` + `manuscript/` directory |
 | 11 | **peer-review-simulation** | Simulating peer review (4 reviewers + 8-dimension 0–100 scoring) before the gates. | `peer-review-simulation-report.md` |
 | 12 | **pre-submission-verification** | The final 6-gate check — mandatory checkpoint 3. | `submission-readiness-report.md` |
 | 13 | **manuscript-export** | Exporting Markdown → journal-formatted `.docx` after the gates pass. | `manuscript.docx` + `export-report.md` |
@@ -385,9 +385,12 @@ The 7 function names are fixed; the tool prefix is `mcp__<server>__<function>`, 
 
 ## Statistical Methods Coverage
 
-- **Planning first**: `data-analysis-planning` produces the SAP you approve at checkpoint 2; `statistical-analysis` is instructed not to run without it.
-- **Assumption-driven**: an [assumption-test decision tree](skills/data-analysis-planning/references/stat-method-decision-tree.yaml) selects parametric vs non-parametric methods.
-- **Reproducible output**: the analysis pipeline flows through 6 steps — Load → Clean (missing data, outliers, type validation) → Assumption Tests → Execute Analysis → Sample Size → Generate Output — producing `data-cleaning-log.md`, `analysis_script.py`, `analysis-log.md`, `results-summary.md`, all operating on `data_clean.csv`.
+**Analyse first, then plan, then decide, then execute — no canned analysis scripts.** Real clinical data differ in coding, disguised missing values ("/", "未查", 999), censored lab values ("<0.1"), repeated records per patient and event counts, so MRP never runs a one-size-fits-all script on them:
+
+- **Analyse**: `data-analysis-planning` first profiles the real data with the read-only `data_profile.py` (structure and quality only — variables, coding, missingness, event totals, clustering; **never** associations with the outcome), or, for prospective studies, the protocol and CRF.
+- **Plan**: the SAP you approve at checkpoint 2 opens with "data situation and the choices it drives" (e.g. events → how many predictors; repeated stones per patient → GEE/mixed model). Methods are chosen with the [decision tree](skills/data-analysis-planning/references/stat-method-decision-tree.yaml) plus ten [method cards](skills/data-analysis-planning/references/method-cards/README.md) — must-do steps, pitfalls, vetted R/Python packages and reporting items for each common method.
+- **Execute**: `statistical-analysis` re-profiles the data against the SAP, then writes cleaning and analysis code **for this dataset** in your preferred language (R or Python), each block tagged with its SAP item.
+- **Self-check**: re-run from scratch with `reproduce_check.py` (identical outputs), patient counts that connect step by step into a flow diagram, a SAP-to-code-to-result table, and every deviation logged in `analysis-log.md`.
 
 The decision tree covers 15+ method categories:
 
@@ -475,14 +478,14 @@ Impact factors and APCs carry their vintage: 41 frequently targeted journals (ur
 
 ## Bundled Python Scripts
 
-Reusable, callable code (not re-written from prompts each time). Skills call them through `${CLAUDE_PLUGIN_ROOT}`, which Claude Code sets to the plugin's install directory.
+Only tools and guard-rails live in scripts — formulas that are easy to get silently wrong (sample size), checks that prevent study-breaking errors (patient-level split leakage, randomization), infrastructure (state, journal lookup, export), and read-only checkers. **Analysis code itself is written by Claude for each dataset.** Skills call the scripts through `${CLAUDE_PLUGIN_ROOT}`, which Claude Code sets to the plugin's install directory.
 
 | Script | Location | Purpose |
 |--------|----------|---------|
 | `assumption_tests.py` | `statistical-analysis/scripts/` | Normality (Shapiro-Wilk, D'Agostino-Pearson), homogeneity (Levene's), automatic test recommendation, Cohen's d with CI |
 | `power_analysis.py` | `statistical-analysis/scripts/` | Sample size / power across designs: two-group, proportion, diagnostic accuracy, survival, correlation — with dropout adjustment |
-| `analysis_template.py` | `statistical-analysis/scripts/` | Reproducible analysis scaffold operating on `data_clean.csv` |
-| `data_cleaning.py` | `statistical-analysis/scripts/` | Missing-data, outlier and type-validation cleaning with an audit log (`data-cleaning-log.md`) |
+| `data_profile.py` | `statistical-analysis/scripts/` | Read-only data check-up (CSV/XLSX, GBK-aware): disguised missing values, censored strings like "<0.1", numbers stored as text, date failures, repeated patient IDs, outcome event totals, possible identifier columns — never modifies data, never computes associations with the outcome |
+| `reproduce_check.py` | `statistical-analysis/scripts/` | Runs an analysis command twice in fresh processes and compares every output file (cell-by-cell for tables) — exit 0 identical / 1 different / 2 failed |
 | `pub_style.py` | `figure-generation/scripts/` | Journal figure styling (Nature, Lancet, JAMA, NEJM palettes), colorblind-safe options, ≥300 DPI export, significance bars |
 | `export_docx.py` | `manuscript-export/scripts/` | Markdown → journal-formatted `.docx`, driven by the journal template library; writes `export-report.md` |
 | `get_journal_template.py` | `manuscript-writing/scripts/` | Extract one journal's entry by id from the 240-journal YAML (no whole-file reads) |
@@ -500,6 +503,10 @@ sys.path.insert(0, os.path.join(os.environ.get("CLAUDE_PLUGIN_ROOT", "."), "skil
 from assumption_tests import full_check          # assumption testing
 result = full_check(group1, group2, paired=False)
 print(f"Recommended test: {result['recommended_test']}")
+
+# data check-up and re-run check are command-line tools:
+#   python3 "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/data_profile.py" data.xlsx --id patient_id --outcome recurrence --report data-profile.md
+#   python3 "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/reproduce_check.py" --cmd "Rscript analysis.R" --outputs results/
 
 from power_analysis import two_groups            # sample size
 result = two_groups(effect_size=0.5, power=0.80, dropout=0.15)

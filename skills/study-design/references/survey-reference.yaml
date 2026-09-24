@@ -2,6 +2,8 @@
 # Lookup tables for Module E (references/modules/survey-delphi.md). Router logic and step
 # sequencing stay in that module; SKILL.md only routes here.
 # (Renamed from survey-qualitative.yaml in v6.3 — the file holds survey tables only.)
+# 本文件是查阅用的判定标准与经验值（检查计划是否达标），不是某项研究的默认参数：
+# 本研究的参数要写出处（文献 / 预调查），不能直接套用这里的数字。
 
 # Psychometric Properties (量表验证) — Step 2
 psychometric_properties:
@@ -31,13 +33,13 @@ sample_size:
     formula: "n = Z^2 x p x (1-p) / d^2"
     parameters:
       Z: "1.96 (95% CI)"
-      p: "预期比例 (不确定时用 0.5)"
-      d: "精度 (通常 0.05)"
+      p: "预期比例：先查相近人群的文献或预调查并写出处；完全没有先验估计时才取 0.5（得到最大样本量，最保守），并写明理由"
+      d: "允许误差（绝对精度）：按研究需要的精度定，并与 p 的大小匹配——p 很小（罕见结局）时固定的绝对误差会过粗，改用更小的 d 或相对精度"
     corrections:
       finite_population: "n_adj = n / (1 + n/N)"
       response_rate: "n_final = n_adj / expected_response_rate"
   scale_validation: "条目数 x 5-10（EFA）; >= 200（CFA）"
-  delphi: "通常 15-30 位专家，无统一公式"
+  delphi: "文献中常见 15-30 位专家（经验值，无统一公式）；按需要覆盖的专业背景和预计各轮流失来定，并写理由"
 
 ## Delphi Method — Step 5
 delphi:

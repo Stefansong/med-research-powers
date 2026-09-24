@@ -85,7 +85,7 @@ SECTION_TITLES = {"key-points": "Key Points", "research-in-context": "Research i
 # Missing optional sections are noted with ℹ️; everything else in the family order gets ⚠️.
 OPTIONAL_SECTIONS = {"conclusion", "related-work", "figure-legends"}
 BODY_SECTIONS = ("introduction", "related-work", "methods", "results", "discussion", "conclusion")
-PLACEHOLDER_MARKERS = ("[pending]", "[tbd]", "[todo]", "placeholder", "[insert", "[待补充]", "[待填")
+PLACEHOLDER_MARKERS = ("[pending]", "[tbd]", "[todo]", "placeholder", "[insert", "[待补", "[待填")
 
 
 def infer_family(journal_id: str, name: str = "") -> str:
@@ -177,7 +177,7 @@ def find_comment_placeholders(text: str):
     """Scan the RAW text (before comments are stripped) for <!-- PLACEHOLDER / TODO / TBD ... -->."""
     hits = []
     for ln, line in enumerate(text.split("\n"), 1):
-        if re.search(r"<!--\s*(placeholder|todo|tbd|pending|待补充)", line, re.IGNORECASE):
+        if re.search(r"<!--\s*(placeholder|todo|tbd|pending|待补)", line, re.IGNORECASE):
             hits.append((ln, line.strip()[:90]))
     return hits
 

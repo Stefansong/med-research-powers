@@ -140,9 +140,11 @@ TOOL_VERSION_CONTEXT = re.compile(
     r"claude code|claude|r|spss|stata|sas|tensorflow|torch|pytorch|sklearn|scikit-learn)\s*v?=?\s*\d+\.\d+\.\d+",
     re.IGNORECASE)
 DOI_OR_URL = re.compile(r"10\.\d{4,9}/\S+|https?://\S+")
+# Section numbers in cited guidance ("Cochrane Handbook §10.10.4.4", "section 2.3.1") are not versions.
+SECTION_REF = re.compile(r"(?:§|[Ss]ection\s*|第\s*)\d+(?:\.\d+)+")
 for p in text_files(skip_dirs=LITERAL_SCAN_SKIP_DIRS):
     for ln, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
-        scan = DOI_OR_URL.sub(" ", line)          # DOIs and URLs are not versions
+        scan = SECTION_REF.sub(" ", DOI_OR_URL.sub(" ", line))   # DOIs, URLs, section numbers are not versions
         for stray in re.findall(r"\bv?(\d+\.\d+\.\d+)\b", scan):
             if stray != VERSION and not TOOL_VERSION_CONTEXT.search(scan):
                 err(f"(a) stray version {stray!r} in {rel(p)}:{ln} (expected only {VERSION!r})")

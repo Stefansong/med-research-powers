@@ -1,7 +1,9 @@
 # Module A — Clinical Research（临床研究）
 
+> **本模块是必须覆盖的清单，不是填空表：按本研究的实际情况写；不适用的条目写"不适用 + 理由"；禁止照抄示例中的数字、例数和措辞。**
+
 `study-design/SKILL.md` 的 Study Type Router 判定为 `type: clinical` 时读取本文件。
-这里只放临床研究特有的判断；通用 5 步 Workflow、Output、Hard Checkpoint、衔接规则都在 SKILL.md。
+这里只放临床研究特有的判断；通用 Workflow（Step 0 分析真实条件 + Step 1–5）、Output、Hard Checkpoint、衔接规则都在 SKILL.md。
 
 ## 适用范围
 
@@ -35,6 +37,8 @@ RCT（含交叉、非劣效/等效、适应性、平台、实效性、群随机�
 ├── 综合证据？ → 系统综述/Meta（PRISMA）→ 检索部分走 `literature-synthesis`
 └── 描述性？ → 病例报告/系列（CARE）
 ```
+
+决策树只列出可选的设计；选哪一个由 SKILL.md Step 0 的真实条件决定——"可以随机？"要看伦理、患者意愿和资源是否允许，"前瞻 / 回顾"要看数据从哪来、事件数够不够，而不是看哪种设计证据等级高。
 
 ## 特殊试验设计要点
 

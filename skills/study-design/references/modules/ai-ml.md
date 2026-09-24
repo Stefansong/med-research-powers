@@ -1,7 +1,9 @@
 # Module C — AI/ML Medical Research（医学人工智能研究）
 
+> **本模块是必须覆盖的清单，不是填空表：按本研究的实际情况写；不适用的条目写"不适用 + 理由"；禁止照抄示例中的数字、例数和措辞。**
+
 `study-design/SKILL.md` 的 Study Type Router 判定为 `type: ai-ml` 时读取本文件。
-这里只放 AI/ML 研究特有的判断；通用 5 步 Workflow、Output、Hard Checkpoint、衔接规则都在 SKILL.md。
+这里只放 AI/ML 研究特有的判断；通用 Workflow（Step 0 分析真实条件 + Step 1–5）、Output、Hard Checkpoint、衔接规则都在 SKILL.md。
 
 ## 适用范围
 
@@ -46,6 +48,7 @@
 **数据划分策略（按样本量分档）** 只维护一份，在
 `${CLAUDE_PLUGIN_ROOT}/skills/data-analysis-planning/references/stat-method-decision-tree.yaml` 的
 `deep_learning_training.data_split`。分档边界：`n > 1000` / `200 ≤ n ≤ 1000` / `50 ≤ n < 200` / `n < 50`。
+这里的 n 是 SKILL.md Step 0 查到的真实可用患者数（排除后），不是计划中的理想数。
 设计时读取该表决定 hold-out / K-fold / 迁移学习 + nested CV / LOOCV，并注意：
 - K-fold 中同一患者的所有数据必须在同一折；报告每折性能和整体均值±SD
 - 使用迁移学习时报告预训练数据集和微调策略

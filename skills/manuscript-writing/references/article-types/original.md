@@ -1,5 +1,7 @@
 # A. Original Research — IMRaD
 
+> **章节结构是期刊的通用要求；内容必须来自本项目的实际产物，不写套话；缺少的数据写 `[待补：来源]` 占位，不编造。**
+
 > 由 `manuscript-writing` SKILL.md 的 Article Type Router 按需加载。适用：有自己的数据/实验结果的原始研究（RCT、队列、病例对照、诊断准确性、预测模型、AI 研究、基础研究等）。
 
 ## 前置依赖（按章节）
@@ -13,7 +15,7 @@
 | Abstract | 全文各章节已完成 | 必须 |
 | Title | Abstract 已完成 | 推荐 |
 
-**可以在没有 `results-summary.md` 的情况下先写 Methods 和 Introduction。**
+**可以在没有 `results-summary.md` 的情况下先写 Methods 和 Introduction。** 分析完成后，按 `analysis-log.md` 回头补写 Methods 中与 SAP 的偏离。
 
 ## 写作顺序（按效率，不按论文顺序）
 
@@ -27,9 +29,9 @@
 
 ## 章节规则
 
-**Methods**：研究设计、参与者（纳入/排除、时间地点）、变量定义、统计方法（可复现程度：软件与版本、模型、缺失数据处理）、样本量依据、伦理批准与知情同意声明、试验/研究注册号（如适用）。与 `study-protocol.md` / `analysis-plan.md` 不一致处必须说明原因并标注"与预注册分析计划的偏离"。
+**Methods**：研究设计、参与者（纳入/排除、时间地点）、变量定义、统计方法（可复现程度：软件与版本、模型、缺失数据处理）、样本量依据、伦理批准与知情同意声明、试验/研究注册号（如适用）。与 `study-protocol.md` / `analysis-plan.md` 不一致处必须说明原因并标注"与预注册分析计划的偏离"——逐条对应 `analysis-log.md` 的偏离表，写在 Methods（改了什么、为什么）或 Limitations（对结论可能的影响），不能略去或只放补充材料。
 
-**Results**：参与者流程图 → 基线表 → 主要结局 → 次要结局 → 亚组/敏感性分析。**禁止**在 Results 讨论意义；**禁止**出现 `results-summary.md` 中没有的数字。效应量必须带 95% CI。
+**Results**：参与者流程图 → 基线表 → 主要结局 → 次要结局 → 亚组/敏感性分析。**禁止**在 Results 讨论意义；每个数字都必须能在 `results-summary.md` 或分析输出里找到出处，**禁止**出现找不到出处的数字。效应量必须带 95% CI。
 
 **Introduction**：漏斗形（背景 → 已知 → gap → 本研究目的），通常 3–4 段，最后一句明确研究目的/假设。
 

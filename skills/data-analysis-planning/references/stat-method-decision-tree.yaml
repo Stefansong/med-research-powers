@@ -109,7 +109,7 @@ survival_extended:
 # Decide on two axes: (1) proportion missing, (2) missingness mechanism.
 missing_data:
   assessment:
-    - "Report n and % missing per variable (data_cleaning.py does this)"
+    - "Report n and % missing per variable, counting disguised missing ('未查', '/', 'NA', 999 ...) as missing (data_profile.py reports this)"
     - "Mechanism: Little's MCAR test — R naniar::mcar_test() or Python pyampute MCARTest; if neither is available, compare other variables between missing vs observed (t-test / chi-square) and show a missingness-pattern plot, then state MCAR cannot be confirmed"
     - "Pattern analysis: monotone vs arbitrary"
   by_proportion:

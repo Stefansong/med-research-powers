@@ -1,4 +1,4 @@
-# Med-Research-Powers v6.3.1 Architecture
+# Med-Research-Powers v6.4.0 Architecture
 
 ## 1. Full Pipeline Flow
 
@@ -183,53 +183,28 @@ flowchart TD
 
 ## 5. Statistical Analysis Data Flow
 
+Analyse → plan → decide → execute. Planning may look at the data's **structure and quality** only; associations with the outcome are computed only after the SAP is confirmed. Cleaning and analysis code is written for each dataset — there is no analysis template.
+
 ```mermaid
 flowchart TD
-    DATA[(data.csv)] --> LOAD[Step 1: Load & Explore]
-    LOAD --> CLEAN[Step 2: Data Cleaning<br/>data_cleaning.py]
-
-    subgraph CLEANING["Data Cleaning"]
-        C1[2.1 Missing Data<br/>MCAR/MAR/MNAR Assessment]
-        C2[2.2 Outlier Detection<br/>Z-score / IQR / Clinical Range]
-        C3[2.3 Type Validation<br/>Encoding + Variable Matching]
-        C4[2.4 Export Clean Data]
-    end
-
-    CLEAN --> C1 --> C2 --> C3 --> C4
-    C4 --> CLEAN_DATA[(data_clean.csv)]
-    C4 --> LOG1[data-cleaning-log.md]
-
-    CLEAN_DATA --> ASSUME[Step 3: Assumption Tests<br/>assumption_tests.py]
-    ASSUME --> TREE{stat-method-decision-tree.yaml}
-
-    TREE --> EXEC[Step 4: Execute Analysis<br/>Per analysis-plan.md]
-
-    subgraph METHODS["Available Methods"]
-        M1[Two-Group / Multi-Group]
-        M2[Survival + Competing Risks]
-        M3[Mixed Models / GEE]
-        M4[Propensity Score]
-        M5[Multiple Imputation]
-        M6[Mediation Analysis]
-        M7[Omics / High-Dimensional]
-        M8[Interrupted Time Series]
-        M9[Interaction / Subgroup]
-    end
-
-    EXEC --> M1 & M2 & M3 & M4 & M5 & M6 & M7 & M8 & M9
-
-    EXEC --> SCRIPT[analysis_script.py<br/>Reproducible Code]
-    EXEC --> LOG2[analysis-log.md<br/>Decisions + SAP Deviations]
-    EXEC --> RESULTS[results-summary.md<br/>Tables + Key Numbers]
-
-    RESULTS --> FIG[figure-generation]
-    RESULTS --> MANUSCRIPT[manuscript-writing]
-
-    style CLEANING fill:#fff3cd,stroke:#ffc107
-    style METHODS fill:#d1ecf1,stroke:#0dcaf0
+    DATA[(real data<br/>csv / xlsx)] --> PROF1[data_profile.py<br/>read-only check-up]
+    PROF1 --> SITU[SAP §1: data situation<br/>and the choices it drives]
+    PROTO[study-protocol.md] --> SITU
+    SITU --> PICK{decision tree +<br/>method cards}
+    PICK --> SAP[analysis-plan.md]
+    SAP --> HC2{{Checkpoint 2:<br/>user confirms SAP}}
+    HC2 --> PROF2[Step 1: re-profile data<br/>check against SAP §1]
+    PROF2 -->|major mismatch| BACK[back to data-analysis-planning<br/>user decides]
+    PROF2 --> CLEAN[Step 2: cleaning code<br/>written for this dataset]
+    CLEAN --> ASSUME[Step 3: assumption_tests.py]
+    ASSUME --> EXEC[Step 4: analysis code<br/>per SAP item + method card<br/>R or Python]
+    EXEC --> CHECK[Step 5: self-check<br/>reproduce_check.py · patient flow<br/>SAP-to-result table · deviations]
+    CHECK --> OUT1[analysis_script.py / .R]
+    CHECK --> OUT2[analysis-log.md]
+    CHECK --> OUT3[results-summary.md]
+    OUT3 --> FIG[figure-generation]
+    OUT3 --> MANUSCRIPT[manuscript-writing]
 ```
-
-Sample size is planned in `study-design` (`power_analysis.py`) before data collection, not computed after the fact.
 
 ## 6. Checkpoint Protocol
 
@@ -274,7 +249,7 @@ Modes (`checkpoint_mode` in `.mrp-state.json`): **light** (default, above) · **
 ```mermaid
 flowchart TD
     subgraph PLUGIN["mrp (plugin) — marketplace med-research-powers"]
-        PJ[".claude-plugin/plugin.json<br/>name: mrp · v6.3.1 · SessionStart hook<br/>commands/ and skills/ are auto-discovered"]
+        PJ[".claude-plugin/plugin.json<br/>name: mrp · v6.4.0 · SessionStart hook<br/>commands/ and skills/ are auto-discovered"]
         HOOK["hooks/session-start.sh<br/>Reads whitelisted fields of .mrp-state.json,<br/>reports the resume point"]
         META["skills/using-med-research-powers<br/>Orchestrator: routing + checkpoints + mrp_state.py"]
     end
@@ -299,7 +274,7 @@ flowchart TD
     end
 
     subgraph SCRIPTS["10 Bundled Python Scripts"]
-        PY1["statistical-analysis<br/>assumption_tests.py · power_analysis.py<br/>analysis_template.py · data_cleaning.py"]
+        PY1["statistical-analysis<br/>assumption_tests.py · power_analysis.py<br/>data_profile.py · reproduce_check.py"]
         PY2["figure-generation: pub_style.py<br/>manuscript-export: export_docx.py<br/>manuscript-writing: get_journal_template.py"]
         PY3["data-collection-tools<br/>patient_level_split.py · randomization.py<br/>using-med-research-powers: mrp_state.py"]
     end

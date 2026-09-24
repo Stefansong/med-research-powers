@@ -47,3 +47,6 @@ node_modules/
 
 # plugin eval runs
 evals/results/
+
+# reproduce_check.py keeps earlier runs here
+.reproduce-check/

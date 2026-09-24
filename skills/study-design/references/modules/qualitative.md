@@ -1,7 +1,9 @@
 # Module D — Qualitative Research（定性研究）
 
+> **本模块是必须覆盖的清单，不是填空表：按本研究的实际情况写；不适用的条目写"不适用 + 理由"；禁止照抄示例中的数字、例数和措辞。**
+
 `study-design/SKILL.md` 的 Study Type Router 判定为 `type: qualitative` 时读取本文件。
-这里只放定性研究特有的判断；通用 5 步 Workflow、Output、Hard Checkpoint、衔接规则都在 SKILL.md。
+这里只放定性研究特有的判断；通用 Workflow（Step 0 分析真实条件 + Step 1–5）、Output、Hard Checkpoint、衔接规则都在 SKILL.md。
 
 ## 适用范围
 
@@ -67,6 +69,7 @@
 - 常见范围：访谈 12-30 人，焦点小组 3-6 组
 - 扎根理论通常需要 20-30 人
 - 现象学通常 5-25 人；IPA 通常 3-10 人（强调小样本深描）
+- 以上范围（含 Step 2 表中的"样本量指导"）只是文献里的常见值，用来判断计划是否离谱；本研究的预计范围要按研究问题的宽窄、受访者的同质程度和访谈深度来估计并写理由，最终以饱和判断为准
 
 ### Step 5: 数据分析方法
 

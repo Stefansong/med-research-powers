@@ -1,7 +1,10 @@
 # Data Collection Tool Catalog
-# Lookup tables: which tools to generate per study type, plus the standard
-# project directory structure. Generation LOGIC stays in SKILL.md (Step 2).
-# Fixed-logic scripts shipped with the plugin (copy or call, never rewrite ad hoc):
+# 这是【可选工具目录】，不是必须全套生成：先按 SKILL.md Step 2 分析真实数据来源，
+# Step 3 列出本研究需要的工具和理由并经用户确认，然后只生成确认过的工具。
+# 文件名是建议名；字段、编码、取值范围按 SAP 和真实导出样例现写，不照抄 note 里的例子。
+# Lookup tables: optional tools per study type, plus a default project directory
+# structure (trim it to the study). Generation LOGIC stays in SKILL.md (Step 4).
+# Fixed-logic guardrail scripts shipped with the plugin (copy or call, never rewrite ad hoc):
 #   ${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/patient_level_split.py
 #   ${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/randomization.py
 #   ${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py   (a priori sample size)
@@ -51,7 +54,8 @@ study_type_tools:
       - { tool: "PRISMA 模板",  file: "tools/prisma_template.md",      note: "PRISMA 流程图数据录入" }
       - { tool: "双人筛选记录", file: "tools/dual_screening.csv",      note: "两位筛选者的独立判定 + 不一致记录" }
 
-# Standard project directory structure (Step 3)
+# Default project directory structure (SKILL.md Step 5) — trim to what the study needs
+# (e.g. no annotations/ without annotators; one annotator_N/ per actual annotator)
 project_directory_structure: |
   project/
   ├── data/

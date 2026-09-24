@@ -1,8 +1,11 @@
 # Journal Figure Requirements
-# Generic publication-quality figure specifications for medical journals.
+# Generic publication-quality figure specifications for medical journals (format, dpi,
+# font, width, colour) — the style layer that pub_style.py applies. They say nothing
+# about WHICH figures to make: that comes from figure-plan.md (SKILL.md Steps 1-2).
 # Most major journals fall within these ranges; verify against the target
-# journal's "Instructions for Authors" for exceptions (per-journal `figures`
-# field lives in skills/manuscript-writing/references/journal-templates.yaml).
+# journal's "Instructions for Authors" for exceptions. The per-journal `figures` /
+# `tables` fields (counts, combined limits) live in journal-templates.yaml — fetch one entry with
+#   python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --id <journal-id>
 
 figure_specs:
   format:

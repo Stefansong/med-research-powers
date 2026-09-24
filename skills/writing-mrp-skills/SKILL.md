@@ -25,7 +25,7 @@ description: Use when creating, testing, or improving a Med-Research-Powers skil
 
 1. **先找到错误**：给一个典型研究场景，不加载 skill 观察 Claude 的默认行为，记下它的"借口"（这是 Common Mistakes 表的来源）。
 2. **写 frontmatter**（规则见下）。
-3. **按正文结构写 SKILL.md**，推理与判断放正文，查阅型内容放 `references/`，固定代码放 `scripts/`。
+3. **按正文结构写 SKILL.md**，推理与判断放正文，查阅型内容放 `references/`，只有工具和护栏放 `scripts/`（见下方"脚本与模板的边界"）。凡是要结合真实数据或需求的 skill，Workflow 必须按"先分析真实情况 → 再计划 → 用户决定 → 再执行"排步骤。
 4. **接上流水线**：在衔接规则里写清强制 / 前置依赖 / 可选三级，并让上下游 skill 与总调度（`using-med-research-powers`）的 Pipeline 一致；主线 skill 的最后一步固定为"输出摘要 → `mrp_state.py done ...`"。
 5. **自检**：`python3 tools/check_consistency.py`（版本、计数、路径、frontmatter、行数、命令前缀）+ `python3 -m pytest tests -q`（若改了脚本）。
 6. **对比测试**：同一场景加载 skill 后再跑一次；变化不显著就重写。官方 `claude plugin eval` 可把"5 个提示词是否触发正确 skill"做成回归。
@@ -65,7 +65,15 @@ description: Use when [触发条件]. Triggers on "[中文触发词]"、"[英文
 | 推理逻辑、判断标准 | SKILL.md | Claude 每次都需要 |
 | Checklist 完整条目、决策树、指标表 | `references/*.yaml` | 按需加载，省上下文 |
 | 模板、长表格、按类型分的模块 | `references/*.md` | 同上 |
-| 可复用的固定代码 | `scripts/*.py` | Claude 调用而不是重写；给 CLI 与 `--help` |
+| 工具与护栏（见下） | `scripts/*.py` | Claude 调用而不是重写；给 CLI 与 `--help` |
+| 方法要点（必做步骤、常见坑、推荐包、必报内容） | `references/method-cards/*.md` 之类 | 写代码时遵守的要点，不是代码模板 |
+
+### 脚本与模板的边界
+
+- **AI 现写**（随数据和问题变化）：清洗代码、分析代码、建模、出表、作图代码、CRF/标注表的具体字段、论文内容。不要为这些写"通用脚本"或"骨架模板"让 Claude 填空。
+- **scripts/ 只放四类**：容易算错且错了看不出来的公式（样本量，优先包装成熟包）；一旦出错研究作废的护栏（患者级划分泄漏检查、随机分组）；与数据无关的基础设施（状态、期刊模板查询、导出）；只报告、不替用户做决定的检查工具（数据体检、前提检验、重跑一致性）。
+- **模板 = 必须覆盖的清单**：protocol 章节、SAP 章节、图型表、工具目录都只用来查漏；不适用的写"不适用 + 理由"；示例里不放会被照抄的具体数字（用 `[按……填写]` 占位）。
+- 分析类 skill 必须写清计划前"可以看"（数据结构与质量）和"不能看"（变量与结局的关系，含暴露/分组与结局）的界线。
 
 - **SKILL.md ≤ 500 行**（官方建议）；MRP 目标 ≤ 250 行。超了就把按类型分的模块拆到 references 下的 modules 子目录（study-design 是范例），SKILL.md 只留 router。
 - 大文件（如 240 条期刊库）必须提供按 id 抽取的脚本或 grep 命令，**禁止让 Claude 整读**。
@@ -86,6 +94,7 @@ description: Use when [触发条件]. Triggers on "[中文触发词]"、"[英文
 |------|------|
 | "description 把流程写清楚 Claude 就会照做" | Claude 会只看 description 走捷径；description 只写何时用 |
 | "内容都放 SKILL.md 方便看" | 每行都是常驻 token；查阅型内容放 references/ 按需读 |
+| "写个通用分析脚本，Claude 改改变量名就能跑" | 真实数据千差万别；分析代码按数据现写，scripts/ 只放工具和护栏 |
 | "写个 command 和 skill 同名方便调用" | 同名 command 被 skill 遮蔽，还让 skill 列表出现重复条目 |
 | "路径写相对的就行" | 运行目录是用户项目，相对路径解析失败；必须用 `${CLAUDE_PLUGIN_ROOT}` |
 | "规范条目数我记得是 N" | 报告规范条目数、期刊字数限制等必须查原文并写来源 |

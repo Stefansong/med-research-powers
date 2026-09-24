@@ -1,7 +1,9 @@
 # Module B — Basic Science（细胞 / 动物 / 分子）
 
+> **本模块是必须覆盖的清单，不是填空表：按本研究的实际情况写；不适用的条目写"不适用 + 理由"；禁止照抄示例中的数字、例数和措辞。**
+
 `study-design/SKILL.md` 的 Study Type Router 判定为 `type: basic` 时读取本文件。
-这里只放基础研究特有的判断；通用 5 步 Workflow、Output、Hard Checkpoint、衔接规则都在 SKILL.md。
+这里只放基础研究特有的判断；通用 Workflow（Step 0 分析真实条件 + Step 1–5）、Output、Hard Checkpoint、衔接规则都在 SKILL.md。
 
 ## 适用范围
 
@@ -52,7 +54,7 @@
 - `qpcr.md` — qPCR 设计、引物信息、ΔΔCt 分析
 - `animal-study.md` — 动物信息、伦理（IACUC）、ARRIVE 2.0 要求
 
-根据实验类型加载对应模板，填入 `study-protocol.md` 的 "实验设计" 章节。
+根据实验类型加载对应模板，用它查漏，按本实验的实际条件写进 `study-protocol.md` 的"实验设计"章节——模板里的方括号和"如 …"只是提示，不是默认值。
 
 ## Validation Layers
 

@@ -1,5 +1,38 @@
 # Changelog
 
+## v6.4.0 (2026-09-23)
+
+**Analyse first, then plan, then decide, then execute.** Wherever the work depends on real data or real needs, MRP no longer applies a template or a canned script: Claude first examines the actual situation, then tailors the plan, the user decides, and only then is code or content written — followed by a self-check.
+
+### The rule, and its methodological boundary
+- Before the analysis plan is confirmed, Claude **may and must** look at the data's structure and quality (variables, coding, disguised missing values, censored strings, event totals, repeated records per patient, cluster sizes), but **must not** look at associations with the outcome (including exposure/group versus outcome) — outcome-blind redundancy checks among predictors are fine — otherwise "look at the data first" would become choosing methods after seeing results. This boundary is written into the orchestrator, both analysis skills, every method card and the skill-authoring guide.
+- Templates (protocol sections, SAP sections, figure types, tool catalogue, article structures) are now **must-cover checklists**, not fill-in forms: write what fits this study, mark the rest "not applicable + reason", never copy example numbers.
+- `scripts/` keeps only tools and guard-rails — formulas that are easy to get silently wrong (sample size), checks against study-breaking errors (patient-level split, randomization), infrastructure (state, journal lookup, export) and read-only checkers. Analysis code is written for each dataset.
+
+### Analysis skills rewritten
+- `data-analysis-planning`: new Step 1 "data situation" — for existing data, the read-only `data_profile.py` plus ad-hoc read-only checks; for prospective studies, the protocol/CRF and a contingency plan for when the data differ. SAP §1 is now "data situation and the choices it drives" (e.g. events → number of predictors; several stones per patient → GEE/mixed model). Methods are chosen with the decision tree plus the method cards.
+- `statistical-analysis`: re-profiles the data against SAP §1 (minor mismatches logged; mismatches that affect the primary analysis go back to the user), writes cleaning and analysis code for this dataset in the user's language (R or Python) with every block tagged to its SAP item, then a mandatory **self-check**: re-run from scratch (`reproduce_check.py`), patient counts that connect step by step, a SAP → code → result table, and every deviation logged with its impact.
+- **Ten method cards** (`skills/data-analysis-planning/references/method-cards/`): baseline & group comparison, regression & clinical prediction models (nomograms), survival analysis, propensity scores, missing data, diagnostic accuracy & AI evaluation, clustered & repeated data, meta-analysis, agreement & reliability, LLM/VLM evaluation. Each gives what to check in the data before planning, what the plan must prespecify, vetted R/Python packages (every package and function checked against CRAN/PyPI), common pitfalls, required reporting items and the matching reporting guideline, with DOI-referenced sources. They are rules to follow, not code to paste.
+
+### Other skills
+- `study-design`: new Step 0 "real conditions" (case sources, expected events, centres, follow-up, resources, ethics) that drive the design; sample-size parameters must cite a real source; protocol templates, modules and experiment templates no longer contain numbers that invite copying.
+- `data-collection-tools`: first analyses where the data really come from (HIS/EMR, PACS, LIS, video system, paper CRF — export formats, field names, who records what), then proposes a tool list with reasons for the user to confirm; the tool catalogue is optional, not a set to generate in full.
+- `figure-generation`: a `figure-plan.md` (what question each figure answers, chart type, main text vs supplement, journal limits) comes before drawing; figure code is written for the data, `pub_style.py` only handles journal styling.
+- `manuscript-writing`: a `manuscript-outline.md` maps every point to a project artifact before drafting; every number in Results must trace to an analysis output; SAP deviations must appear in Methods or Limitations.
+- Orchestrator: states the rule; routes by invoking the target skill with the Skill tool (not by acting on the one-line routing summary); looks for inputs only inside the project directory and asks when they are missing; skills pause outside hard checkpoints only to collect information only the user has.
+
+### Scripts (still 10)
+- Removed `analysis_template.py` (the coding rules now live in `statistical-analysis/SKILL.md`).
+- `data_cleaning.py` → **`data_profile.py`**: a read-only check-up for CSV/TSV/XLSX (UTF-8/GBK/GB18030): disguised missing values ("未查", "/", 999 …, context-aware so a "无" category is not miscounted), censored strings ("<0.1"), numbers stored as text, unparseable dates, repeated patient IDs and cluster sizes, outcome distribution and event totals only (never associations), possible identifier columns reported by name and count only. Never writes to the data.
+- New **`reproduce_check.py`**: runs an analysis command twice in fresh processes and compares every output (tables cell by cell with tolerances, JSON by value, text numbers with tolerance); exit 0 identical / 1 different / 2 failed; earlier outputs are moved aside, never deleted.
+- `export_docx.py`: `[待补…]` placeholders are now detected.
+
+### Evals and tooling
+- New behaviour eval `evals/data-first-planning` (scaffolded messy data; the plan must be built from its features): 2/2 runs passed all graders. Routing smoke cases re-run after the orchestrator change: pre-submission 3/3, the others passed.
+- Guard: section numbers in cited guidance ("§10.10.4.4") are no longer mistaken for stray versions. Tests: 116 (new: data profile, reproduce check; plus the v6.3.1 session-hook tests).
+
+---
+
 ## v6.3.1 (2026-09-22)
 
 Patch release: the SessionStart hook could not read a state file that was not indented, and CI was carrying a guard that failed silently. No skill content changed.
@@ -10,6 +43,8 @@ Patch release: the SessionStart hook could not read a state file that was not in
 ### Changed
 - CI: the `Hook smoke test (crafted .mrp-state.json)` step is no longer `continue-on-error`. It was passing silently with `exit 1` and a warning because of the parsing bug above; now that the hook is format-agnostic the guard actually enforces SECURITY.md's contract, and its annotations are errors rather than warnings.
 - CI: bumped `actions/checkout` v4 → v7, `actions/setup-python` v5 → v7, `actions/setup-node` v4 → v7 and `actions/upload-artifact` v4 → v7, off the deprecated Node 20 runtime. None of the breaking changes in those majors apply here (no `pull_request_target`/`workflow_run` triggers, no `pip-install` input, no implicit non-npm caching, unchanged `upload-artifact` inputs).
+
+---
 
 ## v6.3.0 (2026-09-21)
 

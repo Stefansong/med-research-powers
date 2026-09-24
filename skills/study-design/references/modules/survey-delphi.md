@@ -1,7 +1,9 @@
 # Module E — Survey / Questionnaire / Delphi（问卷 / 量表 / 共识）
 
+> **本模块是必须覆盖的清单，不是填空表：按本研究的实际情况写；不适用的条目写"不适用 + 理由"；禁止照抄示例中的数字、例数和措辞。**
+
 `study-design/SKILL.md` 的 Study Type Router 判定为 `type: survey` 时读取本文件。
-这里只放问卷/调查研究特有的判断；通用 5 步 Workflow、Output、Hard Checkpoint、衔接规则都在 SKILL.md。
+这里只放问卷/调查研究特有的判断；通用 Workflow（Step 0 分析真实条件 + Step 1–5）、Output、Hard Checkpoint、衔接规则都在 SKILL.md。
 查阅型表格（测量属性、抽样策略、样本量公式、Delphi 规则、采集方式）在 `references/survey-reference.yaml`。
 
 ## 适用范围
@@ -23,6 +25,8 @@
 ```
 
 ## Workflow（问卷专属步骤，对应 SKILL.md 通用 Step 2-4）
+
+下文的数字（条目倍数、专家人数、认知访谈与预试验人数、CVI 阈值、EFA/CFA 例数）是方法学文献中的常用下限或判定标准，用来检查计划是否达标；本研究的具体数字按本模块 Step 4（样本量计算）算出并写依据。
 
 ### Step 1: 问卷设计
 

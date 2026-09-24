@@ -1,10 +1,13 @@
 # Protocol Templates — `study-protocol.md`
 
-Fill-in skeletons for the single protocol file produced by `study-design`. All five study types
+> **本模板是必须覆盖的章节清单，不是填空表：按本研究的实际情况写；不适用的章节写"不适用 + 理由"；禁止照抄示例中的数字、例数和措辞。**
+> 方括号里的内容是"这一项要写什么"的提示，不是可直接采用的默认值；数字一律来自本研究的真实条件（SKILL.md Step 0）和样本量计算（Step 3）。
+
+Section checklists for the single protocol file produced by `study-design`. All five study types
 write the **same file name** `study-protocol.md`; the `type:` field in the header tells downstream
 skills (`research-ethics`, `data-analysis-planning`, `data-collection-tools`, `manuscript-writing`)
 which sections to expect. Router logic and judgment criteria stay in `SKILL.md` and
-`references/modules/*.md`; this file holds only the skeletons.
+`references/modules/*.md`; this file holds only the section checklists.
 
 Common header for every type:
 
@@ -16,6 +19,17 @@ version: 1.0 — [日期]
 research_question: [来自 research-question.md 的一句话]
 registration: [注册平台 + 注册号 / 计划注册日期 / N/A 及理由]
 status: draft → confirmed（Hard Checkpoint 通过后改为 confirmed，并记录日期）
+```
+
+Every type then starts with the same section, written from SKILL.md Step 0:
+
+```markdown
+## 0. 真实条件与设计理由
+- 真实条件：[逐项写 Step 0 的结果——研究目的；数据来源（回顾性已有 / 前瞻性新收集，哪个系统、哪些年份）；
+  每年可获得的病例数与预计事件数、同一患者是否有多条记录；中心数；随访可行性；资源与时间；伦理 / 注册限制；已有研究的结论（出处）]
+- 未知项：[还不知道的条件 → 需要谁提供 → 会影响哪个设计决定]
+- 设计选择：[选了什么设计、关键参数怎么定的]
+- 理由：[依据上面哪几条真实条件；为什么没选更强的设计（如为什么不做 RCT / 前瞻性研究）]
 ```
 
 ---
@@ -30,6 +44,8 @@ version: 1.0 — [日期]
 research_question: [一句话]
 registration: [ClinicalTrials.gov / ChiCTR 注册号，或"首例入组前注册（计划日期）"]
 status: draft
+
+## 0. 真实条件与设计理由（见上方通用节）
 
 ## 1. 研究概要
 - Design: [RCT 平行组 / 交叉 / 非劣效 / 群随机 / 前瞻性队列 / 回顾性队列 / 病例对照 / 横断面 / 诊断准确性 / 预测模型 / RWE]
@@ -58,17 +74,18 @@ status: draft
 - Emergency unblinding: [条件与流程]
 
 ## 5. 结局指标与评估时点
-- Primary outcome: [指标名 / 定义 / 测量工具 / 评估时点 / 分析指标（如 12 周时的组间均值差）]（只有一个）
+- Primary outcome: [指标名 / 定义 / 测量工具 / 评估时点 / 分析指标（如"[时点] 时的组间均值差"）]（只有一个）
 - Secondary outcomes: [逐条，同样写全定义与时点]
 - Safety / harms outcomes: [不良事件定义、分级标准、收集方式]
 - Assessment schedule: [表：基线 / 干预期 / 随访各时点 × 各评估项]
 
 ## 6. 样本量计算（MANDATORY）
 - Tool: `${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py` 或 G*Power
-- Effect size: [值 + 来源（文献 PMID / 预实验）]
-- α = [0.05 双侧 / 0.025 单侧（非劣效）], power = [0.80 / 0.90]
-- Allocation ratio: [1:1 / …]; 生存结局写所需事件数
-- Dropout: [X]% → 最终样本量 N = [ ]（每组 [ ]）
+- Effect size / event rate: [值 + 出处：相近人群文献（PMID）/ 本中心预实验或历史数据（时间段、例数）/ 临床最小重要差异（依据）；"常用值"不算出处]
+- α、power: [按设计选择并写理由（优效通常双侧；非劣效通常单侧）]
+- Allocation ratio: [按设计与理由]; 生存结局写所需事件数
+- Dropout: [预计比例 + 依据（本中心既往随访或文献）] → 最终样本量 N = [按 Step 3 的计算结果填写]（每组 [ ]）
+- Feasibility: [用 Step 0 的每年可获得例数 / 事件数核对：计划期内能否达到；不能达到时的调整]
 - 观察性研究：说明估计的效应量 / 事件数与可用样本是否匹配
 
 ## 7. 随访计划
@@ -116,6 +133,8 @@ research_question: [一句话；写清假设的分子/细胞机制]
 registration: N/A（动物实验写 IACUC 批准号）
 status: draft
 
+## 0. 真实条件与设计理由（见上方通用节；"病例"换成样本 / 动物 / 细胞来源）
+
 ## 1. 研究概要
 - Hypothesis: [H1；预期方向]
 - Model system: [细胞系（来源、STR 鉴定、传代范围）/ 动物（物种、品系、性别、周龄）/ 临床样本]
@@ -125,7 +144,7 @@ status: draft
 ### Experiment 1: [名称，如 WB 检测 X 蛋白表达]
 - Purpose: [验证什么]
 - Groups: [处理组 / 阴性对照 / 阳性对照 / 载体对照 / 特殊对照（同型、回补）]
-- Biological replicates: n = [≥3]（定义：[独立传代 / 独立个体]）; technical replicates: [≥2]
+- Biological replicates: n = [按第 4 节的依据填写；不少于 3]（定义：[独立传代 / 独立个体]）; technical replicates: [≥2]
 - Readout: [指标、定量方法、单位]
 - Blinding: [谁对分组不知情]
 - Randomization: [方法]
@@ -171,6 +190,8 @@ research_question: [一句话；PIRD 或 PICO]
 registration: [诊断准确性 / 预测模型研究建议注册（ClinicalTrials.gov / ChiCTR / OSF）；AI RCT 必须注册]
 status: draft
 
+## 0. 真实条件与设计理由（见上方通用节；另写清可用数据量、标注人力与算力）
+
 ## 1. 研究概要
 - Study type: [开发+验证 / 外部验证 / 诊断准确性评估 / LLM-VLM benchmark / AI RCT / DECIDE-AI 早期评估 / 数据集构建]
 - Task: [分类 / 检测 / 分割 / 回归 / 风险预测 / 生成式问答]
@@ -193,7 +214,7 @@ status: draft
 ## 4. 标注流程与一致性
 - Annotators: [人数、资历、年资]
 - Protocol: [标注指南版本、培训、盲法（不看模型输出）]
-- Agreement: [Cohen's / Fleiss' kappa / ICC，目标阈值]
+- Agreement: [Cohen's / Fleiss' kappa / ICC，目标阈值及依据]
 - Adjudication: [共识讨论 / 多数投票 / 专家裁决]
 
 ## 5. Ground Truth 定义
@@ -220,7 +241,7 @@ status: draft
 ## 8. 外部验证计划
 - External cohort: [来源、时间、中心；与开发集的差异]
 - Timing: [同期 / 后续研究]；无外部验证时写明理由并列入 Limitations
-- Success criteria: [预设的性能下限]
+- Success criteria: [预设的性能下限及依据（如现有工具或专家的已报道水平，写出处）]
 
 ## 9. 可复现性
 - Seed: [固定值]; environment: [requirements.txt / Docker]; hardware: [ ]
@@ -261,6 +282,8 @@ research_question: [描述性/解释性问题，不是假设检验]
 registration: N/A（或 OSF 预注册）
 status: draft
 
+## 真实条件与设计理由（见上方通用节；"病例"换成能接触到的受访者与访谈资源）
+
 ## Methodology
 [选择的方法论及理由]
 
@@ -270,7 +293,7 @@ status: draft
 ## Participants
 - Target population: [描述]
 - Sampling strategy: [目的性抽样类型]
-- Estimated sample size: [范围] (until saturation; 饱和判断方式: [ ])
+- Estimated sample size: [按本研究问题的宽窄、受访者同质程度和访谈深度估计的范围 + 理由] (until saturation; 饱和判断方式: [ ])
 - Inclusion/exclusion criteria: [列表]
 - Recruitment method: [描述]
 
@@ -315,6 +338,8 @@ research_question: [描述性问题]
 registration: N/A（或 OSF 预注册）
 status: draft
 
+## 真实条件与设计理由（见上方通用节；"病例"换成可触达的目标人群、抽样框与发放渠道）
+
 ## Survey Type
 [Cross-sectional / Questionnaire development / Validation / Delphi]
 
@@ -331,8 +356,8 @@ status: draft
 ## Sampling
 - Strategy: [抽样方法]
 - Inclusion/exclusion criteria
-- Sample size: [N] (计算依据: [公式和参数，见 references/survey-reference.yaml])
-- Expected response rate: [%]
+- Sample size: [按 Step 3 的计算结果填写] (计算依据: [公式和参数，见 references/survey-reference.yaml；预期比例 / 精度的出处])
+- Expected response rate: [预计比例 + 依据（同类调查文献或预调查）]
 
 ## Psychometric Properties (if validation)
 - Content validity: [方法]
@@ -352,9 +377,9 @@ status: draft
 - Reminders: [策略]
 
 ## Analysis Plan
-- Descriptive: 频数(%)、均值±SD
-- Factor analysis: EFA (principal axis, oblimin rotation) → CFA
-- Reliability: Cronbach's alpha, ICC
+- Descriptive: [按变量类型与分布：频数(%) / 均值±SD / 中位数(IQR)]
+- Factor analysis（量表开发 / 验证时）: [EFA 的提取与旋转方法 + 选择理由 → CFA（独立样本）]
+- Reliability: [Cronbach's alpha / McDonald's omega / 重测 ICC，按研究目的选]
 - Group comparisons: [如适用；详细 → `data-analysis-planning`]
 
 ## Ethics

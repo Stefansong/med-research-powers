@@ -1,5 +1,7 @@
 # B. Narrative Review
 
+> **章节结构是期刊的通用要求；内容必须来自本项目的实际产物，不写套话；缺少的数据写 `[待补：来源]` 占位，不编造。**
+
 > 由 `manuscript-writing` SKILL.md 的 Article Type Router 按需加载。适用：自由组织主题、不要求系统检索的综述（含受邀综述、教学性综述、State-of-the-art review）。
 
 ## 前置依赖

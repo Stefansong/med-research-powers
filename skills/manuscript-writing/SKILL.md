@@ -7,7 +7,7 @@ description: Use when drafting a medical research manuscript (original research 
 
 ## Overview
 
-撰写医学研究论文——支持原始研究（IMRaD）和综述类文章（Narrative / Systematic / Meta-Analysis / Scoping / Mini-Review）。核心原则：**不虚构数据、结果或参考文献；每一个数字都能回溯到 `results-summary.md`。**
+撰写医学研究论文——支持原始研究（IMRaD）和综述类文章（Narrative / Systematic / Meta-Analysis / Scoping / Mini-Review）。核心原则：**不虚构数据、结果或参考文献；每一个数字都能回溯到 `results-summary.md` 或分析输出。** 顺序固定：先盘点项目里实际有哪些产物、目标期刊要求什么、读者是谁 → 列出每节的要点提纲（每条要点标明出处）→ 按 checkpoint_mode 确认 → 再写全文。类型文件和期刊模板只给章节结构，内容必须来自本项目的产物。
 
 ## When to Use
 
@@ -63,23 +63,48 @@ description: Use when drafting a medical research manuscript (original research 
 
 加载模板只用脚本（见下方 Journal Template 节），**禁止整读 `journal-templates.yaml`**。
 
-### Step 3：按类型文件的写作顺序逐章写作
+### Step 3：盘点实际产物 → 列要点提纲 → 按 checkpoint_mode 确认
+
+写全文之前，先看清楚手里有什么、期刊要什么、写给谁：
+
+1. **盘点项目里的实际产物**（原始研究如下；综述按类型文件的前置依赖表盘点 `literature-synthesis` 产物）：
+
+   | 产物 | 写作时用来做什么 |
+   |------|----------------|
+   | `results-summary.md` 及分析输出的结果表 | Results、Abstract 里的每个数字 |
+   | `analysis-log.md` | 与 SAP 的偏离——每条都要在 Methods 或 Limitations 如实写明 |
+   | `figure-legends.md`、图文件、`figure-plan.md` | 图表编号，正文 / 补充材料的分配 |
+   | `study-protocol.md` | 设计、纳排、结局定义、样本量依据、"真实条件与设计理由" |
+   | `analysis-plan.md` | 统计方法 |
+   | `ethics-statement.md` | 伦理批准号、知情同意 / 豁免、注册号 |
+
+   缺哪个就在提纲里标出，对应内容写 `[待补：来源]`，不编造。
+2. **目标期刊要求**：Step 2 取到的 `word_limit`、`abstract` 格式、`figures` / `tables` 上限、`sections` 顺序、`special`。
+3. **读者是谁**：期刊的主要读者（专科医生 / 全科临床医生 / 方法学或 AI 研究者）决定背景写多深、术语解释到什么程度、临床意义怎么讲。
+4. **写 `manuscript-outline.md`**（项目根目录）：每一节列要点，每条要点标明出处（产物文件 + 节 / 表 / 图；数字写到具体位置，如"主要结局效应量 → `results-summary.md` 的 Primary Outcome 表"），并按期刊字数限制给各节分配字数。SAP 偏离逐条列进 Methods 或 Limitations 的要点。
+5. 把提纲给用户看，按 `checkpoint_mode`：`step` 等用户确认后再写全文；`light` / `auto` 展示后直接写，用户随时可以改。只写某一节（如只写 Methods）时，只列这一节的提纲。
+
+### Step 4：按提纲和类型文件的写作顺序逐章写作
 
 - 每章写入 `manuscript/<section>.md`（文件名见 Output）；写作时对照类型文件的章节规则与报告规范条目。
+- 内容来自本项目的实际产物：每句话要么有产物支撑，要么是有引用的已有知识；不写没有具体信息的套话（如只说"具有重要临床意义"而不说意义在哪）。
+- Results 的每个数字都要能在 `results-summary.md` 或分析输出里找到出处（提纲里的出处保留到自检）；`analysis-log.md` 里的每条 SAP 偏离，在 Methods（改了什么、为什么）或 Limitations（对结论可能的影响）中如实写明。
 - 每写完一章，对照模板的 `word_limit` / `abstract` 字数**实时检查**，超限先删冗余再压缩。
-- 未定稿处用 `<!-- PLACEHOLDER: 说明 -->` 或 `[TBD]` 标注，**不要用看起来像真数据的占位值**（导出脚本会检测这些标记）。
+- 缺数据或未定稿处用 `[待补：来源]`、`<!-- PLACEHOLDER: 说明 -->` 或 `[TBD]` 标注，**不要用看起来像真数据的占位值**（导出脚本检测 `PLACEHOLDER` / `[TBD]` 等标记；`[待补：…]` 由 Step 6 的自检查找）。
 - 引用：写作时标记来源（PMID/DOI）；格式化用 `pubmed-search` Mode 6；写综述 Methods 检索策略可用 Mode 1。调用 PubMed MCP 时写法为 `mcp__<server名>__get_article_metadata(pmids=[...])`，server 名以当前会话工具列表为准（claude.ai 连接器为 `claude_ai_PubMed`，本地常见为 `PubMed`）。引用状态标记：✅ Verified / ⚠️ Not found / ❌ Mismatch / ⏳ Unverified (tool error，重试) / ℹ️ Non-PubMed（用 DOI/WebSearch 核对）；最终逐条验证由 `pre-submission-verification` Gate 3 完成。
 
-### Step 4：期刊特殊元素
+### Step 5：期刊特殊元素
 
 按模板 `special` 字段补齐：JAMA 家族 → `key-points.md`；Lancet 家族（含 eClinicalMedicine、eBioMedicine）→ `research-in-context.md`；European Urology 家族 → Patient Summary + Take Home Message；Nature 家族 → Reporting Summary、Data/Code availability。
 
-### Step 5：自检与收尾
+### Step 6：自检与收尾
 
 1. 对照 Convergence 逐条自检；语言规则检查（见 Language Rules）。
-2. 输出 3–5 行摘要（产物清单、目标期刊与字数、待注意的 placeholder），默认直接进入下一步；用户要求"逐步确认"时等确认。
-3. 更新项目目录 `.mrp-state.json`（`python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`，记录 `completed_skills` 与 `artifacts.manuscript/`）。
-4. 下一步 → `peer-review-simulation`。
+2. 数字溯源：逐个核对 Results / Abstract / Key Points 里的数字，都能在 `results-summary.md` 或分析输出里找到（找不到的删掉，或回 `statistical-analysis` 补）；`analysis-log.md` 的每条 SAP 偏离都已写进 Methods 或 Limitations。
+3. 查占位：`grep -rnE "待补|TBD|PLACEHOLDER" manuscript/`，剩下的占位逐条列进摘要的"需要注意"。
+4. 输出 3–5 行摘要（产物清单、目标期刊与字数、待注意的 placeholder），默认直接进入下一步；用户要求"逐步确认"时等确认。
+5. 更新项目目录 `.mrp-state.json`（`python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`，记录 `completed_skills` 与 `artifacts.manuscript/`）。
+6. 下一步 → `peer-review-simulation`。
 
 ## Journal Template（期刊排版规范）
 
@@ -120,6 +145,8 @@ manuscript/
 └── research-in-context.md      ← 可选：Lancet 家族必须（Evidence before / Added value / Implications）
 ```
 
+写作提纲 `manuscript-outline.md`（Step 3）放在项目根目录，不放进 `manuscript/`（否则导出报告会把它列为"未导出的文件"）。
+
 文件名与 `manuscript-export` 的 section id 一一对应：`key-points` 与 `research-in-context` 由导出脚本按期刊 `family` 决定是否纳入及位置（JAMA：Key Points 在 Abstract 之前；Lancet：Research in Context 在 Introduction 之前；其他家族有这两个文件也不会导出，报告里会提示）。综述类的 `section-N-*.md` 导出前需合并进 `discussion.md`。
 
 数据表格需要 Excel 时（可选）：
@@ -143,6 +170,7 @@ with pd.ExcelWriter("manuscript_tables.xlsx", engine="openpyxl") as writer:
 
 | 想法 | 现实 |
 |------|------|
+| "照类型文件 / 期刊模板把各节填满" | 章节结构来自模板，内容必须来自本项目的产物；没出处的句子删掉，缺数据写 `[待补：来源]` |
 | "先写 Introduction" | 原始研究 Methods 最容易先写；综述先做 Outline |
 | "Results 里解释一下结果" | Results 只放数据，解释留给 Discussion |
 | "Discussion 补充几个新分析" | 禁止引入 Results 没有的数据 |
@@ -160,18 +188,21 @@ with pd.ExcelWriter("manuscript_tables.xlsx", engine="openpyxl") as writer:
 ## Convergence
 
 当以下条件全部满足时完成：
-1. 所有章节均已完成（按类型文件的 Output Structure）
-2. 所有图表已在正文引用，编号连续
-3. 参考文献完整、每条有 PMID/DOI 或标注 ℹ️ Non-PubMed
-4. 语言规范检查通过
-5. 正文与摘要字数在目标期刊模板限制内（用脚本取到的 `word_limit` / `abstract`）
-6. 期刊特殊要求已满足（Key Points / Research in Context / Patient Summary 等）
-7. 综述类：PRISMA / PRISMA-ScR checklist 已完成（如适用）
-8. `.mrp-state.json` 已更新
+1. `manuscript-outline.md` 已写好（每条要点标出处）并按 checkpoint_mode 确认
+2. 所有章节均已完成（按类型文件的 Output Structure）
+3. Results / Abstract 的每个数字都能在 `results-summary.md` 或分析输出里找到出处；`analysis-log.md` 的 SAP 偏离已在 Methods 或 Limitations 如实写明
+4. 所有图表已在正文引用，编号连续
+5. 参考文献完整、每条有 PMID/DOI 或标注 ℹ️ Non-PubMed
+6. 语言规范检查通过
+7. 正文与摘要字数在目标期刊模板限制内（用脚本取到的 `word_limit` / `abstract`）
+8. 期刊特殊要求已满足（Key Points / Research in Context / Patient Summary 等）
+9. 综述类：PRISMA / PRISMA-ScR checklist 已完成（如适用）
+10. 剩余的 `[待补：…]` / `[TBD]` 占位已列给用户；`.mrp-state.json` 已更新
 
 ## Red Flags — STOP
 
 - Results 中没有的数字出现在 Discussion / Abstract → 停，禁止引入未分析的数据
+- Results 的数字在 `results-summary.md` / 分析输出里找不到出处，或 `analysis-log.md` 记录的 SAP 偏离在 Methods / Limitations 中没写 → 停，补出处或如实写明
 - 虚构数据、结果或参考文献 → 绝对禁止，立即停止
 - 缺少必须的前置文件（按类型文件的前置依赖表）就开始写对应章节 → 停，先补齐
 - "significantly" 用于非统计学语境 / "prove" 表述 → 停，改为规范措辞
