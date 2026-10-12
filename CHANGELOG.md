@@ -1,5 +1,17 @@
 # Changelog
 
+## v6.4.2 (2026-10-11)
+
+Journal data patch: **27 more entries re-checked** against the journals' own author-guideline pages; **160 of the 240 entries remain unverified** (no `guidelines_checked`). No skill, script or count changes.
+
+- **Re-checked (27, `guidelines_checked: 2026-09` + `guidelines_source`)**: JAMA, JAMA Oncology, JAMA Surgery, The BMJ, BJS, BMC Medicine, and 21 Wolters Kluwer journals — Medicine, Annals of Surgery, Hepatology, Neurology, CORR, AJSP, JASN, CJASN, Chinese Medical Journal, International Journal of Surgery, Neurosurgery, Plastic and Reconstructive Surgery, Transplantation, Investigative Radiology, Obstetrics & Gynecology, Anesthesiology, European Journal of Anaesthesiology, Anesthesia & Analgesia, Nursing Research, Spine, Otology & Neurotology. The pages were read directly in a browser (Wolters Kluwer instructions via their ovid.com / Editorial Manager copies); Neurology, JASN and CJASN come from search snippets of the official pages and say so in a `special` item.
+- **Limits corrected** (13 word limits, 13 abstracts, 15 reference fields, 12 figure/table fields), e.g. The BMJ sets no fixed word limit for research articles and allows 250–300-word abstracts (400 for CONSORT/PRISMA); JAMA, JAMA Oncology and JAMA Surgery allow 5 tables and/or figures in total, not 5 of each; Annals of Surgery 3000 words, ≤50 references, ≤5 figures + tables; Hepatology 6000 words including references, ≤8 figures + tables; Transplantation 4000 words and ≤30 references (January 2026 revision); Spine 2700 words; Neurosurgery 2750 words; Anesthesia & Analgesia 4000 words with a ≤400-word abstract; Obstetrics & Gynecology ≤30 references and ≤5 figures + tables; Nursing Research 16 pages; BJS has no reference limit.
+- **Other corrections**: submission system for Neurology (eJournalPress) and for Chinese Medical Journal, Neurosurgery, Plastic and Reconstructive Surgery, Anesthesiology, Anesthesia & Analgesia and Spine (Editorial Manager, not ScholarOne); International Journal of Surgery is published by Wolters Kluwer; citation style added to 9 more entries (141 entries still give only a count); 21 impact factors refreshed with `IF_year` / `IF_source` (82 entries now carry `IF_year`). Wolters Kluwer's ovid.com pages show the IF without a year; their category sizes are JCR 2025's, so they are recorded as 2025 (rule added to the file header).
+- **Not guessed**: where a page does not state a limit the library had (e.g. no reference cap for JAMA Original Investigation), the value is kept and a `待核实` item says so (17 entries). The Journal of Urology guidelines and the Lancet family pages could not be read and are unchanged.
+- **The remaining 160 entries are not being refreshed in bulk.** The file header now says to look up a journal's current author guidelines whenever an entry without `guidelines_checked` is used.
+
+---
+
 ## v6.4.1 (2026-09-24)
 
 Fix release after a repository-wide audit of 6.4 (7 parallel reviews, each verified by an independent reviewer; every finding below was reproduced or checked against its source), in two rounds: the findings that gave wrong results or leaked data first, then every remaining finding. No new skills; several script CLIs gain options (listed below).

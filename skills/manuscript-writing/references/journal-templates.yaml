@@ -18,14 +18,21 @@
 #   IF_year / IF_source were refreshed 2026-09 from publisher pages (IF_year =
 #   JCR data year; 2025 = JCR release of 2026-06). Elsevier/ScienceDirect pages
 #   show the IF without a year — those values were recorded 2026-09 and are
-#   JCR 2025. All other IF_approx values are still JCR 2022; APC figures are
+#   JCR 2025. Wolters Kluwer journal pages on ovid.com also omit the year; the
+#   values recorded there in 2026-09 use the JCR 2025 category sizes (e.g.
+#   Surgery n=321, vs 312 in JCR 2024), so they are recorded as IF_year 2025.
+#   All other IF_approx values are still JCR 2022; APC figures are
 #   2022 list prices unless apc_year is given — always state the year and
 #   re-check with WebSearch before quoting them in a report.
 #   guidelines_checked (e.g. "2026-09") marks entries whose author-guideline
-#   fields were re-checked that month (guidelines_source = the page used; most
-#   publisher pages were only reachable through search snippets, so treat them as
-#   a good starting point, not a substitute for the journal's own instructions).
-#   Entries without guidelines_checked have not been re-verified since 2023.
+#   fields were re-checked that month (guidelines_source = the page used). In
+#   the first 2026-09 pass most publisher pages were only reachable through
+#   search snippets; the 27 entries added in a second pass were read on the
+#   official pages, except where a `special` item says "search snippets". Treat
+#   all of them as a good starting point, not a substitute for the journal's own
+#   instructions.
+#   Entries without guidelines_checked have not been re-verified since 2023 —
+#   look up the journal's current author guidelines when the entry is used.
 #   A `special` item starting with "待核实" names a value that could not be checked.
 #
 # How to contribute:
@@ -158,19 +165,21 @@ templates:
     word_limit: 3000
     abstract: structured (Importance, Objective, Design/Setting/Participants, Interventions/Exposures, Main Outcomes and Measures, Results, Conclusions and Relevance), ≤350 words
     references: ≤40, AMA style (superscript numbered)
-    figures: ≤5
+    figures: ≤5 (figures and/or tables combined)
     figure_format: "TIFF/EPS/PPT, ≥300 DPI"
-    tables: ≤5
+    tables: ≤5 (figures and/or tables combined)
     sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - "Key Points box required (Question, Findings, Meaning — ≤100 words total)"
       - "eTable/eFigure for supplementary"
       - "Mandatory statistical review"
       - "Structured abstract with 7 headings"
-      - '待核实: flagged — JAMA Original Investigation may allow up to ~50–75 references and ≤5 tables and/or figures combined; jamanetwork.com instructions not readable in 2026-09 review (only third-party summaries found)'
+      - "待核实: reference limit (≤40) not stated in the 2026-09 author guidelines — confirm before trimming references"
     cover_letter: required
     orcid: recommended
     system: eJournalPress (manuscripts.jama.com)
+    guidelines_checked: 2026-09
+    guidelines_source: https://jamanetwork.com/journals/jama/pages/instructions-for-authors
     family: jama
 
   - id: bmj
@@ -179,8 +188,8 @@ templates:
     IF_approx: 55.1
     IF_year: 2025
     IF_source: "https://bmjgroup.com/publishing-and-events/"
-    word_limit: 4000
-    abstract: structured (Objectives, Design, Setting, Participants, Main outcome measures, Results, Conclusions), ≤250 words
+    word_limit: no fixed limit (research articles; state the main-text word count at submission)
+    abstract: structured (Objectives, Design, Setting, Participants, Interventions, Main outcome measures, Results, Conclusions, Trial registration), 250–300 words (up to 400 for CONSORT/PRISMA abstracts)
     references: ≤40, Vancouver (numbered)
     figures: ≤6
     figure_format: "TIFF/JPEG/EPS, ≥300 DPI"
@@ -191,9 +200,12 @@ templates:
       - "Patient and public involvement statement"
       - "Transparency statement"
       - "EQUATOR checklist required"
+      - "待核实: reference limit (≤40) and figure/table limits (≤6 each) not stated for research articles in the 2026-09 author guidelines — confirm"
     cover_letter: required
     orcid: required
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.bmj.com/about-bmj/resources-authors/article-types
     family: standard
 
   - id: annals-internal-medicine
@@ -238,22 +250,29 @@ templates:
       - "Data availability mandatory"
     apc_year: 2026
     system: Springer Nature submission system (SNAPP)
+    guidelines_checked: 2026-09
+    guidelines_source: https://link.springer.com/journal/12916/submission-guidelines/research-articles
     family: standard
 
   - id: medicine
     journal: Medicine
     publisher: Wolters Kluwer
-    IF_approx: 1.6
+    IF_approx: 2.0
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/md-journal
     word_limit: no strict limit
-    abstract: structured, ≤250 words
-    references: unlimited, Vancouver
+    abstract: structured, ≤350 words
+    references: unlimited, AMA
     figures: unlimited
     tables: unlimited
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
-      - "APC: ~$1800"
       - "Rapid review process"
+      - "APC: $2,250 (Original Studies, CC BY 4.0; journal instructions 2026-09)"
+      - No longer accepts narrative reviews (since 2025-01-14); study protocols and animal studies not accepted
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.ovid.com/jnls/md-journal/pages/instructions-for-authors
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -310,13 +329,16 @@ templates:
     word_limit: 3000
     abstract: structured (same as JAMA), ≤350 words
     references: ≤40, AMA style
-    figures: ≤5
-    tables: ≤5
+    figures: ≤5 (figures and/or tables combined)
+    tables: ≤5 (figures and/or tables combined)
     sections: same as JAMA
     special:
       - "Key Points box required"
       - "JAMA formatting rules apply"
+      - "待核实: reference limit (≤40) not stated in the 2026-09 author guidelines — confirm before trimming references"
     system: eJournalPress (JAMA Network)
+    guidelines_checked: 2026-09
+    guidelines_source: https://jamanetwork.com/journals/jamaoncology/pages/instructions-for-authors
     family: jama
 
   - id: annals-oncology
@@ -359,19 +381,20 @@ templates:
   - id: annals-surgery
     journal: Annals of Surgery
     publisher: Wolters Kluwer
-    IF_approx: 6.4
-    IF_year: 2024
-    IF_source: "https://mediakits.wkadcenter.com/mediakit/annals-surgery"
-    word_limit: 3500
+    IF_approx: 7.4
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/annalsofsurgery
+    word_limit: 3000
     abstract: structured, ≤250 words
-    references: ≤40, Vancouver
-    figures: ≤6
-    tables: ≤6
+    references: ≤50, AMA
+    figures: ≤5 (figures and/or tables combined)
+    tables: ≤5 (figures and/or tables combined)
     sections: "Abstract, Mini-Abstract (≤50 words), Introduction, Methods, Results, Discussion, References"
     special:
       - "Mini-abstract required (≤50 words)"
-      - "IF 6.4 from Wolters Kluwer 2026 media kit (rank 10/312 in Surgery = JCR 2024 category size); journals.lww.com not reachable — verify"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://edmgr.ovid.com/annsurg/accounts/ifauth.htm
     family: standard
 
   - id: jama-surgery
@@ -383,12 +406,15 @@ templates:
     word_limit: 3000
     abstract: structured (same as JAMA), ≤350 words
     references: ≤40, AMA style
-    figures: ≤5
-    tables: ≤5
+    figures: ≤5 (figures and/or tables combined)
+    tables: ≤5 (figures and/or tables combined)
     sections: same as JAMA
     special:
       - "Key Points box required"
+      - "待核实: reference limit (≤40) not stated in the 2026-09 author guidelines — confirm before trimming references"
     system: eJournalPress (JAMA Network)
+    guidelines_checked: 2026-09
+    guidelines_source: https://jamanetwork.com/journals/jamasurgery/pages/instructions-for-authors
     family: jama
 
   - id: bjs
@@ -398,15 +424,16 @@ templates:
     IF_year: 2025
     IF_source: "https://academic.oup.com/bjs"
     word_limit: 3000
-    abstract: structured (Introduction, Method, Results, Conclusion), <250 words
-    references: ≤40, Vancouver
+    abstract: structured (Background, Methods, Results, Conclusion), <250 words (300 for RCTs)
+    references: no fixed limit, Vancouver
     figures: ≤5 (tables and/or figures combined)
     tables: included in figure limit
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Collaborative authorship accepted"
-      - "Guidelines checked: https://academic.oup.com/bjs/pages/general-instructions (accessed 2026-09)"
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://academic.oup.com/bjs/pages/general-instructions
     family: standard
 
   - id: surgical-endoscopy
@@ -582,16 +609,20 @@ templates:
   - id: hepatology
     journal: Hepatology
     publisher: Wolters Kluwer / AASLD
-    IF_approx: 14
-    word_limit: 4000
-    abstract: unstructured, ≤275 words
-    references: ≤60
-    figures: ≤7
-    tables: ≤5
+    IF_approx: 18.0
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/hep
+    word_limit: 6000 (including references)
+    abstract: structured (Background & Aims, Approach & Results, Conclusions), ≤250 words
+    references: no fixed limit (counted in 6000-word limit), AMA
+    figures: ≤8 (figures and/or tables combined)
+    tables: ≤8 (figures and/or tables combined)
     sections: "Abstract, Graphical Abstract, Introduction, Patients and Methods, Results, Discussion, References"
     special:
-      - "Graphical abstract required"
+      - "Graphical abstract: guidance given in the instructions, not stated as required"
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://edmgr.ovid.com/hep/accounts/ifauth.htm
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -667,9 +698,11 @@ templates:
   - id: neurology
     journal: Neurology
     publisher: Wolters Kluwer / AAN
-    IF_approx: 10
-    word_limit: 3000
-    abstract: structured (Background and Objectives, Methods, Results, Discussion), ≤250 words
+    IF_approx: 8.9
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/neurology
+    word_limit: 4500
+    abstract: structured (Background and Objectives, Methods, Results, Discussion), ≤350 words
     references: ≤40
     figures: ≤6
     tables: ≤4
@@ -677,7 +710,11 @@ templates:
     special:
       - "Classification of Evidence scheme required (Class I-IV)"
       - "Glossary for abbreviations"
-    system: ScholarOne
+      - Author guidelines checked 2026-09 from search snippets of www.neurology.org (page not readable) — confirm against the current instructions
+      - "待核实: reference, figure and table limits not confirmed in 2026-09 (neurology.org author center not readable)"
+    system: eJournalPress (neurology.msubmit.net)
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.neurology.org/neurology-journals-author-center
     family: standard
 
   - id: jama-neurology
@@ -905,9 +942,11 @@ templates:
   - id: corr
     journal: Clinical Orthopaedics and Related Research (CORR)
     publisher: Wolters Kluwer
-    IF_approx: 4
+    IF_approx: 4.3
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/clinorthop
     word_limit: 3500
-    abstract: structured, ≤300 words
+    abstract: structured (Background, Questions/purposes, Patients and Methods, Results, Conclusion), no fixed word limit
     references: ≤40
     figures: ≤6
     tables: ≤4
@@ -915,7 +954,11 @@ templates:
     special:
       - "Level of Evidence (I-V) required"
       - "Clinical Relevance statement"
+      - "Reference style: CORR house style — citations as bracketed numbers, reference list alphabetized (not Vancouver/AMA)"
+      - "待核实: no text, reference, figure or table limits stated for Clinical Research Articles in the 2026-09 instructions — library values (3500 words, ≤40 refs, ≤6 figures, ≤4 tables) unconfirmed"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://edmgr.ovid.com/corr/accounts/ifauth.htm
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -1002,14 +1045,20 @@ templates:
   - id: ajsp
     journal: American Journal of Surgical Pathology
     publisher: Wolters Kluwer
-    IF_approx: 5
+    IF_approx: 4.2
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/ajsp
     word_limit: 4000
     abstract: unstructured, ≤250 words
-    references: ≤50
+    references: ≤50, AMA
     figures: ≤10
     tables: ≤5
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - "待核实: word, reference, figure and table limits (4000 / ≤50 / ≤10 / ≤5) not stated in the 2026-09 instructions — confirm"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: http://edmgr.ovid.com/ajsp/accounts/ifauth.htm
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -1086,8 +1135,10 @@ templates:
   - id: jasn
     journal: Journal of the American Society of Nephrology (JASN)
     publisher: ASN / Wolters Kluwer
-    IF_approx: 10
-    word_limit: 4000
+    IF_approx: 9.7
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/jasn
+    word_limit: 3500 (Clinical Research); 4500 (Basic Research)
     abstract: structured, ≤250 words
     references: ≤50
     figures: ≤8
@@ -1095,7 +1146,11 @@ templates:
     sections: "Abstract, Significance Statement, Introduction, Methods, Results, Discussion, Disclosures, References"
     special:
       - "Significance Statement required (≤100 words)"
+      - Author guidelines checked 2026-09 from search snippets of journals.lww.com (page not readable) — confirm against the current instructions
+      - "待核实: abstract, reference, figure and table limits not confirmed in 2026-09"
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://journals.lww.com/asnjournals/Pages/Information-for-Authors
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -1253,7 +1308,9 @@ templates:
   - id: chinese-medical-journal
     journal: Chinese Medical Journal
     publisher: Chinese Medical Association / Wolters Kluwer
-    IF_approx: 6
+    IF_approx: 9.1
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/cmj
     word_limit: 5000
     abstract: structured, ≤300 words
     references: ≤40, Vancouver
@@ -1263,7 +1320,11 @@ templates:
     special:
       - "Chinese and English abstracts"
       - "ORCID required"
-    system: ScholarOne
+      - "待核实: reference limit (≤40) and figure/table limits not stated in the 2026-09 instructions — confirm"
+      - "Publication charge (2026-09 instructions): USD 320 per print page for authors outside China; CNY 1600 per page for authors in China"
+    system: Editorial Manager (editorialmanager.com/cmj)
+    guidelines_checked: 2026-09
+    guidelines_source: http://edmgr.ovid.com/cmj/accounts/ifauth.htm
     family: standard
 
   - id: science-bulletin
@@ -1436,17 +1497,23 @@ templates:
 
   - id: international-journal-surgery
     journal: International Journal of Surgery
-    publisher: Elsevier / Wolters Kluwer
-    IF_approx: 15
+    publisher: Wolters Kluwer
+    IF_approx: 9.0
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/international-journal-of-surgery
     word_limit: 4000
-    abstract: structured, ≤250 words
-    references: ≤50, Vancouver
+    abstract: structured (Background, Materials and Methods, Results, Conclusion), ≤300 words
+    references: ≤50, AMA
     figures: ≤8
     tables: ≤5
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - "STROCSS/PROCESS checklist for case series"
+      - Highlights mandatory for all original research articles
+      - "待核实: reference limit (≤50) and figure/table limits not stated in the 2026-09 instructions — confirm"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://edmgr.ovid.com/ijs/accounts/ifauth.htm
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -2288,7 +2355,9 @@ templates:
   - id: cjasn
     journal: Clinical Journal of the American Society of Nephrology (CJASN)
     publisher: ASN / Wolters Kluwer
-    IF_approx: 10
+    IF_approx: 7.0
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/cjasn
     word_limit: 3500
     abstract: structured (Background and objectives, Design/setting/participants/measurements, Results, Conclusions), ≤300 words
     references: ≤50
@@ -2297,7 +2366,11 @@ templates:
     sections: "Abstract, Visual Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Visual Abstract encouraged"
+      - Author guidelines checked 2026-09 from search snippets of journals.lww.com (page not readable) — confirm against the current instructions
+      - "待核实: abstract, reference, figure and table limits not confirmed in 2026-09"
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://journals.lww.com/asnjournals/Pages/Information-for-Authors
     family: standard
 
   - id: american-journal-kidney-diseases
@@ -2563,14 +2636,20 @@ templates:
   - id: neurosurgery
     journal: Neurosurgery
     publisher: Wolters Kluwer / CNS
-    IF_approx: 5
-    word_limit: 4000
-    abstract: structured (Background and Objectives, Methods, Results, Conclusion), ≤250 words
+    IF_approx: 3.9
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/neurosurgery
+    word_limit: 2750
+    abstract: structured (Background and Objectives, Methods, Results, Conclusion), ≤300 words
     references: ≤50
     figures: ≤8
     tables: ≤5
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
-    system: ScholarOne
+    special:
+      - "待核实: abstract headings, reference, figure and table limits are in the Neurosurgery Publications formatting chart (journals.lww.com), not readable in 2026-09"
+    system: Editorial Manager (editorialmanager.com/neu)
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.ovid.com/jnls/neurosurgery/pages/instructions-for-authors
     family: standard
 
   - id: acta-neurochirurgica
@@ -2589,16 +2668,21 @@ templates:
   - id: plastic-reconstructive-surgery
     journal: Plastic and Reconstructive Surgery
     publisher: Wolters Kluwer / ASPS
-    IF_approx: 5
-    word_limit: 3500
+    IF_approx: 3.6
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/plasreconsurg
+    word_limit: 3000
     abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
-    references: ≤40, Vancouver
-    figures: ≤8
-    tables: ≤4
+    references: no fixed limit, AMA
+    figures: ≤20 (figure pieces and/or tables combined)
+    tables: ≤20 (figure pieces and/or tables combined)
     sections: "Abstract, Introduction, Patients and Methods, Results, Discussion, Conclusions, References"
     special:
       - "Video content accepted"
-    system: ScholarOne
+      - Each image or panel of a multi-panel figure counts as one figure piece; supplemental digital content up to 10 items (≤8 video clips)
+    system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.ovid.com/jnls/plasreconsurg/pages/instructions-for-authors
     family: standard
 
   - id: aesthetic-surgery-journal
@@ -2632,14 +2716,20 @@ templates:
   - id: transplantation
     journal: Transplantation
     publisher: Wolters Kluwer / TTS
-    IF_approx: 5
-    word_limit: 3500
+    IF_approx: 4.9
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/transplantjournal
+    word_limit: 4000
     abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
-    references: ≤40
-    figures: ≤6
-    tables: ≤4
+    references: ≤30, AMA
+    figures: no fixed limit
+    tables: no fixed limit
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
+    special:
+      - Article types and word limits revised January 2026
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://edmgr.ovid.com/tpa/accounts/ifauth.htm
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -2796,18 +2886,21 @@ templates:
   - id: investigative-radiology
     journal: Investigative Radiology
     publisher: Wolters Kluwer
-    IF_approx: 8.0
-    IF_year: 2024
-    IF_source: "https://mediakits.wkadcenter.com/mediakit/investigative-radiology"
+    IF_approx: 7.9
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/investigativeradiology
     word_limit: 3500
-    abstract: structured (Objectives, Materials and Methods, Results, Conclusions), ≤250 words
-    references: ≤40
+    abstract: structured (Objectives, Materials and Methods, Results, Conclusions), no word limit
+    references: ≤40, AMA
     figures: ≤8
     tables: ≤5
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
-      - "IF 8.0 from Wolters Kluwer 2026 media kit (rank 9/212 in Radiology = JCR 2024 category size); journals.lww.com not reachable — verify"
+      - "待核实: word, reference, figure and table limits (3500 / ≤40 / ≤8 / ≤5) not stated in the 2026-09 instructions — confirm"
+      - Case reports not considered
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: http://edmgr.ovid.com/ir/accounts/ifauth.htm
     family: standard
 
   - id: ajr
@@ -3084,16 +3177,22 @@ templates:
   - id: obstetrics-gynecology
     journal: Obstetrics & Gynecology
     publisher: Wolters Kluwer / ACOG
-    IF_approx: 7
+    IF_approx: 5.1
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/greenjournal
     word_limit: 3000
     abstract: structured (Objective, Methods, Results, Conclusion), ≤250 words
-    references: ≤40, Vancouver
-    figures: ≤6
-    tables: ≤4
+    references: ≤30, Vancouver
+    figures: ≤5 (figures and/or tables combined)
+    tables: ≤5 (figures and/or tables combined)
     sections: "Abstract, Précis, Introduction, Methods, Results, Discussion, References"
     special:
       - "Précis required (≤25 words, 1 sentence)"
+      - "待核实: abstract word limit (≤250) not stated in the 2026-09 instructions"
+      - Introduction ≤250 words and Discussion ≤750 words
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.ovid.com/jnls/greenjournal/pages/instructions-for-authors
     family: standard
 
   - id: bjog
@@ -3254,16 +3353,23 @@ templates:
   - id: anesthesiology
     journal: Anesthesiology
     publisher: Wolters Kluwer / ASA
-    IF_approx: 9
+    IF_approx: 9.4
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/anesthesiology
     word_limit: 4000
-    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
+    abstract: structured (Background, Methods, Results, Conclusions), ≤300 words
     references: ≤50
     figures: ≤6
     tables: ≤4
     sections: "Abstract, Editor's Perspective (What We Already Know, What This Article Tells Us That Is New), Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Editor's Perspective box (editor-written)"
-    system: ScholarOne
+      - "Reference style: journal's own (numbered superscripts, Index Medicus abbreviations) — not mapped to a standard style"
+      - Introduction ≤500 and Discussion ≤1,500 words recommended
+      - "待核实: figure/table limits not stated in the 2026-09 instructions"
+    system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.ovid.com/jnls/anesthesiology/pages/instructions-for-authors
     family: standard
 
   - id: british-journal-anaesthesia
@@ -3286,29 +3392,41 @@ templates:
   - id: european-journal-anaesthesiology
     journal: European Journal of Anaesthesiology
     publisher: Wolters Kluwer / ESAIC
-    IF_approx: 7
-    word_limit: 3000
-    abstract: structured (Background, Objective, Design, Setting, Patients, Interventions, Main Outcome Measures, Results, Conclusion), ≤350 words
-    references: ≤40
+    IF_approx: 7.8
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/ejanaesthesiology
+    word_limit: 3500
+    abstract: structured (Background, Objective, Design, Setting, Patients, Interventions, Main Outcome Measures, Results, Conclusion, Trial registration), ≤300 words
+    references: ≤40, Vancouver
     figures: ≤6
     tables: ≤4
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
+    special:
+      - Key Points (3–5 bullets after the abstract) required for original articles
+      - "待核实: reference limit (≤40) and figure/table limits not stated in the 2026-09 instructions — confirm"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: http://edmgr.ovid.com/eja/accounts/ifauth.htm
     family: standard
 
   - id: anesthesia-analgesia
     journal: Anesthesia & Analgesia
     publisher: Wolters Kluwer / IARS
-    IF_approx: 5
-    word_limit: 3000
-    abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
-    references: ≤40
-    figures: ≤6
-    tables: ≤4
+    IF_approx: 4.7
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/anesthesia-analgesia
+    word_limit: 4000
+    abstract: structured (Background, Methods, Results, Conclusions), ≤400 words
+    references: ≤40 (guidance), AMA
+    figures: ≤6 (figures and/or tables combined)
+    tables: ≤6 (figures and/or tables combined)
     sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, References"
     special:
       - "Key Points box required"
-    system: ScholarOne
+      - Introduction ≤400 words, Discussion ≤1000 words, ≤12 authors; references beyond 40 need justification in the cover letter
+    system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: http://edmgr.ovid.com/aa/accounts/ifauth.htm
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -3528,14 +3646,18 @@ templates:
   - id: nursing-research
     journal: Nursing Research
     publisher: Wolters Kluwer
-    IF_approx: 3
-    word_limit: 4000
-    abstract: structured (Background, Objectives, Methods, Results, Discussion), ≤250 words
-    references: ≤40
-    figures: ≤5
-    tables: ≤4
+    IF_approx: 2.5
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/nursingresearchonline
+    word_limit: 16 pages
+    abstract: structured (Background, Objectives, Methods, Results, Discussion), ≤350 words
+    references: ≤40, APA
+    figures: ≤5 (figures and/or tables combined)
+    tables: ≤5 (figures and/or tables combined)
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://edmgr.ovid.com/nres/accounts/ifauth.htm
     family: standard
 
   - id: journal-advanced-nursing
@@ -3695,17 +3817,23 @@ templates:
   - id: spine
     journal: Spine
     publisher: Wolters Kluwer
-    IF_approx: 4
-    word_limit: 3500
+    IF_approx: 3.7
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/spinejournal
+    word_limit: 2700
     abstract: structured (Study Design, Objective, Summary of Background Data, Methods, Results, Conclusion), ≤300 words
-    references: ≤40
-    figures: ≤6
-    tables: ≤4
+    references: ≤40, Vancouver
+    figures: ≤8
+    tables: ≤5
     sections: "Abstract, Key Points, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Key Points box required"
       - "Level of Evidence required"
-    system: ScholarOne
+      - Mini abstract / précis (≤50 words) required
+      - "待核实: reference limit (≤40) not stated in the 2026-09 instructions — confirm"
+    system: Editorial Manager (spine.edmgr.com)
+    guidelines_checked: 2026-09
+    guidelines_source: http://edmgr.ovid.com/spine/accounts/ifauth.htm
     family: standard
 
   - id: bone-joint-journal
@@ -3911,14 +4039,20 @@ templates:
   - id: otology-neurotology
     journal: Otology & Neurotology
     publisher: Wolters Kluwer
-    IF_approx: 3
-    word_limit: 3000
+    IF_approx: 1.7
+    IF_year: 2025
+    IF_source: https://www.ovid.com/jnls/otology-neurotology
+    word_limit: 3500
     abstract: structured (Objective, Study Design, Setting, Patients, Intervention, Main Outcome Measures, Results, Conclusions), ≤250 words
-    references: ≤40
-    figures: ≤6
-    tables: ≤4
+    references: ≤40, AMA
+    figures: ≤6 (figures and/or tables combined)
+    tables: ≤6 (figures and/or tables combined)
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusion, References"
+    special:
+      - "待核实: reference limit (≤40) not stated in the 2026-09 author guidelines — confirm before trimming references"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: http://edmgr.ovid.com/on/accounts/ifauth.htm
     family: standard
 
   - id: rhinology
