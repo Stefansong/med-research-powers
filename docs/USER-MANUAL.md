@@ -1,6 +1,6 @@
 # Med-Research-Powers 用户手册
 
-> **版本**: v6.4.1 | **仓库**: https://github.com/Stefansong/med-research-powers
+> **版本**: v6.4.2 | **仓库**: https://github.com/Stefansong/med-research-powers
 
 本手册只讲"怎么装、怎么用、出了问题怎么办"。skill 清单、命令表、报告规范表、期刊库这些参考内容都在 [README_CN.md](../README_CN.md)（英文版 [README.md](../README.md)），这里只给链接，不再复制一遍。
 
@@ -384,7 +384,7 @@ CONSORT 2025 从 2010 版的 25 项变为 30 项（含子项共 42 行），新�
 
 ```
 med-research-powers/
-├── .claude-plugin/                   # plugin.json（name: mrp, v6.4.1）、marketplace.json
+├── .claude-plugin/                   # plugin.json（name: mrp, v6.4.2）、marketplace.json
 ├── .github/workflows/ci.yml          # 一致性守卫、pytest、shellcheck、plugin validate、hook 冒烟
 ├── hooks/session-start.sh            # 启动时读取 .mrp-state.json，报告恢复点
 ├── commands/ (7)                     # 斜杠命令（薄路由 → skill）
