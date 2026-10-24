@@ -276,6 +276,18 @@ def test_reviewer_requested_analyses_are_post_hoc_everywhere_in_revision_respons
     methods = next(ln for ln in _read(SKILLS / "manuscript-writing" / "references" / "article-types" / "original.md")
                    .splitlines() if ln.startswith("**Methods**"))
     assert "Post hoc / Exploratory Analyses 表" in methods and "不是偏离" in methods
+    # the references revision-response sends Claude to, and the other skills' routing lines, say the same
+    rr_refs = SKILLS / "revision-response" / "references"
+    for path in (rr_refs / "revision-strategy.yaml", rr_refs / "revision-templates.md",
+                 SKILLS / "team-collaboration" / "references" / "parallel-scenarios.md"):
+        for ln in _read(path).splitlines():
+            assert not re.search(r"SAP\s*偏差", ln), (path.name, ln)
+    assert "Post hoc / Exploratory Analyses 表" in _read(rr_refs / "revision-strategy.yaml")
+    review_line = next(ln for ln in _skill("data-analysis-planning").splitlines() if "审稿阶段补充分析" in ln)
+    assert "不改 SAP" in review_line and "增补 SAP" not in review_line
+    agent3 = _read(SKILLS / "team-collaboration" / "references" / "parallel-scenarios.md")
+    agent3 = agent3[agent3.index("- Agent 3 — 补充分析"):]
+    assert agent3.index("写好分析定义") < agent3.index("执行")
 
 
 def test_descriptive_sap_can_be_extended_and_passes_convergence():

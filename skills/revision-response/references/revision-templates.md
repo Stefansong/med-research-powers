@@ -36,7 +36,7 @@ NOTE: cover-letter / cascade-rewrite templates are NOT here. When改投, defer t
 2. R3 Comment 3 (Major / Rebut): [问题] → Strategy: [证据 + 措辞]
 
 ## New Analyses/Experiments Required
-- [ ] [分析1] — post hoc / exploratory，记入 analysis-log.md SAP 偏差 — estimated time: [X days]
+- [ ] [分析1] — post hoc / exploratory，先在 analysis-log.md 的 Post hoc / Exploratory Analyses 表写定义（不算 SAP 偏离）— estimated time: [X days]
 - [ ] [分析2] — estimated time: [X days]
 
 ## Timeline

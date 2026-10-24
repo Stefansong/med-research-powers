@@ -68,7 +68,7 @@ sub_classification:
     strategy: "感谢 → 补充分析/解释 → 展示证据"
     example: "请解释为什么不用 X 方法"
   - type: "要求补充分析"
-    strategy: "评估可行性 → 执行（标注 post hoc / exploratory，记入 analysis-log.md 的 SAP 偏差）或解释不可行原因"
+    strategy: "评估可行性 → 先在 analysis-log.md 的 Post hoc / Exploratory Analyses 表写分析定义 → 执行并标注 post hoc / exploratory（不算 SAP 偏离，不改 SAP 原文）；或解释不可行原因"
     example: "请增加亚组分析"
   - type: "文字改进"
     strategy: "接受 → 修改 → 标注位置"

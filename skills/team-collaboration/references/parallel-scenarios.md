@@ -54,8 +54,8 @@ PubMed 走 MCP，是数据库检索；WebSearch `site:` 只是补充检索。Emb
 
 - Agent 1 — 处理 Reviewer 1 的全部意见（附上意见原文）。读取 `manuscript/*.md`。只写 `reviewer1-response.md`。
 - Agent 2 — 处理 Reviewer 2 的全部意见（附上意见原文）。读取 `manuscript/*.md`。只写 `reviewer2-response.md`。
-- Agent 3 — 补充分析：Reviewer 3 要求补充 [具体分析]。读取 `data_clean.csv` 与 `analysis-plan.md`，按
-  `${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/SKILL.md` 执行，结果标注 post hoc / exploratory。
+- Agent 3 — 补充分析：Reviewer 3 要求补充 [具体分析]。主代理先在 `analysis-log.md` 的 Post hoc / Exploratory Analyses 表写好分析定义并附在 prompt 里；
+  子代理读取 `data_clean.csv` 与 `analysis-plan.md`，按 `${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/SKILL.md` 只执行这个定义，结果标注 post hoc / exploratory。
   只写 `supplementary-analysis.md` + 对应脚本文件。
 
 每个 prompt 末尾加：「禁止修改 manuscript/ 下任何文件，改动只能写成建议放在你的输出文件里。」

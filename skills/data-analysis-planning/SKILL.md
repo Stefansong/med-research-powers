@@ -204,4 +204,4 @@ description: Use when no analysis-plan.md exists yet, or only a descriptive one 
 ### 可选衔接
 - 组学数据 → `references/omics-methods.md`
 - AI/ML → `references/ai-ml-sap-extension.md`；报告规范逐条清单 → `reporting-standards`
-- 审稿阶段补充分析（`revision-response`）→ 回到本 skill 增补 SAP 并标注 post-hoc
+- 审稿阶段补充分析（`revision-response`）→ 不改 SAP，在 `statistical-analysis` 按其 Step 4 末尾作 post hoc / exploratory 分析；只有要替换 SAP 里原有的分析时才回本 skill 修订（回溯表第一条）
