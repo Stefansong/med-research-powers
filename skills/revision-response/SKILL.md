@@ -10,6 +10,8 @@ description: Use when the user receives a journal revision or reject decision. T
 收到审稿意见后的完整处理流程——从策略制定到逐条回复。Phase 1 对意见分类排序、制定修改计划；
 Phase 2 逐条起草回复、生成 Response Letter。修回稿仍要过 `pre-submission-verification` 6 Gate。
 
+> 总调度规则（直接调用本 skill 也适用，原文见 `${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/SKILL.md`）：**缺前置产物**——说缺什么，light / auto 下先往下做并记缺口，不拒绝；**checkpoint_mode** 默认 light，只在硬确认处等；**只要一个产物**（如只要 response letter 的一段）时交付后停下。
+
 ## When to Use
 
 - 收到 Major/Minor Revision 决策，需要制定修改计划
@@ -21,7 +23,7 @@ Phase 2 逐条起草回复、生成 Response Letter。修回稿仍要过 `pre-su
 ## When NOT to Use
 
 - 投稿前的自我检查 → `peer-review-simulation`
-- 论文未投出 → 先走主线（`pre-submission-verification` → `manuscript-export` → `submission-preparation`）
+- 论文还没投出、也没有审稿意见 → 主线的 `pre-submission-verification` → `manuscript-export` → `submission-preparation`
 - 论文结构或方法问题 → 用对应的写作/分析 skill
 
 ## Workflow
@@ -62,7 +64,8 @@ P3 高难度 Major 和低难度 Minor → P4 高难度 Minor；Rebut 的意见�
   方法被全盘否定 / desk reject / "decision is final" → 改投。判断表见
   `references/revision-strategy.yaml`（`appeal_decision`）。
 - 决定改投后：根据审稿意见改进论文（免费的专家建议）→ 回 `journal-selection` 选下一梯队 →
-  `submission-preparation` 重写 Cover Letter。**本 skill 不重述 cover-letter 模板。**
+  `manuscript-writing` 按新刊的字数和结构调整 → `pre-submission-verification`（Gate 6 按新刊）→
+  `manuscript-export` → `submission-preparation` 重写 Cover Letter。**本 skill 不重述 cover-letter 模板。**
 
 #### Phase 1 Output
 
@@ -81,7 +84,7 @@ Rebut Items + New Analyses + Timeline）。完整模板见 `references/revision-
 #### Step 2: 逐条起草回复
 
 对每条意见生成"Original comment → Response → Changes made（含页码/行号）"结构。**关键：每条
-都必须有 response，每个修改都必须指出具体位置。** 模板见 `references/revision-templates.md`。
+都必须有 response，每个修改都必须指出具体位置。** manuscript-export 导出的 .docx 默认带页码和连续行号，"页码/行号"以重新导出后的文件为准。模板见 `references/revision-templates.md`。
 
 #### Step 3: 修改追踪
 
@@ -91,18 +94,19 @@ Manuscript Location / Status 表）。模板见 `references/revision-templates.m
 #### Step 4: 补充分析（如需要）
 
 审稿人常要求的补充分析：
-- 亚组分析、敏感性分析 → 触发 `statistical-analysis`
+- 亚组分析、敏感性分析等 SAP 之外的分析 → `statistical-analysis`（按其 Step 4 末尾的 post hoc 规则：先在 `analysis-log.md` 写明分析定义，不改 SAP 原文）
+- 要求换 SAP 里原有分析的方法 → 原分析照旧作为预定分析报告，审稿人要的方法按上一条作 post hoc 敏感性分析；确实要替换原分析时按回溯表（`${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/references/backtracking.md`）第一条处理，那才是 SAP 偏离
 - 补充图表 → 触发 `figure-generation`
 - 额外文献 → 触发 `literature-synthesis`（引用先用 `pubmed-search` Mode 3 验证存在）
 
 **规则：审稿人要求的新增分析一律标注为 post hoc / exploratory**（Methods 里写明"应审稿意见新增"，
-Results 里与预定分析分开呈现），并写入 `analysis-log.md` 的 SAP 偏差记录；不得把新增的"显著"结果
+Results 里与预定分析分开呈现），并写进 `analysis-log.md` 的 Post hoc / Exploratory Analyses 表（先写分析定义；不算 SAP 偏离，不改 SAP 原文）；不得把新增的"显著"结果
 改写成主要结论。
 
 #### Step 5: 生成 Response Letter
 
 生成 `response-letter.md`（Dear Editor 开头 + 分 Reviewer 逐条回复 + Summary of Changes）。
-模板见 `references/revision-templates.md`。
+模板见 `references/revision-templates.md`。修稿时用了 AI 辅助技术（含本插件起草回复、补充分析、改图）→ 按 ICMJE 在修回稿相应位置更新 AI 使用声明（写作辅助 → Acknowledgments；数据分析 / 作图 → Methods），在 response letter 给编辑的开头段写一句，并与首投时 cover letter 和投稿系统里的声明一致（见 `submission-preparation` Paragraph 4）；修稿期间发布了预印本或预印本有新版本 → 同样告知编辑并给链接。
 
 ### Phase 3: 修改后自检与收尾
 
@@ -112,6 +116,7 @@ Results 里与预定分析分开呈现），并写入 `analysis-log.md` 的 SAP 
 - [ ] Response Letter 语气 professional（无 defensive/aggressive 措辞）
 - [ ] 修改后的论文通过 `pre-submission-verification` 重新检查 → `manuscript-export` 重新导出
 - [ ] 修改后的字数仍在期刊限制内（Gate 6）
+- [ ] AI 使用声明与预印本信息已按修稿实际情况更新，并与 response letter、投稿系统一致
 - 输出 3–5 行摘要（意见数、Critical 数、Rebut 数、新增分析、截止日）——轻量确认
 - 更新 `.mrp-state.json`（`${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`：
   `completed_skills` 追加 revision-response 及产物、`next_step` 设为 pre-submission-verification）
@@ -132,22 +137,16 @@ Results 里与预定分析分开呈现），并写入 `analysis-log.md` 的 SAP 
 | 想法 | 现实 |
 |------|------|
 | "审稿人的每个要求都必须接受" | 可以 respectfully disagree，但需要证据 |
-| "改完直接交，不用再检查" | 修改可能引入新的不一致——重跑 6 Gate |
 | "Response Letter 越短越好" | 太短显得不认真；太长显得 defensive |
 | "被拒了这论文没希望了" | 大多数论文被拒后改投成功发表 |
-| "这条意见不合理，直接忽略" | 每条都必须回复，忽略 = 拒稿 |
-| "审稿人错了，直接说他错了" | 用证据礼貌说明，不要对抗 |
 | "补充分析太多做不了" | 与编辑沟通哪些可行，不要沉默 |
-| "审稿人要的亚组分析做出来显著，写进结论" | 那是 post hoc，只能作为探索性结果并标注 |
-| "改了就行不用标注位置" | 审稿人需要快速找到修改处 |
-| "拖到最后一天再交" | 提前 3-5 天交，留出检查时间 |
 
 ## Red Flags — STOP
 
 - 有审稿意见没有对应 response（遗漏）→ STOP，每条都必须回复，忽略 = 拒稿
 - response 没有指出具体修改位置（页码/行号）→ 补充，审稿人需要快速定位
 - 语气 defensive/aggressive、直接说"审稿人错了"→ 改为有证据的礼貌措辞
-- 新增分析没有标注 post hoc / exploratory、没记 SAP 偏差 → STOP，补标注
+- 新增分析没有标注 post hoc / exploratory，或没先在 `analysis-log.md` 的 Post hoc / Exploratory Analyses 表写分析定义 → STOP，补标注和定义（新增分析不算 SAP 偏离，不改 SAP 原文）
 - 修改后未重新跑 `pre-submission-verification` → STOP，修改可能引入新的不一致
 - 修改后字数超出期刊限制 → 精简
 - 拖到截止日当天才提交 → 提前 3-5 天，留检查时间
@@ -168,17 +167,17 @@ Results 里与预定分析分开呈现），并写入 `analysis-log.md` 的 SAP 
 
 ## 衔接规则
 
-### 前置依赖
-- **必须**有收到的审稿意见（用户提供）
-- **必须**有投出的稿件（`manuscript/*.md` + `manuscript.docx`）
+### 前置依赖（缺了按总调度"缺前置产物时"处理）
+- 收到的审稿意见（用户提供；没有就向用户要，这是本 skill 唯一离不开的输入）
+- 投出的稿件：`manuscript/*.md` + `manuscript.docx`；不是用 MRP 写的稿件，用用户给的任何格式（.docx / PDF）——没有 Markdown 版不阻断，修改位置按用户的文件标
 
 ### 强制衔接
 - 前接 [投稿]（`submission-preparation` 之后收到审稿意见）
-- 审稿人要求补充分析 → `statistical-analysis`（post hoc 标注 + `analysis-log.md` 偏差记录）
+- 审稿人要求补充分析 → `statistical-analysis`（post hoc 标注 + `analysis-log.md` Post hoc / Exploratory Analyses 表里的分析定义；不算 SAP 偏离，不改 SAP 原文）
 - 审稿人要求补充图表 → `figure-generation`；补充文献 → `literature-synthesis`
 - 修改完成后 → **必须**再次 `pre-submission-verification` → `manuscript-export` → 提交修回稿
 - 完成后 → 更新 `.mrp-state.json`
 
 ### 可选衔接
-- 改投 → `journal-selection`（重新选刊）→ `submission-preparation`（cover-letter cascade rewrite + 投稿；本 skill 只做改投决策）
+- 改投 → `journal-selection`（重新选刊）→ `manuscript-writing`（按新刊调整）→ `pre-submission-verification` → `manuscript-export` → `submission-preparation`（cover-letter cascade rewrite + 投稿；本 skill 只做改投决策）
 - 多位审稿人意见互相独立且量大 → `team-collaboration` 场景 3（子代理各写 `reviewerN-response.md`，主代理串行应用改动）

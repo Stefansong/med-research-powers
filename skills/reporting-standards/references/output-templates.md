@@ -22,7 +22,7 @@ Loaded on demand by reporting-standards Step 4. Two files are produced per check
 | 12b | Eligibility criteria | If applicable, eligibility criteria for sites ... | — | N/A (single-site, no site criteria) |
 | ... | ... | ... | ... | ... |
 
-Status legend: ✅ reported · ⚠️ partially reported · ❌ not reported · N/A not applicable (reason given)
+Status legend: ✅ reported · ⚠️ partially reported · ❌ not reported · ❌ 未写 section not provided yet (partial manuscript; counts as ❌) · N/A not applicable (reason given)
 ```
 
 规则：
@@ -49,13 +49,15 @@ Status legend: ✅ reported · ⚠️ partially reported · ❌ not reported · 
 | Total rows checked | N |
 | ✅ Reported | N |
 | ⚠️ Partial | N |
-| ❌ Not reported | N |
-| ❌ on **critical** items | N  ← Gate 1 passes only when this is 0 |
+| ❌ Not reported | N（其中 ❌ 未写 N） |
+| ❌ on **critical** items | N（含 critical 条目的 ❌ 未写）← Gate 1 passes only when this is 0 |
 | N/A | N |
 
 **Gate 1 verdict:** PASS / FAIL（critical ❌ = N）
 
 ## Critical ❌ (must fix before submission)
+
+（critical 条目的 ❌ 未写也列在这里，Fix 写"补写 <章节> 后重跑"。）
 
 | Item | Topic | What is missing | Where to add | Fix |
 |------|-------|-----------------|--------------|-----|
@@ -79,8 +81,12 @@ Status legend: ✅ reported · ⚠️ partially reported · ❌ not reported · 
 
 ## 3. 无本地 checklist 时的报告写法
 
-standards-index.yaml 里没有 `file:` 字段的规范（如 CONSORT-AI、RECORD、CHEERS、CROSS），不要凭记忆
-编造条目文本。`reporting-compliance-report.md` 的 Checklist source 写"无本地 checklist"，Summary 只
+standards-index.yaml 里没有 `file:` 字段的规范（如 COREQ、MOOSE、PRISMA-S、CONSORT-Cluster、TARGET；
+CONSORT-AI、RECORD、CHEERS、CROSS 都**有**本地清单，按第 1 节逐条查），不要凭记忆编造条目文本。
+主规范 + 扩展时每个规范各按自己有没有 `file:` 处理：例如 CONSORT 2025 + CONSORT-AI 两份都逐条查，
+STARD 2015 + STARD-AI 则 STARD 2015 逐条查，但被 STARD-AI 修改的条目以 STARD-AI 的措辞为准（stard-2015.yaml 只有 STARD 2015 原文、标不出是哪些条目），所以每一行都对照 STARD-AI 官方清单核对；18 条新增或修改的条目按本节处理。
+
+`reporting-compliance-report.md` 的 Checklist source 写"无本地 checklist"，Summary 只
 给出按论文章节的粗检（题目/摘要/方法/结果/讨论各缺什么），并在 Next step 写明：
 
 > 请从 <reference> / EQUATOR Network (https://www.equator-network.org/) 下载官方 checklist，

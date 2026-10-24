@@ -13,14 +13,19 @@ commonly `PubMed`).
 
 ## 场景 1：并行文献检索
 
-主代理判断："需要检索 3 个数据库，互相独立，可并行。" 在同一条消息里发起 3 个 Agent 调用：
+只派本插件工具能执行的检索（规则见 `${CLAUDE_PLUGIN_ROOT}/skills/literature-synthesis/SKILL.md` Step 1 / Step 3）：
+PubMed 走 MCP，是数据库检索；WebSearch `site:` 只是补充检索。Embase、Cochrane Library、Web of Science、Scopus 等
+订阅库**不派子代理**——子代理同样检索不了，主代理把各库检索式交给用户运行并导入导出文件。
+
+主代理判断："PubMed 检索和 WebSearch 补充检索互相独立，可并行。" 在同一条消息里发起 2 个 Agent 调用：
 
 - Agent 1 — PubMed 检索：按 `${CLAUDE_PLUGIN_ROOT}/skills/pubmed-search/SKILL.md` Mode 1，使用
-  `mcp__<server名>__search_articles`。检索式：[具体检索式]。只写 `pubmed-results.md`（标题、PMID、摘要）。
-- Agent 2 — arXiv 检索：使用 WebSearch `site:arxiv.org`。关键词：[具体关键词]。只写 `arxiv-results.md`。
-- Agent 3 — Cochrane 检索：使用 WebSearch `site:cochranelibrary.com`。关键词：[具体关键词]。只写 `cochrane-results.md`。
+  `mcp__<server名>__search_articles`。检索式：[具体检索式]。只写 `pubmed-results.md`（标题、PMID、摘要、`query_translation`、结果数）。
+- Agent 2 — arXiv / medRxiv 补充检索：使用 WebSearch `site:arxiv.org` / `site:medrxiv.org`。关键词：[具体关键词]。
+  只写 `websearch-supplementary-results.md`（每条查询的原文、日期、"Filters: none"、记录）。
 
-→ 主代理：合并去重 → 统一格式 → `screening-log.md`
+→ 主代理：PubMed 结果与用户导入的订阅库导出合并去重；WebSearch 结果记为 "Web search (supplementary)"
+（PRISMA "other methods"，不计入数据库数）→ `screening-log.md`
 
 ## 场景 2：多审稿人模拟（4-Reviewer Panel）
 

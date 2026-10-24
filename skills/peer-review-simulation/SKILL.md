@@ -1,6 +1,6 @@
 ---
 name: peer-review-simulation
-description: Use when simulating peer review of a finished manuscript before the pre-submission check. Triggers on "帮我审一下"、"模拟审稿"、"reviewer会怎么看"、"审稿人会问什么"、"peer review".
+description: Use when simulating peer review of the user's own finished manuscript before the pre-submission check. Triggers on "帮我审一下"、"模拟审稿"、"reviewer会怎么看"、"审稿人会问什么"、"peer review".
 ---
 
 # Peer Review Simulation
@@ -9,6 +9,10 @@ description: Use when simulating peer review of a finished manuscript before the
 
 模拟 4 位审稿人（含 Devil's Advocate），按 0-100 量化评分 + 严重程度分级，由主代理扮演编辑综合决策。
 Critical 问题必须修复后才进入 `pre-submission-verification`。
+
+**只用于用户自己的稿件**（用户是作者之一，或得到全体作者同意）。期刊请用户审的别人的稿件是保密的：ICMJE 关于审稿人使用 AI 的建议要求审稿人对稿件保密，未经期刊允许不得把稿件上传到无法保证保密的软件或 AI 工具，并遵守期刊的 AI 政策；有的期刊直接禁止。本会话本身就是外部 AI 服务，所以这类稿件**不要上传、粘贴或让 AI 读取**，除非编辑部书面允许（并按期刊要求披露）。
+
+> 总调度规则（直接调用本 skill 也适用，原文见 `${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/SKILL.md`）：**缺前置产物**——说缺什么，light / auto 下先往下做并记缺口，不拒绝；**checkpoint_mode** 默认 light，只在 3 个硬确认处等；**只要一个产物**时交付后停下。
 
 ## When to Use
 
@@ -19,6 +23,7 @@ Critical 问题必须修复后才进入 `pre-submission-verification`。
 ## When NOT to Use
 
 - 收到真实审稿意见 → `revision-response`
+- 用户是期刊审稿人、想用本 skill 审**别人投来的稿件** → 不运行；说明稿件保密，未经编辑部允许不能交给 AI 工具（见 Overview）
 - 只想查报告规范 → `reporting-standards`
 - 论文还没写完（缺章节）→ 先 `manuscript-writing`
 
@@ -134,11 +139,12 @@ Recommendation（Accept / Minor / Major / Reject）。
 - 综合分 < 50 → 建议重大修改后再提交审稿模拟
 - Devil's Advocate 发现数据一致性问题 → 转交 `pre-submission-verification` Gate 3
 - 审稿人子代理直接改了 `manuscript/` → 停止，审稿人只写各自的 review 文件
+- 稿件看起来是用户以审稿人身份收到的（期刊审稿邀请、"请审阅这篇投稿"、作者不是用户团队）→ STOP，先问清；是别人的稿件且没有编辑部的书面允许 → 不读取、不评审
 
 ## 衔接规则
 
-### 前置依赖
-- **必须**有完成的论文（`manuscript/*.md`，来自 `manuscript-writing`）
+### 前置依赖（缺了按总调度"缺前置产物时"处理）
+- 用户自己的论文稿（`manuscript/*.md`，或用户给的 .docx / PDF）；还有没写的章节时说明缺哪几节，只审已有部分并在报告里写明
 
 ### 强制衔接
 - 前接 `manuscript-writing`；后接 `pre-submission-verification`（0 Critical 后进入）

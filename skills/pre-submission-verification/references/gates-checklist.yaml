@@ -16,7 +16,7 @@ gate_1:
 
 gate_2:
   name: 统计完整性
-  inputs: ["analysis-plan.md (SAP)", "results-summary.md", "analysis-log.md", "manuscript/*.md"]
+  inputs: ["analysis-plan.md (SAP)", "results-summary.md", "analysis-log.md", "reproduce-check.md", "manuscript/*.md"]
   items:
     - 所有主要结局报告了效应量 + 95% CI（不只 p 值）
     - p 值报告精确值（不只 p < 0.05）
@@ -26,6 +26,7 @@ gate_2:
     - 统计软件及版本已标注
     - 完整的分析脚本（Python/R）已生成，包含版本、随机种子、参数注释
     - 脚本输出数字与论文 Results 逐项核对一致
+    - "重跑一致性证据：reproduce-check.md（statistical-analysis 用 reproduce_check.py --compare-stdout 生成）存在，结论为「一致」（= 退出码 0）；「屏幕输出（stdout）」一行没有「未计入结论」（即加了 --compare-stdout）；「错误输出（stderr）」一行写「未计入结论」不算问题——R 的包加载信息等启动消息常写在 stderr，只有结果写在 stderr（R 的 message()、Python 的 logging）时才须加 --compare-stderr，不要为了过 Gate 而加；报告「需要留意」一节的项（缓存、运行日期、stderr 各次不同等）已逐条处理；报告晚于分析脚本和数据的最后一次修改（脚本改过就重跑）。结论为「不一致」或「未完成」、缺报告、stdout 一行写着「未计入结论」、或报告早于最后一次修改 → ❌"
     - 与 SAP（analysis-plan.md）的任何偏差已在 Methods 中说明理由（本条只在 Gate 2 核对）
     - 探索性分析已明确标注为 "exploratory"，与预定分析区分
   pass_criterion: "以上各条均 ✅（N/A 需写原因）"
@@ -46,7 +47,7 @@ gate_3:
       - "✅ Verified — 找到且标题/作者/年份相符"
       - "⚠️ Not found — 查询成功但无命中"
       - "❌ Mismatch — 找到但作者/年份/标题不符（报告差异）"
-      - "⏳ Unverified (tool error) — 工具报错或连接失败；不等于文献不存在，重试一次后仍失败则列为待人工核对"
+      - "⏳ Unverified (tool error / web search only / not checked) — 工具报错或连接失败，或只凭 WebSearch 找到 / 没有任何途径能核对（见 pubmed-search「没有 PubMed MCP 时」）；不等于文献不存在，工具报错时重试一次，仍未核对则列为待人工核对"
       - "ℹ️ Non-PubMed — 书籍、指南、arXiv 等，改用 DOI / WebSearch 核对"
     gate_rules:
       - "⚠️ Not found / ❌ Mismatch 的引用：作者提供原文 PDF 或 DOI 页面证明存在并修正，否则删除"
@@ -83,7 +84,7 @@ gate_3:
     items:
       - 检查是否有典型的 AI 幻觉模式（过于对称的数据、编造的 p 值、不存在的引用）
       - 确认所有数据来自实际分析，非 AI 生成
-      - 期刊要求时，在 Methods 或 Acknowledgements 声明 AI 工具的使用方式
+      - "按 ICMJE Recommendations 声明 AI 辅助技术的使用（不只在期刊要求时；本插件参与了起草、检索筛选、分析或作图也算）：写作辅助写进 Acknowledgements，数据收集 / 分析 / 作图写进 Methods，写明工具和用途；与 cover letter、投稿系统里的声明一致（见 submission-preparation Paragraph 4；ICMJE 当前条文和目标期刊的 AI 政策投稿前核对）"
   pass_criterion: "Phase A 通过，且 B–F 各条均 ✅"
   on_fail: "引用问题 → 作者核对/删除后重跑 Phase A；数据不一致 → 回 statistical-analysis / manuscript-writing"
 
@@ -106,12 +107,14 @@ gate_5:
   name: 伦理与合规
   via: "读取 research-ethics 的产物 ethics-statement.md，与稿件 Methods / 声明段逐项核对；无该文件则先运行 research-ethics"
   items:
-    - 伦理审查批准号已写入 Methods，且与 ethics-statement.md 一致
-    - 知情同意声明或豁免说明
+    - "伦理审查：批准号已写入 Methods 且与 ethics-statement.md 一致；或研究按规定免除伦理审查时，书面依据（由谁认定、依据哪一条，如《涉及人的生命科学和医学研究伦理审查办法》第三十二条，认定文件编号或日期）已写入 Methods 且与 ethics-statement.md 一致——两样都没有才 ❌"
+    - "知情同意声明，或免除知情同意的说明（伦理委员会批准，写明满足的各项条件），与 ethics-statement.md 一致；免除知情同意不能代替上一条的批准号或免除审查"
     - 利益冲突声明
     - 资金来源声明
     - 数据可用性声明
     - 临床试验注册号（如适用）
+    - "中国医疗卫生机构开展的研究者发起的临床研究：ethics-statement.md 记录了国家医学研究登记备案信息系统的上传 / 备案状态（如适用；期刊不要求时不必写进稿件）"
+    - "数据治理：ethics-statement.md 的数据隐私与数据治理一节没有未解决的缺失项（敏感个人信息的处理依据、出境程序、外部 AI 服务的使用依据、人类遗传资源审批 / 备案，如适用）"
     - 动物研究：伦理委员会名称 + 许可/方案编号（ARRIVE 2.0 item 14）
   pass_criterion: "以上各条均 ✅（不适用的写原因）"
   on_fail: "回 research-ethics"
@@ -120,14 +123,16 @@ gate_6:
   name: 形式检查
   note: "在 Markdown 稿（manuscript/*.md）上检查。最终 .docx 由本 skill 通过后的 manuscript-export 生成，导出后的 export-report.md 会再报一次字数，两者应一致。"
   how:
-    - "运行 python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-export/scripts/export_docx.py --manuscript-dir manuscript --journal <期刊id> --report-only --report gate6-report.md：只出报告不生成 .docx，给出正文（Introduction–Discussion）字数、摘要字数、参考文献数、图表数与占位符"
+    - "运行 python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-export/scripts/export_docx.py --manuscript-dir manuscript --journal <期刊id> --report-only --report gate6-report.md：只出报告不生成 .docx，给出正文字数（按条目 limits.body_excludes 计，如 Nature Medicine 不算 Methods）、摘要字数、参考文献数、图表数（或图表合计）与占位符；非原始研究加 --article-type；报告中 ❓（数不准）、ℹ️ not checked、✅*（条目未核实）都不算通过，需人工核对"
     - "脚本不可用时手工计数：正文字数只算 Introduction–Discussion（不含题页、摘要、参考文献、图表说明）；摘要单独计数；参考文献数 = References 条目数；图表数 = Figure/Table 编号数"
-    - "目标期刊的限制从 journal-selection-report.md 读取，或用 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --id <期刊id> 取 journal-templates.yaml 中该刊的 word_limit / abstract_limit / references / figures"
+    - "目标期刊的限制从 journal-selection-report.md 读取，或用 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --id <期刊id> 取该刊条目的 limits（body_words / body_excludes / abstract_words / references / figures / tables，或图表合计的 display_items、按页限制的 pages、参考值标记 soft）；非原始研究用 limits_by_type.<类型>，没有则查期刊作者指南并记进项目 journal-overrides.yaml；条目没有 guidelines_checked 时把'上限未核实'的警告写进报告并转告用户"
   items:
     - 正文字数在目标期刊限制内
     - 摘要字数在限制内，且结构（结构式/非结构式）符合期刊要求
     - 参考文献数量在限制内
     - 图表数量在限制内
+    - 目标期刊条目未核实（无 guidelines_checked）时：警告已转告用户，上限已在期刊官网确认或在报告中列为待确认
+    - 目标期刊条目有"待核实"项时（get_journal_template.py 的第二行警告）：逐条转告用户并列为待确认，不当作已通过的上限
     - Running title / Short title ≤ 50 字符
     - 关键词 3-6 个
     - 所有缩写首次出现已展开

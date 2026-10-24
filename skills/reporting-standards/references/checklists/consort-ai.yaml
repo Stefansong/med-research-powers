@@ -28,7 +28,7 @@ name: CONSORT-AI
 version: "2020"
 total_items: 14          # 11 extensions + 3 elaborations, each separately numbered
 total_rows: 14
-use_with: ["CONSORT 2025 (consort-2025.yaml) — CONSORT-AI is an extension, not a stand-alone checklist; the CONSORT 2025 statement lists CONSORT-AI among the extensions still to be realigned and says to keep using it", "SPIRIT-AI 2020 for the trial protocol (spirit-ai.yaml)"]
+use_with: ["CONSORT 2025 (consort-2025.yaml) — CONSORT-AI is an extension, not a stand-alone checklist; the CONSORT 2025 statement does not name CONSORT-AI in its list of example extensions, but it tells readers to keep using the existing version of any relevant CONSORT extension until the extensions are realigned with CONSORT 2025", "SPIRIT-AI 2020 for the trial protocol (spirit-ai.yaml)"]
 reference: "Liu et al. BMJ 2020;370:m3164 (doi:10.1136/bmj.m3164); Nat Med 2020;26:1364-1374 (doi:10.1038/s41591-020-1034-x); Lancet Digit Health 2020;2:e537-e548 (doi:10.1016/S2589-7500(20)30218-1)"
 website: "https://www.equator-network.org/reporting-guidelines/consort-artificial-intelligence/"
 applies_to: "Randomised trial reports in which the intervention includes an artificial intelligence / machine learning component (any modality — diagnostic, prognostic, therapeutic)"

@@ -10,6 +10,8 @@ description: Use when the verified, exported manuscript needs a cover letter and
 投稿准备的完整流程——Cover Letter 写作 + 投稿系统操作指南。Step 1 撰写高质量 Cover Letter 抓住编辑注意力；
 Step 2 引导完成投稿系统操作，避免因文件格式或元数据错误被退稿。
 
+> 总调度规则（直接调用本 skill 也适用，原文见 `${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/SKILL.md`）：**缺前置产物**——说缺什么，light / auto 下先往下做并记缺口，不拒绝；但投稿前必须已过 6-Gate（硬确认 3）；**只要一个产物**（如只要 cover letter）时交付后停下。
+
 ## When to Use
 
 - `pre-submission-verification` 6 个 Gate 全部通过、且 `manuscript-export` 已生成 `manuscript.docx` + `export-report.md` 后 → **自动进入**（主线最后一步）
@@ -39,16 +41,18 @@ Cover Letter 是编辑看到的第一样东西。一封好的 Cover Letter 让�
 
 **原则：不超过 1 页。编辑每天看很多 cover letter，你只有几十秒抓住注意力。**
 
-#### Paragraph 1: Hook（为什么这个发现重要）
+#### Paragraph 1: Hook（投的是什么 + 为什么这个发现重要）
 
-- 一句话点明研究解决的问题
-- 连接到 clinical/public health significance
-- **禁止**以 "Dear Editor, we are pleased to submit..." 开头（太老套）
-- **推荐**以研究发现的核心 claim 开头
+- **第一句写明稿件完整标题（与正文、投稿系统完全一致）和文章类型**（Original Article / Research Letter / Systematic Review …）——编辑据此核对稿件和栏目，不能省
+- 紧接着用一两句给出核心发现，再连接到 clinical/public health significance
+- 不要只写一句客套话（"we are pleased to submit…"）就结束开头段，核心发现要在第一段出现
+- **Hook 里的每个数字都必须原样来自稿件的 Results / Abstract**（带 CI）；稿件没有证明的效果（如"可降低 30% 晚期诊断"这类推测）不能写进 cover letter
 
-> ✅ "Early AI-assisted detection of pancreatic cancer on CT could reduce stage IV diagnosis by 30%—yet no validated model exists for routine screening."
+> ✅ "Please consider our Original Article, "[完整标题]", for publication in [期刊名]. In [设计与样本，如 a multicentre retrospective cohort of N patients], [核心结果，数字原样取自 Results，带 95% CI]; [这一结果对临床意味着什么，不超出数据]."
 >
-> ❌ "We are pleased to submit our manuscript entitled '...' for your consideration."
+> ❌ "Early AI-assisted detection of pancreatic cancer on CT could reduce stage IV diagnosis by 30%..."（稿件里没有的推测性数字）
+>
+> ❌ "We are pleased to submit our manuscript entitled '...' for your consideration."（只有客套，没有发现）
 
 #### Paragraph 2: Novelty（比现有研究好在哪）
 
@@ -69,8 +73,12 @@ Cover Letter 是编辑看到的第一样东西。一封好的 Cover Letter 让�
 - 所有作者已审阅并同意投稿（mandatory）
 - 利益冲突声明（如有）
 - 临床试验注册号（如适用）
+- **AI 使用声明**（ICMJE Recommendations 2026 年 1 月更新版第 V 部分 "Use of Artificial Intelligence in Publishing"）：说明是否用了 AI 辅助技术（大语言模型、聊天机器人、AI 作图等）；用了就写明工具名称和用途，并在稿件相应位置同样说明——写作辅助写进 Acknowledgments，用于数据收集、分析或作图写进 Methods。AI 不能列为作者，作者对 AI 生成的内容负全部责任。**本插件（Claude）参与了起草、检索筛选、分析或作图，也属于要声明的 AI 使用**；没用就写明未使用
+- **预印本**（如有）：稿件已发在 medRxiv / bioRxiv 等 → 写明服务器名和链接 / DOI（ICMJE 要求投稿前或审稿期间发布的预印本都要告知期刊）；期刊是否接受预印本以其作者指南为准
 - 建议审稿人 2–4 位（如期刊要求；避免同单位或合作者）
 - 排除审稿人（如有利益冲突）
+
+ICMJE 原文在 2026-10 整理本节时无法直接打开（icmje.org 不可达），AI 与预印本两条按 ICMJE 页面的检索摘要整理——投稿前请到 icmje.org 和目标期刊作者指南核对当前措辞（待核实）。
 
 #### 期刊风格适配 + 模板
 
@@ -96,7 +104,7 @@ Cover Letter 是编辑看到的第一样东西。一封好的 Cover Letter 让�
 #### 2.1: 识别投稿系统
 
 先用 `${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --id <期刊id>`
-读该刊的 `system` 字段；没有条目时按出版商家族查 `references/submission-systems.yaml`
+读该刊的 `system` 字段（固定词表：Editorial Manager / ScholarOne / eJournalPress / Snapp / IEEE Author Portal / MDPI SuSy / Frontiers / JMIR / eLife / journal portal = 期刊自己的系统；有 `submission_url` 时就是该刊的投稿入口；BJU International 的系统标了待核实）；没有条目时按出版商家族查 `references/submission-systems.yaml`
 （`submission_systems`）：ScholarOne（NEJM、BMJ、多数 Wiley/T&F）、Editorial Manager（Lancet 系列、
 Cell、Elsevier、PLOS、多数 Springer）、eJournalPress（Nature 系列 MTS、JAMA 系列、AHA 期刊、Science、PNAS）、
 Snapp（Springer Nature 新刊）、OJS（部分开源期刊）。期刊会迁移系统，**以期刊 Submit 页为准**。
@@ -111,7 +119,8 @@ Snapp（Springer Nature 新刊）、OJS（部分开源期刊）。期刊会迁�
 #### 2.3: 元数据填写
 
 投稿系统要求填写 article type、title、abstract、keywords、author list、ORCID、funding、
-COI、suggested/excluded reviewers、trial registration 等。**article type 选错会被直接退**，
+COI、suggested/excluded reviewers、trial registration、AI 使用、预印本等。AI 使用与预印本的填写内容必须与
+cover letter 和稿件里的声明一致。**article type 选错会被直接退**，
 **title 必须与正文完全一致**。完整字段及注意事项见 `references/submission-systems.yaml`
 （`metadata_fields`）。
 
@@ -137,7 +146,7 @@ COI、suggested/excluded reviewers、trial registration 等。**article type 选
 
 | 文件 | 内容 | 来源 |
 |------|------|------|
-| `cover-letter.md` | 4 段 Cover Letter（Hook / Novelty / Journal Fit / Declarations） | Step 1，模板见 `references/cover-letter-template.md` |
+| `cover-letter.md` | 4 段 Cover Letter（Hook〔含标题与文章类型〕/ Novelty / Journal Fit / Declarations〔含 AI 使用与预印本声明〕） | Step 1，模板见 `references/cover-letter-template.md` |
 | 改投对比表（嵌入 cover-letter.md 或单独） | 期刊 A vs B 的 hook 角度、引用文章、修改原因 | Cascade Rewrite，模板见 `references/cover-letter-template.md` |
 | 投稿操作记录（写入 `submission-log.md`） | 投稿系统、已传文件清单、metadata、manuscript ID、提交日期 | Step 2 |
 
@@ -154,6 +163,8 @@ COI、suggested/excluded reviewers、trial registration 等。**article type 选
 | "PDF 预览不看也行" | 图表错位/公式乱码 = desk reject |
 | "Suggested reviewers 随便填" | 2–4 位、避免同单位/合作者；好的建议能加速审稿 |
 | "COI 声明写 None 就行" | 虚假 COI 声明 = 学术不端 |
+| "AI 只是帮忙润色，不用说" | ICMJE 要求声明 AI 辅助技术的使用（写作辅助也算，写进致谢）；不声明可能需要更正，某些情况下可被视为不端 |
+| "开头不用写题目，编辑看得到" | 第一段写明完整标题和文章类型，编辑据此核对稿件与栏目 |
 | "Nature 系用 Editorial Manager" | Nature 系用自家 MTS（eJP 架构）；Lancet 才是 Editorial Manager |
 | "投完不管了" | 跟踪状态，超时催稿 |
 
@@ -163,6 +174,8 @@ COI、suggested/excluded reviewers、trial registration 等。**article type 选
 - 没有提及目标期刊的任何特征 → 补充 Journal Fit
 - "Dear Sir/Madam" → 查找编辑姓名（如果能确认）
 - 声称论文"首次"/"唯一"但无依据 → 验证或删除
+- Cover letter 里出现稿件 Results 没有的数字或效果推测 → 删除或改成稿件里的结果
+- 用过 AI（含本插件）却没有 AI 使用声明，或 cover letter / 稿件 / 投稿系统三处的声明不一致 → 补齐并统一
 - 抄袭/原封不动复用另一篇论文（或前一期刊）的 cover letter → 重写
 - 虚假 COI 声明 → 学术不端，必须如实填写
 - 未检查系统生成的合并 PDF 就点 Submit → 图表错位/公式乱码 = desk reject
@@ -171,11 +184,11 @@ COI、suggested/excluded reviewers、trial registration 等。**article type 选
 ## Convergence
 
 当以下条件全部满足时完成：
-1. Cover Letter 4 段结构完整（Step 1）
-2. Hook 有具体的核心 claim（不是空泛描述）
+1. Cover Letter 4 段结构完整（Step 1），第一段写明完整标题和文章类型
+2. Hook 有具体的核心 claim（不是空泛描述），其中每个数字都能在稿件 Results / Abstract 找到
 3. Novelty 有与具体文献的比较
 4. Journal Fit 引用了目标期刊的近期文章
-5. 所有必要声明已包含
+5. 所有必要声明已包含（含 AI 使用声明与预印本信息，并与稿件、投稿系统一致）
 6. Cover Letter 总长度不超过 1 页（约 350-450 words）
 7. 所有必传文件已准备且格式正确（Step 2）
 8. 元数据已完整填写（Step 2）
@@ -195,5 +208,5 @@ COI、suggested/excluded reviewers、trial registration 等。**article type 选
 - **投稿前必须**有 `submission-readiness-report.md` 且 6 Gate 全部通过；之前只能起草 cover letter，标明草稿
 
 ### 可选衔接
-- 论文被拒后需要改投 → 由 `revision-response` 做改投决策 → `journal-selection` 重选 → 本 skill 重写 cover letter
+- 论文被拒后需要改投 → 由 `revision-response` 做改投决策 → `journal-selection` 重选 → `manuscript-writing` 按新刊调整 → `pre-submission-verification` → `manuscript-export` → 本 skill 重写 cover letter
 - 用户想换目标期刊 → `journal-selection`（换刊后重跑 Gate 6 与 `manuscript-export`）

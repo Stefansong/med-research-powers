@@ -11,7 +11,7 @@ names are fixed (`search_articles`, `get_article_metadata`, `get_full_text_artic
 
 ## Mode 3 — Citation Verification Report
 
-Five statuses only: ✅ Verified / ⚠️ Not found / ❌ Mismatch / ⏳ Unverified (tool error) / ℹ️ Non-PubMed.
+Five statuses only: ✅ Verified / ⚠️ Not found / ❌ Mismatch / ⏳ Unverified (tool error / web search only / not checked) / ℹ️ Non-PubMed.
 
 ```markdown
 ## Citation Verification Report
@@ -24,9 +24,10 @@ Five statuses only: ✅ Verified / ⚠️ Not found / ❌ Mismatch / ⏳ Unverif
 | 1 | Smith et al., 2024, Lancet | 39123456 | ✅ Verified | — |
 | 2 | Lee et al., 2023, Nature | — | ⚠️ Not found | Query succeeded, no hit; ask user for DOI |
 | 3 | Wang et al., 2022, JAMA | 35678901 | ❌ Mismatch | Year is 2021, not 2022 |
-| 4 | Chen et al., 2020, Eur Urol | — | ⏳ Unverified (tool error) | get_article_metadata timed out; retry pending |
-| 5 | Goodfellow et al., 2016 (book) | — | ℹ️ Non-PubMed | Book; checked via publisher DOI |
-| 6 | Vaswani et al., 2017, NeurIPS | — | ℹ️ Non-PubMed | arXiv:1706.03762 checked via WebSearch |
+| 4 | Chen et al., 2020, Eur Urol | — | ⏳ Unverified | Tool error: get_article_metadata timed out; retry pending |
+| 5 | Zhao et al., 2021, BJU Int | — | ⏳ Unverified | Found only by web search (no PubMed MCP or E-utilities); check manually |
+| 6 | Goodfellow et al., 2016 (book) | — | ℹ️ Non-PubMed | Book; checked via publisher DOI |
+| 7 | Vaswani et al., 2017, NeurIPS | — | ℹ️ Non-PubMed | arXiv:1706.03762 checked via WebSearch |
 ```
 
 Rules recap: ⚠️ only after a successful query with no hit; ⏳ never counts as "does not exist";

@@ -22,7 +22,7 @@ def checklist_files():
 
 def test_index_counts_and_files():
     idx = load(INDEX)["standards"]
-    assert len(idx) == 47
+    assert len(idx) == 54
     ids = [s["id"] for s in idx]
     assert len(ids) == len(set(ids)), "duplicate standard ids"
     with_file = [s for s in idx if s.get("file")]

@@ -17,19 +17,38 @@ field list; this file holds the full fill-in skeletons for the four output files
 **Research Question:** [一句话]
 **Mode:** Systematic
 
+## Reviewers（PRISMA 2020 item 8 / 9）
+
+| Stage | Reviewer 1 | Reviewer 2 | Independent? | Agreement (% / Cohen's κ) | Disagreements resolved by |
+|-------|-----------|-----------|--------------|---------------------------|---------------------------|
+| Title/abstract screening | [姓名缩写，人] | [姓名缩写，人 / AI 辅助：模型名称 + 版本] | Yes | [x% / κ = x.xx] | [讨论 / 第三名评价者（人）] |
+| Full-text screening | [ ] | [ ] | Yes | [ ] | [ ] |
+| Data extraction | [ ] | [ ] | Yes | [ ] | [ ] |
+| Risk of bias | [ ] | [ ] | Yes | [ ] | [ ] |
+| GRADE | [ ] | [ ] | Yes | — | [ ] |
+
+至少一名评价者是人；Claude 最多担任其中一名。
+
+### Automation / AI tools used（无则写 "None"）
+| Tool (name, version) | Date(s) used | Stage(s) | How used | Human verification |
+|----------------------|--------------|----------|----------|--------------------|
+| [模型名称 + 版本] | [日期] | [如 Title/abstract screening] | [判定标准 / 提示词存放位置] | [如 AI 排除的记录全部由人复核] |
+
 ## PRISMA Flow Diagram Data
 
 ### Identification
-| Database | Records Found |
-|----------|--------------|
-| PubMed | [N] |
-| arXiv | [N] |
-| Cochrane | [N] |
-| IEEE Xplore | [N] |
-| Other: [名称] | [N] |
-| **Total** | **[N]** |
-| Duplicates removed | -[N] |
-| **After deduplication** | **[N]** |
+| Source | How searched | Records Found |
+|--------|--------------|--------------|
+| PubMed | PubMed MCP (`search_articles`) | [N] |
+| Embase | Run by user on [平台], exported [日期] | [N] |
+| Cochrane CENTRAL | Run by user, exported [日期] | [N] |
+| Web of Science | Not searched（[原因，如无访问权限]） | — |
+| Other database: [名称] | [Run by user / Not searched] | [N / —] |
+| **Total (databases)** | | **[N]** |
+| Duplicates removed | | -[N] |
+| **After deduplication** | | **[N]** |
+
+WebSearch `site:` 查询（arXiv、medRxiv、IEEE 网页等）不是数据库检索，记在下方 Supplementary Search，不计入本表。
 
 ### Screening — Title/Abstract
 | Decision | Count |
@@ -63,6 +82,7 @@ field list; this file holds the full fill-in skeletons for the four output files
 | Similar articles (PubMed, `find_related_articles`) | [N] | [n] |
 | Citation tracking — reference lists checked manually | [N] | [n] |
 | Citation tracking — citing articles (Google Scholar / WoS, manual) | [N] | [n] |
+| Web search (supplementary): [site:arxiv.org …] | [N] | [n] |
 | Expert recommendation | [N] | [n] |
 | **Total supplementary included** | | **[N]** |
 
@@ -99,7 +119,9 @@ field list; this file holds the full fill-in skeletons for the four output files
 **Date:** [日期]
 **Research Question:** [一句话]
 **Mode:** Narrative / Systematic
-**Databases Searched:** PubMed, arXiv, Cochrane, ...
+**Databases Searched:** PubMed (MCP); Embase, Cochrane CENTRAL (run by user)
+**Not searched:** [库名 + 原因，如 Web of Science — no access；无则写 None]
+**Supplementary web searches:** [arXiv / medRxiv via WebSearch；无则写 None]
 
 ## Database 1: PubMed
 - **Search query:** ("pancreatic cancer"[MeSH Terms] AND "artificial intelligence"[Title/Abstract])
@@ -108,13 +130,23 @@ field list; this file holds the full fill-in skeletons for the four output files
 - **Results:** [N] articles
 - **Tool used:** PubMed MCP `search_articles`（via `pubmed-search` Mode 1）
 
-## Database 2: arXiv
+## Database 2: Embase（用户运行）
+- **Search query (Embase.com syntax):** ('pancreas cancer'/exp OR 'pancreatic cancer':ti,ab,kw) AND ('artificial intelligence'/exp OR 'deep learning':ti,ab,kw)
+- **Run by:** [用户姓名缩写] on [平台] on [日期]
+- **Filters:** [用户实际用的限制]
+- **Results:** [N] records（来自用户导出的 [RIS/CSV] 文件）
+- **Tool used:** none — Claude 不能检索 Embase；检索式由 Claude 起草、用户运行并导出
+
+## Database 3: Web of Science
+- **Status:** Not searched — [原因]；已在 Methods / 局限性中写明
+
+## Supplementary web search: arXiv（WebSearch，补充检索）
 - **Search query:** site:arxiv.org medical image segmentation transformer
-- **Filters:** cs.CV, 2023-2026
-- **Results:** [N] articles
+- **Filters:** none — WebSearch 只接受检索词和域名限制，不能按 arXiv 分类或日期过滤；年份限制在筛选时按纳入标准人工执行
+- **Records screened:** [N]（不完整、不可复现；PRISMA "other methods"）
 - **Tool used:** WebSearch
 
-## Database 3: Google Scholar（如使用）
+## Google Scholar（如使用）
 - **Search string:** [用户手动检索时输入的字符串]
 - **Results pasted by user:** [N] records（Claude 不能直接检索 Scholar，由用户手动检索后粘贴）
 
@@ -140,14 +172,14 @@ field list; this file holds the full fill-in skeletons for the four output files
 - **PMID:** [如有]
 - **DOI:** [如有]
 - **PMCID:** [如有，表示全文可获取]
-- **Source Database:** PubMed / arXiv / IEEE / Cochrane / ...
+- **Source:** PubMed (MCP) / Embase, CENTRAL, … (user-run export) / Web search (supplementary: arXiv, medRxiv, …) / Citation tracking / ...
 - **Study Type:** RCT / Cohort / Diagnostic accuracy / Prediction model / AI Validation / Systematic Review / ...
 - **Sample Size:** n=[N]
 - **Key Finding:** [1-2 句核心发现]
 - **Relevance:** [与本研究的关系：支持 / 矛盾 / 方法参考 / Gap 证据]
 - **Evidence Level:** [Oxford CEBM 2011 Level 1-5]
-- **Bias Risk:** Low / Moderate / High / Unclear（工具：RoB 2 / ROBINS-I / NOS / QUADAS-2 / PROBAST）
-- **Verified:** ✅ Verified (PubMed) / ⚠️ Not found / ❌ Mismatch / ⏳ Unverified (tool error) / ℹ️ Non-PubMed（DOI/WebSearch 核对，注明来源）
+- **Bias Risk:** Low / Moderate / High / Unclear（工具：RoB 2 / ROBINS-I / ROBINS-E / NOS / QUADAS-2 / PROBAST+AI；两名评价者独立）
+- **Verified:** ✅ Verified (PubMed) / ⚠️ Not found / ❌ Mismatch / ⏳ Unverified (tool error / web search only / not checked) / ℹ️ Non-PubMed（DOI/WebSearch 核对，注明来源）
 
 ### 2. [Author] et al., [Year]
 ...
@@ -171,7 +203,8 @@ field list; this file holds the full fill-in skeletons for the four output files
 **Topic:** [研究主题]
 **Date:** [日期]
 **Mode:** Narrative / Systematic
-**Total articles screened:** [N] (PubMed: [n], arXiv: [n], Cochrane: [n], ...)
+**Total articles screened:** [N] (PubMed: [n], Embase (user-run): [n], CENTRAL (user-run): [n], web search (supplementary): [n], ...)
+**Not searched:** [库名 + 原因 / None]
 **Total articles included:** [N]
 
 ## Evidence Map
@@ -187,6 +220,14 @@ field list; this file holds the full fill-in skeletons for the four output files
 ### Controversial（争议，证据不一致）
 1. [争议点] — [Author1, Year] found X, but [Author2, Year] found Y
    - Possible explanation: [方法差异/人群差异/...]
+
+## Certainty of Evidence（GRADE；Systematic 模式，范围综述除外）
+
+| Outcome | No. of studies (participants) | Risk of bias | Inconsistency | Indirectness | Imprecision | Publication bias | Upgrading (observational) | Certainty |
+|---------|-------------------------------|--------------|---------------|--------------|-------------|------------------|---------------------------|-----------|
+| [结局 1] | [k (n)] | [Not serious / Serious (−1) + 理由] | [ ] | [ ] | [ ] | [ ] | [Large effect / Dose-response / Confounding / None] | ⊕⊕⊕◯ Moderate |
+
+每个主要结局一行，逐项写明降级 / 升级理由；评定人见 `screening-log.md` 的 Reviewers 表。
 
 ## Research Gap（本研究定位）
 [本研究要解决的具体 gap，引用上述 Unknown/Controversial 证据]

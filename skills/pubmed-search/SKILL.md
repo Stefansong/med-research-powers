@@ -23,12 +23,12 @@ PubMed MCP 工具的封装——交互式检索式构建、批量元数据获取
 ## When NOT to Use
 
 - 需要多数据库检索、筛选、证据评价、gap 分析 → `literature-synthesis`
-- 搜索非 PubMed 数据库（arXiv、IEEE、Cochrane）→ `WebSearch`
+- 检索非 PubMed 来源 → `literature-synthesis` Step 1：Embase、Cochrane Library、IEEE Xplore 等工具检索不了，给用户该库检索式，由用户运行并导入；arXiv / medRxiv 可用 `WebSearch` 作补充检索（不算数据库检索）
 - 纯 CS/AI 算法论文 → PubMed 不覆盖，用 `WebSearch` 搜 arXiv
 
 ## MCP Tool Reference
 
-本 skill 使用 PubMed MCP 的 7 个函数。**函数名固定，前缀以当前会话的工具列表为准**：完整工具名是 `mcp__<server名>__<函数名>`，claude.ai 连接器的 server 名为 `claude_ai_PubMed`，本地常见为 `PubMed`。调用前先在工具列表里确认前缀；工具列表里没有任何 PubMed 函数 → 告诉用户未连接 PubMed MCP，不要伪造结果。
+本 skill 使用 PubMed MCP 的 7 个函数。**函数名固定，前缀以当前会话的工具列表为准**：完整工具名是 `mcp__<server名>__<函数名>`，claude.ai 连接器的 server 名为 `claude_ai_PubMed`，本地常见为 `PubMed`。调用前先在工具列表里确认前缀；工具列表里没有任何 PubMed 函数 → 告诉用户未连接 PubMed MCP，按下面的"没有 PubMed MCP 时"处理，不要伪造结果。
 
 | 函数 | 关键参数 | 返回要点 | 典型场景 |
 |------|---------|---------|---------|
@@ -39,6 +39,13 @@ PubMed MCP 工具的封装——交互式检索式构建、批量元数据获取
 | `convert_article_ids` | `ids=[...]`, `id_type="pmid"` / `"doi"` / `"pmcid"` | PMID ↔ PMCID ↔ DOI | DOI 反查 PMID、确认全文可用性 |
 | `lookup_article_by_citation` | 作者、年份、期刊、标题片段等 | 候选 PMID | 无 PMID/DOI 的引用反查 |
 | `get_copyright_status` | `pmids` 或 `pmc_ids` | 版权 / OA 状态 | 确认可复用性 |
+
+### 没有 PubMed MCP 时
+
+先告诉用户未连接 PubMed MCP、改用哪条途径，结果里注明途径（不写成 MCP 的返回）：
+- **有 WebFetch**：直接查 PubMed 的 E-utilities——检索 `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=<N>&term=<URL 编码的检索式>`（count、PMID 列表、querytranslation），元数据 `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=<PMID,…>`（标题、作者、期刊、日期、DOI）。这是真实的 PubMed 检索，可用于 Mode 1 快速查重、Mode 2 和 Mode 3 的 PMID 核对；DOI 核对可用 `https://doi.org/<DOI>`。Mode 4（相似文献）、Mode 5（PMC 全文）这样走不了时如实说明未做。
+- **只有 WebSearch**：结果只作补充线索（没有结果总数、不是 PubMed 检索）；Mode 3 中只凭 WebSearch 找到的引用保持 ⏳ Unverified 并附网页线索，交用户人工核对，不标 ✅ Verified。
+- **都没有**：把检索式 / 待核对清单交给用户在 PubMed 网页自查；未核对的引用保持 ⏳ Unverified。
 
 ## Workflow
 
@@ -89,7 +96,7 @@ Step 4: 执行并迭代
 | ✅ Verified | 找到且作者/年份/标题一致 | 查询成功并匹配 |
 | ⚠️ Not found | 查询成功但无命中 | PubMed 查过、确实没有 |
 | ❌ Mismatch | 找到但作者/年份/标题不符 | 报告差异，让用户改引用 |
-| ⏳ Unverified (tool error) | 工具报错、连接失败、参数异常 | **不等于文献不存在**；提示重试或换途径 |
+| ⏳ Unverified (tool error / web search only / not checked) | 工具报错、连接失败、参数异常；或只凭 WebSearch 找到 / 没有任何途径能核对（见"没有 PubMed MCP 时"） | **不等于文献不存在**；工具报错时重试一次或换途径，仍未核对的交用户人工核对，不标 ✅ |
 | ℹ️ Non-PubMed | 书籍、指南、arXiv、会议论文、网页 | 改用 DOI / WebSearch 核对，注明来源 |
 
 ```
@@ -102,6 +109,7 @@ Step 4: 执行并迭代
        → 找到 → 用 get_article_metadata 核对标题后 ✅ / ❌；未找到 → ⚠️
   4. 明显非 PubMed 类型（书籍、指南、arXiv、标准文件）→ ℹ️，用 DOI 或 WebSearch 核对
   5. 任一步工具报错 → ⏳，记录错误信息，重试一次；仍失败则保留 ⏳ 交给用户
+  6. 没有 PubMed MCP 时按"没有 PubMed MCP 时"换途径；只凭 WebSearch 找到、或哪条途径都核对不了 → ⏳（附线索），交用户人工核对
 ```
 
 **批量建议：** 引用 > 40 条时按 10 条一批处理，每批输出中间结果并累计到同一张报告表；先处理有 PMID/DOI 的（快），再处理需要 `lookup_article_by_citation` 的。
@@ -170,7 +178,7 @@ Step 4: 从全文提取用户需要的信息（方法、样本量、关键数据
 根据 Mode 不同：
 - Mode 1: 检索式构建完成 + 结果数量合理 + 相关性确认（快速查重：给出 total_count 与前 5 条标题）
 - Mode 2: 所有 PMID 的元数据已获取并格式化
-- Mode 3: 所有引用已标记 5 态之一，⏳ 已至少重试一次
+- Mode 3: 所有引用已标记 5 态之一，工具报错的 ⏳ 已至少重试一次，仍是 ⏳ 的已列给用户人工核对
 - Mode 4: 相似文献已去重并推荐 Top N
 - Mode 5: 可获取的全文已提取 + 不可获取的已标记
 - Mode 6: 所有引用已按目标格式输出
@@ -190,7 +198,7 @@ Step 4: 从全文提取用户需要的信息（方法、样本量、关键数据
 - 验证引用真实性时 → **必须**走 Mode 3，禁止凭记忆判断文献是否存在
 
 ### 前置依赖
-- 会话中存在 PubMed MCP 工具；没有 → 告知用户并停止，不要用 WebSearch 冒充 PubMed 结果
+- 会话中存在 PubMed MCP 工具；没有 → 告知用户，按"没有 PubMed MCP 时"改用 WebFetch 查 E-utilities 或请用户自查（`research-question-formulation` 的快速查重同样适用）；不要把 WebSearch 结果当作 PubMed 检索结果报告
 - 被上层 skill 调用时按下表选择 Mode：
 
 | 调用 skill | 使用 Mode | 场景 |

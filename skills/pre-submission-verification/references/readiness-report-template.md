@@ -14,10 +14,10 @@ Output file: `submission-readiness-report.md`
 | Gate | Status | Critical issues | Action Items |
 |------|--------|-----------------|--------------|
 | 1. Reporting standards (<standard>) | ✅/❌ | critical ❌ = [N]（非 critical ❌ [N]、⚠️ [N]） | [列表] |
-| 2. Statistical completeness | ✅/❌ | [N] | [列表] |
+| 2. Statistical completeness | ✅/❌ | [N] | [列表；reproduce-check.md 结论：一致 / 不一致 / 未完成 / 缺失] |
 | 3. Claim verification | ✅/❌ | [N] | [列表] |
 | 4. Figure quality | ✅/❌ | [N] | [列表] |
-| 5. Ethics compliance | ✅/❌ | [N] | [列表] |
+| 5. Ethics compliance | ✅/❌ | [N] | [列表；伦理依据：批准号 / 书面免除审查（依据 + 文件编号或日期）] |
 | 6. Formal requirements | ✅/❌ | [N] | [列表] |
 
 ## Gate 3 Phase A — citation status
@@ -27,7 +27,7 @@ Output file: `submission-readiness-report.md`
 | ✅ Verified | [N] | |
 | ⚠️ Not found | [N] | [编号列表 → 作者提供原文或删除] |
 | ❌ Mismatch | [N] | [编号 + 差异] |
-| ⏳ Unverified (tool error) | [N] | [编号 → 待人工核对；不计为通过] |
+| ⏳ Unverified (tool error / web search only / not checked) | [N] | [编号 → 待人工核对；不计为通过] |
 | ℹ️ Non-PubMed | [N] | [编号 → DOI / WebSearch 核对结果] |
 
 Key-citation content check (≤ 10): [N] checked, [N] consistent with source, [N] need rewording.

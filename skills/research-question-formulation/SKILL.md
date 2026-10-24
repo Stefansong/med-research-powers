@@ -9,15 +9,17 @@ description: Use when a user has a vague research idea and needs to define a cle
 
 不允许在科学问题不明确的情况下开始任何分析或写作。用户说"帮我分析数据"时，先问清研究问题。本 skill 是流水线起点，产物 `research-question.md` 是 `literature-synthesis` 和 `study-design` 的输入。
 
+> 总调度规则（直接调用本 skill 也适用，原文见 `${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/SKILL.md`）：**缺前置产物**——说缺什么，light / auto 下先往下做并记缺口，不拒绝；**checkpoint_mode** 默认 light，只在 3 个硬确认处等；**只要一个产物**时交付后停下。
+
 ## When to Use
 
 - 用户有模糊的研究想法
 - 需要从临床观察提炼科学问题
-- "帮我分析数据"但没有明确假设
+- "帮我分析数据"但没有明确的研究问题（假设或估计目标）
 
 ## When NOT to Use
 
-- 已有明确的 PICO/PECO/PIRD 和假设 → 直接进 `study-design`
+- 已有明确的 PICO/PECO/PIRD 和假设（或描述性/预测研究的估计目标）→ 直接进 `study-design`
 - 纯技术问题（如何做某种统计）→ `data-analysis-planning`
 - 只想改一句话的措辞 → 直接改，不走流程
 
@@ -51,13 +53,27 @@ description: Use when a user has a vague research idea and needs to define a cle
 | **E** Ethical | 存在无法通过伦理审查的设计（如剥夺有效治疗） | 无伦理障碍，或有成熟的知情同意/豁免路径 |
 | **R** Relevant | 结果不会改变任何临床决策或指南 | 结果能直接影响诊疗选择、指南或政策 |
 
-**N（Novel）必须做一次快速查重：** 调用 `pubmed-search` Mode 1（快速查重用法）——用 P + I/E + O 的核心词构建一条检索式，看 `total_count` 与前 5 条标题；已有高度相似研究 → 与用户讨论增量点或调整问题，并把检索式与结果数记进 `research-question.md`。
+**N（Novel）必须做一次快速查重：** 用 P + I/E + O 的核心词构建一条检索式，看结果总数与前 5 条标题；已有高度相似研究 → 与用户讨论增量点或调整问题。按会话里有的工具选途径（本 skill 不依赖 PubMed MCP）：
+1. 有 PubMed MCP → 调用 `pubmed-search` Mode 1（快速查重用法），得到 `total_count` 与前 5 条标题。
+2. 没有 PubMed MCP、有 WebFetch → 直接查 PubMed 的 E-utilities：`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=5&term=<URL 编码的检索式>`（返回 count、前 5 个 PMID 和 querytranslation），再用 `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=<PMID,…>` 取标题。这是真实的 PubMed 检索，只是不经 MCP。
+3. WebFetch 也不可用或报错 → WebSearch（如 `site:pubmed.ncbi.nlm.nih.gov <核心词>`）只作补充线索：没有结果总数，不能据此判断"没人做过"。
+4. 都不可用 → 把检索式交给用户，请其在 PubMed 网页运行后回报结果数和前 5 条标题。
 
-### Round 3: Hypothesis
+开始查重前告诉用户用的是哪条途径（例如"未连接 PubMed MCP，改用 WebFetch 查 PubMed E-utilities"）。`research-question.md` 记下检索式、途径、结果数与日期；只用了第 3 条（WebSearch）或用户尚未回报时，N 项写"待查重"，不打分。
 
-- 零假设和备择假设（能用统计语言表述）
-- 预期结果
-- 如果结果不符预期的可能解释
+### Round 3: Hypothesis 或估计目标（按研究类型）
+
+只有**假设检验型**研究写 H0 / H1；其余类型写研究目的和要估计的量，不硬凑假设（凑出来的 H0 会引出不该做的检验）：
+
+| 研究类型 | 写什么 |
+|---------|-------|
+| 干预 / 暴露效果比较（RCT、队列、病例对照）、两种诊断方法比较、非劣效 / 等效 | H0 / H1（能用统计语言表述）+ 主要比较与效应指标 |
+| 描述性（患病率、发生率、单臂可行性、现状调查） | 研究目的 + 要估计的量（estimand：人群、指标、时间点）+ 精度目标（如 95% CI 半宽） |
+| 预测模型开发 / 验证 | 研究目的（开发、内部或外部验证、更新）+ 目标人群、结局与预测时间点 + 要报告的性能指标（区分度、校准、临床效用） |
+| 诊断准确性（单一方法） | 目标指标（灵敏度 / 特异度等）+ 精度目标；预先设定了最低可接受值时才写成 H0 / H1 |
+| 预后因素筛选 / 探索性分析 | 研究目的 + 明确标为探索性，不写确证性 H0 / H1 |
+
+另外写：预期结果；如果结果不符预期的可能解释。
 
 ### Round 4: 输出并记录状态
 
@@ -68,8 +84,8 @@ description: Use when a user has a vague research idea and needs to define a cle
 生成 `research-question.md`：
 1. 科学问题（一句话）
 2. 框架分解（PICO / PECO / PIRD，按 Round 1 判断选用；无对照设计写明基准）
-3. 研究假设（H0 / H1）
-4. FINER 评分（每项 1-5 分 + 一句理由；N 项附快速查重检索式与结果数）
+3. 研究假设（H0 / H1，仅假设检验型研究）或研究目的与估计目标（描述性、预测模型、诊断准确性估计、探索性研究；按 Round 3 的表）
+4. FINER 评分（每项 1-5 分 + 一句理由；N 项附快速查重的检索式、途径、结果数与日期，未完成时写"待查重"）
 5. 预期结果
 6. 潜在局限性
 
@@ -77,25 +93,27 @@ description: Use when a user has a vague research idea and needs to define a cle
 
 | 想法 | 现实 |
 |------|------|
-| "先跑数据看看有什么" | 没有假设的分析 = 数据钓鱼 |
+| "先跑数据看看有什么" | 没有预先定义的问题（假设，或描述性/预测研究的估计目标）的分析 = 数据钓鱼 |
+| "每个研究都要写 H0/H1" | 只有假设检验型研究写；患病率、单臂描述、预测模型开发/验证写研究目的和估计目标（estimand、精度或性能指标） |
 | "研究问题太窄了不好发表" | 精确的问题远好于模糊的大问题 |
 | "不需要对照组" | 干预/暴露研究缺 C 就不完整；先确认是不是单臂/患病率等本无对照的设计 |
 | "暴露也套 PICO" | 不可干预的暴露用 PECO，否则会误把关联写成因果 |
 | "结局指标以后再定" | 事后选择结局 = 结果偏倚 |
 | "FINER 评估不重要" | 可行性低的完美问题等于零 |
 | "肯定没人做过" | 必须查重，N 项不能凭感觉打分 |
+| "没有 PubMed MCP 就没法查重" | 用 WebFetch 查 PubMed E-utilities，或请用户在 PubMed 网页自查；注明途径 |
 
 ## Convergence
 
 当以下条件**全部**满足时停止追问：
 1. 研究框架要素全部明确——干预性用 **PICO**，暴露/病因用 **PECO**，诊断准确性用 **PIRD**；按研究类型选对框架且无缺项（本无对照的设计已写明基准）
-2. 研究假设可以用统计语言表述
-3. FINER 已打分，N 项有快速查重记录
+2. 假设检验型研究：H0/H1 可以用统计语言表述；描述性、预测模型等研究：研究目的与估计目标（estimand、精度目标或性能指标）已写明
+3. FINER 已打分，N 项有快速查重记录（含途径）；无法查重时 N 写"待查重"并已告知用户
 4. 用户确认问题定义准确，`research-question.md` 已生成，`.mrp-state.json` 已更新
 
 ## Red Flags — STOP
 
-- 用户说"先跑数据看看" / 没有假设就要分析 → STOP，先定义研究问题
+- 用户说"先跑数据看看" / 没有明确的研究问题（假设或估计目标）就要分析 → STOP，先定义研究问题
 - 干预/暴露研究缺 C，或 PIRD 缺 Reference standard → 继续追问，不要凑数（先排除本无对照的设计）
 - 结局指标含糊或"以后再定" → STOP，事后选结局 = 结果偏倚
 - 研究问题大而空（如"AI 在医学的应用"）→ 收窄到可检验的具体问题
@@ -106,12 +124,12 @@ description: Use when a user has a vague research idea and needs to define a cle
 
 ### 强制衔接（不可跳过）
 - 完成后**必须进入 `literature-synthesis`（了解现状、找 gap）或 `study-design`（设计研究）之一，不可直接跳到分析/写作**。默认顺序：`literature-synthesis` → `study-design`；用户已有充分文献基础时可直接 `study-design`
-- Round 2 的 N 项 → 调用 `pubmed-search` Mode 1 快速查重
+- Round 2 的 N 项 → 有 PubMed MCP 时调用 `pubmed-search` Mode 1 快速查重；没有时按 Round 2 的替代途径（WebFetch 查 E-utilities → WebSearch 补充 → 用户自查），并注明途径
 
 ### 前置依赖
-- 无——本 skill 是流程起点，可独立运行
+- 无——本 skill 是流程起点，可独立运行；不需要 PubMed MCP（查重有替代途径，见 Round 2）
 
 ### 可选衔接
-- `data-analysis-planning` 发现没有明确假设 → 触发本 skill
+- `data-analysis-planning` 发现没有明确假设或估计目标 → 触发本 skill
 - `manuscript-writing` 发现没有 `research-question.md` → 触发本 skill
 - 查重发现相同研究已发表 → 与用户讨论改变人群/方法/结局，或转为验证/外部验证研究

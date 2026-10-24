@@ -45,7 +45,7 @@ N 个 Agent 调用，每个带聚焦的 prompt**；它们会并行执行，主�
 
 | 触发时机 | 并行内容 | 理由 |
 |---------|---------|------|
-| `literature-synthesis` 进入执行检索且目标数据库 ≥ 2 | 每个数据库一个子代理同时检索（场景 1） | 数据库之间完全独立，无数据依赖 |
+| `literature-synthesis` 进入执行检索，且 PubMed 之外还有 WebSearch 补充检索 | PubMed（MCP）一个子代理 + WebSearch 补充检索一个子代理（场景 1）；Embase / Cochrane Library / WoS / Scopus 等订阅库不派子代理（工具检索不了，由用户运行并导入，见 literature-synthesis Step 3 来源 B） | 两类检索互相独立，无数据依赖 |
 | `peer-review-simulation` 进入 Step 1（4-Reviewer Panel） | 4 个审稿人角色各一个子代理（场景 2） | 审稿人独立评审，天然并行 |
 
 以下场景是**可选**的，由用户提出或主代理建议、用户同意后启动：
@@ -76,10 +76,10 @@ N 个 Agent 调用，每个带聚焦的 prompt**；它们会并行执行，主�
 
 ```
 主代理分析:
-  "3 个数据库的检索互不依赖，输入相同（检索式），输出各自独立，可以并行"
-  → 子任务 A: PubMed 检索 → pubmed-results.md
-  → 子任务 B: arXiv 检索 → arxiv-results.md
-  → 子任务 C: Cochrane 检索 → cochrane-results.md
+  "PubMed 检索和 arXiv 补充检索互不依赖，输入相同（检索概念），输出各自独立，可以并行"
+  → 子任务 A: PubMed 检索（MCP，数据库检索）→ pubmed-results.md
+  → 子任务 B: arXiv 补充检索（WebSearch site:arxiv.org，记为 Web search (supplementary)）→ websearch-supplementary-results.md
+  （Cochrane / Embase 等订阅库不是子任务：子代理也检索不了，检索式交给用户运行）
 ```
 
 **关键判断：** 只有"输入不依赖另一个子任务的输出、且输出文件互不相同"的任务才能并行。
@@ -154,7 +154,7 @@ N 个 Agent 调用，每个带聚焦的 prompt**；它们会并行执行，主�
 
 ### 强制衔接
 - `peer-review-simulation` 进入 4-Reviewer Panel → 自动用 Agent 并行派发 4 个审稿人子代理（场景 2）
-- `literature-synthesis` 检索 ≥ 2 个数据库 → 自动用 Agent 每库一个子代理并行检索（场景 1）
+- `literature-synthesis` 有 PubMed + WebSearch 补充检索 → 自动用 Agent 并行（场景 1；只派工具能执行的检索，订阅库由用户运行）
 - 并行完成后 → 回到主线，由调用方 skill 继续（本 skill 是辅助 skill，不更新 `.mrp-state.json`）
 
 ### 可选衔接

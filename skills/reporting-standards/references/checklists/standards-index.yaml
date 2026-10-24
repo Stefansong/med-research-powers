@@ -1,19 +1,22 @@
-# Reporting Standards Master Index (47 standards)
+# Reporting Standards Master Index (54 standards)
 # Load this file to find the right standard for a study type.
 # Entries with a `file:` field have an item-by-item checklist YAML in this directory
-# (21 of 47: consort-2025, consort-ai, spirit-2025, spirit-ai, tidier, trend, record, strobe, prisma-2020, prisma-scr,
+# (21 of 54: consort-2025, consort-ai, spirit-2025, spirit-ai, tidier, trend, record, strobe, prisma-2020, prisma-scr,
 #  stard-2015, tripod-2015, tripod-ai, claim-2024, decide-ai, arrive-2, cherries, cross-2021, care-2013, squire-2, cheers-2022)
-# — check those item by item.
-# For all other entries, give the official source (`reference` / EQUATOR Network) and ask the user
-# to verify against the official checklist by hand; do not invent item text.
+# — check those item by item (their source citation is the `reference` inside the checklist file).
+# Every entry WITHOUT a `file:` carries a `reference` (journal citations checked against PubMed, web-only
+# sources against the official site, 2026-10-24). For those entries give that reference + the EQUATOR Network
+# link and ask the user to verify against the official checklist by hand; do not invent item text.
 # `items` counts for entries without a local file are index metadata only — verify before quoting.
 # `type:` marks the entries that are NOT reporting guidelines (no `type:` = reporting guideline):
-#   bias_tool      — risk-of-bias / quality tools used to appraise included studies (RoB 2, ROBINS-I, NOS,
-#                    MINORS, QUADAS-2, PROBAST)
+#   bias_tool      — risk-of-bias / quality tools used to appraise included studies (RoB 2, ROBINS-I, ROBINS-E,
+#                    NOS, MINORS, QUADAS-2, PROBAST, PROBAST+AI)
 #   appraisal_tool — critical-appraisal tools for reviews or guidelines (AMSTAR 2, AGREE II)
 #   framework      — study-staging or evidence-grading frameworks (IDEAL, GRADE)
-# They stay in the index (and in the count of 47) because users look them up here, but they are not
+# They stay in the index (and in the count of 54) because users look them up here, but they are not
 # checklists for reporting one's own manuscript: never use them for the pre-submission reporting check.
+# `use_with` lists only other reporting guidelines that are checked together with the entry; bias tools and
+# frameworks that go with a guideline are named in its `note`.
 
 standards:
   # === Clinical Trials ===
@@ -64,7 +67,8 @@ standards:
   - id: consort-harms
     name: CONSORT-Harms 2022
     for: "Harms reporting in RCTs"
-    note: "Partially integrated into CONSORT 2025"
+    reference: "Junqueira DR et al. BMJ 2023;381:e073725 (doi:10.1136/bmj-2022-073725)"
+    note: "Partially integrated into CONSORT 2025 (harms items 7, 15, 21a, 23a, 27)"
 
   # === Non-randomised interventions ===
   - id: trend
@@ -90,6 +94,13 @@ standards:
     for: "Studies using routinely collected health data (EMR, administrative)"
     use_with: strobe
 
+  - id: target
+    name: TARGET 2025
+    items: 21
+    for: "Observational studies that explicitly emulate a target trial to estimate the causal effect of an intervention"
+    reference: "Cashin AG et al. BMJ 2025;390:e087179 (doi:10.1136/bmj-2025-087179); simultaneously JAMA 2025;334(12):1084-1093 (doi:10.1001/jama.2025.13350)"
+    note: "Transparent Reporting of Observational Studies Emulating a Target Trial: 21-item checklist in six sections (abstract, introduction, methods, results, discussion, other information)"
+
   - id: strocss
     name: STROCSS 2024
     items: "13 (44 rows incl. sub-items)"
@@ -112,6 +123,8 @@ standards:
     name: PRISMA-P 2015
     items: 17
     for: "Systematic review protocols (PROSPERO registration)"
+    reference: "Moher D et al. Syst Rev 2015;4(1):1 (doi:10.1186/2046-4053-4-1); Explanation & Elaboration: Shamseer L et al. BMJ 2015;350:g7647 (doi:10.1136/bmj.g7647)"
+    note: "Protocol stage only — not used for the pre-submission check of a completed review"
 
   - id: prisma-scr
     name: PRISMA-ScR 2018
@@ -123,11 +136,15 @@ standards:
     name: PRISMA-S 2021
     items: 16
     for: "Search reporting in systematic reviews"
+    use_with: prisma-2020
+    reference: "Rethlefsen ML et al. Syst Rev 2021;10(1):39 (doi:10.1186/s13643-020-01542-z)"
 
   - id: prisma-dta
     name: PRISMA-DTA 2018
+    items: 27
     for: "Diagnostic test accuracy systematic reviews"
-    use_with: quadas-2
+    reference: "McInnes MDF et al. JAMA 2018;319(4):388-396 (doi:10.1001/jama.2017.19163)"
+    note: "Stand-alone 27-item extension built on the original PRISMA statement — use it in place of the PRISMA checklist for DTA reviews. Appraise the included studies with QUADAS-2 (quadas-2 is a bias tool, not a reporting checklist)"
 
   - id: tripod-srma
     name: TRIPOD-SRMA 2023 (BMJ)
@@ -139,11 +156,14 @@ standards:
     type: appraisal_tool
     items: 16
     for: "Critical appraisal of systematic reviews"
+    reference: "Shea BJ et al. BMJ 2017;358:j4008 (doi:10.1136/bmj.j4008)"
 
   - id: grade
     name: GRADE framework
     type: framework
-    for: "Evidence quality grading (5 dimensions: risk of bias, inconsistency, indirectness, imprecision, publication bias)"
+    for: "Rating the certainty (quality) of a body of evidence for each outcome, and the strength of recommendations"
+    reference: "Guyatt GH et al. BMJ 2008;336(7650):924-926 (doi:10.1136/bmj.39489.470347.AD); rating up: Guyatt GH et al. J Clin Epidemiol 2011;64(12):1311-1316 (doi:10.1016/j.jclinepi.2011.06.004)"
+    note: "Certainty is rated per outcome, not once per review. Five domains can lower it (risk of bias, inconsistency, indirectness, imprecision, publication bias); for observational evidence it can be rated up for a large effect, a dose-response gradient, or when all plausible confounding would reduce the apparent effect"
 
   # === Diagnostic ===
   - id: stard
@@ -154,6 +174,14 @@ standards:
     for: "Diagnostic accuracy studies"
     supersedes: "STARD 2003"
     reference: "Bossuyt et al. BMJ 2015;351:h5527 (doi:10.1136/bmj.h5527)"
+
+  - id: stard-ai
+    name: STARD-AI 2025
+    items: "STARD 2015 items + 18 new or modified AI items"
+    for: "Diagnostic accuracy studies of AI index tests (AI-centred diagnostic test accuracy studies)"
+    use_with: stard
+    reference: "Sounderajah V et al. Nat Med 2025;31(10):3283-3289 (doi:10.1038/s41591-025-03953-8)"
+    note: "Primary guideline for AI diagnostic accuracy studies. Check the STARD 2015 rows with stard-2015.yaml, but the 18 new or modified STARD-AI items have no local checklist — modified items change STARD 2015 wording, so check every row against the official STARD-AI checklist; do not invent item text"
 
   # === Prediction & AI ===
   - id: tripod-ai
@@ -175,13 +203,25 @@ standards:
 
   - id: tripod-llm
     name: TRIPOD-LLM 2025 (Nat Med, Jan 2025)
+    items: "19 main items, 50 subitems (modular: 14 main items / 32 subitems apply to every LLM study design)"
     for: "LLM/VLM medical evaluation studies"
+    reference: "Gallifant J et al. Nat Med 2025;31(1):60-69 (doi:10.1038/s41591-024-03425-5)"
+    note: "Extension of TRIPOD+AI for studies using large language models; for studies of chatbots answering health questions see chart"
+
+  - id: chart
+    name: CHART 2025
+    items: "12 items, 39 subitems"
+    for: "Chatbot health advice studies — evaluations of generative-AI chatbots summarising clinical evidence or giving health advice"
+    reference: "CHART Collaborative. BMJ Med 2025;4(1):e001632 (doi:10.1136/bmjmed-2025-001632); Explanation & Elaboration: BMJ 2025;390:e083305 (doi:10.1136/bmj-2024-083305); the statement was also published in Ann Fam Med, BMC Med, Br J Surg and Artif Intell Med"
+    note: "Chatbot Assessment Reporting Tool (checklist + methods flow diagram)"
 
   - id: tripod-cluster
     name: TRIPOD-Cluster 2023 (BMJ)
     items: 19
     for: "Prediction models with clustered data"
     use_with: tripod-ai
+    reference: "Debray TPA et al. BMJ 2023;380:e071018 (doi:10.1136/bmj-2022-071018)"
+    note: "Stand-alone checklist (19 main items) for models developed or validated on clustered data (multicentre / EHR data, IPD meta-analysis); not for clustering by repeated measurements within individuals"
 
   - id: claim
     name: CLAIM 2024
@@ -215,13 +255,28 @@ standards:
     type: bias_tool
     items: 20
     for: "Bias risk in prediction models"
-    note: "PROBAST+AI 2025 available for AI models"
+    reference: "Wolff RF et al. Ann Intern Med 2019;170(1):51-58 (doi:10.7326/M18-1376)"
+    note: "PROBAST+AI 2025 (probast-ai) is available for AI models and, per its authors, may replace PROBAST 2019 for regression models too"
+
+  - id: probast-ai
+    name: PROBAST+AI 2025
+    type: bias_tool
+    items: "16 signalling questions (model development) + 18 (model evaluation)"
+    for: "Quality, risk of bias and applicability of prediction model studies — regression or AI / machine-learning models"
+    reference: "Moons KGM et al. BMJ 2025;388:e082505 (doi:10.1136/bmj-2024-082505)"
+    note: "Update of PROBAST 2019; two parts (model development, model evaluation), each with four domains: participants and data sources, predictors, outcome, analysis"
 
   # === Surgery & Devices ===
+  - id: ideal-reporting
+    name: IDEAL Reporting Guidelines 2021
+    for: "Reports of surgical / device innovation studies at IDEAL Stage 1, 2a, 2b or 4 (stage-specific checklists)"
+    reference: "Bilbro NA et al. Ann Surg 2021;273(1):82-85 (doi:10.1097/SLA.0000000000004180)"
+    note: "Determine the stage with the `ideal` framework entry first, then use that stage's checklist from the official source (no local checklist). There is no IDEAL checklist for Stage 3 (participants called for reporting guidelines for every stage except Stage 3) — report a Stage 3 study with the guideline for its design (e.g. CONSORT 2025 for an RCT)"
+
   - id: ideal
     name: IDEAL 2009/2013 (updated 2019)
     type: framework
-    for: "Surgical/device innovation stages"
+    for: "Surgical/device innovation stages (staging only — the reporting checklists are ideal-reporting)"
     reference: "Hirst A et al. Ann Surg 2019;269(2):211-220 (doi:10.1097/SLA.0000000000002794) — 2019 update that added the Pre-IDEAL stage"
     stages:
       - "Pre-IDEAL / Stage 0 (Preclinical): preclinical studies before first-in-human use (added in the 2019 update; for devices see IDEAL-D stage 0: Marcus HJ et al. Ann Surg 2022;275(1):73-79, doi:10.1097/SLA.0000000000004907)"
@@ -247,6 +302,13 @@ standards:
     reference: "Sharma A et al. J Gen Intern Med 2021;36(10):3179-3187 (doi:10.1007/s11606-021-06737-1)"
     note: "Consensus-Based Checklist for Reporting of Survey Studies; use CHERRIES in addition for web-based administration"
 
+  - id: accord
+    name: ACCORD 2024
+    items: 35
+    for: "Consensus methods in biomedicine (Delphi, nominal group technique, consensus meetings)"
+    reference: "Gattrell WT et al. PLoS Med 2024;21(1):e1004326 (doi:10.1371/journal.pmed.1004326)"
+    note: "ACcurate COnsensus Reporting Document; use for Delphi / consensus studies (CROSS is for survey studies)"
+
   - id: cosmin
     name: COSMIN Reporting Guideline 2.0 (2025)
     for: "Studies on measurement properties of patient-reported outcome measures"
@@ -259,12 +321,14 @@ standards:
   - id: coreq
     name: COREQ 2007
     items: 32
-    for: "Qualitative research (interviews, focus groups, observation)"
+    for: "Qualitative research using interviews or focus groups"
+    reference: "Tong A et al. Int J Qual Health Care 2007;19(6):349-357 (doi:10.1093/intqhc/mzm042)"
 
   - id: srqr
     name: SRQR 2014
     items: 21
     for: "Qualitative research (alternative to COREQ)"
+    reference: "O'Brien BC et al. Acad Med 2014;89(9):1245-1251 (doi:10.1097/ACM.0000000000000388)"
 
   # === Preclinical ===
   - id: arrive
@@ -310,13 +374,15 @@ standards:
     items: 35
     for: "Meta-analyses of observational studies"
     use_with: prisma-2020
-    note: "Required when pooling cohort, case-control, or cross-sectional studies"
+    reference: "Stroup DF et al. JAMA 2000;283(15):2008-2012 (doi:10.1001/jama.283.15.2008)"
+    note: "Recommended alongside PRISMA 2020 when pooling cohort, case-control or cross-sectional studies; required only where the target journal asks for it"
 
   - id: prisma-nma
     name: PRISMA-NMA 2015
     items: 32
     for: "Network meta-analysis (indirect treatment comparisons)"
     use_with: prisma-2020
+    reference: "Hutton B et al. Ann Intern Med 2015;162(11):777-784 (doi:10.7326/M14-2385)"
 
   # === Cluster Trials ===
   - id: consort-cluster
@@ -324,7 +390,8 @@ standards:
     items: Extension items
     for: "Cluster randomized trials (community, hospital, clinic-level randomization)"
     use_with: consort-2025
-    note: "Required for RCTs where randomization unit differs from analysis unit"
+    reference: "Campbell MK et al. BMJ 2012;345:e5661 (doi:10.1136/bmj.e5661)"
+    note: "Use whenever groups (clusters) rather than individuals are randomised. Written for CONSORT 2010; the CONSORT 2025 statement names cluster trials among the extensions to keep using until they are realigned"
 
   # === Bias Assessment Tools ===
   - id: rob-2
@@ -332,27 +399,43 @@ standards:
     type: bias_tool
     domains: 5
     for: "RCT bias risk"
+    reference: "Sterne JAC et al. BMJ 2019;366:l4898 (doi:10.1136/bmj.l4898)"
 
   - id: robins-i
     name: ROBINS-I 2016
     type: bias_tool
     domains: 7
     for: "Non-randomized intervention study bias"
+    reference: "Sterne JA et al. BMJ 2016;355:i4919 (doi:10.1136/bmj.i4919)"
+    note: "ROBINS-I V2 is published as a draft on the official site (https://www.riskofbias.info/welcome/robins-i-v2; first released November 2024 and still labelled draft; it initially covers cohort-type follow-up studies). No peer-reviewed V2 paper was found in PubMed on 2026-10-24 — check the current version and its domain list on the official site before using it (待核实)"
+
+  - id: robins-e
+    name: ROBINS-E (2024)
+    type: bias_tool
+    domains: 7
+    for: "Risk of bias in a result from a non-randomised (cohort-type) follow-up study of the effect of an exposure on an outcome"
+    reference: "Higgins JPT et al. Environ Int 2024;186:108602 (doi:10.1016/j.envint.2024.108602)"
+    note: "Currently for cohort studies; the authors state that variants for other designs (e.g. case-control studies) are future work"
 
   - id: nos
     name: Newcastle-Ottawa Scale
     type: bias_tool
     max_score: 9
-    for: "Observational study quality"
+    for: "Quality of cohort and case-control studies (star system: selection, comparability, exposure / outcome)"
+    reference: "Wells GA, Shea B, et al. The Newcastle-Ottawa Scale (NOS) for assessing the quality of nonrandomised studies in meta-analyses. Ottawa Hospital Research Institute, https://www.ohri.ca/programs/clinical_epidemiology/oxford.asp (web resource, no journal publication)"
+    note: "Use only with caveats: it gives a star score rather than a domain-based risk-of-bias judgement, and its validity has been questioned (Stang A. Eur J Epidemiol 2010;25(9):603-605, doi:10.1007/s10654-010-9491-z). Prefer ROBINS-I (interventions) or ROBINS-E (exposures, cohort studies); use NOS only when it is required (journal, existing protocol) or no ROBINS variant fits (e.g. case-control studies of exposures), and report the judgement for each item, not just the total"
 
   - id: minors
     name: MINORS 2003
     type: bias_tool
     items: 12
     for: "Non-randomized surgical studies"
+    reference: "Slim K et al. ANZ J Surg 2003;73(9):712-716 (doi:10.1046/j.1445-2197.2003.02748.x)"
+    note: "Items 1-8 apply to non-comparative studies, all 12 to comparative studies"
 
   - id: quadas-2
     name: QUADAS-2 2011
     type: bias_tool
     domains: 4
     for: "Diagnostic accuracy study bias"
+    reference: "Whiting PF et al. Ann Intern Med 2011;155(8):529-536 (doi:10.7326/0003-4819-155-8-201110180-00009)"
