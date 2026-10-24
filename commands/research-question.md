@@ -8,5 +8,5 @@ disable-model-invocation: true
 
 Invoke the `research-question-formulation` skill with the user's idea: $ARGUMENTS
 
-- **Output:** `research-question.md` (PICO, FINER score, H0/H1)
+- **Output:** `research-question.md` (PICO / PECO / PIRD, FINER score with a recorded novelty search, H0/H1 for hypothesis-testing studies or aims and estimands for descriptive and prediction-model studies). Works without the PubMed MCP (the novelty search then uses PubMed E-utilities via WebFetch, or the user runs it).
 - **Next step:** `literature-synthesis` (`/mrp:literature-synthesis`) to map the existing evidence, then `study-design`.

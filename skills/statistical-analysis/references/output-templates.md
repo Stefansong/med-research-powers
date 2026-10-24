@@ -82,6 +82,7 @@ SAP item that prescribes it and to the code that performs it.
 
 **Date:** [日期]
 **Script:** [analysis_script.py / analysis_script.R]（环境与包版本见脚本输出开头）
+**Bundled helpers copied into the project:** [如 assumption_tests.py（来自 MRP 插件 statistical-analysis/scripts，sha256=[前 12 位]）/ 无]
 **Data File:** [清洗后数据文件] (N=[N], vars=[N])
 **Random seed:** [种子]
 
@@ -124,8 +125,8 @@ SAP item that prescribes it and to the code that performs it.
 ## 自检结果
 
 ### 重跑一致性
-- Command: [reproduce_check.py 的完整命令，含 `--compare-stdout`；清洗脚本单独时两步串起来，清洗后数据也列进 `--outputs`]
-- Result: [一致 / 不一致 → 修改后一致]；比较文件 [N] 个 + 屏幕输出；报告 [reproduce-check.md]
+- Command: [reproduce_check.py 的完整命令，含 `--compare-stdout`（结果写在 stderr 时还有 `--compare-stderr`）；清洗脚本单独时两步串起来，清洗后数据也列进 `--outputs`]
+- Result: [一致 / 不一致 → 修改后一致]；比较文件 [N] 个 + 屏幕输出；报告 [reproduce-check.md]；"需要留意"各项的处理（--outputs 之外的缓存、运行日期 / 钟点、后台进程）：[无 / 已处理：…]
 
 ### 人数流（可直接画 CONSORT / STROBE 流程图）
 
@@ -148,6 +149,12 @@ SAP item that prescribes it and to the code that performs it.
 |---|----------|---------|--------|--------|-------------------|
 | 1 | [4.x] | [计划方法] | [实际方法] | [如 残差图显示严重右偏，改用 SAP 预定的对数尺度分析] | [对结论的影响] |
 | 2 | [ ] | [ ] | [ ] | [ ] | [ ] |
+
+## Post hoc / Exploratory Analyses (not in the SAP)
+
+| # | Requested by | Question | Method and reason (defined before running) | Code (`# post hoc: …`) | Result location |
+|---|--------------|----------|--------------------------------------------|------------------------|-----------------|
+| 1 | [Reviewer 2 / 用户] | [ ] | [ ] | [ ] | [results/xxx.csv] |
 
 ## Sensitivity Analysis Results
 
