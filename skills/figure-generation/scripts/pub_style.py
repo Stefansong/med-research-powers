@@ -3,9 +3,8 @@
 Publication-quality figure style setup for medical journals.
 
 Usage (run from the user's project directory):
-    import os, sys
-    sys.path.insert(0, os.path.join(os.environ.get("CLAUDE_PLUGIN_ROOT", "."),
-                                    "skills", "figure-generation", "scripts"))
+    # copy this file into the project once (it reads nothing else from the plugin):
+    #   cp "$CLAUDE_PLUGIN_ROOT/skills/figure-generation/scripts/pub_style.py" .
     from pub_style import setup, save_figure, add_significance, journal_figsize, COLORS, COLORBLIND_SAFE
 
     colors, width = setup(journal='nature', single_column=True)   # rcParams + palette + width (inch)
@@ -13,6 +12,18 @@ Usage (run from the user's project directory):
     ...
     add_significance(ax, x1=0, x2=1, y=y_top, p_value=0.003)      # bracket height = 2% of the axis height (log axes too)
     save_figure(fig, 'figure1')                                    # figure1.tiff (600 dpi, RGB, LZW) + figure1.pdf
+
+journal: an id from journal-templates.yaml, or that journal's full name as the library writes it
+(e.g. 'Nature Medicine', 'Lancet Infectious Diseases'). Journals of
+the Nature, Lancet and JAMA families get their family's house widths and palette; any other journal
+gets the generic 85/127/170 mm widths and the colour-blind-safe Okabe-Ito palette, with a one-line
+notice on stderr (once per journal) — check that journal's figure guide.
+
+Reproducible files: save_figure writes no creation date into PDF / SVG / EPS and uses a fixed SVG
+id salt, so saving an unchanged figure again gives byte-identical files (reproduce_check passes).
+metadata= is checked for every format before any file is written: each format gets the keys its
+writer can store (SVG takes Author / Subject as Creator / Description), the rest are skipped with
+one warning.
 
 Export keeps the figure size: a journal_figsize('nature') figure is saved exactly 89 mm wide
 (no bbox_inches='tight' cropping). save_figure() lays the figure out inside that fixed size
@@ -25,9 +36,14 @@ installed, setup() warns ONCE (not 70 times) so the "Arial" checklist item is no
 violated silently. Install Arial (e.g. ttf-mscorefonts-installer) for final export.
 
 Command line: `python3 pub_style.py --check` prints the font / journal-width table.
+Needs matplotlib 3.6 or later (layout engines, draw_without_rendering).
 """
 
+import contextlib
 import math
+import os
+import re
+import sys
 import warnings
 
 try:
@@ -35,20 +51,34 @@ try:
     import matplotlib.pyplot as plt
     from matplotlib import font_manager
 except ImportError:  # pragma: no cover - depends on the user's environment
-    raise SystemExit("缺少 matplotlib：pip install matplotlib pillow")
+    print("缺少 matplotlib：pip install 'matplotlib>=3.6' pillow", file=sys.stderr)
+    raise SystemExit(2)
+
+MIN_MATPLOTLIB = (3, 6)   # Figure.get_layout_engine() / draw_without_rendering() in save_figure
+
+
+def _version_tuple(version):
+    m = re.match(r'(\d+)\.(\d+)', version)
+    return (int(m.group(1)), int(m.group(2))) if m else (0, 0)
+
+
+if _version_tuple(mpl.__version__) < MIN_MATPLOTLIB:
+    print(f"pub_style 需要 matplotlib 3.6 或更新版本（当前 {mpl.__version__}）："
+          "pip install -U 'matplotlib>=3.6'", file=sys.stderr)
+    raise SystemExit(2)
 
 # ─── palettes ───────────────────────────────────────────────────────────────
+
+# Colorblind-safe palette (Okabe-Ito)
+COLORBLIND_SAFE = ['#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7', '#000000']
 
 COLORS = {
     'nature':  ['#E64B35', '#4DBBD5', '#00A087', '#3C5488', '#F39B7F', '#8491B4', '#91D1C2'],
     'lancet':  ['#00468B', '#ED0000', '#42B540', '#0099B4', '#925E9F', '#FDAF91', '#AD002A'],
     'jama':    ['#374E55', '#DF8F44', '#00A1D5', '#B24745', '#79AF97', '#6A6599', '#80796B'],
     'nejm':    ['#BC3C29', '#0072B5', '#E18727', '#20854E', '#7876B1', '#6F99AD', '#FFDC91'],
-    'default': ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2'],
+    'default': list(COLORBLIND_SAFE),   # journals without a house palette (bmj, unknown ids)
 }
-
-# Colorblind-safe palette (Okabe-Ito)
-COLORBLIND_SAFE = ['#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7', '#000000']
 
 # ─── fonts ──────────────────────────────────────────────────────────────────
 
@@ -97,15 +127,68 @@ JOURNAL_WIDTH_MM = {
 }
 MM_PER_INCH = 25.4
 
+# journal-templates.yaml ids whose `family:` has a house width above (tests keep this in sync with
+# the library). Kept in this file, not read from the library, so a copy of pub_style.py works alone.
+_FAMILY_MEMBERS = {
+    'nature': ('nature-communications', 'nature-medicine', 'nature-reviews-cancer', 'nature-reviews-cardiology',
+               'nature-reviews-clinical-oncology', 'nature-reviews-disease-primers', 'nature-reviews-endocrinology',
+               'nature-reviews-gastro-hepatol', 'nature-reviews-nephrology', 'nature-reviews-neurology',
+               'nature-reviews-rheumatology', 'npj-digital-medicine', 'scientific-reports'),
+    'lancet': ('eclinical-medicine', 'lancet-child', 'lancet-diabetes', 'lancet-digital-health',
+               'lancet-gastro-hepatol', 'lancet-global-health', 'lancet-haematology', 'lancet-id', 'lancet-microbe',
+               'lancet-neurology', 'lancet-oncology', 'lancet-psychiatry', 'lancet-public-health',
+               'lancet-respiratory'),
+    'jama':   ('jama-cardiology', 'jama-dermatology', 'jama-internal-medicine', 'jama-network-open',
+               'jama-neurology', 'jama-oncology', 'jama-ophthalmology', 'jama-otolaryngology', 'jama-pediatrics',
+               'jama-psychiatry', 'jama-surgery'),
+}
+JOURNAL_FAMILY = {j: family for family, ids in _FAMILY_MEMBERS.items() for j in ids}
+# Full names (journal-templates.yaml `journal:`) of those journals whose name, written as a slug, is not
+# their id ('Lancet Infectious Diseases' → lancet-infectious-diseases, id lancet-id). Tests check that every
+# family journal's library name resolves.
+_NAME_TO_ID = {
+    'new-england-journal-of-medicine': 'nejm',
+    'eclinicalmedicine': 'eclinical-medicine',
+    'lancet-child-adolescent-health': 'lancet-child',
+    'lancet-diabetes-endocrinology': 'lancet-diabetes',
+    'lancet-gastroenterology-hepatology': 'lancet-gastro-hepatol',
+    'lancet-infectious-diseases': 'lancet-id',
+    'lancet-respiratory-medicine': 'lancet-respiratory',
+    'nature-reviews-gastroenterology-hepatology': 'nature-reviews-gastro-hepatol',
+    'jama-otolaryngology-head-neck-surgery': 'jama-otolaryngology',
+}
+_NOTICED = set()                            # unknown journals already reported in this process
+
+
+def _journal_key(journal):
+    """('nature', 'own' | 'family') for a known journal id / name, ('default', 'unknown') otherwise."""
+    key = re.sub(r'[^a-z0-9]+', '-', str(journal or 'default').lower()).strip('-') or 'default'
+    for k in (key, key[4:] if key.startswith('the-') else None):     # 'The Lancet' → lancet
+        k = _NAME_TO_ID.get(k, k)
+        if k in JOURNAL_WIDTH_MM:
+            return k, 'own'
+        if k in JOURNAL_FAMILY:
+            return JOURNAL_FAMILY[k], 'family'
+    if key not in _NOTICED:
+        _NOTICED.add(key)
+        print(f"pub_style: 期刊 '{journal}' 没有记录的栏宽和配色 → 用通用栏宽 85/127/170 mm 和色盲友好的 "
+              "Okabe-Ito 配色；最终尺寸以该刊作者须知为准", file=sys.stderr)
+    return 'default', 'unknown'
+
 
 def journal_widths(journal='default'):
-    """Width spec (mm) for a journal; unknown journals fall back to the generic 85/170 mm."""
-    key = (journal or 'default').lower()
-    if key not in JOURNAL_WIDTH_MM:
-        spec = dict(JOURNAL_WIDTH_MM['default'])
+    """Width spec (mm) for a journal id or name.
+
+    Nature / Lancet / JAMA family members get their family's widths (status 'approx …'); unknown
+    journals the generic 85/127/170 mm, with a one-line notice on stderr.
+    """
+    key, how = _journal_key(journal)
+    spec = dict(JOURNAL_WIDTH_MM[key])
+    if how == 'family':
+        spec['status'] = f"approx — {key}-family house width for '{journal}'; confirm in its author guide"
+    elif how == 'unknown':
         spec['status'] = f"unknown journal '{journal}' — generic 85/170 mm used; check its author guide"
-        return spec
-    return dict(JOURNAL_WIDTH_MM[key])
+    return spec
 
 
 def journal_figsize(journal='default', n_panels=1, columns=None, aspect=0.75):
@@ -131,7 +214,8 @@ def setup(journal='nature', single_column=True, font=None, colorblind_safe=False
     """Set publication-quality matplotlib defaults. Returns (colors, fig_width_inches).
 
     font: optional extra family put in front of the fallback chain.
-    colorblind_safe: return the Okabe-Ito palette instead of the journal palette.
+    colorblind_safe: return the Okabe-Ito palette instead of the journal palette
+                     (journals without a house palette get Okabe-Ito anyway).
     """
     chain = ([font] if font and font not in PREFERRED_FONTS else []) + PREFERRED_FONTS
     plt.rcParams.update({
@@ -160,7 +244,7 @@ def setup(journal='nature', single_column=True, font=None, colorblind_safe=False
     check_fonts(warn=True)
     spec = journal_widths(journal)
     width = round(spec['single' if single_column else 'double'] / MM_PER_INCH, 3)
-    colors = COLORBLIND_SAFE if colorblind_safe else COLORS.get((journal or 'default').lower(), COLORS['default'])
+    colors = COLORBLIND_SAFE if colorblind_safe else COLORS.get(_journal_key(journal)[0], COLORS['default'])
     return colors, width
 
 
@@ -214,7 +298,94 @@ def _save_tiff_rgb(fig, out, dpi):
     rgb.save(out, format='TIFF', compression='tiff_lzw', dpi=(dpi, dpi))
 
 
-def save_figure(fig, filename, formats=('tiff', 'pdf'), dpi=None, line_art=True, kind=None, layout='auto'):
+# Saving the same figure twice must give identical files (reproduce_check): no creation date in
+# PDF / SVG (removed via metadata) or EPS / PS (SOURCE_DATE_EPOCH), and a fixed salt for SVG ids.
+_NO_DATE = {'pdf': {'CreationDate': None}, 'svg': {'Date': None}}
+_SVG_HASHSALT = 'mrp-pub-style'
+# metadata keys each savefig writer stores: SVG's Dublin Core set (any other key raises ValueError), the
+# PostScript Creator comment (other keys are ignored); PDF and PNG take any key. savefig(metadata=...)
+# is refused for jpg / tiff etc., so those formats get none.
+_METADATA_KEYS = {
+    'pdf': None, 'png': None,
+    'svg': ('Title', 'Coverage', 'Date', 'Description', 'Format', 'Identifier', 'Language', 'Relation',
+            'Source', 'Type', 'Creator', 'Contributor', 'Publisher', 'Rights', 'Keywords'),
+    'eps': ('Creator',), 'ps': ('Creator',),
+}
+_SVG_KEY_FOR = {'Author': 'Creator', 'Subject': 'Description'}     # the PDF names of two SVG fields
+
+
+def _metadata_by_format(formats, metadata):
+    """{format: savefig metadata}, worked out before anything is written. Keys a format's writer cannot
+    store are left out of that format, with one warning for the whole call."""
+    result, skipped = {}, []
+    for fmt in formats:
+        if fmt not in _METADATA_KEYS:
+            continue
+        allowed = _METADATA_KEYS[fmt]
+        md = dict(_NO_DATE.get(fmt, {}))
+        for k, v in (metadata or {}).items():
+            key = k
+            if fmt == 'svg' and k in _SVG_KEY_FOR and _SVG_KEY_FOR[k] not in metadata:
+                key = _SVG_KEY_FOR[k]                   # an explicit Creator / Description wins
+            if allowed is None or key in allowed:
+                md[key] = v
+            else:
+                skipped.append(f"{fmt}: {k}")
+        result[fmt] = md
+    if skipped:
+        warnings.warn(f"这些 metadata 该格式存不了，已跳过：{'; '.join(skipped)}", UserWarning, stacklevel=3)
+    return result
+
+
+def _check_metadata(fig, metadata_by_format):
+    """Write each format with metadata into memory first, so a value its writer refuses (e.g. a number
+    as an SVG Title) stops save_figure before any file exists."""
+    import io
+    for fmt, md in metadata_by_format.items():
+        if set(md) - set(_NO_DATE.get(fmt, {})):
+            try:
+                with warnings.catch_warnings():        # matplotlib's own warnings come with the real save
+                    warnings.simplefilter('ignore')
+                    fig.savefig(io.BytesIO(), format=fmt, dpi=72, metadata=md)
+            except Exception as e:
+                raise ValueError(f"metadata 不能写入 {fmt.upper()}：{e}（没有保存任何文件）") from None
+
+
+def _normalised_formats(fig, formats):
+    """Format names as the writers below compare them: lower case ('TIFF' → 'tiff', so it still gets the
+    RGB / LZW writer and 'SVG' / 'PDF' still get their metadata), no leading dot, each format once, a
+    single name accepted as well as a list. The file extension is the normalised name ('tif' / 'jpeg'
+    stay as given). An unknown format stops save_figure before any file is written."""
+    if isinstance(formats, str):
+        formats = (formats,)
+    out = []
+    for fmt in formats:
+        f = str(fmt).strip().lstrip('.').lower()
+        if f not in out:
+            out.append(f)
+    supported = fig.canvas.get_supported_filetypes()
+    unknown = [f for f in out if f not in supported]
+    if unknown or not out:
+        raise ValueError(f"{'不支持的图片格式 ' + str(unknown) if unknown else 'formats 是空的'}"
+                         f"（可用：{', '.join(sorted(supported))}；没有保存任何文件）")
+    return out
+
+
+@contextlib.contextmanager
+def _fixed_source_date():
+    """SOURCE_DATE_EPOCH=0 while saving (EPS / PS take their date from it), unless the user set it."""
+    if 'SOURCE_DATE_EPOCH' in os.environ:
+        yield
+        return
+    os.environ['SOURCE_DATE_EPOCH'] = '0'
+    try:
+        yield
+    finally:
+        os.environ.pop('SOURCE_DATE_EPOCH', None)
+
+
+def save_figure(fig, filename, formats=('tiff', 'pdf'), dpi=None, line_art=True, kind=None, layout='auto',
+                metadata=None):
     """Save in journal formats. TIFF (RGB, LZW) + PDF by default, at the figure's exact size.
 
     The figure size is NOT changed on export (no bbox_inches='tight'), so a figure made with
@@ -224,6 +395,13 @@ def save_figure(fig, filename, formats=('tiff', 'pdf'), dpi=None, line_art=True,
     A UserWarning is issued if content still extends beyond the figure edge.
     dpi resolution: explicit `dpi` > `kind` ('line_art' 600 / 'combination' 500 / 'halftone' 300)
     > `line_art` flag (True → 600, False → 300). Line art (plots with thin lines/text) needs 600.
+    The files are reproducible: no creation date in PDF / SVG / EPS and a fixed SVG id salt (an
+    svg.hashsalt the user set is kept). metadata: extra savefig metadata (e.g. {'Title': ..., 'Author': ...})
+    for PDF / SVG / PNG / EPS, each format getting the keys its writer stores (SVG: Author → Creator,
+    Subject → Description; EPS: Creator only); other keys are skipped for that format with one warning.
+    It is checked before any file is written. TIFF and other formats get no metadata.
+    formats: names in any case ('TIFF' is 'tiff', '.pdf' is 'pdf'); each file gets the lower-case name as
+    its extension (figure1.tiff); a format matplotlib cannot write is refused before any file is written.
     """
     if dpi is None:
         if kind is not None:
@@ -236,19 +414,29 @@ def save_figure(fig, filename, formats=('tiff', 'pdf'), dpi=None, line_art=True,
         raise ValueError("layout 必须是 'auto' 或 None")
     if layout == 'auto':
         _fit_layout(fig)
+    formats = _normalised_formats(fig, formats)
     saved = []
-    with mpl.rc_context({'savefig.bbox': 'standard'}):   # no cropping, whatever the rcParams say
+    rc = {'savefig.bbox': 'standard'}                    # no cropping, whatever the rcParams say
+    if mpl.rcParams['svg.hashsalt'] is None:
+        rc['svg.hashsalt'] = _SVG_HASHSALT
+    if any(fmt in ('tiff', 'tif') for fmt in formats):      # checked before any file is written
+        try:
+            import PIL  # noqa: F401  (TIFF is written through Pillow)
+        except ImportError:
+            print("保存 TIFF 需要 Pillow：pip install pillow", file=sys.stderr)
+            raise SystemExit(2)
+    md_by_format = _metadata_by_format(formats, metadata)
+    with mpl.rc_context(rc), _fixed_source_date():
+        if metadata:
+            _check_metadata(fig, md_by_format)
         _warn_if_clipped(fig)
         for fmt in formats:
             out = f'{filename}.{fmt}'
             if fmt in ('tiff', 'tif'):
-                try:
-                    import PIL  # noqa: F401  (TIFF is written through Pillow)
-                except ImportError:
-                    raise SystemExit("保存 TIFF 需要 Pillow：pip install pillow")
                 _save_tiff_rgb(fig, out, dpi)
             else:
-                fig.savefig(out, dpi=dpi, format=fmt)
+                md = md_by_format.get(fmt)
+                fig.savefig(out, dpi=dpi, format=fmt, **({'metadata': md} if md else {}))
             saved.append(out)
     w_in, h_in = fig.get_size_inches()
     print(f"Saved ({dpi} dpi, {w_in * MM_PER_INCH:.1f} × {h_in * MM_PER_INCH:.1f} mm): {', '.join(saved)}")
@@ -315,6 +503,9 @@ def _main(argv=None):
     print("journal  single  1.5col  double  status")
     for j, s in JOURNAL_WIDTH_MM.items():
         print(f"{j:<8} {s['single']:>5}mm {s['oneandahalf']:>5}mm {s['double']:>5}mm  {s['status']}")
+    print("family members (journal-templates.yaml ids) use their family's widths and palette: " +
+          ", ".join(f"{f} {len(ids)}" for f, ids in _FAMILY_MEMBERS.items()) +
+          "; any other journal: generic widths + Okabe-Ito palette, with a one-line notice")
 
 
 if __name__ == '__main__':

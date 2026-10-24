@@ -3,8 +3,10 @@
 # font, width, colour) — the style layer that pub_style.py applies. They say nothing
 # about WHICH figures to make: that comes from figure-plan.md (SKILL.md Steps 1-2).
 # Most major journals fall within these ranges; verify against the target
-# journal's "Instructions for Authors" for exceptions. The per-journal `figures` /
-# `tables` fields (counts, combined limits) live in journal-templates.yaml — fetch one entry with
+# journal's "Instructions for Authors" for exceptions. The per-journal counts (`limits.figures` /
+# `limits.tables`, or `limits.display_items` when figures and tables are counted together; the
+# free-text `figures` / `tables` fields give panel and supplementary rules) live in
+# journal-templates.yaml — fetch one entry with
 #   python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --id <journal-id>
 
 figure_specs:
@@ -28,7 +30,7 @@ figure_specs:
     min_size_pt: 6           # minimum size AFTER scaling to final width
 
   width:
-    generic:                 # used when the journal is unknown (pub_style 'default')
+    generic:                 # used when the journal is unknown (pub_style 'default'; one-line notice)
       single_column_mm: 85   # ~3.35 inch
       one_and_half_mm: 127   # ~5.0 inch
       double_column_mm: 170  # ~6.7 inch
@@ -38,6 +40,12 @@ figure_specs:
       bmj:     {single_mm: 85, one_and_half_mm: 127, double_mm: 175, max_height_mm: 230, status: approx}
       jama:    {single_mm: 85, one_and_half_mm: 127, double_mm: 175, max_height_mm: 230, status: approx}
       nejm:    {single_mm: 85, one_and_half_mm: 127, double_mm: 170, max_height_mm: 230, status: approx}
+    by_family:               # journal-templates.yaml `family:` → house widths above (pub_style.JOURNAL_FAMILY);
+                             # pub_style takes the id or the library's full journal name ("Lancet Infectious Diseases")
+      nature: "all 13 other Nature-family ids (nature-medicine, nature-communications, nature-reviews-*, npj-digital-medicine, scientific-reports) use the nature widths, status approx (verified for Nature itself only)"
+      lancet: "all Lancet-family ids (lancet-oncology, lancet-digital-health, eclinical-medicine, ...) use the lancet widths, status approx"
+      jama: "all JAMA Network ids (jama-oncology, jama-network-open, ...) use the jama widths, status approx"
+      other: "any other id (family standard / ieee, or not in the library) → generic widths and the Okabe-Ito palette, with a one-line notice; look up that journal's figure guide"
     status_meaning:
       verified: "taken from the journal's current figure guide"
       approx: "typical values for that journal family — confirm in Instructions for Authors before final export"
@@ -46,9 +54,11 @@ figure_specs:
     print: CMYK
     online: RGB
     recommendation: colorblind-safe (Okabe-Ito); see COLORBLIND_SAFE in pub_style.py
+    palettes: "nature / lancet / jama / nejm house palettes (pub_style.COLORS; family members use their family's); default and journals without a house palette: Okabe-Ito"
 
   notes:
     - 线条图（含细线/文字）用 600 DPI（save_figure 默认）；照片/热图 300 DPI（line_art=False）
     - 最小字号指最终缩放到目标栏宽后的字号，不是绘图时的字号
     - 每张图必须同时保存 TIFF + PDF（见 save_figure 默认行为）
+    - save_figure 不在 PDF / SVG / EPS 里写创建时间，SVG 用固定 hashsalt：图没变时重新导出的文件逐字节相同（reproduce_check 一致）
     - 无 Arial 的机器上可先出图，投稿前在装有 Arial 的机器重新导出
