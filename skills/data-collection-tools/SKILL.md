@@ -1,6 +1,6 @@
 ---
 name: data-collection-tools
-description: Use when data still have to be collected and collection tools must be built from the protocol and SAP. Triggers on "生成标注表"、"做个数据收集表"、"写推理脚本"、"随机分组"、"数据划分"、"CRF"、"数据录入表"、"REDCap".
+description: Use when data still have to be collected and collection tools built from the protocol and SAP. Triggers on "数据收集表"、"标注表"、"CRF"、"REDCap"、"随机分组表"、"推理脚本"、"data collection form"、"randomization list".
 ---
 
 # Data Collection Tools
@@ -8,6 +8,8 @@ description: Use when data still have to be collected and collection tools must 
 ## Overview
 
 根据已确认的 `study-protocol.md`、`analysis-plan.md` 和**真实的数据来源**，生成本研究真正需要的数据收集工具（标注模板、推理脚本、CRF、随机分组表、数据划分等）。顺序固定：先分析要收哪些变量、数据实际从哪来、谁来填 → 列出工具清单和理由 → 按 checkpoint_mode 确认 → 再生成。工具的变量名、格式、分组、划分都要和 SAP 对得上，否则分析阶段要返工。
+
+> 总调度规则（直接调用本 skill 也适用，原文见 `${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/SKILL.md`）：**患者级数据不进对话**（也不发给外部模型 API，见 A 节）；**缺前置产物**——说缺什么，light / auto 下先往下做并记缺口，不拒绝；**checkpoint_mode** 默认 light，工具清单展示后直接生成；**只要一个工具**时交付后停下。
 
 ## When to Use
 
@@ -30,8 +32,8 @@ description: Use when data still have to be collected and collection tools must 
 
 | 脚本 | 用途 | 一行可运行示例 |
 |------|------|---------------|
-| `patient_level_split.py` | 患者级 train/val/test 或 K 折划分，可按标签分层，固定 seed，输出各集类别分布 + 泄漏检查 | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/patient_level_split.py" labels.csv --patient-col patient_id --label-col label --seed 42 --out-dir data/splits` |
-| `randomization.py` | 简单 / 区组 / 分层随机分组表 + 汇总（seed 的规矩见 C 节） | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/randomization.py" --method stratified --n-per-stratum 40 --strata site=A,B sex=M,F --arms Control,Treatment --out tools/allocation.csv` |
+| `patient_level_split.py` | 患者级 train/val/test 或 K 折划分，可按标签分层，固定 seed，输出各集类别分布 + 泄漏检查；患者 ID 按文本读（保留前导 0），只差首尾空格 / 大小写 / 全角的写法算同一患者；输出的 CSV 与输入同编码（不是 UTF-8 / GB18030 的文件加 `--encoding`，如 cp1252；输入的编码写不出某个值时，按报错加 `--output-encoding utf-8`）；输出要么全部写成，要么一个都不改 | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/patient_level_split.py" labels.csv --patient-col patient_id --label-col label --seed 42 --out-dir data/splits` |
+| `randomization.py` | 简单 / 区组 / 分层随机分组表 + 含 seed 的汇总；**只由负责分配的人在项目文件夹以外运行**（分配隐藏和 seed 的规矩见 C 节） | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/randomization.py" --method stratified --n-per-stratum 40 --strata site=A,B sex=M,F --arms Control,Treatment --out ~/trial-allocation/allocation.csv` |
 
 其余工具（CRF、数据字典、提取表、推理脚本等）都按本研究的真实数据来源现写。表中命令的参数只是示例：列名、分层因素、每层例数、划分的 seed 一律按 protocol / SAP 填（随机分组的 seed 见 C 节）。
 
@@ -63,7 +65,7 @@ description: Use when data still have to be collected and collection tools must 
 | 谁在什么时间填写或导出 | 研究护士入组时、主刀术后当天、随访员按随访时点、信息科一次性导出 |
 | 已有哪些现成表格可复用 | 科室已有的随访表、专病数据库、以前项目的 REDCap / CRF |
 
-项目文件里没有的，一次列成清单问用户，不要猜；最好请用户给一份**去标识化**的导出样例或字段列表，字段名和编码以它为准。
+项目文件里没有的，一次列成清单问用户，不要猜；最好请用户给一份字段列表，或用虚构值做的导出样例（只保留真实的字段名、编码和缺失写法），字段名和编码以它为准；不要把真实患者数据（去标识化的也不行）贴进对话——见 research-ethics checklist §4 外部 AI 服务一条。
 
 ### Step 3: 列出工具清单和理由 → 按 checkpoint_mode 确认
 
@@ -79,17 +81,25 @@ description: Use when data still have to be collected and collection tools must 
 
 **Prompt 模板：** 从 `study-protocol.md` 的 Type C 模块提取任务维度列表、每个任务的题型（MCQ / 开放题）、选项池（按术式/类别分组）→ 组装为 JSON，包含 3 种 Prompt 变体（简洁/标准/详细）用于敏感性分析。
 
-**推理脚本：** 从 protocol 提取评估的模型列表 + API 配置、输入类型（图像/视频/文本）、推理参数（temperature, max_tokens, seed）、重复次数、结果解析规则（MCQ 提取、开放题保存）→ 生成 Python 脚本，支持命令行参数（--model, --input-type, --data-dir）、断点续传（已完成的样本跳过）、错误重试（3 次）、元数据记录（延迟、token、费用）。
+**推理脚本：** 从 protocol 提取评估的模型列表 + API 配置、输入类型（图像/视频/文本）、推理参数（temperature, max_tokens, seed）、重复次数、结果解析规则（MCQ 提取、开放题保存）→ 生成 Python 脚本，支持命令行参数（--model, --input-type, --data-dir）、断点续传（已完成的样本跳过）、错误重试（3 次）、元数据记录（延迟、token、费用）。推理输出写到 `data/model_outputs/`（如每个模型一个子目录）：它们是统计分析的**输入**，不放 `results/`——`results/` 只放分析脚本写出的结果，`reproduce_check.py --outputs results/` 重跑前会把里面的文件移走。
+
+**输入含患者数据时**（病历文本、影像、视频）：发给外部模型 API 就是把数据交给外部服务。按 `${CLAUDE_PLUGIN_ROOT}/skills/research-ethics/references/ethics-checklist.yaml` §4"外部 AI 服务"一条核对：默认只发匿名化数据；去标识化 / 假名化数据只有在合法性基础、委托处理协议（不得用于训练、处理完删除）、个人信息保护影响评估、出境程序（服务器在境外时）、数据持有方书面许可且伦理批准的方案写明此用途**全部满足**时才发送，缺一条就不发送（改用本地部署的模型，或只用匿名化数据）。脚本启动时打印这条提醒，并要求显式参数（如 `--data-approved`）才会发送；核对结果写进 `tools/README.md`。没有 `ethics-statement.md` 或其中没写这一用途 → 先走 `research-ethics`，推理脚本照样生成，但默认不发送。
 
 #### B. AI 诊断/预测模型
 
-**数据划分脚本 = `patient_level_split.py`**：把它复制为项目的 `tools/data_split.py`（或在 `tools/README.md` 写明调用命令），按 SAP 第 10 节（数据划分方案）的方案（hold-out / K 折）、分层标签、seed 运行；把生成的 `split_summary.json`（各集患者数、类别分布、泄漏检查 passed）附到 SAP。
+**数据划分脚本 = `patient_level_split.py`**：把它复制为项目的 `tools/data_split.py`（或在 `tools/README.md` 写明调用命令），按 SAP 第 10 节（数据划分方案）选定的验证方式运行（按患者的训练/验证/测试划分或 K 折，按患者级结局分层，seed 写进 SAP；回归类预测模型按决策树 `deep_learning_training.data_split` 用全部数据建模 + bootstrap 内部验证时不需要划分）；把生成的 `split_summary.json`（各集患者数、类别分布、泄漏检查 passed）附到 SAP。split_summary.json 里每个集合 / 每折的事件数（阳性患者数）要贴进 SAP：要调参模型的测试集事件数不够精确估计 C 统计量和校准时，SAP 改用嵌套交叉验证。`warnings` 里的每一条（标签像连续变量所以实际没有分层、同一患者 ID 有几种写法、类别的患者数少于集合数、majority 平票、患者太少有集合没分到人、文件可能是西文编码——警告只给出两种读法的患者数、不建议编码时，先向导出数据的人确认文件编码再重跑）都要在 SAP 里处理或说明；`--patient-label any` 只用于数值标签（0/1），文字标签先编码。患者 ID 为空或写成 NA / null 等缺失值代码时脚本报错，先在原始数据里补全；K 折的折数不能多于患者数。
 
 #### C. 临床研究
 
 **CRF / 数据字典生成逻辑：** 字段来自 Step 1 的变量需求清单（纳入/排除判定、基线特征、干预/暴露、主要/次要结局、各时点），不从通用模板复制字段。变量名与 SAP 一致；编码、单位、取值范围按 Step 2 的真实来源定（如 LIS 导出的单位和"<0.1"写法、HIS 的诊断编码版本、系统里"未查"的写法），数据字典逐项写明"来源系统 / 原始字段名 / 原始写法 → 分析用变量名与编码"。表格结构按数据结构定：每位患者一条记录 → 宽表（每行一个患者）；同一患者有多个病灶或多次随访 → 长表或分表，保留患者 ID 与记录 ID。
 
-**随机分组（RCT）= `randomization.py`**：按 protocol 的分配比和分层因素生成 `tools/allocation.csv`；不给 `--seed` 时脚本自取不可预测的 seed，只记在旁边的 `*_summary.json`（`--seed` 只用于重新生成同一份表，别用 42 这类好记的数）。分配表、seed、区组大小由与入组无关的人员单独受限保管（分配隐藏），**不写进 `study-protocol.md`**；protocol 只写方法（如"按中心分层、区组大小随机变化"）。
+**随机分组（RCT）= `randomization.py`，由负责分配的人运行，不在项目文件夹里**（分配隐藏）：
+- 分配表和它的 `*_summary.json`（seed、区组大小）不放在共享的项目文件夹或 `tools/` 里；生成命令也不写进招募者 / 数据收集者看的材料（`tools/README.md`、CRF 指南）。
+- 默认做法：负责分配的人（独立统计师 / 试验办公室，不参与招募、治疗或结局评估）按 protocol 的分配比和分层因素，把表生成到项目文件夹以外、只有他能访问的位置。把命令和参数单独交给他，不存进项目。脚本的护栏：`--out` 必填；输出路径在含 `.mrp-state.json`、`study-protocol.md` 或 `analysis-plan.md` 的文件夹下时拒绝；已有同名表或 summary 时不覆盖（确需替换加 `--force`）；两个文件只有所有者可读写；屏幕上不显示 seed 和区组大小。
+- 招募者只拿到分配机制：按序编号的不透明密封信封，或中央电话 / 网络随机系统。`tools/README.md` 只写这个机制和由谁保管分配表。没有独立的人保管时，用中央随机系统或请统计室 / 试验办公室代管，并在 protocol 里写明。
+- seed：不给 `--seed` 时脚本自取不可预测的 seed，只记在 summary 里；`--seed` 只用于重新生成同一份表（用 summary 的 `seed_str` 和 `regenerate` 命令、同一份脚本 `script_sha256` 和同一 numpy 版本），别用 42 这类好记的数。
+- 分层标签按因素名的字母顺序写（如 `sex=M|site=A`），调换 `--strata` 里因素的顺序结果完全不变；新增中心（某因素加一个水平）或调换水平的顺序，已有各层的标签和分配不变，但 `allocation_id` 编号可能变——新旧表按 stratum + sequence 对照，不按 `allocation_id`；改每层例数、区组大小、分配比或组别会改变整张表——扩大正在使用的表时，另用新 seed 生成追加的表。
+- seed 和区组大小**不写进 `study-protocol.md`**；protocol 只写方法（如"按中心分层、区组大小随机变化"）和由谁保管。
 
 #### D. 基础实验
 
@@ -101,11 +111,11 @@ description: Use when data still have to be collected and collection tools must 
 
 ### Step 5: 生成数据目录结构
 
-按 `references/tool-catalog.yaml` 的 `project_directory_structure` 创建项目目录（`data/{raw,processed,annotations/{annotator_*,consensus},splits}` + `tools/` + `results/` + `analysis/` + `manuscript/` + `.mrp-state.json`），按本研究实际裁剪（没有标注就不建 `annotations/`，几位标注者就建几个子目录）。原始数据放 `data/raw/` 且永不修改。
+按 `references/tool-catalog.yaml` 的 `project_directory_structure` 创建项目目录（`data/{raw,processed,annotations/{annotator_*,consensus},model_outputs,splits}` + `tools/` + `results/` + `manuscript/` + `.mrp-state.json`；`analysis_script.py` 由 `statistical-analysis` 放在项目根目录），按本研究实际裁剪（没有标注就不建 `annotations/`，没有 AI 模型就不建 `model_outputs/`，几位标注者就建几个子目录）。原始数据放 `data/raw/` 且永不修改；分析要读的东西（AI 模型的推理输出、预测）都放 `data/` 下，`results/` 只放分析脚本写出的结果。随机分配表不在项目目录里（C 节）。
 
 ### Step 6: 输出清单 + 使用指南 + 更新状态
 
-补全 `tools/README.md`：数据来源分析（Step 2）、确认后的工具清单（Step 3）、每个工具的用途和使用方法（含上面两个脚本的调用命令）。输出 3–5 行摘要，然后 `python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py done data-collection-tools --output tools/README.md --next statistical-analysis --stage "用户收集数据中"`。
+补全 `tools/README.md`：数据来源分析（Step 2）、确认后的工具清单（Step 3）、每个工具的用途和使用方法（含 `patient_level_split.py` 的调用命令）。RCT 只写分配机制（招募者怎样拿到下一个分配、分配表由谁保管），不写 `randomization.py` 的命令、seed、区组大小或分配表的位置。输出 3–5 行摘要，然后 `python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py done data-collection-tools --output tools/README.md --next statistical-analysis --stage "用户收集数据中"`。用户只要其中一个工具（如只要一份 CRF）时，交付后停下，`--next` 写用户接下来要做的。
 
 ## Output
 
@@ -114,7 +124,7 @@ description: Use when data still have to be collected and collection tools must 
 | `tools/README.md` | 必须 | 数据来源分析 + 工具清单与理由 + 使用指南 |
 | Step 3 清单里的工具 | 按清单 | 常见文件名见 `references/tool-catalog.yaml`（如 `tools/CRF.xlsx`、`tools/data_dictionary.md`、`tools/prompts.json`）；AI 研究的结果汇总脚本不代替 `statistical-analysis` 的 `analysis_script.py` |
 | `tools/data_split.py` + `data/splits/split_summary.json` | AI 诊断 | 患者级划分（来自 `patient_level_split.py`） |
-| `tools/allocation.csv` + `*_summary.json` | RCT | 随机分组表与含 seed 的汇总（`randomization.py`，受限保管） |
+| 分配表 + `*_summary.json`（**不在项目文件夹里**） | RCT | 负责分配的人用 `randomization.py` 生成并保管在项目文件夹以外；项目里只有 `tools/README.md` 写的分配机制 |
 | `data/` 目录结构 | 所有类型 | 按本研究裁剪的项目目录 |
 
 ## Common Mistakes
@@ -125,10 +135,10 @@ description: Use when data still have to be collected and collection tools must 
 | "数据收集格式以后再定" | 事后转换数据格式费时费力，必须提前设计 |
 | "Excel 随便建个表就行" | 没有数据字典的 Excel = 未来的噩梦 |
 | "标注不需要指南" | 标注一致性取决于标注指南的清晰度 |
-| "数据按图像/帧划分就行" | 按患者 ID 划分，防止数据泄漏（用 `patient_level_split.py`） |
 | "随机分组 Excel 拉个随机数就行" | 用脚本，区组/分层；protocol 只写方法，分配表、seed、区组大小单独保管（分配隐藏） |
+| "模型推理输出放 `results/`" | 推理输出是分析的输入，放 `data/model_outputs/`；`results/` 是重跑核对比较的输出，重跑前会被移走 |
+| "病历已去标识化，直接发给模型 API" | 去标识化数据仍是敏感个人信息：默认只发匿名化数据，否则 checklist §4 的条件要全部满足 |
 | "推理脚本跑一次就行" | 按 protocol 规定的重复次数运行、检查一致性 + 断点续传 |
-| "变量名随便起" | 标准化命名（snake_case），与 `analysis-plan.md` 一致 |
 
 ## Convergence
 
@@ -145,8 +155,9 @@ description: Use when data still have to be collected and collection tools must 
 - 没有 protocol / SAP 就要生成工具 → 先说明返工风险；用户仍要做时，变量标"待与 SAP 核对"
 - **不知道数据从哪来、谁来填、导出长什么样就开始生成 CRF / 提取表** → 停，先做 Step 2
 - **想临场重写数据划分或随机分组代码** → 停，复制或调用 `patient_level_split.py` / `randomization.py`
+- **推理脚本要把患者数据发给外部模型 API，而 checklist §4 的条件没有全部满足** → 停，默认不发送
 - **数据划分必须按患者级别** — 绝不按图像/帧级别划分
-- **随机分组表交给招募者** → 停，分配隐藏被破坏
+- **随机分组表、seed、区组大小或生成命令出现在项目文件夹、`tools/README.md`、CRF 指南里，或交给招募者** → 停，分配隐藏被破坏
 - **CRF 变量必须有数据字典** — 裸变量名不可接受
 
 ## 衔接规则
