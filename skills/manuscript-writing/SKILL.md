@@ -9,6 +9,8 @@ description: Use when drafting a manuscript or one section (original research, o
 
 撰写医学研究论文——支持原始研究（IMRaD）和综述类文章（Narrative / Systematic / Meta-Analysis / Scoping / Mini-Review）。核心原则：**不虚构数据、结果或参考文献；每一个数字都能回溯到 `results-summary.md` 或分析输出。** 顺序固定：先盘点项目里实际有哪些产物、目标期刊要求什么、读者是谁 → 列出每节的要点提纲（每条要点标明出处）→ 按 checkpoint_mode 确认 → 再写全文。类型文件和期刊模板只给章节结构，内容必须来自本项目的产物。
 
+> 总调度规则（直接调用本 skill 也适用，原文见 `${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/SKILL.md`）：**缺前置产物**——说缺什么，light / auto 下先往下做并记缺口，不拒绝；**checkpoint_mode** 默认 light，只在 3 个硬确认处等；**只要一个产物**（只写某一节）时交付后停下。
+
 ## When to Use
 
 写论文、写综述、写摘要、写某一个章节；已有 `results-summary.md` 或文献综合结果，准备成稿。
@@ -45,7 +47,7 @@ description: Use when drafting a manuscript or one section (original research, o
 | Scoping Review | `scoping` | 映射式 | 5000–10000 | PRISMA-ScR | `references/article-types/scoping.md` |
 | Mini-Review | `mini` | 短篇聚焦 | 2000–3000 | 无强制 | `references/article-types/mini.md` |
 
-"典型字数"只是经验值；**实际上限一律以目标期刊模板为准**。
+"典型字数"只是经验值；**实际上限以目标期刊为准**：模板的 `limits` 是原始研究（Original Article）的上限，综述类按类型文件的"期刊上限"取 `limits_by_type`，没有就查期刊 author guidelines 并记进 `journal-overrides.yaml`。
 
 ## Workflow
 
@@ -55,7 +57,7 @@ description: Use when drafting a manuscript or one section (original research, o
 
 ### Step 1：确定文章类型
 
-按 Router 判定类型 → 读取对应 `references/article-types/<type>.md` → 按其"前置依赖"表检查文件是否齐全。缺必须项 → 按总调度"缺前置产物时"处理（告知 → 给选择 → 照办）；用户选先写时，缺的内容写 `[待补：来源]`，不编造（原始研究的 Methods 和 Introduction 不依赖 `results-summary.md`）。
+按 Router 判定类型 → 读取对应 `references/article-types/<type>.md` → 按其"前置依赖"表检查文件是否齐全。缺必须项 → 按总调度"缺前置产物时"处理：说明缺什么，light / auto 下先写（step 模式先问用户），缺的内容写 `[待补：来源]`，不编造（原始研究的 Methods 和 Introduction 不依赖 `results-summary.md`）。
 
 ### Step 2：确定目标期刊并加载模板（软确认）
 
@@ -70,25 +72,25 @@ description: Use when drafting a manuscript or one section (original research, o
    | 产物 | 写作时用来做什么 |
    |------|----------------|
    | `results-summary.md` 及分析输出的结果表 | Results、Abstract 里的每个数字 |
-   | `analysis-log.md` | 与 SAP 的偏离（Gate 2 查这里） |
+   | `analysis-log.md` | 与 SAP 的偏离（Gate 2 查这里）；Post hoc / Exploratory Analyses 表（SAP 之外新增的分析） |
    | `figure-legends.md`、图文件、`figure-plan.md` | 图表编号，正文 / 补充材料的分配 |
    | `study-protocol.md` | 设计、纳排、结局定义、样本量依据、"真实条件与设计理由" |
    | `analysis-plan.md` | 统计方法 |
    | `ethics-statement.md` | 伦理批准号、知情同意 / 豁免、注册号 |
 
    缺哪个就在提纲里标出，对应内容写 `[待补：来源]`，不编造。
-2. **目标期刊要求**：Step 2 取到的 `word_limit`、`abstract` 格式、`figures` / `tables` 上限、`sections` 顺序、`special`。
+2. **目标期刊要求**：Step 2 取到的 `limits`（字数 / 摘要 / 参考文献 / 图表上限，综述类见类型文件"期刊上限"）、`abstract` 格式、`sections` 顺序、`special`；条目未核实时先按 Journal Template 节转告用户。
 3. **读者是谁**：期刊的主要读者（专科医生 / 全科临床医生 / 方法学或 AI 研究者）决定背景写多深、术语解释到什么程度、临床意义怎么讲。
-4. **写 `manuscript-outline.md`**（项目根目录）：每一节列要点，每条要点标明出处（产物文件 + 节 / 表 / 图；数字写到具体位置，如"主要结局效应量 → `results-summary.md` 的 Primary Outcome 表"），并按期刊字数限制给各节分配字数。`analysis-log.md` 的每条 SAP 偏离列进 Methods 要点（写明改了什么、为什么），影响结论的同时列进 Limitations。
+4. **写 `manuscript-outline.md`**（项目根目录）：每一节列要点，每条要点标明出处（产物文件 + 节 / 表 / 图；数字写到具体位置，如"主要结局效应量 → `results-summary.md` 的 Primary Outcome 表"），并按期刊字数限制给各节分配字数。`analysis-log.md` 的每条 SAP 偏离列进 Methods 要点（写明改了什么、为什么），影响结论的同时列进 Limitations；Post hoc / Exploratory Analyses 表里的每个分析也列进 Methods 要点，标明 post hoc / exploratory 和由来（如"应审稿意见新增"），Results 要点里与预定分析分开列。
 5. 把提纲给用户看，按总调度的 checkpoint_mode 处理计划确认。只写某一节（如只写 Methods）时，只列这一节的提纲。
 
 ### Step 4：按提纲和类型文件的写作顺序逐章写作
 
 - 每章写入 `manuscript/<section>.md`（文件名见 Output）；写作时对照类型文件的章节规则与报告规范条目。
 - 内容来自本项目的实际产物：每句话要么有产物支撑，要么是有引用的已有知识；不写没有具体信息的套话（如只说"具有重要临床意义"而不说意义在哪）。
-- Results 的每个数字都要能在 `results-summary.md` 或分析输出里找到出处（提纲里的出处保留到自检）；SAP 偏离按提纲写进 Methods / Limitations。
-- 每写完一章，对照模板的 `word_limit` / `abstract` 字数**实时检查**，超限先删冗余再压缩。
-- 缺数据或未定稿处用 `[待补：来源]`、`<!-- PLACEHOLDER: 说明 -->` 或 `[TBD]` 标注，**不要用看起来像真数据的占位值**。导出脚本会把这些占位列进导出报告：`[待补…]` / `[待填…]`、全角的 `【待补…】` / `［待补…］`（及待填写法）、`[TBD]` / `[TODO]` / `[pending]` / `[insert…]`，以及 HTML 注释里的 PLACEHOLDER / TODO / TBD / 待补（完整清单见 `manuscript-export`）；Step 6 先自查一遍。
+- Results 的每个数字都要能在 `results-summary.md` 或分析输出里找到出处（提纲里的出处保留到自检）；SAP 偏离和 post hoc 分析按提纲写进 Methods / Limitations；post hoc 分析标 post hoc / exploratory，Results 里与预定分析分开呈现，不写成主要结论。
+- 每写完一章，对照 `limits` 的 `body_words` / `abstract_words`（`body_excludes` 列出不计入正文字数的部分）**实时检查**，超限先删冗余再压缩；`soft: true` 的数字是期刊给的参考值，超出时提醒而不是硬卡。
+- 缺数据或未定稿处用 `[待补：来源]`、`<!-- PLACEHOLDER: 说明 -->` 或 `[TBD]` 标注，**不要用看起来像真数据的占位值**。导出脚本会把这些占位列进导出报告：`[待补…]` / `[待填…]`、全角的 `【待补…】` / `［待补…］`（及待填写法）、`[TBD]` / `[TODO]` / `[pending]` / `[insert…]`，HTML 注释（也可跨行）里的 PLACEHOLDER / TODO / TBD / 待补，以及不带括号的大写 TODO / TBD / FIXME、待补 / 待填 / 待核实和 [ref] / [cite]（完整清单见 `manuscript-export`）；Step 6 先自查一遍。
 - 引用：写作时标记来源（PMID/DOI）；格式化用 `pubmed-search` Mode 6，写综述 Methods 检索策略可用 Mode 1；PubMed MCP 的写法和 5 种引用状态标记以 `pubmed-search` 为准；最终逐条验证由 `pre-submission-verification` Gate 3 完成。
 
 ### Step 5：期刊特殊元素
@@ -98,7 +100,7 @@ description: Use when drafting a manuscript or one section (original research, o
 ### Step 6：自检与收尾
 
 1. 对照 Convergence 逐条自检；语言规则检查（见 Language Rules）。
-2. 数字溯源：逐个核对 Results / Abstract / Key Points 里的数字，都能在 `results-summary.md` 或分析输出里找到（找不到的删掉，或回 `statistical-analysis` 补）；`analysis-log.md` 的每条 SAP 偏离都已写进 Methods。
+2. 数字溯源：逐个核对 Results / Abstract / Key Points 里的数字，都能在 `results-summary.md` 或分析输出里找到（找不到的删掉，或回 `statistical-analysis` 补）；`analysis-log.md` 的每条 SAP 偏离和 Post hoc 表里的每个分析都已写进 Methods（post hoc 的标明 post hoc）。
 3. 查占位：`grep -rniE "待补|待填|TBD|TODO|PLACEHOLDER|\[pending|\[insert" manuscript/`，剩下的占位逐条列进摘要的"需要注意"。
 4. 输出 3–5 行摘要（产物清单、目标期刊与字数、待注意的 placeholder），按 checkpoint_mode 进入下一步（只写某一节时交付后停下）。
 5. `python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py done manuscript-writing --output manuscript/ --next peer-review-simulation`（只写某一节时 `--next` 写用户接下来要做的事）。
@@ -106,7 +108,7 @@ description: Use when drafting a manuscript or one section (original research, o
 
 ## Journal Template（期刊排版规范）
 
-模板库：`references/journal-templates.yaml`，240 个期刊（顶层键 `data_as_of` + `templates`），按专科分区。它是字数、摘要格式、参考文献样式、特殊要求、投稿系统、期刊家族（`family`）的**唯一数据源**——不要在本文件重复期刊清单。
+模板库：`references/journal-templates.yaml`，240 个期刊（顶层键 `data_as_of` + `templates`），按专科分区。字数、摘要格式、参考文献样式、特殊要求、投稿系统、期刊家族（`family`）都从这里取——不要在本文件重复期刊清单。每条有机器可读的 `limits`（原始研究的 `body_words` / `body_excludes` / `abstract_words` / `references` / `figures` / `tables` 或合计的 `display_items` / 按页限制的 `pages` / 参考值标记 `soft`；为 null 或缺省 = 库里没有这个上限），少数条目另有 `limits_by_type`；`word_limit` 等原文字段是这些数字的出处。字段含义见库文件头注释。
 
 **只用脚本读取（文件超过 Read 默认的 2000 行，整读会截断且浪费上下文）：**
 
@@ -120,9 +122,13 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_temp
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py --id nature --json
 ```
 
-找不到 id 时脚本 exit 1 并提示 `--search`；`journal-overrides.yaml` 格式有误或 `--yaml` 指定的文件不存在时输出一行 `Error: …` 并 exit 2——按提示改好文件再运行，不要原样重试。输出里的 `IF_approx` 年份看条目的 `IF_year`（没有则为 **JCR 2022** 旧值）、APC 看 `apc_year`（规则见 `data_as_of`），引用时必须标年份与来源，选刊结论以 `journal-selection` 的 WebSearch 复核为准。
+找不到 id 时脚本 exit 1 并提示 `--search`；参数有误、`journal-overrides.yaml` 格式有误或 `--yaml` 指定的文件不存在时输出一行 `Error: …` 并 exit 2——按提示改好再运行，不要原样重试。输出里的 `IF_approx` 年份看条目的 `IF_year`（没有则为 **JCR 2022** 旧值）、APC 看 `apc_year`（规则见 `data_as_of`），引用时必须标年份与来源，选刊结论以 `journal-selection` 的 WebSearch 复核为准。
 
-**目标期刊不在库中：** 用 WebSearch 找期刊 "Instructions for Authors"，把提取到的规范写入**项目目录**的 `journal-overrides.yaml`（与库文件相同结构：`templates:` 下一条含 `id / journal / publisher / word_limit / abstract / references / figures / tables / sections / special / system / family`），字段不确定的写 `verify`。脚本默认读取 `./journal-overrides.yaml`（或 `--overrides <路径>`），同 id 时覆盖库内条目。**不要改插件安装目录里的 `journal-templates.yaml`**——更新插件会丢失。
+**未核实的条目（没有 `guidelines_checked`）：** 脚本在 stderr 打印一行 `Warning: '<id>' is unverified …`（`--list` / `--search` 的 `checked` 列为 `—`）。用到这样的条目时，**必须把这条警告转告用户**："该刊模板的字数 / 图表 / 参考文献上限未按期刊现行作者指南核对，可能已过时，请先到期刊官网确认"；能联网时用 WebSearch / WebFetch 查期刊 author guidelines 核对，核对后的数字写进项目 `journal-overrides.yaml`（整条复制后改，加 `guidelines_checked: YYYY-MM` 与 `guidelines_source: <URL>`）。不要把未核实的上限当成确定值写进提纲或摘要。
+
+**`待核实` 项：** 条目 `special` 里以 `待核实` 开头的项是上次核对没能确认的值；有这样的项时脚本在 stderr 再打印一行 `Warning: '<id>' has N 待核实 item(s) …`（已核实条目也会有）。已核实条目里这些值不在 `limits` 里（导出报告显示"库里无此上限"，不打 ✅）。用到该刊时**把这些项逐条转告用户**，请用户到期刊官网确认；确认后的数字照上面的办法写进 `journal-overrides.yaml`，确认前在提纲里标"待核实"，不当成确定上限。
+
+**目标期刊不在库中：** 用 WebSearch 找期刊 "Instructions for Authors"，把提取到的规范写入**项目目录**的 `journal-overrides.yaml`（与库文件相同结构：`templates:` 下一条含 `id / journal / publisher / word_limit / abstract / references / figures / tables / limits / sections / special / system / family / guidelines_checked / guidelines_source`；`limits` 只填页面写明的数字，没写的上限不填），字段不确定的写 `verify`。脚本默认读取 `./journal-overrides.yaml`（或 `--overrides <路径>`），同 id 时覆盖库内条目。**不要改插件安装目录里的 `journal-templates.yaml`**——更新插件会丢失。
 
 ## Output
 
@@ -145,7 +151,7 @@ manuscript/
 
 写作提纲 `manuscript-outline.md`（Step 3）放在项目根目录，不放进 `manuscript/`（否则导出报告会把它列为"未导出的文件"）。
 
-文件名与 `manuscript-export` 的 section id 一一对应：`key-points` 与 `research-in-context` 由导出脚本按期刊 `family` 决定是否纳入及位置（JAMA：Key Points 在 Abstract 之前；Lancet：Research in Context 在 Introduction 之前；其他家族有这两个文件也不会导出，报告里会提示）。综述类的 `section-N-*.md` 导出前需合并进 `discussion.md`。
+文件名与 `manuscript-export` 的 section id 一一对应：`key-points` 与 `research-in-context` 由导出脚本按期刊 `family` 决定是否纳入及位置（JAMA：Key Points 在 Abstract 之前；Lancet：Research in Context 在 Introduction 之前；其他家族有这两个文件也不会导出，报告里会提示）。综述类的 `section-N-*.md` 由导出脚本按 N 的数字顺序排在 Introduction 之后，计入正文字数，不必合并。
 
 数据表格需要 Excel 时（可选）：用 pandas `ExcelWriter`（openpyxl）从分析输出的结果表写出，每张表一个 sheet，不手抄数字。
 
@@ -174,17 +180,19 @@ manuscript/
 | "Scoping Review 需要偏倚评估" | Scoping Review 明确不做质量评价 |
 | "I²>50% 就改用随机效应" | 模型预先指定；I² 只用于报告异质性，不是事后换模型的依据 |
 | "期刊不在库里就改插件目录的 YAML" | 写项目目录 `journal-overrides.yaml`，更新插件不丢失 |
+| "库里有这个刊，上限照抄就行" | 没有 `guidelines_checked` 的条目未核实：把脚本的警告转告用户，到期刊官网确认 |
+| "综述也按模板的 `limits` 写" | `limits` 是原始研究的上限；综述看 `limits_by_type`，没有就查期刊指南（类型文件"期刊上限"） |
 
 ## Convergence
 
 当以下条件全部满足时完成：
 1. `manuscript-outline.md` 已写好（每条要点标出处）并按 checkpoint_mode 确认
 2. 所有章节均已完成（按类型文件的 Output Structure；只写某一节时只查这一节）
-3. Results / Abstract 的每个数字都能在 `results-summary.md` 或分析输出里找到出处；`analysis-log.md` 的 SAP 偏离已在 Methods 如实写明（影响结论的在 Limitations 讨论）
+3. Results / Abstract 的每个数字都能在 `results-summary.md` 或分析输出里找到出处；`analysis-log.md` 的 SAP 偏离已在 Methods 如实写明（影响结论的在 Limitations 讨论），Post hoc 表里的分析已在 Methods 标明 post hoc、在 Results 与预定分析分开
 4. 所有图表已在正文引用，编号连续
 5. 参考文献完整、每条有 PMID/DOI 或标注 ℹ️ Non-PubMed
 6. 语言规范检查通过
-7. 正文与摘要字数在目标期刊模板限制内（用脚本取到的 `word_limit` / `abstract`）
+7. 正文与摘要字数在目标期刊限制内（脚本取到的 `limits`；综述类用 `limits_by_type` 或 overrides 里核对过的上限）；用到未核实条目时已把警告转告用户
 8. 期刊特殊要求已满足（Key Points / Research in Context / Patient Summary 等）
 9. 综述类：PRISMA / PRISMA-ScR checklist 已完成（如适用）
 10. 剩余的 `[待补：…]` / `[TBD]` 占位已列给用户；`.mrp-state.json` 已更新
@@ -192,7 +200,7 @@ manuscript/
 ## Red Flags — STOP
 
 - Results 中没有的数字出现在 Discussion / Abstract → 停，禁止引入未分析的数据
-- Results 的数字在 `results-summary.md` / 分析输出里找不到出处，或 `analysis-log.md` 记录的 SAP 偏离在 Methods 中没写 → 停，补出处或如实写明
+- Results 的数字在 `results-summary.md` / 分析输出里找不到出处，或 `analysis-log.md` 记录的 SAP 偏离 / post hoc 分析在 Methods 中没写（post hoc 的没标 post hoc）→ 停，补出处或如实写明
 - 虚构数据、结果或参考文献 → 绝对禁止，立即停止
 - 缺少必须的前置文件（按类型文件的前置依赖表）却写出了具体数字或结果 → 停，改成 `[待补：来源]` 并告知用户
 - "significantly" 用于非统计学语境 / "prove" 表述 → 停，改为规范措辞
@@ -213,6 +221,6 @@ manuscript/
 
 ### 可选衔接
 - 参考文献格式化 → `pubmed-search` Mode 6；综述检索策略 → `pubmed-search` Mode 1
-- 写作中发现研究问题定义不清 → 回 `research-question-formulation`；分析需调整 → 回 `data-analysis-planning`（修改须标注为与 SAP 的偏离）
+- 写作中发现研究问题定义不清 → 回 `research-question-formulation`；分析需调整 → 按回溯表（`${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/references/backtracking.md`）：SAP 写了预定备选 → `statistical-analysis` 换用并记偏离；没写 → `data-analysis-planning` 修订 SAP；SAP 之外的新分析 → `statistical-analysis` 按 post hoc 做
 - 涉及人体/动物数据的 Methods 伦理声明 → `research-ethics` 的 `ethics-statement.md`
 - 需要图表 → `figure-generation`；需要报告规范逐条核对 → `reporting-standards`

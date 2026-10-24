@@ -11,6 +11,7 @@
 | `literature-synthesis-summary.md` + `literature-references.md` | 必须 |
 | `journal-selection-report.md`（或 `.mrp-state.json` 的 `target_journal`） | 推荐 |
 | `research-question.md` | 推荐（帮助聚焦范围） |
+| 目标期刊对 Review 的上限（见下方"期刊上限"；模板库的 `limits` 只是原始研究的上限） | 必须 |
 
 ## 写作顺序
 
@@ -33,7 +34,17 @@
 
 **Conclusion（1–2 段）**：凝练全文核心要点，**不引入新信息**。
 
-**Abstract**：多为非结构化，字数**以目标期刊模板为准**；概括范围 + 主要发现 + 结论。
+**Abstract**：多为非结构化，字数**以目标期刊对 Review 的要求为准**（见"期刊上限"）；概括范围 + 主要发现 + 结论。
+
+## 期刊上限（字数 / 摘要 / 参考文献 / 图表）
+
+`get_journal_template.py --id <id>` 输出的 `limits` 只是该刊**原始研究（Original Article）**的上限，不能套用到本类型。按顺序取：
+
+1. 输出里的 `limits_by_type.<键>`（本类型用 `review`）——库内只有条目原文写明了该类型上限的少数期刊才有；
+2. 没有 → 到期刊 author guidelines 查本文章类型的字数、摘要、参考文献、图表上限：把 `--id` 输出的整条复制进项目目录 `journal-overrides.yaml`（同 id 的条目会整条替换库内条目），在其中加 `limits_by_type.<键>`，并写 `guidelines_checked: YYYY-MM` 与 `guidelines_source: <URL>`；
+3. 查不到的上限不填，并告诉用户需要人工确认——**不要**拿原始研究的数字代替。
+
+导出时 `manuscript-export` 加 `--article-type <键>`，按这组上限检查。
 
 ## Output Structure
 
@@ -52,7 +63,7 @@ manuscript/
 └── figure-legends.md          ← 可选
 ```
 
-> `manuscript-export` 只按期刊 family 的固定 section 顺序导出（title-page / abstract / introduction / methods / results / discussion / conclusion / references）。主题式 `section-N-*.md` 不在该顺序中：导出前把各主题板块合并进 `discussion.md`（或按期刊要求合并为一个正文文件），否则导出报告会列出"未导出的文件"。
+> `manuscript-export` 把主题式 `section-N-*.md` 按 N 的数字顺序（1, 2, … 10）排在 `introduction.md` 之后导出，计入正文字数；有这些文件时不要求 methods.md / results.md。文件名必须是 `section-<数字>-<主题>.md`。
 
 ## 报告规范
 

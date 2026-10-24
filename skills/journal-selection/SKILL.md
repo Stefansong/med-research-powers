@@ -9,6 +9,8 @@ description: Use when choosing or re-checking a target journal (tentative after 
 
 选对期刊是投稿成功的第一步。投错期刊 = desk reject + 浪费 2–6 个月。研究设计阶段就**暂定**目标期刊（按其格式写作），写作前和投稿前各复核一次——目标期刊是**软确认**，随时可以换，不锁定流程。
 
+> 总调度规则（直接调用本 skill 也适用，原文见 `${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/SKILL.md`）：**缺前置产物**——说缺什么，light / auto 下先往下做并记缺口，不拒绝；**checkpoint_mode** 默认 light，只在 3 个硬确认处等；**只要一个产物**时交付后停下。目标期刊是软确认，随时可换。
+
 ## When to Use
 
 - `study-design`（硬确认 `study-protocol.md`）与 `research-ethics` 之后 → 暂定目标期刊（软确认）
@@ -52,6 +54,8 @@ description: Use when choosing or re-checking a target journal (tentative after 
 - 库内 `IF_approx` 的年份看该条目的 `IF_year`（有则为出版社公布的 JCR 2025/2024 值，来源在 `IF_source`）；没有 `IF_year` 的条目仍是 **JCR 2022** 值；APC 同理看 `apc_year`（规则见库文件顶层 `data_as_of`）。**报告里每个 IF 必须标注 JCR 年份与来源**，如 "IF 29.1 (JCR 2025, sciencedirect.com)"。
 - 库内没有分区、接收率、审稿周期、ORCID 要求等字段。**报告前必须用 WebSearch 复核 Top 3 期刊的最新 IF 与 JCR/中科院分区**，并写明年份与来源 URL。
 - 无法查到的数据一律写 **N/A**，禁止凭印象填数。
+- 条目没有 `guidelines_checked` = **未核实**（字数 / 图表 / 参考文献上限没按期刊现行作者指南核对过）：`get_journal_template.py --id` 会在 stderr 打印一行 `Warning: '<id>' is unverified …`，`--list` / `--search` 的 `checked` 列为 `—`。推荐或使用这样的期刊时，**把这条警告转告用户**，在报告的 Submission Specs 与 "Items to verify manually" 里写明"上限未核实"，并用 WebSearch 查期刊 author guidelines 复核 Top 3 的上限（查到的写来源 URL，查不到的写 N/A）。
+- 条目 `special` 里以 `待核实` 开头的项 = 上次核对没能确认的值（已核实条目也可能有）：`--id` 会在 stderr 多打印一行 `Warning: '<id>' has N 待核实 item(s) …`。**把这些项逐条转告用户**，写进报告的 "Items to verify manually"，不要当成确定值报给用户。
 
 取库内模板一律用脚本（**禁止整读 `journal-templates.yaml`**，文件超过 Read 默认的 2000 行，会被截断）：
 
@@ -91,12 +95,13 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_temp
 
 ### Step 4：投稿规格提取（Top 3）
 
-对 Top 3 期刊各运行一次 `get_journal_template.py --id <id>`，提取：
-- [ ] 字数限制（正文 / 摘要）、结构化摘要小标题
-- [ ] 参考文献上限和格式
+对 Top 3 期刊各运行一次 `python3 "${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_template.py" --id <id>`，提取：
+- [ ] 字数限制（正文 / 摘要）、结构化摘要小标题——数字取输出里的 `limits`（原始研究的上限；`body_excludes` = 不计入正文字数的部分，`soft: true` = 参考值）。论文不是原始研究时看 `limits_by_type`，没有就查期刊 author guidelines 中该文章类型的要求
+- [ ] 参考文献上限和格式（格式看 `citation_style`，没有该字段 = 库内未记录，查期刊指南）
 - [ ] 图表数量限制
 - [ ] Supplementary 政策、期刊特殊元素（Key Points / Research in Context / Patient Summary / Reporting Summary）
-- [ ] 投稿系统（ScholarOne / Editorial Manager / eJournalPress / Snapp 等，库内 `system` 字段）
+- [ ] 投稿系统（ScholarOne / Editorial Manager / eJournalPress / Snapp 等，库内 `system` 字段，有 `submission_url` 时一并给出）
+- [ ] 上限是否已核实：条目有 `guidelines_checked`（写月份与 `guidelines_source`）；没有 → 脚本的未核实警告已转告用户；`待核实` 项（脚本的第二行警告）已逐条转告用户
 - [ ] 是否需要试验注册号、Data availability statement
 - [ ] APC（库内为 2022 价，标年份；WebSearch 复核最新价，查不到写 N/A）
 - [ ] ORCID 是否必须（库内只有部分条目有 `orcid` 字段；无则 WebSearch 期刊官网，查不到写 N/A）
@@ -118,6 +123,9 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_temp
        IF_year: [JCR 年份]
        IF_source: "[URL]"
        word_limit: ...
+       limits: {body_words: ..., abstract_words: ..., references: ..., figures: ..., tables: ...}  # 只填页面写明的数字
+       guidelines_checked: "YYYY-MM"            # 查阅作者指南的月份
+       guidelines_source: "[作者指南 URL]"
        family: standard
    → manuscript-writing / manuscript-export 的脚本会优先读取该文件；不确定的字段写 verify
 4. 向用户确认采集的信息；WebSearch 找不到的字段标注 "[未确认]"
@@ -129,8 +137,8 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_temp
 
 1. 生成 `journal-selection-report.md`（模板见 Output）。
 2. 输出 3–5 行摘要（Target 首选 + 备选 + 需人工核实的项），默认直接进入下一步；本步是**软确认**，不等待。
-3. 更新项目目录 `.mrp-state.json` 的 `target_journal`（`python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py`）；用户同意时把目标期刊写入 `~/.claude/mrp-user-profile.json` 的 `favorite_journals`。
-4. 下一步：首次选刊 → `data-analysis-planning`；写作前复核 → `manuscript-writing`；改投 → `submission-preparation`。
+3. 更新项目目录 `.mrp-state.json` 的 `target_journal`（`python3 ${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/scripts/mrp_state.py set target_journal=<期刊 id>`：存期刊库 id，给期刊全名会换成 id；库里没有的期刊先写进项目的 `journal-overrides.yaml` 再设置）；用户同意时把目标期刊写入 `~/.claude/mrp-user-profile.json` 的 `favorite_journals`。
+4. 下一步：首次选刊 → `data-analysis-planning`；写作前复核 → `manuscript-writing`；改投 → `manuscript-writing`（按新刊调整字数、格式、参考文献）→ `pre-submission-verification` → `manuscript-export` → `submission-preparation`。
 
 ## Output
 
@@ -173,6 +181,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/manuscript-writing/scripts/get_journal_temp
 - Word limit: X；Abstract: structured / unstructured, ≤X words（小标题：…）
 - References: ≤X, [format]；Figures: ≤X；Tables: ≤X
 - Special: [Key Points / Research in Context / Patient Summary / Reporting Summary …]
+- Limits checked: [guidelines_checked yyyy-mm, guidelines_source URL] / ⚠️ 未核实（库内无 guidelines_checked；[已按 URL 复核 / 未能复核]）；待核实项：[逐条列出 / 无]
 - System: [ScholarOne / Editorial Manager / eJournalPress / Snapp]
 - APC: [USD X (yyyy, URL)] / subscription (no APC) / N/A
 - Registration / Data availability / ORCID: [要求，来源]
@@ -192,6 +201,7 @@ Reach 被拒（有审稿意见）→ 按意见修改后投 Target
 | "先投 Nature/Lancet 试试" | 浪费 3–6 个月，除非论文档位真的是 A |
 | "影响因子越高越好" | Scope 不匹配的高 IF 期刊 = 100% desk reject；Scope ≤3 直接剔除 |
 | "库里写的 IF 直接报" | 先看条目 `IF_year`；没有的是 JCR 2022 旧值；报告前必须 WebSearch 复核并标年份与来源 |
+| "库里的字数上限直接写进报告" | 没有 `guidelines_checked` 的条目未核实：转告脚本的警告，复核后再写；综述等非原始研究看 `limits_by_type` |
 | "接收率大概 20% 吧" | 没有来源的数字一律写 N/A，不能编 |
 | "写完再选期刊" | 设计阶段就暂定，按目标期刊格式写作；写作前再复核一次 |
 | "选定期刊就不能换了" | 目标期刊是软确认，随时可换；只有 protocol / SAP / pre-submission 是硬确认 |
@@ -204,7 +214,7 @@ Reach 被拒（有审稿意见）→ 按意见修改后投 Target
 当以下条件全部满足时完成：
 1. 至少 3 个候选期刊已过 ≥29/45 过滤并按梯队排序
 2. Top 3 期刊的 IF/分区已 WebSearch 复核并标注年份与来源；查不到的项写 N/A
-3. Top 1 期刊的投稿规格已用 `get_journal_template.py` 完整提取
+3. Top 1 期刊的投稿规格已用 `get_journal_template.py` 完整提取；用到未核实条目时，警告已转告用户并列入 "Items to verify manually"
 4. 用户暂定目标期刊（软确认，可随时更换）
 5. Cascade 策略已制定（被拒后改投方案）
 6. `.mrp-state.json` 的 `target_journal` 已更新
@@ -228,5 +238,5 @@ Reach 被拒（有审稿意见）→ 按意见修改后投 Target
 - 期刊规格 → `pre-submission-verification` Gate 6（形式检查）与 `manuscript-export`（`--journal <id>`）
 
 ### 可选衔接
-- 被拒后改投 → 重新分梯队 → `submission-preparation`（改写 cover letter）
+- 被拒后改投 → 重新分梯队 → `manuscript-writing`（按新刊调整）→ `pre-submission-verification`（Gate 6 按新刊重查）→ `manuscript-export` → `submission-preparation`（改写 cover letter）
 - 期刊不在库中 → Step 4b 写 `journal-overrides.yaml`

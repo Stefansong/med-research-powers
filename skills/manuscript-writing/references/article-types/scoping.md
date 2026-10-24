@@ -13,6 +13,7 @@
 | PRISMA-ScR Checklist（`reporting-standards` 提供） | 必须 |
 | Evidence Map / Charting Table | 必须 |
 | 注册/方案（OSF、Figshare 等；PROSPERO 不接受 scoping review） | 推荐，未注册须说明 |
+| 目标期刊对 scoping review 的上限（见下方"期刊上限"；模板库的 `limits` 只是原始研究的上限） | 必须 |
 
 ## 写作顺序
 
@@ -31,7 +32,17 @@
 
 **Discussion**：概括版图 → 空白与方法学缺口 → 对政策/实践/研究的启示；局限性写检索范围与 charting 主观性
 
-**Abstract**：结构化，小标题与字数**以目标期刊模板为准**。
+**Abstract**：结构化，小标题与字数**以目标期刊对 scoping review 的要求为准**（见"期刊上限"）。
+
+## 期刊上限（字数 / 摘要 / 参考文献 / 图表）
+
+`get_journal_template.py --id <id>` 输出的 `limits` 只是该刊**原始研究（Original Article）**的上限，不能套用到本类型。按顺序取：
+
+1. 输出里的 `limits_by_type.<键>`（期刊把 scoping review 归入哪种文章类型，就用对应的键：多为 `systematic_review` 或 `review`）——库内只有条目原文写明了该类型上限的少数期刊才有；
+2. 没有 → 到期刊 author guidelines 查本文章类型的字数、摘要、参考文献、图表上限：把 `--id` 输出的整条复制进项目目录 `journal-overrides.yaml`（同 id 的条目会整条替换库内条目），在其中加 `limits_by_type.<键>`，并写 `guidelines_checked: YYYY-MM` 与 `guidelines_source: <URL>`；
+3. 查不到的上限不填，并告诉用户需要人工确认——**不要**拿原始研究的数字代替。
+
+导出时 `manuscript-export` 加 `--article-type <键>`，按这组上限检查。
 
 ## Output Structure
 

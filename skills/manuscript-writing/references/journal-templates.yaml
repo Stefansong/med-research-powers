@@ -24,24 +24,85 @@
 #   All other IF_approx values are still JCR 2022; APC figures are
 #   2022 list prices unless apc_year is given — always state the year and
 #   re-check with WebSearch before quoting them in a report.
-#   guidelines_checked (e.g. "2026-09") marks entries whose author-guideline
+#   guidelines_checked (YYYY-MM, e.g. "2026-09") marks entries whose author-guideline
 #   fields were re-checked that month (guidelines_source = the page used). In
 #   the first 2026-09 pass most publisher pages were only reachable through
 #   search snippets; the 27 entries added in a second pass were read on the
 #   official pages, except where a `special` item says "search snippets". Treat
 #   all of them as a good starting point, not a substitute for the journal's own
 #   instructions.
-#   Entries without guidelines_checked have not been re-verified since 2023 —
+#   Entries without guidelines_checked are UNVERIFIED: not re-checked since 2023.
+#   get_journal_template.py (and the export report) print a warning for them;
 #   look up the journal's current author guidelines when the entry is used.
-#   A `special` item starting with "待核实" names a value that could not be checked.
+#   A `special` item starting with "待核实" names a value that could not be checked;
+#   get_journal_template.py --id prints such items in one warning line.
+#
+# Machine-readable limits — every entry has `limits`; scripts (export_docx.py /
+#   Gate 6) take ALL numeric checks from it. word_limit / abstract / references /
+#   figures / tables stay as the human-readable source text the numbers come from.
+#   limits = an ORIGINAL research article. Keys (missing or null = no limit known,
+#   nothing is checked):
+#     body_words      int ≥ 500, main-text word limit
+#     body_excludes   parts NOT counted in body_words, from [abstract, methods,
+#                     references, figure_legends, tables, key_points]; given whenever
+#                     body_words is. Parts the entry's text does not mention follow the
+#                     usual convention (abstract, references, figure legends, tables and
+#                     key points are not counted, Methods is), so a part the journal
+#                     counts is left out ("6000 including references" → no references)
+#                     and "excluding Methods" adds methods. A word_limit that also counts
+#                     each table / figure as N words keeps body_words = the stated limit;
+#                     export_docx.py adds the N per table / figure (read from word_limit)
+#                     in a row of its own.
+#     abstract_words, references, figures, tables   int maxima
+#     display_items   int, figures + tables counted together (then no figures / tables)
+#     pages           int, the journal limits printed pages instead of words (then no
+#                     body_words; scripts cannot count pages)
+#     soft            true = typical / guidance values ("typically", "ideally",
+#                     "about"), reported as ℹ️ when exceeded, not ⚠️. It covers the whole
+#                     block: set when the block's word limits are guidance values (its
+#                     other numbers are then ℹ️ too — Nature's ≤50 references and ≤3
+#                     tables); a lone guidance value next to hard limits is null (below)
+#   Left null on purpose: "no strict limit", minimums ("more than 30 expected"),
+#   ranges whose maximum depends on something not recorded, limits that count what a
+#   script cannot count (figure panels, the title page),
+#   values a 待核实 item names as not stated, not confirmed or not re-checked (in an
+#   entry with guidelines_checked; an unverified entry keeps its values and gets the
+#   unverified warning), and a guidance-only value ("(recommended)", "(guideline)",
+#   "not strictly enforced") in a block whose other numbers are hard limits. The free
+#   text keeps every such value for human readers.
+#   limits_by_type (only where the entry's text or the journal's guidelines state them):
+#     keys review | systematic_review | research_letter | brief_report | case_report,
+#     each with the same keys as `limits`. When the text does not say what a type's
+#     word count includes, its body_excludes repeat the entry's `limits.body_excludes`
+#     (the journal's own rule for original articles). review = a full Review; a
+#     Mini-review's limits are not in the library. For any other article type the
+#     library has no limits: check the journal's author guidelines and record them in
+#     the project's journal-overrides.yaml (`limits_by_type` of an entry with the same id).
+#
+# Vocabularies:
+#   system          Editorial Manager | ScholarOne | eJournalPress | Snapp |
+#                   IEEE Author Portal | MDPI SuSy | Frontiers | JMIR | eLife |
+#                   journal portal (the journal's own site). Nature journals' MTS runs on
+#                   eJournalPress. submission_url = the portal address where the source
+#                   named one. Fallback by publisher: submission-preparation/references/
+#                   submission-systems.yaml (its `name` keys use the same words).
+#   citation_style  only where the entry's text names a style (absent = not recorded:
+#                   check the guidelines): Vancouver | AMA | NEJM | Lancet | Nature |
+#                   Cell | IEEE | APA | Harvard | MDPI | house style (the journal's own) |
+#                   any (any consistent style accepted at submission).
 #
 # How to contribute:
 #   Add new entries following the same structure. Keep alphabetical within each category.
 #   Fields present in every entry: id, journal, publisher, IF_approx, word_limit,
-#           abstract, references, sections, system, family
+#           abstract, references, limits, sections, system, family
 #   Fields present in some entries only: figures, tables, special, figure_format,
-#           cover_letter, orcid, IF_year, IF_source (URL), apc_year,
-#           guidelines_checked, guidelines_source (URL)
+#           cover_letter, orcid, IF_year, IF_source (URL), apc_year, citation_style,
+#           limits_by_type, submission_url, guidelines_checked, guidelines_source (URL),
+#           page_numbers, line_numbers
+#   page_numbers / line_numbers: optional per-entry override of the top-level `defaults` used by
+#           export_docx.py (false = none; page_numbers "bottom center" / "bottom right" / "top right";
+#           line_numbers "continuous" / "restart each page"). Only add one where the journal's
+#           guidelines say so.
 #   family: lancet | jama | nature | ieee | standard — drives section order and
 #           special elements in scripts (export_docx.py). Rule: id/name contains
 #           lancet/eclinical/ebiomedicine → lancet; jama → jama; nature/npj/
@@ -67,8 +128,10 @@ templates:
     word_limit: typically ~2500 (6-page Article, ~4 display items) to ~4300 (8-page Article, 5–6 display items); summary paragraph + body text, excluding Methods
     abstract: unstructured (fully referenced summary paragraph, aimed at non-specialists), ideally ≤200 words
     references: ≤50, Nature style (numbered, superscript)
+    citation_style: Nature
     figures: ≤6 main + Extended Data
     tables: ≤3
+    limits: {body_words: 4300, body_excludes: [methods, references, figure_legends, tables, key_points], abstract_words: 200, references: 50, figures: 6, tables: 3, soft: true}
     sections: "Abstract, Introduction (no heading), Results, Discussion, Methods, References"
     special:
       - "No Introduction heading — text flows from abstract"
@@ -78,7 +141,7 @@ templates:
       - "Data and Code availability statements required"
     cover_letter: required
     orcid: required
-    system: Nature MTS (eJournalPress)
+    system: eJournalPress
     guidelines_checked: 2026-09
     guidelines_source: https://www.nature.com/nature/for-authors/formatting-guide
     family: nature
@@ -92,19 +155,22 @@ templates:
     word_limit: 4000 (excluding abstract, Methods, references and figure legends)
     abstract: unstructured, ≤150 words
     references: ≤60 (guideline), Nature style (numbered, superscript)
+    citation_style: Nature
     figures: ≤6 display items (figures and/or tables combined)
     figure_format: "TIFF/EPS/PDF, ≥300 DPI, max 20MB per file"
     tables: included in display-item limit
+    limits: {body_words: 4000, body_excludes: [abstract, methods, references, figure_legends, tables, key_points], display_items: 6}
     sections: "Abstract, Introduction, Results, Discussion, Methods, References"
     special:
       - "Reporting Summary checklist required"
       - "Data availability statement required"
       - "Code availability statement required"
       - "Life Sciences Reporting Summary required"
-      - Limits verified 2026-09 from nature.com/nm/content search snippets only (page itself not reachable); abstract length for Articles not re-checked
+      - Limits verified 2026-09 from nature.com/nm/content search snippets only (page itself not reachable)
+      - "待核实: abstract length for Articles (≤150 words) not re-checked in 2026-09 — confirm"
     cover_letter: required
     orcid: required
-    system: Nature MTS (eJournalPress)
+    system: eJournalPress
     guidelines_checked: 2026-09
     guidelines_source: https://www.nature.com/nm/content
     family: nature
@@ -118,9 +184,12 @@ templates:
     word_limit: '3000 (randomised trials may be extended to 4500; observational studies and systematic reviews/meta-analyses: 3500)'
     abstract: structured (Background, Methods, Findings, Interpretation, Funding), ≤300 words
     references: ≤30, Vancouver (numbered)
+    citation_style: Vancouver
     figures: ≤5 (combined figures + tables)
     figure_format: "TIFF/EPS, ≥300 DPI"
     tables: included in figure limit
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30, display_items: 5}
+    limits_by_type: {systematic_review: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points]}}
     sections: "Summary, Introduction, Methods, Results, Discussion, Contributors, Declaration of interests, Acknowledgments, References"
     special:
       - "Research in Context panel required (Evidence before this study, Added value, Implications)"
@@ -142,9 +211,11 @@ templates:
     word_limit: 2700
     abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
     references: ≤40, NEJM style (numbered)
+    citation_style: NEJM
     figures: ≤5 (figures + tables combined)
     figure_format: "EPS/TIFF, ≥1000 DPI for line art"
     tables: included in figure limit
+    limits: {body_words: 2700, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, display_items: 5}
     sections: "Abstract, Introduction (no heading), Methods, Results, Discussion, References"
     special:
       - "Disclosure forms for ALL authors (ICMJE)"
@@ -165,9 +236,11 @@ templates:
     word_limit: 3000
     abstract: structured (Importance, Objective, Design/Setting/Participants, Interventions/Exposures, Main Outcomes and Measures, Results, Conclusions and Relevance), ≤350 words
     references: ≤40, AMA style (superscript numbered)
+    citation_style: AMA
     figures: ≤5 (figures and/or tables combined)
     figure_format: "TIFF/EPS/PPT, ≥300 DPI"
     tables: ≤5 (figures and/or tables combined)
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350, display_items: 5}
     sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - "Key Points box required (Question, Findings, Meaning — ≤100 words total)"
@@ -177,7 +250,8 @@ templates:
       - "待核实: reference limit (≤40) not stated in the 2026-09 author guidelines — confirm before trimming references"
     cover_letter: required
     orcid: recommended
-    system: eJournalPress (manuscripts.jama.com)
+    system: eJournalPress
+    submission_url: manuscripts.jama.com
     guidelines_checked: 2026-09
     guidelines_source: https://jamanetwork.com/journals/jama/pages/instructions-for-authors
     family: jama
@@ -191,9 +265,12 @@ templates:
     word_limit: no fixed limit (research articles; state the main-text word count at submission)
     abstract: structured (Objectives, Design, Setting, Participants, Interventions, Main outcome measures, Results, Conclusions, Trial registration), 250–300 words (up to 400 for CONSORT/PRISMA abstracts)
     references: ≤40, Vancouver (numbered)
+    citation_style: Vancouver
     figures: ≤6
     figure_format: "TIFF/JPEG/EPS, ≥300 DPI"
     tables: ≤6
+    limits: {abstract_words: 300}
+    limits_by_type: {systematic_review: {abstract_words: 400}}
     sections: "Abstract, What is already known, What this study adds, Introduction, Methods, Results, Discussion, References"
     special:
       - "What is already known / What this study adds box required"
@@ -217,8 +294,10 @@ templates:
     word_limit: 3000
     abstract: structured, ≤250 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤5
     tables: ≤5
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 5, tables: 5}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Primary Data Sharing statement"
@@ -241,15 +320,17 @@ templates:
     word_limit: no strict limit
     abstract: structured, ≤350 words
     references: unlimited, Vancouver
+    citation_style: Vancouver
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 350}
     sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
     special:
       - "APC: $4490 (£3190 / €3690)"
       - "EQUATOR checklist required"
       - "Data availability mandatory"
     apc_year: 2026
-    system: Springer Nature submission system (SNAPP)
+    system: Snapp
     guidelines_checked: 2026-09
     guidelines_source: https://link.springer.com/journal/12916/submission-guidelines/research-articles
     family: standard
@@ -263,8 +344,10 @@ templates:
     word_limit: no strict limit
     abstract: structured, ≤350 words
     references: unlimited, AMA
+    citation_style: AMA
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 350}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Rapid review process"
@@ -288,8 +371,10 @@ templates:
     word_limit: 3000
     abstract: structured (Purpose, Methods [Patients and Methods], Results, Conclusion), ≤275 words
     references: ≤50, Vancouver
+    citation_style: Vancouver
     figures: ≤6 (figures + tables combined, not counting figure parts)
     tables: included in figure limit
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 275, references: 50, display_items: 6}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Data Supplement for supplementary (Appendix online only)"
@@ -313,8 +398,10 @@ templates:
     word_limit: 3000
     abstract: structured (Background, Methods, Findings, Interpretation, Funding), ≤300 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
     figures: ≤5
     tables: included in figure limit
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30, display_items: 5}
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -329,14 +416,16 @@ templates:
     word_limit: 3000
     abstract: structured (same as JAMA), ≤350 words
     references: ≤40, AMA style
+    citation_style: AMA
     figures: ≤5 (figures and/or tables combined)
     tables: ≤5 (figures and/or tables combined)
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350, display_items: 5}
     sections: same as JAMA
     special:
       - "Key Points box required"
       - "JAMA formatting rules apply"
       - "待核实: reference limit (≤40) not stated in the 2026-09 author guidelines — confirm before trimming references"
-    system: eJournalPress (JAMA Network)
+    system: eJournalPress
     guidelines_checked: 2026-09
     guidelines_source: https://jamanetwork.com/journals/jamaoncology/pages/instructions-for-authors
     family: jama
@@ -350,8 +439,10 @@ templates:
     word_limit: 3000
     abstract: structured, ≤250 words
     references: ≤50, Vancouver
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods (or Patients and Methods), Results, Discussion, Funding, Disclosure, References"
     special:
       - "Key Message box (1-2 sentences)"
@@ -367,6 +458,7 @@ templates:
     references: ≤60
     figures: ≤7
     tables: ≤3
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 60, figures: 7, tables: 3}
     sections: "Abstract, Significance Statement, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Significance Statement required (≤100 words)"
@@ -387,8 +479,10 @@ templates:
     word_limit: 3000
     abstract: structured, ≤250 words
     references: ≤50, AMA
+    citation_style: AMA
     figures: ≤5 (figures and/or tables combined)
     tables: ≤5 (figures and/or tables combined)
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, display_items: 5}
     sections: "Abstract, Mini-Abstract (≤50 words), Introduction, Methods, Results, Discussion, References"
     special:
       - "Mini-abstract required (≤50 words)"
@@ -406,13 +500,15 @@ templates:
     word_limit: 3000
     abstract: structured (same as JAMA), ≤350 words
     references: ≤40, AMA style
+    citation_style: AMA
     figures: ≤5 (figures and/or tables combined)
     tables: ≤5 (figures and/or tables combined)
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350, display_items: 5}
     sections: same as JAMA
     special:
       - "Key Points box required"
       - "待核实: reference limit (≤40) not stated in the 2026-09 author guidelines — confirm before trimming references"
-    system: eJournalPress (JAMA Network)
+    system: eJournalPress
     guidelines_checked: 2026-09
     guidelines_source: https://jamanetwork.com/journals/jamasurgery/pages/instructions-for-authors
     family: jama
@@ -426,8 +522,10 @@ templates:
     word_limit: 3000
     abstract: structured (Background, Methods, Results, Conclusion), <250 words (300 for RCTs)
     references: no fixed limit, Vancouver
+    citation_style: Vancouver
     figures: ≤5 (tables and/or figures combined)
     tables: included in figure limit
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, display_items: 5}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Collaborative authorship accepted"
@@ -443,8 +541,10 @@ templates:
     word_limit: 3500
     abstract: structured, ≤250 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Video abstracts encouraged"
@@ -464,16 +564,19 @@ templates:
     word_limit: 2500 (body text; abstract ≤250 additional; excludes what-does-the-study-add, patient summary, references, tables, figures, legends)
     abstract: structured (Background and objective, Methods, Key findings and limitations, Conclusions and clinical implications, Patient summary), ≤250 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤5 (figures + tables combined; each figure ≤4 subparts)
     tables: included in figure limit
+    limits: {body_words: 2500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, display_items: 5}
     sections: "Abstract, Patient Summary, Introduction, Patients and Methods, Results, Discussion, Conclusions, References"
     special:
       - "Patient Summary required (≤4 sentences in lay language)"
       - "Take Home Message (2-3 sentences, ≤40 words, uploaded as separate file)"
       - "Abstract limit is now ≤250 words (older guide versions allowed ≤300 words)"
       - "'What does the study add' section (3-4 sentences) required"
-      - "Guidelines checked: https://www.sciencedirect.com/journal/european-urology/publish/guide-for-authors (accessed 2026-09)"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/european-urology/publish/guide-for-authors
     family: standard
 
   - id: journal-urology
@@ -485,15 +588,18 @@ templates:
     word_limit: 2500
     abstract: structured (Purpose, Materials and Methods, Results, Conclusions), ≤250 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 2500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 30, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
     special:
       - "Lay language synopsis for social media"
       - "IF 7.5 = JIF announced in 2025 (JCR 2024) per AUA 2025 Annual Report; auajournals.org metrics page not reachable — verify"
       - "Submission system per AUA page https://www.auanet.org/membership/publications-overview/the-journal-of-urology (accessed 2026-09)"
       - Reference limit (30) taken from the AUA-hosted JU Information for Authors (2019 version indexed); current JU_IFA PDF not readable in 2026-09 review — confirm
-    system: Editorial Manager (editorialmanager.com/ju)
+    system: Editorial Manager
+    submission_url: editorialmanager.com/ju
     family: standard
 
   - id: bju-international
@@ -505,11 +611,14 @@ templates:
     word_limit: 4000
     abstract: structured (Objectives [start with 'To…'], Subjects/Patients (or Materials) and Methods, Results, Conclusion), ≤300 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
     figures: ≤3
     tables: ≤3
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30, figures: 3, tables: 3}
     sections: "Abstract, Introduction, Patients and Methods, Results, Discussion, References"
     special:
       - Limits from BJUI author guidelines (2022 PDF + journal author page, search snippets); a June 2026 IF announcement was not retrievable — update IF when available
+      - "待核实: submission system — in the 2026-10 review the official author-guideline page (onlinelibrary.wiley.com) could not be opened; search snippets of it point to Wiley's authors.wiley.com/journal/bju, while bjuinternational.com still lists ScholarOne — confirm on the journal's Submit page"
     system: ScholarOne
     guidelines_checked: 2026-09
     guidelines_source: https://bjui-journals.onlinelibrary.wiley.com/hub/journal/1464410x/homepage/forauthors.html
@@ -528,6 +637,7 @@ templates:
     references: ≤60
     figures: ≤7
     tables: ≤5
+    limits: {body_words: 4500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 60, figures: 7, tables: 5}
     sections: "Abstract, Structured Graphical Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Structured Graphical Abstract required"
@@ -544,6 +654,7 @@ templates:
     references: ≤60
     figures: ≤7 (combined)
     tables: included in figure limit
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 60, display_items: 7}
     sections: "Abstract, Condensed Abstract (≤100 words), Introduction, Methods, Results, Discussion, Perspectives, References"
     special:
       - "Condensed Abstract required"
@@ -560,12 +671,14 @@ templates:
     references: ≤50
     figures: ≤7
     tables: ≤5
+    limits: {abstract_words: 350, tables: 5}
     sections: "Abstract, Clinical Perspective (What is New, What are the Clinical Implications), Introduction, Methods, Results, Discussion, References"
     special:
       - "Clinical Perspective box required (What is New + Clinical Implications)"
       - Format-free initial submission accepted (AHA Minimum Submission Requirements)
       - '待核实: word/reference/figure limits and current IF not verifiable from ahajournals.org in 2026-09 review'
-    system: eJournalPress (circ-submit.aha-journals.org)
+    system: eJournalPress
+    submission_url: circ-submit.aha-journals.org
     guidelines_checked: 2026-09
     guidelines_source: https://www.ahajournals.org/circ/manuscript-preparation
     family: standard
@@ -583,6 +696,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, What You Need to Know (Background, Findings, Implications for patient care), Introduction, Methods, Results, Discussion, References"
     special:
       - "What You Need to Know box required"
@@ -599,6 +713,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Significance of this study (What is already known, What are the new findings, How might it impact), Introduction, Methods, Results, Discussion, References"
     special:
       - "Significance of this study box required"
@@ -615,8 +730,10 @@ templates:
     word_limit: 6000 (including references)
     abstract: structured (Background & Aims, Approach & Results, Conclusions), ≤250 words
     references: no fixed limit (counted in 6000-word limit), AMA
+    citation_style: AMA
     figures: ≤8 (figures and/or tables combined)
     tables: ≤8 (figures and/or tables combined)
+    limits: {body_words: 6000, body_excludes: [abstract, figure_legends, tables, key_points], abstract_words: 250, display_items: 8}
     sections: "Abstract, Graphical Abstract, Introduction, Patients and Methods, Results, Discussion, References"
     special:
       - "Graphical abstract: guidance given in the instructions, not stated as required"
@@ -638,7 +755,9 @@ templates:
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
     figures: ≤5
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30, figures: 5}
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -655,6 +774,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, At a Glance Commentary, Introduction, Methods, Results, Discussion, References"
     special:
       - "At a Glance Commentary required (Scientific Knowledge, What This Study Adds)"
@@ -670,6 +790,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Key Points (Key Question, Key Findings, Key Message), Introduction, Methods, Results, Discussion, Interpretation, References"
     special:
       - "Key Points required (3 items)"
@@ -689,6 +810,8 @@ templates:
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30}
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -706,13 +829,15 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Classification of Evidence scheme required (Class I-IV)"
       - "Glossary for abbreviations"
       - Author guidelines checked 2026-09 from search snippets of www.neurology.org (page not readable) — confirm against the current instructions
       - "待核实: reference, figure and table limits not confirmed in 2026-09 (neurology.org author center not readable)"
-    system: eJournalPress (neurology.msubmit.net)
+    system: eJournalPress
+    submission_url: neurology.msubmit.net
     guidelines_checked: 2026-09
     guidelines_source: https://www.neurology.org/neurology-journals-author-center
     family: standard
@@ -724,10 +849,12 @@ templates:
     word_limit: 3000
     abstract: structured (same as JAMA), ≤350 words
     references: ≤40, AMA style
+    citation_style: AMA
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350, references: 40}
     sections: same as JAMA
     special:
       - "Key Points box required"
-    system: eJournalPress (JAMA Network)
+    system: eJournalPress
     family: jama
 
   # ═══════════════════════════════════════════════
@@ -745,13 +872,15 @@ templates:
     references: ≤35 (may be extended for meta-analyses)
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 35, figures: 6, tables: 4}
     sections: "Abstract, Summary Statement, Key Results, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Summary Statement required (1 sentence, ≤30 words)"
       - "Key Results required (≤3 results/conclusions with summary data, ≤75 words)"
       - "Table 1 must be participant demographics; Figure 1 must be a participant flow diagram"
-      - "Guidelines checked: https://pubs.rsna.org/page/radiology/author-instructions (accessed 2026-09)"
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://pubs.rsna.org/page/radiology/author-instructions
     family: standard
 
   - id: european-radiology
@@ -765,11 +894,14 @@ templates:
     references: no fixed limit
     figures: ≤6 (≤12 for systematic reviews)
     tables: ≤5
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, figures: 6, tables: 5}
+    limits_by_type: {systematic_review: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], figures: 12}}
     sections: "Abstract, Key Points (3 bullet), Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Key Points required (3 bullet points)"
-      - "Guidelines checked: https://journals.myesr.org/eur-radiol/for-authors/ (accessed 2026-09)"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://journals.myesr.org/eur-radiol/for-authors/
     family: standard
 
   - id: medical-image-analysis
@@ -783,6 +915,7 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 250}
     sections: "Abstract, Highlights (3-5 bullets), Introduction, Related Work, Methods, Experiments, Results, Discussion, Conclusion, References"
     special:
       - "Highlights required (3-5 bullet points)"
@@ -806,15 +939,17 @@ templates:
     references: ≤60 (not strictly enforced)
     figures: no fixed limit (figure legends ≤350 words each)
     tables: ≤4
+    limits: {abstract_words: 150, tables: 4}
     sections: "Abstract, Introduction, Results, Discussion, Methods, References"
     special:
       - "Nature journal formatting rules"
       - "Reporting Summary required"
       - "Data and Code availability required"
       - "APC: $4290 (£3090 / €3390) for research articles"
-      - "Guidelines checked: https://www.nature.com/npjdigitalmed/content-types (accessed 2026-09)"
     apc_year: 2026
-    system: Springer Nature submission system (SNAPP)
+    system: Snapp
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.nature.com/npjdigitalmed/content-types
     family: nature
 
   - id: lancet-digital-health
@@ -826,6 +961,8 @@ templates:
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30}
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -844,12 +981,13 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 300}
     sections: "Abstract, Introduction, Methods, Results, Discussion (Principal Findings, Comparison With Prior Work, Limitations, Conclusions), References"
     special:
       - "APC: $3350 (standard article processing fee)"
       - "Discussion must include Principal Findings subsection"
     apc_year: 2026
-    system: JMIR submission system
+    system: JMIR
     family: standard
 
   - id: ieee-jbhi
@@ -861,15 +999,19 @@ templates:
     word_limit: 8 pages (double column) without overlength charges; mandatory charges for pages 9-10 ($250/page) and 11+ ($350/page); hard limit 14 pages incl. supplementary
     abstract: unstructured, ≤250 words
     references: ≤50, IEEE style (numbered brackets)
+    citation_style: IEEE
     figures: unlimited within page limit
     tables: unlimited within page limit
+    limits: {pages: 14, abstract_words: 250, references: 50}
     sections: "Abstract, Index Terms, Introduction, Related Work, Methods, Experiments, Results, Discussion, Conclusion, References"
     special:
       - "Index Terms (keywords) required"
       - "IEEE formatting template (LaTeX/Word)"
       - "Double-column format"
-      - "Guidelines checked: https://www.embs.org/jbhi/prepare-and-submit-your-manuscript/ (accessed 2026-09)"
-    system: IEEE Author Portal (ieee.atyponrex.com/journal/jbhi-embs)
+    system: IEEE Author Portal
+    submission_url: ieee.atyponrex.com/journal/jbhi-embs
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.embs.org/jbhi/prepare-and-submit-your-manuscript/
     family: ieee
 
   # ═══════════════════════════════════════════════
@@ -885,6 +1027,8 @@ templates:
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30}
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -899,10 +1043,12 @@ templates:
     word_limit: 3000
     abstract: structured (same as JAMA), ≤350 words
     references: ≤40, AMA style
+    citation_style: AMA
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350, references: 40}
     sections: same as JAMA
     special:
       - "Key Points box required"
-    system: eJournalPress (JAMA Network)
+    system: eJournalPress
     family: jama
 
   - id: pediatrics
@@ -912,8 +1058,10 @@ templates:
     word_limit: 3500
     abstract: structured (Objective, Methods, Results, Conclusions), ≤250 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, What's Known on This Subject, What This Study Adds, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - "What's Known / What This Study Adds box required"
@@ -931,8 +1079,10 @@ templates:
     word_limit: 3500
     abstract: structured (Background, Methods, Results, Conclusions), ≤300 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 40, figures: 8, tables: 5}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Appendix, References"
     special:
       - "Level of Evidence must be stated"
@@ -948,8 +1098,10 @@ templates:
     word_limit: 3500
     abstract: structured (Background, Questions/purposes, Patients and Methods, Results, Conclusion), no fixed word limit
     references: ≤40
+    citation_style: house style
     figures: ≤6
     tables: ≤4
+    limits: {}
     sections: "Abstract, Introduction, Patients and Methods, Results, Discussion, References"
     special:
       - "Level of Evidence (I-V) required"
@@ -974,6 +1126,7 @@ templates:
     references: ≤40
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350, references: 40, figures: 8, tables: 5}
     sections: "Abstract, Précis (1-2 sentences), Introduction, Methods, Results, Discussion, References"
     special:
       - "Précis required (1-2 sentence summary)"
@@ -987,10 +1140,12 @@ templates:
     word_limit: 3000
     abstract: structured (same as JAMA), ≤350 words
     references: ≤40, AMA style
+    citation_style: AMA
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350, references: 40}
     sections: same as JAMA
     special:
       - "Key Points box required"
-    system: eJournalPress (JAMA Network)
+    system: eJournalPress
     family: jama
 
   # ═══════════════════════════════════════════════
@@ -1004,10 +1159,12 @@ templates:
     word_limit: 3000
     abstract: structured (same as JAMA), ≤350 words
     references: ≤40, AMA style
+    citation_style: AMA
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350, references: 40}
     sections: same as JAMA
     special:
       - "Key Points box required"
-    system: eJournalPress (JAMA Network)
+    system: eJournalPress
     family: jama
 
   - id: bjd
@@ -1019,6 +1176,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, What is already known / What does this study add / What are the clinical implications, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Summary box required"
@@ -1038,6 +1196,7 @@ templates:
     references: ≤50
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 8, tables: 5}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: Editorial Manager
     family: standard
@@ -1051,8 +1210,10 @@ templates:
     word_limit: 4000
     abstract: unstructured, ≤250 words
     references: ≤50, AMA
+    citation_style: AMA
     figures: ≤10
     tables: ≤5
+    limits: {abstract_words: 250}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "待核实: word, reference, figure and table limits (4000 / ≤50 / ≤10 / ≤5) not stated in the 2026-09 instructions — confirm"
@@ -1074,6 +1235,8 @@ templates:
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30}
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -1089,6 +1252,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 200, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -1106,6 +1270,7 @@ templates:
     references: ≤40
     figures: ≤5
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 5, tables: 4}
     sections: "Abstract, Introduction, Research Design and Methods, Results, Conclusions, References"
     special:
       - "Unique section heading: 'Research Design and Methods' (not 'Methods')"
@@ -1122,6 +1287,8 @@ templates:
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30}
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -1143,6 +1310,7 @@ templates:
     references: ≤50
     figures: ≤8
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points]}
     sections: "Abstract, Significance Statement, Introduction, Methods, Results, Discussion, Disclosures, References"
     special:
       - "Significance Statement required (≤100 words)"
@@ -1166,6 +1334,8 @@ templates:
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30}
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -1179,10 +1349,12 @@ templates:
     word_limit: 3000
     abstract: structured (same as JAMA), ≤350 words
     references: ≤40, AMA style
+    citation_style: AMA
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350, references: 40}
     sections: same as JAMA
     special:
       - "Key Points box required"
-    system: eJournalPress (JAMA Network)
+    system: eJournalPress
     family: jama
 
   # ═══════════════════════════════════════════════
@@ -1196,13 +1368,14 @@ templates:
     word_limit: no strict limit
     abstract: structured (Background, Objectives, Search methods, Selection criteria, Data collection, Main results, Authors' conclusions), Plain language summary
     references: unlimited
+    limits: {}
     sections: "Background, Objectives, Methods (Criteria, Search, Data collection, Analysis), Results, Discussion (Summary, Strengths and limitations, Applicability, Agreements and disagreements), Authors' conclusions, References"
     special:
       - "RevMan software for analysis"
       - "PRISMA + Cochrane Handbook compliance"
       - "Plain language summary required"
       - "Summary of findings tables required"
-    system: Cochrane Editorial system
+    system: journal portal
     family: standard
 
   - id: systematic-reviews
@@ -1212,6 +1385,7 @@ templates:
     word_limit: no strict limit
     abstract: structured, ≤350 words
     references: unlimited
+    limits: {abstract_words: 350}
     sections: "Abstract, Background, Methods (incl. PROSPERO registration), Results, Discussion, Conclusions, References"
     special:
       - "PRISMA checklist required"
@@ -1231,8 +1405,10 @@ templates:
     word_limit: no strict limit (typically 4000-5000)
     abstract: structured, ≤300 words
     references: unlimited, Vancouver
+    citation_style: Vancouver
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 300}
     sections: "Abstract, Author Summary, Introduction, Methods, Results, Discussion, References"
     special:
       - "Author Summary required (≤200 words, no jargon)"
@@ -1253,6 +1429,7 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 300}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions (optional), References"
     special:
       - "Judges on technical soundness, NOT novelty/impact"
@@ -1273,13 +1450,14 @@ templates:
     references: unlimited
     figures: ≤10
     tables: ≤5
+    limits: {abstract_words: 150, figures: 10, tables: 5}
     sections: "Abstract, Introduction, Results, Discussion, Methods, References"
     special:
       - "Reporting Summary required"
       - "APC: $7350 (£5490 / €6150)"
     cover_letter: required
     apc_year: 2026
-    system: Nature MTS (eJournalPress)
+    system: eJournalPress
     family: nature
 
   - id: scientific-reports
@@ -1293,12 +1471,14 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 200}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "APC: $2850 (£2290 / €2490)"
       - "Technical soundness focus"
     apc_year: 2026
-    system: Springer Nature submission portal (author-welcome.nature.com/41598)
+    system: journal portal
+    submission_url: author-welcome.nature.com/41598
     family: nature
 
   # ═══════════════════════════════════════════════
@@ -1314,15 +1494,18 @@ templates:
     word_limit: 5000
     abstract: structured, ≤300 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Chinese and English abstracts"
       - "ORCID required"
       - "待核实: reference limit (≤40) and figure/table limits not stated in the 2026-09 instructions — confirm"
       - "Publication charge (2026-09 instructions): USD 320 per print page for authors outside China; CNY 1600 per page for authors in China"
-    system: Editorial Manager (editorialmanager.com/cmj)
+    system: Editorial Manager
+    submission_url: editorialmanager.com/cmj
     guidelines_checked: 2026-09
     guidelines_source: http://edmgr.ovid.com/cmj/accounts/ifauth.htm
     family: standard
@@ -1336,6 +1519,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤3
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 200, references: 50, figures: 6, tables: 3}
     sections: "Abstract, Introduction, Results, Discussion, Materials and Methods, References"
     special:
       - "Results before Methods (like Nature)"
@@ -1351,6 +1535,7 @@ templates:
     references: unlimited
     figures: ≤10
     tables: ≤5
+    limits: {abstract_words: 200, figures: 10, tables: 5}
     sections: "Abstract, Introduction, Results, Discussion, Materials and Methods, References"
     special:
       - "APC: ~$4380"
@@ -1369,6 +1554,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Research in Context panel, Introduction, Methods, Results, Discussion, References"
     special:
       - "Research in Context panel required"
@@ -1388,8 +1574,10 @@ templates:
     word_limit: 3000
     abstract: structured (Background, Methods, Findings, Interpretation, Funding), ≤300 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
     figures: ≤5
     tables: included in figure limit
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30, display_items: 5}
     sections: "Summary, Introduction, Methods, Results, Discussion, Contributors, References"
     special:
       - "Research in Context panel required"
@@ -1407,6 +1595,7 @@ templates:
     references: unlimited
     figures: ≤10
     tables: ≤5
+    limits: {abstract_words: 200, figures: 10, tables: 5}
     sections: "Abstract, Introduction, Epidemiology, Mechanisms/pathophysiology, Diagnosis, Management, Quality of life, Outlook, References"
     special:
       - "Invited Primer articles (comprehensive reviews)"
@@ -1421,8 +1610,10 @@ templates:
     word_limit: 3500
     abstract: structured (Background, Methods, Results, Interpretation), ≤250 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤5
     tables: ≤5
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 5, tables: 5}
     sections: "Abstract, Introduction, Methods, Results, Interpretation, References"
     special:
       - "Bilingual journal (English/French abstracts)"
@@ -1436,8 +1627,10 @@ templates:
     word_limit: 3000
     abstract: structured (Objectives, Design, Setting, Participants, Main outcome measures, Results, Conclusions), ≤250 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤5
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 5, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -1449,13 +1642,16 @@ templates:
     word_limit: 3000
     abstract: structured (Importance, Objective, Design/Setting/Participants, Exposures, Main Outcomes and Measures, Results, Conclusions and Relevance), ≤350 words
     references: ≤40, AMA style
+    citation_style: AMA
     figures: ≤5
     tables: ≤5
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350, references: 40, figures: 5, tables: 5}
     sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - "Key Points box required (Question, Findings, Meaning)"
       - "JAMA family formatting rules apply"
-    system: eJournalPress (manuscripts.jamainternalmed.com)
+    system: eJournalPress
+    submission_url: manuscripts.jamainternalmed.com
     family: jama
 
   - id: jama-network-open
@@ -1465,14 +1661,17 @@ templates:
     word_limit: 3500
     abstract: structured (Importance, Objective, Design/Setting/Participants, Exposures/Interventions, Main Outcomes and Measures, Results, Conclusions and Relevance), ≤350 words
     references: ≤60, AMA style
+    citation_style: AMA
     figures: ≤5
     tables: ≤5
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350, references: 60, figures: 5, tables: 5}
     sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - "Key Points box required"
       - "Open access, APC ~$3000"
       - "JAMA family formatting"
-    system: eJournalPress (manuscripts.jamanetworkopen.com)
+    system: eJournalPress
+    submission_url: manuscripts.jamanetworkopen.com
     family: jama
 
   - id: elife
@@ -1485,6 +1684,7 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 150}
     sections: "Abstract, eLife Assessment, Introduction, Results, Discussion, Materials and Methods, References"
     special:
       - "eLife Assessment and Public Reviews published alongside paper"
@@ -1492,7 +1692,7 @@ templates:
       - "Publish-Review-Curate (Reviewed Preprint) model since 2023"
       - 'No Journal Impact Factor: Clarivate removed it after eLife''s 2023 switch to publish-review-curate (eLife editorial, March 2026, doi:10.7554/eLife.110392) — check whether your institution/funder requires a JIF before targeting'
       - eLife is closing its legacy peer-review track to new submissions; only the Reviewed Preprint (PRC) route remains (same editorial, 2026)
-    system: eLife submission system
+    system: eLife
     family: standard
 
   - id: international-journal-surgery
@@ -1504,8 +1704,10 @@ templates:
     word_limit: 4000
     abstract: structured (Background, Materials and Methods, Results, Conclusion), ≤300 words
     references: ≤50, AMA
+    citation_style: AMA
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300}
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - "STROCSS/PROCESS checklist for case series"
@@ -1529,6 +1731,7 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 250}
     sections: "Abstract, Introduction, [topic-specific sections], Conclusions, References"
     special:
       - "Invitation-only reviews and statistics articles"
@@ -1545,6 +1748,7 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 200}
     sections: "Abstract, Introduction, [topic-specific sections], Conclusions and perspectives, References"
     special:
       - "Invited review journal"
@@ -1561,8 +1765,10 @@ templates:
     word_limit: 7000 (including main figure legends; excluding STAR Methods, supplemental legends and references)
     abstract: unstructured, ≤150 words
     references: ≤80, Cell (numbered, superscript)
+    citation_style: Cell
     figures: ≤8 (figures and/or tables combined)
     tables: included in figure limit
+    limits: {body_words: 7000, body_excludes: [abstract, methods, references, tables, key_points], abstract_words: 150, references: 80, display_items: 8}
     sections: "Summary, Introduction, Results, Discussion, STAR Methods, References"
     special:
       - "Graphical Abstract required"
@@ -1585,6 +1791,7 @@ templates:
     references: ≤60
     figures: ≤7
     tables: ≤3
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 60, figures: 7, tables: 3}
     sections: "Abstract, Significance, Introduction, Results, Discussion, Methods, References"
     special:
       - "Significance Statement required (≤100 words)"
@@ -1600,10 +1807,12 @@ templates:
     references: ≤60
     figures: ≤7
     tables: ≤3
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points]}
     sections: "Abstract, Translational Relevance, Introduction, Patients and Methods, Results, Discussion, References"
     special:
       - "Translational Relevance statement required (≤150 words)"
       - 'Clinical-trial research articles use a structured 250-word abstract (regular research articles: unstructured)'
+      - "待核实: abstract (format and ≤250 words), reference limit (≤60) and figure/table limits (≤7 / ≤3) — the official author-guideline page (aacrjournals.org) could not be opened in the 2026-10 review; search results show published Research Articles with Purpose / Experimental Design / Results / Conclusions abstracts — confirm before relying on these values"
     system: ScholarOne
     guidelines_checked: 2026-09
     guidelines_source: https://aacrjournals.org/clincancerres/pages/journal-ifora
@@ -1618,8 +1827,10 @@ templates:
     word_limit: no strict limit (reviews)
     abstract: unstructured, ≤200 words
     references: no hard limit (~25 per 1,000 words; up to ~150 for Reviews), Nature
+    citation_style: Nature
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 200}
     sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
     special:
       - "Invited review journal"
@@ -1636,8 +1847,10 @@ templates:
     word_limit: 3000
     abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
     references: ≤50, Vancouver
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Context and Caveats, Introduction, Methods, Results, Discussion, References"
     special:
       - "Context and Caveats box (editor-written)"
@@ -1655,8 +1868,10 @@ templates:
     word_limit: 3500
     abstract: structured, ≤250 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: Editorial Manager
     guidelines_checked: 2026-09
@@ -1674,6 +1889,7 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 350}
     sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
     special:
       - "APC: ~$2990"
@@ -1691,16 +1907,20 @@ templates:
     word_limit: no maximum (text must be concise and comprehensive)
     abstract: structured (Background/Objectives, Methods, Results, Conclusions), about 250 words; preceded by a Simple Summary ≤150 words
     references: "more than 30 expected for research articles; numbered in square brackets (MDPI style)"
+    citation_style: MDPI
     figures: no fixed limit (≥600 dpi PNG/JPEG/TIFF; color free of charge)
     tables: no fixed limit
+    limits: {abstract_words: 250, soft: true}
     sections: "Simple Summary, Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
     special:
       - "Simple Summary (lay language, ≤150 words) mandatory — submissions without it are returned"
       - "APC: CHF 2900"
       - "Back matter: Supplementary Materials, Author Contributions, Funding, Data Availability Statement, Conflicts of Interest"
-      - "Source: https://www.mdpi.com/journal/cancers/instructions (accessed 2026-09)"
     apc_year: 2026
-    system: MDPI SuSy (susy.mdpi.com)
+    system: MDPI SuSy
+    submission_url: susy.mdpi.com
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.mdpi.com/journal/cancers/instructions
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -1716,8 +1936,10 @@ templates:
     word_limit: no strict limit (reviews)
     abstract: unstructured, ≤200 words
     references: no hard limit (~25 per 1,000 words; up to ~150 for Reviews), Nature
+    citation_style: Nature
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 200}
     sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
     special:
       - "Invited review journal"
@@ -1734,12 +1956,14 @@ templates:
     word_limit: 3000
     abstract: structured (same as JAMA), ≤350 words
     references: ≤40, AMA style
+    citation_style: AMA
     figures: ≤5
     tables: ≤5
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350, references: 40, figures: 5, tables: 5}
     sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - "Key Points box required (Question, Findings, Meaning)"
-    system: eJournalPress (JAMA Network)
+    system: eJournalPress
     family: jama
 
   - id: european-journal-heart-failure
@@ -1753,6 +1977,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤5
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 5}
     sections: "Abstract, Graphical Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Graphical abstract recommended"
@@ -1770,6 +1995,7 @@ templates:
     references: ≤60
     figures: ≤7
     tables: ≤5
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 60, figures: 7, tables: 5}
     sections: "Abstract, Translational Perspective, Introduction, Methods, Results, Discussion, References"
     special:
       - "Translational perspective section encouraged"
@@ -1785,6 +2011,7 @@ templates:
     references: ≤40
     figures: ≤8
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 8, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Cardiovascular imaging focus"
@@ -1800,11 +2027,13 @@ templates:
     references: ≤60
     figures: ≤8 (figures + tables combined)
     tables: included in figure limit
+    limits: {body_words: 8000, body_excludes: [abstract, figure_legends, tables, key_points], abstract_words: 300, references: 60, display_items: 8}
     sections: "Abstract, Novelty and Significance (What Is Known, What New Information Does This Article Contribute), Introduction, Methods, Results, Discussion, References"
     special:
       - "Novelty and Significance box required"
       - "Major Resources Table for reagents"
-    system: eJournalPress (circres-submit.aha-journals.org)
+    system: eJournalPress
+    submission_url: circres-submit.aha-journals.org
     guidelines_checked: 2026-09
     guidelines_source: https://www.ahajournals.org/res/article-types
     family: standard
@@ -1820,6 +2049,8 @@ templates:
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30}
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -1833,8 +2064,10 @@ templates:
     word_limit: no strict limit (reviews)
     abstract: unstructured, ≤200 words
     references: no hard limit (~25 per 1,000 words; up to ~150 for Reviews), Nature
+    citation_style: Nature
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 200}
     sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
     special:
       - "Invited review journal"
@@ -1853,6 +2086,7 @@ templates:
     references: ≤60
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 275, references: 60, figures: 6, tables: 4}
     sections: "Abstract, Graphical Abstract, Highlights, Introduction, Patients and Methods, Results, Discussion, References"
     special:
       - "Graphical abstract required"
@@ -1870,6 +2104,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, What You Need to Know, Introduction, Methods, Results, Discussion, References"
     special:
       - "What You Need to Know box required"
@@ -1885,6 +2120,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Video case reports accepted"
@@ -1904,6 +2140,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Take-home message required (1-2 sentences)"
@@ -1919,6 +2156,7 @@ templates:
     references: ≤40
     figures: ≤5
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 5, tables: 4}
     sections: "Abstract, Key Messages, Introduction, Methods, Results, Discussion, References"
     special:
       - "Key Messages box required"
@@ -1934,6 +2172,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -1951,8 +2190,10 @@ templates:
     word_limit: no strict limit (reviews)
     abstract: unstructured, ≤200 words
     references: no hard limit (~25 per 1,000 words; up to ~150 for Reviews), Nature
+    citation_style: Nature
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 200}
     sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
     special:
       - "Invited review journal"
@@ -1971,6 +2212,7 @@ templates:
     references: ≤50
     figures: ≤7
     tables: ≤5
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 7, tables: 5}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -1984,6 +2226,7 @@ templates:
     references: ≤60
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 6000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 60, figures: 8, tables: 5}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -1997,6 +2240,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, What is already known, What this study adds, Introduction, Methods, Results, Discussion, References"
     special:
       - "Summary box required (What is already known / What this study adds)"
@@ -2012,6 +2256,7 @@ templates:
     references: ≤60
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 60, figures: 8, tables: 5}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: Editorial Manager
     family: standard
@@ -2029,6 +2274,7 @@ templates:
     references: ≤50
     figures: ≤7
     tables: ≤5
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 7, tables: 5}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Key Points box required (≤3 bullet points)"
@@ -2045,6 +2291,7 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 300}
     sections: "Abstract, Highlights, Introduction, Methods, Results, Discussion, Conclusion, References"
     special:
       - "Highlights required (3-5 bullet points, max 85 chars each)"
@@ -2062,6 +2309,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
     system: Editorial Manager
     family: standard
@@ -2075,6 +2323,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Methods, Results, Discussion, Conclusions, References"
     special:
       - "Topical issue — check current call for papers"
@@ -2090,11 +2339,12 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {body_words: 12000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Open access, APC ~$2950"
       - "Interactive review process"
-    system: Frontiers submission system
+    system: Frontiers
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -2108,6 +2358,8 @@ templates:
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30}
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -2123,6 +2375,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 200, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -2136,6 +2389,7 @@ templates:
     references: ≤40
     figures: ≤5
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 200, references: 40, figures: 5, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Public health focus"
@@ -2152,6 +2406,7 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 250}
     sections: "Abstract, Introduction, [topic-specific sections], Conclusions, References"
     special:
       - "Invited comprehensive reviews"
@@ -2171,8 +2426,10 @@ templates:
     word_limit: 4000
     abstract: unstructured (single paragraph, no subheadings), ≤250 words
     references: ≤100 (recommended), AMA
+    citation_style: AMA
     figures: ≤7 (figures + tables combined)
     tables: included in figure limit
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, display_items: 7}
     sections: "Abstract, Visual Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Visual Abstract required"
@@ -2189,6 +2446,8 @@ templates:
     word_limit: 3000
     abstract: structured (same as Lancet), ≤300 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30}
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -2204,6 +2463,7 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 350}
     sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
     special:
       - "APC: ~$4290"
@@ -2219,8 +2479,10 @@ templates:
     word_limit: 4000
     abstract: unstructured (single paragraph), ≤250 words
     references: ≤100 (recommended), AMA
+    citation_style: AMA
     figures: ≤7 (figures + tables combined)
     tables: included in figure limit
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, display_items: 7}
     sections: "Abstract, Visual Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Visual Abstract required"
@@ -2240,6 +2502,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -2257,8 +2520,10 @@ templates:
     word_limit: no strict limit (reviews)
     abstract: unstructured, ≤200 words
     references: no hard limit (~25 per 1,000 words; up to ~150 for Reviews), Nature
+    citation_style: Nature
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 200}
     sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
     special:
       - "Invited review journal"
@@ -2277,12 +2542,15 @@ templates:
     word_limit: 4000
     abstract: structured (Objectives, Methods, Results, Conclusions), ≤250 words
     references: flexible (usually <100), Vancouver
+    citation_style: Vancouver
     figures: ≤8 (figures + tables combined)
     tables: included in figure limit
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, display_items: 8}
     sections: "Abstract, Key Messages, Introduction, Methods, Results, Discussion, References"
     special:
       - "Key Messages box required (≤3 bullet points)"
-    system: Editorial Manager (editorialmanager.com/ard)
+    system: Editorial Manager
+    submission_url: editorialmanager.com/ard
     guidelines_checked: 2026-09
     guidelines_source: https://www.sciencedirect.com/journal/annals-of-the-rheumatic-diseases/publish/guide-for-authors
     family: standard
@@ -2296,6 +2564,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Patients and Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -2309,6 +2578,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Key Messages, Introduction, Methods, Results, Discussion, References"
     special:
       - "Key Messages box required"
@@ -2326,8 +2596,10 @@ templates:
     word_limit: no strict limit (reviews)
     abstract: unstructured, ≤200 words
     references: no hard limit (~25 per 1,000 words; up to ~150 for Reviews), Nature
+    citation_style: Nature
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 200}
     sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
     special:
       - "Invited review journal"
@@ -2346,6 +2618,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Translational Statement, Introduction, Methods, Results, Discussion, References"
     special:
       - "Translational Statement required"
@@ -2363,6 +2636,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points]}
     sections: "Abstract, Visual Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Visual Abstract encouraged"
@@ -2382,6 +2656,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Plain-Language Summary, Introduction, Methods, Results, Discussion, References"
     special:
       - "Plain-Language Summary required"
@@ -2398,6 +2673,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -2415,8 +2691,10 @@ templates:
     word_limit: no strict limit (reviews)
     abstract: unstructured, ≤200 words
     references: no hard limit (~25 per 1,000 words; up to ~150 for Reviews), Nature
+    citation_style: Nature
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 200}
     sections: "Abstract, Key Points, Introduction, [topic-specific sections], Conclusions, References"
     special:
       - "Invited review journal"
@@ -2435,6 +2713,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 200, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Research Design and Methods, Results, Discussion, References"
     special:
       - "Uses 'Research Design and Methods' heading"
@@ -2450,6 +2729,7 @@ templates:
     references: ≤50
     figures: ≤7
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 7, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Data availability statement required"
@@ -2465,6 +2745,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Significance Statement, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Significance Statement required"
@@ -2480,6 +2761,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -2497,6 +2779,7 @@ templates:
     references: ≤40
     figures: ≤4
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 200, references: 40, figures: 4, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Highest IF among psychiatry journals"
@@ -2513,6 +2796,7 @@ templates:
     references: ≤60
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 200, references: 60, figures: 8, tables: 5}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: Editorial Manager
     family: standard
@@ -2526,6 +2810,7 @@ templates:
     references: ≤40
     figures: ≤5
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 5, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -2539,6 +2824,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods and Materials, Results, Discussion, References"
     system: Editorial Manager
     family: standard
@@ -2554,8 +2840,10 @@ templates:
     word_limit: 3500
     abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: Editorial Manager
     family: standard
@@ -2569,6 +2857,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: Editorial Manager
     family: standard
@@ -2582,6 +2871,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: Editorial Manager
     family: standard
@@ -2593,8 +2883,10 @@ templates:
     word_limit: 4500
     abstract: structured (Objective, Methods, Results, Conclusions), ≤250 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤7
     tables: ≤5
+    limits: {body_words: 4500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 7, tables: 5}
     sections: "Abstract, Central Message, Perspective Statement, Introduction, Methods, Results, Discussion, References"
     special:
       - "Central Message required (1-2 sentences)"
@@ -2609,8 +2901,10 @@ templates:
     word_limit: 3500
     abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
     references: ≤35, Vancouver
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 35, figures: 6, tables: 4}
     sections: "Abstract, Central Message, Central Picture, Introduction, Material and Methods, Results, Comment, References"
     special:
       - "Central Message required (≤25 words)"
@@ -2627,6 +2921,7 @@ templates:
     references: ≤50
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 50, figures: 8, tables: 5}
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - "Video abstracts accepted"
@@ -2644,10 +2939,12 @@ templates:
     references: ≤50
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 2750, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "待核实: abstract headings, reference, figure and table limits are in the Neurosurgery Publications formatting chart (journals.lww.com), not readable in 2026-09"
-    system: Editorial Manager (editorialmanager.com/neu)
+    system: Editorial Manager
+    submission_url: editorialmanager.com/neu
     guidelines_checked: 2026-09
     guidelines_source: https://www.ovid.com/jnls/neurosurgery/pages/instructions-for-authors
     family: standard
@@ -2661,6 +2958,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
     system: Editorial Manager
     family: standard
@@ -2674,8 +2972,10 @@ templates:
     word_limit: 3000
     abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
     references: no fixed limit, AMA
+    citation_style: AMA
     figures: ≤20 (figure pieces and/or tables combined)
     tables: ≤20 (figure pieces and/or tables combined)
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250}
     sections: "Abstract, Introduction, Patients and Methods, Results, Discussion, Conclusions, References"
     special:
       - "Video content accepted"
@@ -2694,6 +2994,7 @@ templates:
     references: ≤40
     figures: ≤8
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 8, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - "Level of Evidence required"
@@ -2709,6 +3010,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -2722,8 +3024,10 @@ templates:
     word_limit: 4000
     abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
     references: ≤30, AMA
+    citation_style: AMA
     figures: no fixed limit
     tables: no fixed limit
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 30}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - Article types and word limits revised January 2026
@@ -2747,12 +3051,14 @@ templates:
     references: ≤40
     figures: ≤5 (figures + tables combined; each figure ≤4 subparts)
     tables: included in figure limit
+    limits: {body_words: 2500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, display_items: 5}
     sections: "Abstract, Patient Summary, Introduction, Patients and Methods, Results, Discussion, Conclusions, References"
     special:
       - "Patient Summary required"
       - "Take Home Message (2-3 sentences, ≤40 words, separate file)"
-      - "Guidelines checked: https://www.sciencedirect.com/journal/european-urology-focus/publish/guide-for-authors (accessed 2026-09)"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/european-urology-focus/publish/guide-for-authors
     family: standard
 
   - id: european-urology-oncology
@@ -2766,12 +3072,14 @@ templates:
     references: ≤40
     figures: ≤6 (figures + tables combined)
     tables: included in figure limit
+    limits: {body_words: 2500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, display_items: 6}
     sections: "Abstract, Patient Summary, Introduction, Patients and Methods, Results, Discussion, Conclusions, References"
     special:
       - "Patient Summary required"
       - "Take Home Message (2-3 sentences, ≤40 words, separate file)"
-      - "Guidelines checked: https://www.sciencedirect.com/journal/european-urology-oncology/publish/guide-for-authors (accessed 2026-09)"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/european-urology-oncology/publish/guide-for-authors
     family: standard
 
   - id: world-journal-urology
@@ -2785,10 +3093,11 @@ templates:
     references: no fixed limit
     figures: no fixed maximum (each counts 250 words against the limit)
     tables: no fixed maximum (each counts 250 words against the limit)
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
-    special:
-      - "Guidelines checked: https://link.springer.com/journal/345/submission-guidelines (accessed 2026-09)"
-    system: Springer Nature submission system (SNAPP)
+    system: Snapp
+    guidelines_checked: 2026-09
+    guidelines_source: https://link.springer.com/journal/345/submission-guidelines
     family: standard
 
   - id: urology
@@ -2802,10 +3111,11 @@ templates:
     references: ≤30
     figures: ≤4 (figures + tables combined)
     tables: included in figure limit
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 30, display_items: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
-    special:
-      - "Guidelines checked: https://www.sciencedirect.com/journal/urology/publish/guide-for-authors (accessed 2026-09)"
     system: Editorial Manager
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/urology/publish/guide-for-authors
     family: standard
 
   - id: prostate-cancer-prostatic-diseases
@@ -2819,10 +3129,11 @@ templates:
     references: ≤50
     figures: ≤5 (tables or figures combined)
     tables: included in figure limit
+    limits: {body_words: 3000, body_excludes: [references, figure_legends, tables, key_points], abstract_words: 300, references: 50, display_items: 5}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
-    special:
-      - "Guidelines checked: https://www.nature.com/pcan/authors-and-referees/guide-to-authors (accessed 2026-09)"
-    system: Nature MTS (eJournalPress)
+    system: eJournalPress
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.nature.com/pcan/authors-and-referees/guide-to-authors
     family: standard
 
   - id: neurourology-urodynamics
@@ -2834,6 +3145,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
     system: ScholarOne
     family: standard
@@ -2847,14 +3159,18 @@ templates:
     word_limit: no strict limit stated in guide for authors (keep concise)
     abstract: structured (headings at author's discretion), ≤250 words
     references: no fixed limit; numbered (Vancouver-style), no strict formatting at submission
+    citation_style: Vancouver
     figures: see author guidelines (no fixed limit)
     tables: see author guidelines (no fixed limit)
+    limits: {abstract_words: 250}
     sections: "Abstract, Highlights, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
     special:
       - "Highlights required (3-5 bullets, ≤85 characters each)"
       - "Official journal of the Society of Urologic Oncology (SUO)"
-      - "Source: https://www.sciencedirect.com/journal/urologic-oncology-seminars-and-original-investigations/publish/guide-for-authors (accessed 2026-09)"
-    system: Editorial Manager (via submit.elsevier.com/URO)
+    system: Editorial Manager
+    submission_url: submit.elsevier.com/URO
+    guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/urologic-oncology-seminars-and-original-investigations/publish/guide-for-authors
     family: standard
 
   - id: journal-endourology
@@ -2866,15 +3182,17 @@ templates:
     word_limit: 2500 (excluding abstract, tables, figures, legends, acknowledgments, disclosures, references)
     abstract: structured, ≤300 words (purpose, major findings, conclusions; trial registry name, URL and number at end for clinical trials)
     references: ≤30, Vancouver-style numbered
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤6
+    limits: {body_words: 2500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30, figures: 6, tables: 6}
     sections: "Abstract, Introduction, Materials (or Patients) and Methods, Results, Discussion, Conclusions, Acknowledgments, Disclosures, References"
     special:
       - "Techniques papers no longer accepted — submit as video to Videourology"
       - "Case reports discouraged"
       - "IF year inferred: Sage 2026 rate card (Dec 2025) listed 2.8 (JCR 2024); journal page now shows 3.2 — verify"
-      - "Source: https://home.liebertpub.com/publications/journal-of-endourology/32/for-authors (accessed 2026-09)"
-    system: ScholarOne (Manuscript Central)
+      - "Second source also used (guidelines_source is the Sage page): https://home.liebertpub.com/publications/journal-of-endourology/32/for-authors (accessed 2026-09)"
+    system: ScholarOne
     guidelines_checked: 2026-09
     guidelines_source: https://journals.sagepub.com/author-instructions/enr
     family: standard
@@ -2892,8 +3210,10 @@ templates:
     word_limit: 3500
     abstract: structured (Objectives, Materials and Methods, Results, Conclusions), no word limit
     references: ≤40, AMA
+    citation_style: AMA
     figures: ≤8
     tables: ≤5
+    limits: {}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "待核实: word, reference, figure and table limits (3500 / ≤40 / ≤8 / ≤5) not stated in the 2026-09 instructions — confirm"
@@ -2914,6 +3234,7 @@ templates:
     references: ≤40
     figures: ≤8
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 8, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -2929,10 +3250,12 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusion, References"
     special:
       - "Visual Abstract encouraged"
-    system: JNM online submission portal (submit-jnm.snmjournals.org)
+    system: journal portal
+    submission_url: submit-jnm.snmjournals.org
     family: standard
 
   - id: academic-radiology
@@ -2944,13 +3267,14 @@ templates:
     word_limit: 5000
     abstract: structured (Rationale and Objectives, Materials and Methods, Results, Conclusion), ≤250 words
     references: ≤50, Vancouver
+    citation_style: Vancouver
     figures: ≤10
     tables: ≤5
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 10, tables: 5}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
-    special:
-      - "Guidelines checked: https://www.sciencedirect.com/journal/academic-radiology/publish/guide-for-authors (accessed 2026-09)"
     system: Editorial Manager
     guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/academic-radiology/publish/guide-for-authors
     family: standard
 
   - id: european-journal-radiology
@@ -2962,16 +3286,21 @@ templates:
     word_limit: 4000 (Research Papers; including abstract, legends and references)
     abstract: unstructured (no mandated headings; state purpose, methods, findings, conclusions), ≤250 words
     references: ≤40 (counted within the 4000-word limit), Vancouver
+    citation_style: Vancouver
     figures: see author guidelines (no fixed limit)
     tables: see author guidelines (no fixed limit)
+    limits: {body_words: 4000, body_excludes: [tables, key_points], abstract_words: 250, references: 40}
+    limits_by_type: {review: {body_words: 6000, body_excludes: [tables, key_points]}, brief_report: {body_words: 2500, body_excludes: [tables, key_points], soft: true}}
     sections: "Abstract, Highlights, Introduction, Materials and Methods, Results, Discussion, Conclusion, References"
     special:
       - "Highlights required (3-5 bullets, ≤85 characters each)"
       - "Review articles ≤6000 words; Short communications/Technical notes ~2500 words; case reports not published"
+      - "待核实: the Guide for Authors does not say which parts the Review and Short-communication limits count; limits_by_type counts them like the Research Paper limit (the strictest reading) — confirm before relying on them"
       - "CRediT author contributions required"
-      - "Source: https://www.sciencedirect.com/journal/european-journal-of-radiology/publish/guide-for-authors (accessed 2026-09)"
-    system: Editorial Manager (via submit.elsevier.com/EJR)
+    system: Editorial Manager
+    submission_url: submit.elsevier.com/EJR
     guidelines_checked: 2026-09
+    guidelines_source: https://www.sciencedirect.com/journal/european-journal-of-radiology/publish/guide-for-authors
     family: standard
 
   - id: abdominal-radiology
@@ -2983,16 +3312,19 @@ templates:
     word_limit: 3500 (Original Research / meta-analysis)
     abstract: structured (Purpose, Methods, Results, Conclusion), ≤300 words
     references: ≤60, Vancouver (numbered in square brackets)
+    citation_style: Vancouver
     figures: ≤5 (≤10 images total)
     tables: ≤5
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 60, figures: 5, tables: 5}
+    limits_by_type: {systematic_review: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points]}}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusion, References"
     special:
       - "Double-blind peer review — anonymize manuscript (author details entered in submission system only)"
       - "Key take-home message must be the last sentence of both abstract and discussion"
       - "Keywords 4-6; Statements and Declarations section required"
-      - "Source: https://link.springer.com/journal/261/submission-guidelines (accessed 2026-09)"
-    system: Springer Nature submission system (SNAPP)
+    system: Snapp
     guidelines_checked: 2026-09
+    guidelines_source: https://link.springer.com/journal/261/submission-guidelines
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -3008,8 +3340,10 @@ templates:
     word_limit: no strict limit (typically 8000-10000)
     abstract: unstructured, ≤250 words
     references: unlimited, Vancouver (numbered in square brackets)
+    citation_style: Vancouver
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 250}
     sections: "Abstract, Highlights, Introduction, Related Work, Methods, Experiments, Results, Discussion, Conclusion, References"
     special:
       - "Highlights required (3-5 bullet points)"
@@ -3027,14 +3361,16 @@ templates:
     word_limit: no strict limit
     abstract: structured, ≤300 words
     references: unlimited, AMA
+    citation_style: AMA
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 300}
     sections: "Abstract, Introduction, Methods, Results, Discussion (Principal Findings, Limitations, Comparison With Prior Work, Conclusions), References"
     special:
       - "APC: $3150 (standard article processing fee)"
       - "Mobile/wearable health focus"
     apc_year: 2026
-    system: JMIR submission system
+    system: JMIR
     guidelines_checked: 2026-09
     guidelines_source: https://mhealth.jmir.org/author-information/instructions-for-authors
     family: standard
@@ -3046,8 +3382,10 @@ templates:
     word_limit: no strict limit
     abstract: unstructured, ≤250 words
     references: unlimited, Vancouver (numbered in square brackets)
+    citation_style: Vancouver
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 250}
     sections: "Abstract, Highlights, Introduction, Methods, Results, Discussion, Conclusion, References"
     special:
       - "Highlights required"
@@ -3066,15 +3404,19 @@ templates:
     word_limit: ≤10 pages (double column) at initial submission — longer papers returned without review; overlength charges beyond 8 published pages ($250/page for 9-10, $350/page 11+)
     abstract: unstructured, ≤250 words
     references: unlimited, IEEE style (numbered brackets)
+    citation_style: IEEE
     figures: unlimited within page limit
     tables: unlimited within page limit
+    limits: {pages: 10, abstract_words: 250}
     sections: "Abstract, Index Terms, Introduction, Related Work, Methods, Experiments, Results, Discussion, Conclusion, References"
     special:
       - "IEEE formatting template required"
       - "Index Terms required"
       - "Double-column format"
-      - "Guidelines checked: https://ieeetmi.org/authors-instructions/ (accessed 2026-09)"
-    system: IEEE Author Portal (ieee.atyponrex.com/journal/tmi-ieee)
+    system: IEEE Author Portal
+    submission_url: ieee.atyponrex.com/journal/tmi-ieee
+    guidelines_checked: 2026-09
+    guidelines_source: https://ieeetmi.org/authors-instructions/
     family: ieee
 
   - id: jamia
@@ -3088,12 +3430,14 @@ templates:
     references: unlimited, numbered (Medline journal abbreviations; first 3 authors then et al.)
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, figures: 6, tables: 4}
     sections: "Abstract, Background and Significance, Objective, Materials and Methods, Results, Discussion, Conclusion, References"
     special:
       - "Main text headings should mirror the structured abstract, plus a Background and Significance section"
       - "Submit as Word document; order — title page, abstract, main text, tables, acknowledgments, references"
-      - "Source: https://academic.oup.com/jamia/pages/General_Instructions (accessed 2026-09)"
     system: ScholarOne
+    guidelines_checked: 2026-09
+    guidelines_source: https://academic.oup.com/jamia/pages/General_Instructions
     family: standard
 
   # ═══════════════════════════════════════════════
@@ -3107,8 +3451,10 @@ templates:
     word_limit: 4000
     abstract: structured (Objective, Study design, Results, Conclusions), <250 words
     references: ≤35, AMA
+    citation_style: AMA
     figures: ≤8 figures + tables combined
     tables: ≤8 figures + tables combined
+    limits: {abstract_words: 250, references: 35, display_items: 8}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - Word count 4000 includes title page and abstract, excludes references, tables and figures
@@ -3126,6 +3472,7 @@ templates:
     references: ≤30
     figures: ≤4
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 30, figures: 4, tables: 4}
     sections: "Abstract, What is already known, What this study adds, Introduction, Methods, Results, Discussion, References"
     special:
       - "Summary box required"
@@ -3139,8 +3486,10 @@ templates:
     word_limit: 5000–6000 (Basic Science / Clinical Research Articles)
     abstract: structured (Background, Methods, Results, Conclusion), ≤200 words
     references: unlimited, Nature (superscript numbers; >5 authors → first author et al.)
+    citation_style: Nature
     figures: ≤6
     tables: ≤4
+    limits: {abstract_words: 200, figures: 6, tables: 4}
     sections: "Abstract, Impact Statement, Introduction, Methods, Results, Discussion, References"
     special:
       - Impact statement required on title page (≤100 words, labelled 'Impact')
@@ -3160,8 +3509,10 @@ templates:
     word_limit: 3000
     abstract: structured (Background, Objective, Study Design, Results, Conclusion), 250–500 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 500, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Comment, References"
     special:
       - "'Comment' instead of 'Discussion'"
@@ -3183,8 +3534,10 @@ templates:
     word_limit: 3000
     abstract: structured (Objective, Methods, Results, Conclusion), ≤250 words
     references: ≤30, Vancouver
+    citation_style: Vancouver
     figures: ≤5 (figures and/or tables combined)
     tables: ≤5 (figures and/or tables combined)
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], references: 30, display_items: 5}
     sections: "Abstract, Précis, Introduction, Methods, Results, Discussion, References"
     special:
       - "Précis required (≤25 words, 1 sentence)"
@@ -3202,8 +3555,10 @@ templates:
     word_limit: 3500
     abstract: structured (Objective, Design, Setting, Population, Methods, Main Outcome Measures, Results, Conclusions), ≤250 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Tweetable Abstract, Introduction, Methods, Results, Discussion, Conclusion, References"
     special:
       - "Tweetable Abstract required (≤140 characters)"
@@ -3219,8 +3574,10 @@ templates:
     word_limit: 5000
     abstract: structured (Study Question, Summary Answer, What Is Known Already, Study Design/Subjects/Duration, Main Results and the Role of Chance, Limitations, Wider Implications), ≤300 words
     references: ≤60, Harvard (author-year, alphabetical)
+    citation_style: Harvard
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 60, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Extended structured abstract with unique headings"
@@ -3238,6 +3595,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: Editorial Manager
     family: standard
@@ -3251,6 +3609,7 @@ templates:
     references: ≤40
     figures: ≤6 tables + figures combined
     tables: ≤6 tables + figures combined
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, display_items: 6}
     sections: "Abstract, Highlights, Introduction, Methods, Results, Discussion, References"
     special:
       - "Highlights required (3-5 bullet points)"
@@ -3274,6 +3633,7 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 250}
     sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
     special:
       - "APC: ~$3290"
@@ -3290,8 +3650,10 @@ templates:
     word_limit: 3000
     abstract: structured (Objectives, Design, Setting, Patients/Subjects, Interventions, Measurements and Main Results, Conclusions), ≤300 words
     references: ≤40, Vancouver (Arabic numerals in parentheses on the line; NLM abbreviations)
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - Key Points required (included in main manuscript file after abstract)
@@ -3309,6 +3671,7 @@ templates:
     references: ≤30
     figures: ≤5
     tables: ≤3
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 30, figures: 5, tables: 3}
     sections: "Abstract, Take-home message, Introduction, Methods, Results, Discussion, References"
     special:
       - Take-home message required (≤65 words)
@@ -3327,6 +3690,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Editor's Capsule Summary, Introduction, Methods, Results, Discussion, References"
     special:
       - "Editor's Capsule Summary (What is already known/What question this study addressed/What this study adds/How this is relevant)"
@@ -3342,6 +3706,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
     system: Editorial Manager
     family: standard
@@ -3359,8 +3724,10 @@ templates:
     word_limit: 4000
     abstract: structured (Background, Methods, Results, Conclusions), ≤300 words
     references: ≤50
+    citation_style: house style
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 50}
     sections: "Abstract, Editor's Perspective (What We Already Know, What This Article Tells Us That Is New), Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Editor's Perspective box (editor-written)"
@@ -3379,8 +3746,10 @@ templates:
     word_limit: 3500
     abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
     references: ≤50, Vancouver
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Editor's Key Points, Introduction, Methods, Results, Discussion, References"
     special:
       - "Editor's Key Points required (3-5 bullet points)"
@@ -3398,8 +3767,10 @@ templates:
     word_limit: 3500
     abstract: structured (Background, Objective, Design, Setting, Patients, Interventions, Main Outcome Measures, Results, Conclusion, Trial registration), ≤300 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - Key Points (3–5 bullets after the abstract) required for original articles
@@ -3418,8 +3789,10 @@ templates:
     word_limit: 4000
     abstract: structured (Background, Methods, Results, Conclusions), ≤400 words
     references: ≤40 (guidance), AMA
+    citation_style: AMA
     figures: ≤6 (figures and/or tables combined)
     tables: ≤6 (figures and/or tables combined)
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 400, references: 40, display_items: 6}
     sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, References"
     special:
       - "Key Points box required"
@@ -3442,6 +3815,7 @@ templates:
     references: ≤40
     figures: ≤5
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 5, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -3453,8 +3827,10 @@ templates:
     word_limit: 2500
     abstract: structured (Background, Aim, Design and setting, Method, Results, Conclusion), ≤250 words
     references: ≤35, Vancouver
+    citation_style: Vancouver
     figures: ≤4
     tables: ≤4
+    limits: {body_words: 2500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 35, figures: 4, tables: 4}
     sections: "Abstract, How this fits in, Introduction, Method, Results, Discussion, References"
     special:
       - "How this fits in box required"
@@ -3472,6 +3848,7 @@ templates:
     references: ≤40
     figures: ≤5
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 40, figures: 5, tables: 4}
     sections: "Abstract, Key Messages, Introduction, Methods, Results, Discussion, References"
     special:
       - "Open access"
@@ -3489,8 +3866,10 @@ templates:
     word_limit: 4000
     abstract: structured (Objective, Methods, Results, Conclusion, Impact), ≤250 words
     references: ≤50, AMA (numbered consecutively; any consistent readable style accepted at submission)
+    citation_style: AMA
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Impact Statement required in abstract"
@@ -3506,8 +3885,10 @@ templates:
     word_limit: 3000
     abstract: structured (Objective, Design, Setting, Participants, Interventions, Main Outcome Measures, Results, Conclusions), ≤250 words
     references: ≤40, AMA
+    citation_style: AMA
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - Word count = Introduction through Conclusions; animal-model, healthy-sample and small case-report studies generally not reviewed
@@ -3525,6 +3906,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Lay Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Lay Abstract required"
@@ -3545,8 +3927,10 @@ templates:
     word_limit: 4000
     abstract: structured, ≤250 words
     references: ≤50, Vancouver (numbered in order of citation)
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Study Highlights, Introduction, Methods, Results, Discussion, References"
     special:
       - Study Highlights section required after the Discussion (answers to set questions, <250 words excluding the questions)
@@ -3565,6 +3949,7 @@ templates:
     references: ≤60
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 60, figures: 8, tables: 5}
     sections: "Abstract, What is already known, What does this study add, What is the clinical significance, Introduction, Methods, Results, Discussion, References"
     special:
       - "Bullet point boxes required"
@@ -3581,6 +3966,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤5
+    limits: {body_words: 6000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 5}
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - Abstract normally 150-250 words; may be extended up to 450 words for original research/systematic reviews when the topic dictates
@@ -3598,6 +3984,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {pages: 10, abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: Editorial Manager
     guidelines_checked: 2026-09
@@ -3615,8 +4002,10 @@ templates:
     word_limit: 7000
     abstract: structured (Background, Objectives, Design, Participants, Methods, Results, Conclusions, Registration), ≤400 words
     references: ≤60, any consistent style accepted
+    citation_style: any
     figures: ≤6
     tables: ≤5
+    limits: {body_words: 7000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 400, references: 60, figures: 6, tables: 5}
     sections: "Abstract, What is already known, What this paper adds, Introduction, Background, Methods, Results, Discussion, Conclusions, References"
     special:
       - "What is already known / What this paper adds box required"
@@ -3633,8 +4022,10 @@ templates:
     word_limit: 5000
     abstract: structured (Aim, Background, Design, Methods, Results, Conclusion), ≤300 words
     references: ≤50, APA
+    citation_style: APA
     figures: ≤6
     tables: ≤5
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 50, figures: 6, tables: 5}
     sections: "Abstract, What does this paper contribute to the wider global clinical community?, Introduction, Background, Methods, Results, Discussion, Conclusion, Relevance to clinical practice, References"
     special:
       - "Impact statement required"
@@ -3652,8 +4043,10 @@ templates:
     word_limit: 16 pages
     abstract: structured (Background, Objectives, Methods, Results, Discussion), ≤350 words
     references: ≤40, APA
+    citation_style: APA
     figures: ≤5 (figures and/or tables combined)
     tables: ≤5 (figures and/or tables combined)
+    limits: {pages: 16, abstract_words: 350, references: 40, display_items: 5}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: Editorial Manager
     guidelines_checked: 2026-09
@@ -3669,6 +4062,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤5
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 50, figures: 6, tables: 5}
     sections: "Abstract, Impact Statement, Introduction, Background, The Study (Aim, Design, Sample, Data Collection, Analysis, Rigour, Ethical Considerations), Results, Discussion, Conclusion, References"
     special:
       - 'Impact statement required (~100 words, bullet points allowed: impact on patients, practice, education, wider society)'
@@ -3688,6 +4082,8 @@ templates:
     word_limit: 3500
     abstract: structured (same as Lancet), ≤300 words
     references: ≤30, Lancet
+    citation_style: Lancet
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 30}
     sections: same as Lancet
     special:
       - "Research in Context panel required"
@@ -3708,6 +4104,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤5
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 40, figures: 6, tables: 5}
     sections: "Abstract, Key Questions (What is already known, What are the new findings, What do the new findings imply), Introduction, Methods, Results, Discussion, References"
     special:
       - "Key Questions box required"
@@ -3722,8 +4119,10 @@ templates:
     word_limit: 3500
     abstract: unstructured (research question, methods, results, conclusions), ≤200 words
     references: ≤50, any format/style accepted at submission
+    citation_style: any
     figures: ≤6
     tables: ≤5
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 200, references: 50, figures: 6, tables: 5}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - Word count excludes abstract, references, tables and figure legends
@@ -3739,8 +4138,10 @@ templates:
     word_limit: 3000
     abstract: structured (Background, Methods, Results, Conclusions), ≤250 words
     references: ≤50, Vancouver
+    citation_style: Vancouver
     figures: ≤6
     tables: ≤5
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 5}
     sections: "Abstract, Key Messages, Introduction, Methods, Results, Discussion, References"
     special:
       - Key Messages required (3 succinct bullet points, each a single complete sentence)
@@ -3759,6 +4160,7 @@ templates:
     references: ≤40
     figures: ≤5
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 5, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
     system: Editorial Manager
     family: standard
@@ -3772,6 +4174,7 @@ templates:
     references: ≤60
     figures: ≤6
     tables: ≤5
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 60, figures: 6, tables: 5}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Open access (NIH-funded)"
@@ -3792,6 +4195,7 @@ templates:
     references: ≤40
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 40, figures: 8, tables: 5}
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusion, References"
     special:
       - "Level of Evidence required"
@@ -3807,6 +4211,7 @@ templates:
     references: ≤40
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, references: 40, figures: 8, tables: 5}
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - "Level of Evidence required"
@@ -3823,15 +4228,18 @@ templates:
     word_limit: 2700
     abstract: structured (Study Design, Objective, Summary of Background Data, Methods, Results, Conclusion), ≤300 words
     references: ≤40, Vancouver
+    citation_style: Vancouver
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 2700, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 300, figures: 8, tables: 5}
     sections: "Abstract, Key Points, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Key Points box required"
       - "Level of Evidence required"
       - Mini abstract / précis (≤50 words) required
       - "待核实: reference limit (≤40) not stated in the 2026-09 instructions — confirm"
-    system: Editorial Manager (spine.edmgr.com)
+    system: Editorial Manager
+    submission_url: spine.edmgr.com
     guidelines_checked: 2026-09
     guidelines_source: http://edmgr.ovid.com/spine/accounts/ifauth.htm
     family: standard
@@ -3845,6 +4253,7 @@ templates:
     references: ≤40
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 8, tables: 5}
     sections: "Abstract, Take home message, Introduction, Methods, Results, Discussion, References"
     special:
       - "Take home message required"
@@ -3861,6 +4270,7 @@ templates:
     references: ≤50
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 8, tables: 5}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -3878,6 +4288,7 @@ templates:
     references: ≤40
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350, references: 40, figures: 8, tables: 5}
     sections: "Abstract, Précis, Introduction, Methods, Results, Discussion, References"
     special:
       - "Précis required"
@@ -3893,6 +4304,7 @@ templates:
     references: ≤50
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 8, tables: 5}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -3906,6 +4318,7 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 300}
     sections: "Abstract, Introduction, [topic-specific sections], Conclusions, References"
     special:
       - "Invited comprehensive reviews"
@@ -3925,6 +4338,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Capsule Summary, Introduction, Methods, Results, Discussion, References"
     special:
       - "Capsule Summary required (What is known / What is new)"
@@ -3940,6 +4354,7 @@ templates:
     references: ≤50
     figures: ≤7
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 200, references: 50, figures: 7, tables: 4}
     sections: "Abstract, Introduction, Results, Discussion, Materials and Methods, References"
     special:
       - "Results before Methods (Cell Press style)"
@@ -3959,6 +4374,7 @@ templates:
     references: ≤50
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 8, tables: 5}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -3972,6 +4388,7 @@ templates:
     references: ≤50
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 8, tables: 5}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: Editorial Manager
     family: standard
@@ -3985,6 +4402,7 @@ templates:
     references: ≤50
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 8, tables: 5}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: Editorial Manager
     family: standard
@@ -4000,12 +4418,14 @@ templates:
     word_limit: 3000
     abstract: structured (same as JAMA), ≤350 words
     references: ≤40, AMA style
+    citation_style: AMA
     figures: ≤5
     tables: ≤5
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350, references: 40, figures: 5, tables: 5}
     sections: "Abstract, Key Points, Introduction, Methods, Results, Discussion, Conclusions, References"
     special:
       - "Key Points box required (Question, Findings, Meaning)"
-    system: eJournalPress (JAMA Network)
+    system: eJournalPress
     family: jama
 
   - id: laryngoscope
@@ -4017,6 +4437,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusion, References"
     special:
       - "Level of Evidence encouraged"
@@ -4032,6 +4453,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     system: ScholarOne
     family: standard
@@ -4045,8 +4467,10 @@ templates:
     word_limit: 3500
     abstract: structured (Objective, Study Design, Setting, Patients, Intervention, Main Outcome Measures, Results, Conclusions), ≤250 words
     references: ≤40, AMA
+    citation_style: AMA
     figures: ≤6 (figures and/or tables combined)
     tables: ≤6 (figures and/or tables combined)
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, display_items: 6}
     sections: "Abstract, Introduction, Methods, Results, Discussion, Conclusion, References"
     special:
       - "待核实: reference limit (≤40) not stated in the 2026-09 author guidelines — confirm before trimming references"
@@ -4064,6 +4488,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Key Points, Introduction, Materials and Methods, Results, Discussion, Conclusion, References"
     special:
       - "Key Points required"
@@ -4083,6 +4508,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Knowledge Transfer Statement, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "Knowledge Transfer Statement required"
@@ -4098,6 +4524,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Patients and Methods, Results, Discussion, References"
     system: Editorial Manager
     family: standard
@@ -4111,6 +4538,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
     system: ScholarOne
     family: standard
@@ -4124,6 +4552,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
     system: Editorial Manager
     family: standard
@@ -4141,6 +4570,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 50, figures: 6, tables: 4}
     sections: "Abstract, Introduction, Methods, Results, Discussion, References"
     special:
       - "Key Messages box required"
@@ -4156,6 +4586,7 @@ templates:
     references: ≤40
     figures: ≤6
     tables: ≤4
+    limits: {body_words: 3500, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 40, figures: 6, tables: 4}
     sections: "Abstract, Key Messages, Capsule Summary, Introduction, Methods, Results, Discussion, References"
     special:
       - "Capsule Summary required"
@@ -4176,6 +4607,7 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 350}
     sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
     special:
       - "APC: ~$2790"
@@ -4191,11 +4623,12 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {body_words: 12000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "APC: ~$2950"
       - "Interactive peer review"
-    system: Frontiers submission system
+    system: Frontiers
     family: standard
 
   - id: frontiers-oncology
@@ -4207,10 +4640,11 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {body_words: 12000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "APC: ~$2950"
-    system: Frontiers submission system
+    system: Frontiers
     family: standard
 
   - id: frontiers-immunology
@@ -4222,10 +4656,11 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {body_words: 12000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 350}
     sections: "Abstract, Introduction, Materials and Methods, Results, Discussion, References"
     special:
       - "APC: ~$2950"
-    system: Frontiers submission system
+    system: Frontiers
     family: standard
 
   - id: bmc-surgery
@@ -4237,6 +4672,7 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 350}
     sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
     special:
       - "APC: ~$2490"
@@ -4256,6 +4692,7 @@ templates:
     references: unlimited
     figures: unlimited
     tables: unlimited
+    limits: {abstract_words: 350}
     sections: "Abstract, Background, Methods, Results, Discussion, Conclusions, References"
     special:
       - "Open access"
@@ -4272,6 +4709,7 @@ templates:
     references: ≤60
     figures: ≤7
     tables: ≤3
+    limits: {body_words: 5000, body_excludes: [abstract, methods, references, figure_legends, tables, key_points], abstract_words: 150, references: 60, figures: 7, tables: 3}
     sections: "Abstract, Introduction, Results, Discussion, Materials and Methods, References"
     special:
       - "Nature/Cell Press hybrid style"
@@ -4287,6 +4725,7 @@ templates:
     references: ≤50
     figures: ≤6
     tables: ≤3
+    limits: {body_words: 4000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 200, references: 50, figures: 6, tables: 3}
     sections: "Abstract, Introduction, Results, Discussion, Methods, References"
     special:
       - "Results before Methods"
@@ -4302,6 +4741,7 @@ templates:
     references: unlimited
     figures: ≤10
     tables: ≤5
+    limits: {abstract_words: 200, figures: 10, tables: 5}
     sections: "Abstract, Introduction, Results, Discussion, Materials and Methods, References"
     special:
       - "Nature family formatting"
@@ -4318,6 +4758,7 @@ templates:
     references: ≤60
     figures: ≤8
     tables: ≤5
+    limits: {body_words: 5000, body_excludes: [abstract, references, figure_legends, tables, key_points], abstract_words: 250, references: 60, figures: 8, tables: 5}
     sections: "Abstract, Highlights, Introduction, Materials and Methods, Results, Discussion, Conclusions, References"
     special:
       - "Highlights required"

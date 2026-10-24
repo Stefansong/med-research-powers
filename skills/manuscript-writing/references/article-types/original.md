@@ -15,7 +15,7 @@
 | Abstract | 全文各章节已完成 | 必须 |
 | Title | Abstract 已完成 | 推荐 |
 
-**可以在没有 `results-summary.md` 的情况下先写 Methods 和 Introduction。** 缺其他必须项时按 SKILL.md Step 1 处理（告知用户、给选择，先写时缺的内容写 `[待补：来源]`）。分析完成后，按 `analysis-log.md` 回头补写 Methods 中与 SAP 的偏离。
+**可以在没有 `results-summary.md` 的情况下先写 Methods 和 Introduction。** 缺其他必须项时按 SKILL.md Step 1 处理（说明缺什么，light / auto 下先写、step 模式先问；缺的内容写 `[待补：来源]`）。分析完成后，按 `analysis-log.md` 回头补写 Methods 中与 SAP 的偏离。
 
 ## 写作顺序（按效率，不按论文顺序）
 
@@ -29,7 +29,7 @@
 
 ## 章节规则
 
-**Methods**：研究设计、参与者（纳入/排除、时间地点）、变量定义、统计方法（可复现程度：软件与版本、模型、缺失数据处理）、样本量依据、伦理批准与知情同意声明、试验/研究注册号（如适用）。与 `study-protocol.md` / `analysis-plan.md` 不一致处必须说明原因并标注"与预注册分析计划的偏离"——逐条对应 `analysis-log.md` 的偏离表，每条都写在 Methods（改了什么、为什么；Gate 2 查这里），对结论可能有影响的再在 Limitations 讨论，不能略去或只放补充材料。
+**Methods**：研究设计、参与者（纳入/排除、时间地点）、变量定义、统计方法（可复现程度：软件与版本、模型、缺失数据处理）、样本量依据、伦理批准与知情同意声明、试验/研究注册号（如适用）。与 `study-protocol.md` / `analysis-plan.md` 不一致处必须说明原因并标注"与预注册分析计划的偏离"——逐条对应 `analysis-log.md` 的偏离表，每条都写在 Methods（改了什么、为什么；Gate 2 查这里），对结论可能有影响的再在 Limitations 讨论，不能略去或只放补充材料。`analysis-log.md` 的 Post hoc / Exploratory Analyses 表里的分析（SAP 之后由审稿人或用户加的）不是偏离，但同样逐条写进 Methods，标明 post hoc / exploratory 和由来（如"应审稿意见新增"），Results 里与预定分析分开呈现，不改写成主要结论。
 
 **Results**：参与者流程图 → 基线表 → 主要结局 → 次要结局 → 亚组/敏感性分析。**禁止**在 Results 讨论意义；每个数字都必须能在 `results-summary.md` 或分析输出里找到出处，**禁止**出现找不到出处的数字。效应量必须带 95% CI。
 
@@ -37,7 +37,7 @@
 
 **Discussion**：主要发现 → 与文献比较 → 机制/解释 → 临床意义 → 局限性（诚实、具体）→ 结论。**禁止**引入 Results 中没有的数据。
 
-**Abstract**：结构化小标题与字数**以目标期刊模板为准**（`get_journal_template.py` 输出的 `abstract` 字段），常见为 Background/Methods/Results/Conclusions；JAMA 家族为 7 段式（Importance … Conclusions and Relevance）；Lancet 家族含 Funding。
+**Abstract**：结构化小标题与字数**以目标期刊模板为准**（`get_journal_template.py` 输出的 `abstract` 字段与 `limits.abstract_words`；脚本提示条目未核实时，先到期刊官网确认），常见为 Background/Methods/Results/Conclusions；JAMA 家族为 7 段式（Importance … Conclusions and Relevance）；Lancet 家族含 Funding。
 
 **Title**：含研究设计类型 + 关键变量 + 人群，≤20 词；RCT 标题含 "randomized"（CONSORT 要求）。
 
