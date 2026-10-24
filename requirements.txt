@@ -1,15 +1,20 @@
 # Python dependencies for the bundled MRP scripts (statistical-analysis,
 # figure-generation, manuscript-export, data-collection-tools, using-med-research-powers).
-# The skills themselves work without these; the scripts do not.
+# The skills themselves work without these; the scripts do not. Needs Python 3.10 or later.
 #   pip install -r requirements.txt
+# Lower bounds. Required: matplotlib 3.6 (pub_style.save_figure uses Figure.get_layout_engine() and
+# Figure.draw_without_rendering()); scipy 1.11 (the method-card recipes, which the tests run, call
+# .confidence_interval() on ttest_ind / ttest_rel results — available from 1.11 / 1.10 on).
+# The other bounds are the oldest releases the test suite is run against: CI installs exactly these
+# versions on Python 3.10 (job tests-minimum-versions), so every line needs a ">=" lower bound.
 # Analysis code written from the method cards may need newer releases than the bundled scripts:
 # pairwise_tukeyhsd(..., use_var="unequal") (Games-Howell) needs statsmodels 0.15 or later (which needs
 # Python 3.10+); on older statsmodels the method card gives pingouin.pairwise_gameshowell() instead.
-scipy
-statsmodels
-matplotlib
-pandas
-numpy
-python-docx
-openpyxl
-pyyaml
+scipy>=1.11
+statsmodels>=0.14
+matplotlib>=3.6
+pandas>=1.5
+numpy>=1.23
+python-docx>=1.1
+openpyxl>=3.1
+pyyaml>=6.0

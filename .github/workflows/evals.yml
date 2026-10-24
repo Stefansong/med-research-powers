@@ -1,16 +1,22 @@
 name: Plugin evals (manual)
 
 # Routing regression with `claude plugin eval` — costs API usage, so it runs on demand only.
-# Requires the ANTHROPIC_API_KEY repository secret.
+# Requires the ANTHROPIC_API_KEY repository secret. The key is given to the one step that
+# runs the evals, never to the job: the model under test can run tools (python3 in the
+# `behavior` case), and nothing else in the job needs the key.
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tags to run, space-separated (smoke | routing | negative | coverage | overtrigger | behavior). Empty = routing + negative"
-        default: "smoke"
+        description: "Tags to run, space-separated (smoke | routing | negative | coverage | overtrigger | behavior)"
+        default: "routing negative"
       runs:
         description: "Runs per case"
         default: "2"
+      upload_results:
+        description: "Upload results.json as a 7-day artifact (it contains model replies; leave off unless you need it)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -18,15 +24,16 @@ permissions:
 jobs:
   eval:
     runs-on: ubuntu-latest
-    env:
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
         with:
           node-version: "22"
-      - name: Install Claude Code
-        run: npm install -g @anthropic-ai/claude-code
+      - name: Install Claude Code (pinned — bump together with ci.yml)
+        run: npm install --global --no-audit --no-fund @anthropic-ai/claude-code@2.1.308
       - name: Sandbox tools for the behaviour case
         # data-first-planning runs data_profile.py through Bash, which the evaluator only allows
         # inside its OS sandbox (bubblewrap + socat).
@@ -34,6 +41,7 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq bubblewrap socat
       - name: Run evals
         env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TAGS: ${{ inputs.tag }}
           RUNS: ${{ inputs.runs }}
         run: |
@@ -42,14 +50,16 @@ jobs:
           set --
           for t in $TAGS; do set -- "$@" --tag "$t"; done
           case " $TAGS " in
-            *" behavior "*) set -- "$@" --scaffold --allow-tools "Bash(python3 *)" ;;
+            *" behavior "*) set -- "$@" --scaffold --allow-tools "Bash(python3 *)" --judge-model sonnet ;;
           esac
           claude plugin eval . --trust-plugin --json results.json --threshold 0.8 \
             --runs "$RUNS" --ablation none --no-publish --max-cost-usd 20 "$@"
-      - uses: actions/upload-artifact@v7
-        if: always()
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        # Off by default: results.json holds the model's replies, and run transcripts are never
+        # uploaded. The pass/fail summary is in the job log either way.
+        if: always() && inputs.upload_results
         with:
           name: eval-results
-          path: |
-            results.json
-            evals/results/
+          path: results.json
+          retention-days: 7
+          if-no-files-found: ignore

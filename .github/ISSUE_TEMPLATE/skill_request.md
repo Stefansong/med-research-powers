@@ -6,7 +6,7 @@ labels: enhancement
 
 **What is missing** (skill / reporting standard / journal / script):
 
-**Without it, what does Claude get wrong?** (the "excuse" you observed — see `skills/writing-mrp-skills`):
+**Without it, what does Claude get wrong?** (the "excuse" you observed — see `skills/writing-mrp-skills`; issues are public, so leave out patient data and identifiers / 不要贴患者数据):
 
 **Source of truth** (paper DOI, official checklist URL, journal author-guideline URL): 
 

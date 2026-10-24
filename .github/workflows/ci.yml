@@ -9,19 +9,25 @@ on:
 permissions:
   contents: read
 
+# Third-party actions are pinned to a commit SHA (the tag is in the comment); Dependabot
+# (.github/dependabot.yml) proposes updates. Tool versions installed here are pinned too.
+
 jobs:
   consistency:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          python-version: "3.11"
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.12"
 
       - name: Install Python dependencies
         run: |
           python -m pip install --quiet --upgrade pip
-          python -m pip install --quiet -r requirements.txt pytest
+          python -m pip install --quiet -r requirements.txt ruff==0.16.9
 
       - name: Repository consistency guard
         run: python tools/check_consistency.py
@@ -47,28 +53,21 @@ jobs:
           print("✅ all skill YAML files parse")
           PY
 
+      - name: Lint Python (ruff — pyflakes F and syntax errors E9)
+        run: ruff check --no-cache --select F,E9 --output-format github skills tools tests
+
       - name: Syntax-check Python scripts
         run: python -m compileall -q skills tools
-
-      - name: Unit tests for bundled scripts
-        run: |
-          if [ -d tests ]; then
-            pytest tests/ -q
-          else
-            echo "::warning::tests/ directory not found — skipping pytest"
-          fi
 
       - name: Shell syntax (sh -n)
         run: sh -n hooks/session-start.sh install.sh
 
       - name: shellcheck
-        # Non-blocking: shellcheck's apt package occasionally lags or fails to install;
-        # findings are printed so they are visible in the log.
+        # Blocking. shellcheck is preinstalled on the ubuntu runner image; apt is only a fallback.
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck || echo "::warning::shellcheck install failed"
-          if command -v shellcheck >/dev/null 2>&1; then
-            shellcheck hooks/session-start.sh install.sh || echo "::warning::shellcheck reported findings (see above)"
-          fi
+          command -v shellcheck >/dev/null 2>&1 || { sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck; }
+          shellcheck --version
+          shellcheck hooks/session-start.sh install.sh
 
       - name: Hook smoke test (empty project directory)
         # The SessionStart hook must print plain-text context (not a JSON object) even
@@ -89,7 +88,7 @@ jobs:
         # Guard for SECURITY.md's contract: only whitelisted fields of .mrp-state.json
         # may reach the context, values are never executed. Blocking — the hook reads the
         # state file whatever its indentation, and tests/test_session_start_hook.py covers
-        # the same contract across formats.
+        # the same contract across formats, shells (dash, bash) and crafted inputs.
         run: |
           set -eu
           tmp="$(mktemp -d)"
@@ -104,18 +103,73 @@ jobs:
           fi
           echo "✅ hook only exposes whitelisted state fields"
 
-  plugin-validate:
+  tests:
+    # Python 3.10 is the documented minimum (CONTRIBUTING.md); 3.12 is a current release.
     runs-on: ubuntu-latest
-    # continue-on-error: the validator ships inside the Claude Code npm package, whose
-    # download can fail or whose --strict rules can change between releases; a red result
-    # here should be looked at but must not block a docs-only PR.
-    continue-on-error: true
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Python dependencies (latest releases allowed by requirements.txt)
+        run: |
+          python -m pip install --quiet --upgrade pip
+          python -m pip install --quiet -r requirements.txt pytest==9.1.1
+          python -m pip list
+      - name: Unit tests for bundled scripts, the hook and the guard
+        # The hook tests run under dash (the runner's /bin/sh) and bash.
+        run: python -m pytest tests -q
+
+  tests-minimum-versions:
+    # The lower bounds in requirements.txt are installed exactly, on the oldest supported
+    # Python, so a bound that is too low fails here instead of on a user's machine.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.10"
+      - name: Install the minimum versions from requirements.txt
+        run: |
+          set -eu
+          # name>=X[,<Y][; marker]  →  name==X[; marker]  (comments dropped, environment markers kept)
+          sed -n -e 's/[[:space:]]*#.*$//' \
+                 -e 's/^\([A-Za-z0-9_.-]*\)>=\([0-9.]*\)[^;]*\(;.*\)\{0,1\}$/\1==\2\3/p' \
+                 requirements.txt > "$RUNNER_TEMP/minimum.txt"
+          cat "$RUNNER_TEMP/minimum.txt"
+          [ "$(wc -l < "$RUNNER_TEMP/minimum.txt")" -eq "$(grep -c '^[A-Za-z]' requirements.txt)" ] \
+            || { echo "::error::every requirement needs a >= lower bound"; exit 1; }
+          python -m pip install --quiet --upgrade pip
+          python -m pip install --quiet -r "$RUNNER_TEMP/minimum.txt" pytest==9.1.1
+          python -m pip list
+      - name: Unit tests at the minimum versions
+        run: python -m pytest tests -q
+
+  plugin-validate:
+    # Blocking: the manifests must pass the validator of the pinned Claude Code release.
+    # When a newer release is adopted, bump the version here and in evals.yml together.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
         with:
           node-version: "22"
+      - name: Install Claude Code (pinned)
+        run: npm install --global --no-audit --no-fund @anthropic-ai/claude-code@2.1.308
       - name: claude plugin validate --strict (plugin.json)
-        run: npx -y @anthropic-ai/claude-code plugin validate .claude-plugin/plugin.json --strict
+        run: claude plugin validate .claude-plugin/plugin.json --strict
       - name: claude plugin validate --strict (marketplace.json)
-        run: npx -y @anthropic-ai/claude-code plugin validate .claude-plugin/marketplace.json --strict
+        run: claude plugin validate .claude-plugin/marketplace.json --strict
