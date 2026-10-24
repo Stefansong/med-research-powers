@@ -33,7 +33,7 @@
 | 任务 | R | Python |
 |---|---|---|
 | Table 1（含 SMD） | `tableone::CreateTableOne(vars, strata = "grp", data = d)` 后 `print(tab, smd = TRUE, test = FALSE, nonnormal = c(...))`；或 `gtsummary::tbl_summary(by = grp)` 后接 `add_difference(test = everything() ~ "smd")` | `tableone.TableOne(df, columns=[...], categorical=[...], nonnormal=[...], groupby="grp", smd=True, pval=False)` |
-| 两组均数差 + CI | `t.test(y ~ grp, data = d)`（默认即 Welch） | `scipy.stats.ttest_ind(a, b, equal_var=False)`，结果对象的 `.confidence_interval()` |
+| 两组均数差 + CI | `t.test(y ~ grp, data = d)`（默认即 Welch） | `scipy.stats.ttest_ind(a, b, equal_var=False)`，结果对象的 `.confidence_interval()`（SciPy 1.11 起才有；requirements.txt 已要求 scipy>=1.11） |
 | Hedges g + CI | `effectsize::hedges_g(y ~ grp, data = d)` | `statsmodels.stats.meta_analysis.effectsize_smd(...)`（返回校正后的 g 及其方差，可算 CI）；`pingouin.compute_effsize(x, y, eftype="hedges")` 只给点估计 |
 | 非正态位置差 + CI | `wilcox.test(y ~ grp, data = d, conf.int = TRUE)`（Hodges-Lehmann 估计） | `scipy.stats.mannwhitneyu` 只给 p；位置差或中位数差的 CI 用 `scipy.stats.bootstrap` |
 | 二分类 RD / RR / OR + CI | `epiR::epi.2by2(tab, method = "cohort.count")`；RD 的 CI 也可用 `DescTools::BinomDiffCI(x1, n1, x2, n2, method = "mn")` | `statsmodels.stats.contingency_tables.Table2x2(tab)` 的 `riskratio_confint()`、`oddsratio_confint()`；`statsmodels.stats.proportion.confint_proportions_2indep(..., compare="diff")` |

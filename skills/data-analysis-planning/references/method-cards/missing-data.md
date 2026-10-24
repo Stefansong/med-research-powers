@@ -1,6 +1,6 @@
 # 缺失数据 — 方法要点卡
 
-> 适用：任何分析中协变量、暴露或结局有缺失（包括"/"、"未查"、999 这类伪装缺失）时的判断、处理与报告。　不适用：按"缺失比例 × 缺失机制"选策略的阈值规则（<5% / 5–20% / >20%，单个变量 >40%）——只在 `stat-method-decision-tree.yaml` 的 `missing_data` 维护，本卡只引用、不重复；生存数据的删失（删失不是缺失，见 `survival-analysis.md`）。
+> 适用：任何分析中协变量、暴露或结局有缺失（包括"/"、"未查"、999 这类伪装缺失）时的判断、处理与报告。　不适用：完整病例与多重插补之间怎么选的判断规则——只在 `stat-method-decision-tree.yaml` 的 `missing_data` 维护（按可能的缺失机制和"是否完整是否与结局有关"选，不按缺失百分比的阈值），本卡只引用、不重复；生存数据的删失（删失不是缺失，见 `survival-analysis.md`）。
 
 ## 1. 计划前先看数据的什么
 
@@ -15,12 +15,12 @@
 ## 2. 计划里必须预先写明
 
 - **先计划、再核对**：先写分析模型和缺失的处理方式，拿到数据后核对计划是否仍然合适，再按计划分析并完整报告（TARMOS 框架，Lee 2021）。
-- **选哪一格**：每个关键变量的预期或实际缺失比例，按 yaml `missing_data` 的比例 × 机制表写明选了哪一格、为什么。
+- **选哪条规则**：每个关键变量写明预期或实际缺失比例、为什么会缺（可能的机制）、"是否完整"会不会与结局有关，再按 yaml `missing_data.decision` 写明选了哪条、为什么。缺失比例本身不是选方法的依据：没有可以用来切换方法的百分比阈值，MAR 下插补模型设定正确时，缺失比例很大多重插补仍然有效（Madley-Dowd 2019）；比例大意味着结论更依赖无法检验的假设，敏感性分析要做得更充分。
 - **缺失机制的判断思路**：
   - MCAR（完全随机缺失）无法被证明，只能被否定：Little 检验显著 → 不是 MCAR；不显著也不能说明就是 MCAR。
   - MAR（给定已观测变量之后随机缺失）是多重插补的前提；靠临床知识和辅助变量让它更可信。
   - MNAR（缺失与未观测到的值本身有关，如病情越重越不来复查）不能用数据检验，只能做敏感性分析。
-- **完整病例分析什么时候可以接受**：对多数回归模型，只要"是否完整"与结局无关（给定模型里的协变量之后），完整病例的估计就不偏——即使暴露或混杂是 MNAR；反过来，"是否完整"与结局有关时完整病例有偏（Hughes 2019）。缺失很少且这个条件说得通时可作主要分析，但要写理由，并报告少了多少人。这个条件在计划阶段只能靠临床知识来论证；如果想用数据检查（如以"是否完整"为因变量、把结局也放进去的 logistic 模型，Hughes 2019 的做法），就把这项检查预先写进 SAP，SAP 批准后再做并报告结果，不能在定计划之前先跑。
+- **完整病例分析什么时候可以接受**：对多数回归模型，只要"是否完整"与结局无关（给定模型里的协变量之后），完整病例的估计就不偏——即使暴露或混杂是 MNAR；反过来，"是否完整"与结局有关时完整病例有偏（Hughes 2019）——logistic 回归有一个例外："是否完整"取决于结局（及模型里的混杂）、但与暴露无关时，暴露的 OR 仍不偏（截距和据此算的绝对风险有偏）；同时取决于结局和暴露时才有偏（yaml `complete_case_unbiased_when`）。这个条件说得通时完整病例可作主要分析，与缺失比例多少无关（yaml `missing_data.decision`）——协变量因自身取值而缺、但"是否完整"与结局无关时，完整病例仍不偏，而按 MAR 做的多重插补反而有偏；缺失多只说明结论更依赖这个假设，敏感性分析要做得更充分（见上一条）。要写理由，并报告少了多少人。这个条件在计划阶段只能靠临床知识来论证；如果想用数据检查（如以"是否完整"为因变量、把结局也放进去的 logistic 模型，Hughes 2019 的做法），就把这项检查预先写进 SAP，SAP 批准后再做并报告结果，不能在定计划之前先跑。
 - **多重插补（MICE，链式方程多重插补）**：
   - 插补模型必须包含结局，以及分析模型中的全部变量（暴露、全部协变量，以及交互项、非线性项），再加辅助变量（Hughes 2019；White 2011）；有聚类时插补也要考虑聚类（见 `clustered-and-repeated-data.md`）。生存结局放事件指示变量和 Nelson-Aalen 累积风险，不放原始时间（`mice::nelsonaalen()` 文档引 White & Royston 2009）。
   - 每个变量的插补方法：连续变量用预测均值匹配（PMM），二分类用 logistic，无序多分类用多项 logistic，有序用有序 logistic（mice 的默认设置即如此）；偏态变量用 PMM 可避免插出不可能的值。
@@ -34,15 +34,31 @@
 
 | 任务 | R | Python |
 |---|---|---|
-| 伪装缺失转为缺失值 | 读入时 `read.csv(..., na.strings = c("", "/", "未查", "不详"))`；已读入的用 `naniar::replace_with_na(d, replace = list(x = c(999, 9999)))` | 按列写：`pandas.read_csv(..., na_values={"plt": ["/", "未查", "999"], "crea": ["/", "未查"]})`；已读入的用 `df["plt"] = df["plt"].replace(999, np.nan)`。不要给 `na_values` 传一个全表通用的列表并在里面放 999：编号、计数、化验值里真实的 999（连同 999.0）会被一起变成缺失，而且不报错。每列哪些写法代表缺失，先对照编码手册和 `data_profile.py` 的结果逐列确认 |
+| 伪装缺失转为缺失值 | 读入时 `read.csv(..., na.strings = c("", "/", "未查", "不详"))`；已读入的用 `naniar::replace_with_na(d, replace = list(x = c(999, 9999)))` | 按列写：`pandas.read_csv(..., na_values={"plt": ["/", "未查", "999"], "crea": ["/", "未查"]})`；已读入的列按"先去文字写法、再转数值、最后去数字编码"三步（代码见表下）。不要直接写 `df["plt"].replace(999, np.nan)`：列里只要有一个 "/" 或 "未查"，整列读进来就是文本（object / str），其中的 999 是字符串 "999"，`replace(999, ...)` 一个也换不掉，而且不报错。也不要给 `na_values` 传一个全表通用的列表并在里面放 999：编号、计数、化验值里真实的 999（连同 999.0）会被一起变成缺失，同样不报错。每列哪些写法代表缺失，先对照编码手册和 `data_profile.py` 的结果逐列确认 |
 | 缺失概况与模式 | `naniar::miss_var_summary()`、`gg_miss_upset()`；`mice::md.pattern()` | `missingno.matrix()`、`missingno.heatmap()`；`df.isna().mean()` |
 | Little MCAR 检验 | `naniar::mcar_test(d)` | `pyampute.exploration.mcar_statistical_tests.MCARTest(method="little").little_mcar_test(df)` |
-| 多重插补 | `mice::mice(d, m = <m>, method = <按变量指定>, predictorMatrix = <矩阵>, maxit = <迭代次数>, seed = <种子>)` | `statsmodels.imputation.mice.MICEData(df)` + `MICE(formula, model_class, imp_data).fit(n_burnin=..., n_imputations=<m>)`；或 `sklearn` 的 `IterativeImputer(sample_posterior=True, random_state=i)` 循环 m 次 |
+| 多重插补 | `mice::mice(d, m = <m>, method = <按变量指定>, predictorMatrix = <矩阵>, maxit = <迭代次数>, seed = <种子>)` | `statsmodels.imputation.mice.MICEData(df)` + `MICE(formula, model_class, imp_data).fit(n_burnin=..., n_imputations=<m>)`；或 `sklearn` 的 `IterativeImputer(sample_posterior=True, random_state=i)` 循环 m 次——它仍是实验性功能，必须先 `from sklearn.experimental import enable_iterative_imputer`，再 `from sklearn.impute import IterativeImputer`，否则导入时报 ImportError |
 | 预测变量矩阵 | `mice::make.predictorMatrix()`；`mice::quickpred(d, include = c(<结局>, <分析变量>))`（用 `include` 强制纳入结局和分析变量） | `MICEData.set_imputer(<变量名>, formula=...)` 逐个指定插补公式 |
 | 生存结局的插补 | `d$H0 <- mice::nelsonaalen(d, time, status)`，把 `H0` 和事件指示变量放进插补模型 | 无专门工具：用 `lifelines.NelsonAalenFitter` 算出每人的累积风险，作为插补变量 |
 | 合并（Rubin 规则） | `with(imp, glm(...))` 后 `mice::pool()`（默认用 Barnard-Rubin 小样本自由度） | `MICE.fit()` 已内置合并；`IterativeImputer` 路线要自己按 Rubin 规则合并（公式见表下） |
 | 派生变量被动插补 | `meth["bmi"] <- "~I(weight / height^2)"`，并在 predictorMatrix 里不让 BMI 反过来预测身高、体重 | 无公认成熟包：插补原始成分后，在每份数据里重新计算派生变量 |
 | MNAR delta / tipping point | `mice(..., post = <表达式>)` 在插补值上加 δ，对一组 δ 循环 | 无公认成熟包：插补后在插补位置加 δ 再分析，对一组 δ 循环（手写） |
+
+已读入的列把伪装缺失转为缺失值（pandas 2.x 的 object 列和 3.x 的 str 列都适用）：
+
+```python
+import pandas as pd
+
+def recode_missing(df, col, tokens, codes):
+    """tokens：代表缺失的文字写法；codes：代表缺失的数字编码（都按编码手册逐列确认）。"""
+    s = df[col]
+    s = s.mask(s.astype("string").str.strip().isin(tokens))   # 1. 去掉文字写法
+    s = pd.to_numeric(s, errors="raise")                      # 2. 转数值；还有没列出的写法时报错，不会悄悄变成缺失
+    df[col] = s.mask(s.isin(codes))                           # 3. 去掉数字编码（999 与 999.0 都能匹配）
+    return df
+
+df = recode_missing(df, "plt", tokens=["/", "未查"], codes=[999])
+```
 
 `IterativeImputer` 路线的 Rubin 规则：第 i 份插补数据（i = 1…m）得到估计值 q_i 和它的方差 U_i（SE 的平方；OR、HR 先取对数）。
 
@@ -66,8 +82,8 @@
 - 把 m 份插补数据平均成一份再分析；或在每份插补数据里各自选变量、各报各的。
 - m 太小：mice 默认 m = 5，要按不完整病例百分比设定。
 - 把 Little 检验不显著当作"证明是 MCAR"。
-- 对缺失超过 40% 的变量硬插补却不讨论（yaml：先讨论是否保留）。
-- 只报插补后的结果，不报完整病例结果作对照。
+- 按缺失百分比的阈值（5%、20%、40%）切换方法，或因为缺失多就直接删掉变量、因为缺失少就不论证机制直接做完整病例分析；缺失很多的变量保留还是删去，要按实际意义（临床上能否测到、缺失能否建模）在 SAP 里写理由。
+- 只报一种缺失处理的结果：插补后的结果不配完整病例结果作对照，或完整病例作主要分析时不配插补结果。
 - 预测模型只在开发时插补，没说明实际使用时输入缺失怎么办。
 
 ## 5. 结果必须报告
@@ -75,7 +91,7 @@
 - 每个变量的缺失人数与比例（Table 1 或补充表）；不完整病例比例；每个分析实际纳入的人数。
 - 缺失处理方法：完整病例或多重插补；多重插补要报软件与版本、插补模型包含的变量（含结局和辅助变量）、各变量的插补方法、m、迭代次数、随机种子、合并方法。
 - 缺失机制的判断依据（临床理由 + 缺失者与非缺失者的基线比较）。
-- 主要结果（多重插补）与完整病例结果并列；MNAR 敏感性分析的 δ 取值范围及 tipping point。
+- 主要分析与另一种处理方式的结果并列（主要分析是多重插补时并列完整病例结果，主要分析是完整病例时并列多重插补结果）；MNAR 敏感性分析的 δ 取值范围及 tipping point。
 
 ## 6. 对应报告规范
 
@@ -87,6 +103,7 @@
 
 - White IR, Royston P, Wood AM. Multiple imputation using chained equations: issues and guidance for practice. *Stat Med*. 2011;30(4):377-399. doi:10.1002/sim.4067
 - Hughes RA, Heron J, Sterne JAC, Tilling K. Accounting for missing data in statistical analyses: multiple imputation is not always the answer. *Int J Epidemiol*. 2019;48(4):1294-1304. doi:10.1093/ije/dyz032
+- Madley-Dowd P, Hughes R, Tilling K, Heron J. The proportion of missing data should not be used to guide decisions on multiple imputation. *J Clin Epidemiol*. 2019;110:63-73. doi:10.1016/j.jclinepi.2019.02.016
 - Lee KJ, Tilling KM, Cornish RP, et al. Framework for the treatment and reporting of missing data in observational studies: the Treatment And Reporting of Missing data in Observational Studies framework. *J Clin Epidemiol*. 2021;134:79-88. doi:10.1016/j.jclinepi.2021.01.008
 - Leyrat C, Seaman SR, White IR, et al. Propensity score analysis with partially observed covariates: how should multiple imputation be used? *Stat Methods Med Res*. 2019;28(1):3-19. doi:10.1177/0962280217713032
 - Cro S, Morris TP, Kenward MG, Carpenter JR. Sensitivity analysis for clinical trials with missing continuous outcome data using controlled multiple imputation: a practical guide. *Stat Med*. 2020;39(21):2815-2842. doi:10.1002/sim.8569

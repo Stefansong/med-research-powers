@@ -6,23 +6,25 @@
 # 本研究的参数要写出处（文献 / 预调查），不能直接套用这里的数字。
 
 # Psychometric Properties (量表验证) — Step 2
+# 判定标准取自 COSMIN 的"良好测量属性标准"（Prinsen CAC et al. Qual Life Res 2018;27:1147-57, Table 1 与
+# Table 4, doi:10.1007/s11136-018-1798-3），比常用的 CFI 0.90 / RMSEA 0.08 界值严格；内容效度指数取自 Polit 2007
+# (doi:10.1002/nur.20199) 和 Polit & Beck 2006 (doi:10.1002/nur.20147)。
 psychometric_properties:
   attributes:
-    - {attribute: "内容效度 Content validity", method: "专家评审 + I-CVI/S-CVI", criterion: "I-CVI >= 0.78"}
-    - {attribute: "结构效度 Construct validity", method: "EFA -> CFA", criterion: "EFA: KMO > 0.7, 因子载荷 > 0.4; CFA: CFI > 0.90, RMSEA < 0.08"}
-    - {attribute: "收敛效度 Convergent validity", method: "AVE", criterion: "AVE > 0.50"}
-    - {attribute: "区分效度 Discriminant validity", method: "sqrt(AVE) > 因子间相关", criterion: "Fornell-Larcker 准则"}
-    - {attribute: "效标效度 Criterion validity", method: "与金标准/已验证量表相关", criterion: "Pearson/Spearman r"}
-    - {attribute: "内部一致性 Internal consistency", method: "Cronbach's alpha / McDonald's omega", criterion: "alpha >= 0.70"}
-    - {attribute: "重测信度 Test-retest", method: "ICC (test-retest, 2-4 周)", criterion: "ICC >= 0.70"}
-    - {attribute: "反应度 Responsiveness", method: "SRM / Effect Size (干预前后)", criterion: "如适用"}
-  sample_size_note: "EFA 至少条目数 x 5-10；CFA 至少 200 人"
+    - {attribute: "内容效度 Content validity", method: "专家评审 + I-CVI/S-CVI；目标人群认知访谈", criterion: "I-CVI >= 0.78（专家 >= 3 人；Polit 2007）；S-CVI/Ave >= 0.90（Polit & Beck 2006；阈值写在原文正文，摘要未载明，待核实）"}
+    - {attribute: "结构效度 Structural validity", method: "EFA（开发样本）-> CFA（独立样本）；或 IRT / Rasch", criterion: "CFA: CFI 或 TLI > 0.95，或 RMSEA < 0.06，或 SRMR < 0.08（COSMIN）"}
+    - {attribute: "内部一致性 Internal consistency", method: "Cronbach's alpha / McDonald's omega，按每个单维（分）量表计算", criterion: "结构效度至少有低质量证据支持单维，且每个单维（分）量表 alpha >= 0.70（COSMIN）；单维未确认时 alpha 无法解释"}
+    - {attribute: "重测信度 Test-retest reliability", method: "ICC（连续分数）/ 加权 kappa（等级），两次测量间构念应稳定", criterion: "ICC 或加权 kappa >= 0.70（COSMIN）"}
+    - {attribute: "构念效度 Hypotheses testing for construct validity", method: "含收敛 / 区分效度和已知组比较：预先写出与其他量表相关的方向和大小、组间差异的假设。AVE / Fornell-Larcker 来自结构方程模型文献，不是 COSMIN 标准，只作补充", criterion: ">= 75% 的结果符合预设假设（COSMIN）；通用假设参考：测相似构念 r >= 0.50，相关但不同的构念 0.30-0.50，无关构念 < 0.30（Prinsen 2018, Table 4）"}
+    - {attribute: "效标效度 Criterion validity", method: "与公认的金标准比较（如短版对长版原量表）；没有金标准就不做", criterion: "与金标准 r >= 0.70 或 AUC >= 0.70（COSMIN）"}
+    - {attribute: "反应度 Responsiveness", method: "预先写出变化量相关 / 组间变化差异的假设，或以外部变化指标为金标准", criterion: "结果符合预设假设，或 AUC >= 0.70（COSMIN）"}
+  sample_size_note: "因子分析的样本量按 COSMIN Risk of Bias checklist 结构效度一栏（Box 3）的样本量标准核对（Mokkink 2018, doi:10.1007/s11136-017-1765-4；具体倍数在清单附录，引用前核对原文）；'条目数 x 5-10' 只是经验规则，没有统一标准；EFA 与 CFA 用不同样本"
 
 ## Sampling Strategies — Step 3
 sampling_strategies:
   - {strategy: "简单随机 Simple random", use: "有完整名册", tradeoff: "最无偏但需要抽样框"}
   - {strategy: "分层随机 Stratified", use: "确保亚组代表性", tradeoff: "需要分层变量信息"}
-  - {strategy: "整群 Cluster", use: "以机构/科室为单位", tradeoff: "方便但设计效应增大"}
+  - {strategy: "整群 Cluster", use: "以机构/科室为单位", tradeoff: "方便，但同群的人相似：样本量要乘设计效应（sample_size.cross_sectional.corrections.design_effect），分析也要按整群设计算标准误"}
   - {strategy: "便利 Convenience", use: "难以随机", tradeoff: "最常见但偏倚最大，必须讨论"}
   - {strategy: "配额 Quota", use: "确保特定比例", tradeoff: "类似分层但非随机"}
   - {strategy: "滚雪球 Snowball", use: "难以接触的群体", tradeoff: "偏倚大，适合探索性"}
@@ -35,10 +37,13 @@ sample_size:
       Z: "1.96 (95% CI)"
       p: "预期比例：先查相近人群的文献或预调查并写出处；完全没有先验估计时才取 0.5（得到最大样本量，最保守），并写明理由"
       d: "允许误差（绝对精度）：按研究需要的精度定，并与 p 的大小匹配——p 很小（罕见结局）时固定的绝对误差会过粗，改用更小的 d 或相对精度"
+    # 上面的公式假定简单随机抽样。修正按 order 依次做。
     corrections:
-      finite_population: "n_adj = n / (1 + n/N)"
-      response_rate: "n_final = n_adj / expected_response_rate"
-  scale_validation: "条目数 x 5-10（EFA）; >= 200（CFA）"
+      order: [finite_population, design_effect, response_rate]
+      finite_population: "n_adj = n / (1 + n/N)（抽样比例很小时可省略）"
+      design_effect: "整群 / 多阶段抽样: n_deff = n_adj x DEFF。各群人数相等: DEFF = 1 + (m - 1) x ICC（m = 每群抽取人数）；各群人数不等: DEFF = 1 + ((CV^2 + 1) x m_bar - 1) x ICC（m_bar = 平均群大小，CV = 群大小的变异系数；Eldridge 2006, doi:10.1093/ije/dyl129）。ICC 写出处（同类调查 / 预调查）；简单随机或分层随机抽样时 DEFF 取 1"
+      response_rate: "n_final = n_deff / expected_response_rate"
+  scale_validation: "见 psychometric_properties.sample_size_note（COSMIN Box 3）；EFA 与 CFA 用不同样本"
   delphi: "文献中常见 15-30 位专家（经验值，无统一公式）；按需要覆盖的专业背景和预计各轮流失来定，并写理由"
 
 ## Delphi Method — Step 5
@@ -52,7 +57,7 @@ delphi:
     - ">= 70-80% 同意率（没有统一标准，需预先定义）"
     - "或 IQR <= 1（Likert 1-9）"
     - "或 中位数 >= 7/9"
-  reporting: "需说明轮数、专家数、退出率、共识定义"
+  reporting: "需说明轮数、专家数、退出率、共识定义；报告规范 ACCORD（共识方法报告指南，Gattrell 2024, doi:10.1371/journal.pmed.1004326；无本地清单，需人工核对）。CROSS 是问卷调查研究的报告规范，不用于 Delphi"
 
 # Data Collection Modes — Step 6
 data_collection_modes:

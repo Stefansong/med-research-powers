@@ -16,12 +16,12 @@
 
 - **模型与版本**：每个模型的名称、具体版本号或快照、访问日期（起止）、接口（API 或网页端）、调用参数（温度、top_p、最大输出长度、种子〔如支持〕、系统提示词）；数据收集期间版本是否固定（TRIPOD-LLM 要求报告）。网页端可能自带系统提示、记忆或联网，优先用 API。
 - **提示词**：主提示词全文事先定稿，只在另外的开发题上调试，不在测试题上改；另备 2–3 个改写变体（措辞、选项顺序、是否要求逐步推理）作敏感性分析。
-- **重复运行**：每个模型每道题至少运行 3 次（本插件默认下限）；主要分析取哪一次或怎么汇总（多数票、每题平均正确率）事先定好；报告运行间一致性（各次答案完全相同的题目比例；把各次运行当"评分者"算 Fleiss' kappa）。
+- **重复运行**：每个模型每道题至少运行 3 次（本插件默认下限）；主要分析取哪一次或怎么汇总（多数票、每题平均正确率）事先定好；报告运行间一致性：各次答案完全相同的题目比例，加一个机会校正的系数——同一模型的几次运行没有固定身份（第 1 次和第 2 次运行可以互换），属于 `agreement-and-reliability.md` 里"评分者不固定"的情形，用 Fleiss' kappa；有运行失败、拒答造成缺失时用 Krippendorff's alpha（不删整题）。
 - **温度与种子**：固定在事先选定的值（一般就是实际使用时的设置）并报告，不看结果再调。温度设 0 或固定种子也不保证完全可复现，仍要重复运行。
 - **污染检查**：逐题登记来源和公开时间，对照模型训练截止日期；尽量用未公开、新构建的题或真实病例；公开题与新题分开报告；排除不了污染时写进局限性。
 - **答案解析规则**：怎样从输出里提取答案（规则/正则/人工）；拒答、给出多个答案、格式错误怎样计分（算错，或单列一类）；解析时对模型身份设盲；报告解析失败率。
 - **主要指标**：准确率及 95% CI——题目相互独立时用 Wilson 法；题目嵌套在病例/视频内时按病例聚类（按病例重抽样的 bootstrap 或 GEE，Miller 2024）；按题型、专科、难度分层报告。
-- **模型比较**：同一套题上做配对比较——McNemar 检验（不一致的题目对少时用精确法），或以题目（有聚类时以病例）为单位的配对 bootstrap 求准确率差值的 CI；每题多次运行时，用"题目"作随机效应的混合模型，或用每题平均正确率做配对分析（Miller 2024）。
+- **模型比较**：同一套题上做配对比较——McNemar 检验（不一致的题目对少时用精确法），或以题目（有聚类时以病例）为单位的配对 bootstrap 求准确率差值的 CI；每题多次运行时，两个模型在同一道题上的差别本身也因题而异（题目 × 模型的交互），几次运行只是同一个"题目 × 模型"组合的重复，不是新的独立证据：混合模型必须同时有题目随机截距和"题目 × 模型"随机截距（公式见第 3 节表下）；只放题目随机截距会把运行次数当成样本量，标准误偏小，零假设下也常常"显著"（运行次数越多越严重）。不想拟合混合模型时，先按题目汇总再比较：每题每个模型的平均正确率做以题目为单位的配对 t 检验或配对 bootstrap，或每题多数票后做 McNemar 检验（Miller 2024）；题目嵌套在病例内时，按病例汇总或按病例做 bootstrap。
 - **多重比较**：事先指定一个主要比较（如目标模型 vs 最强的对照模型）；其余"模型 × 指标"的比较用 Holm 校正或标为探索性；≥ 3 个模型可先做 Cochran's Q 总体检验。
 - **开放式回答的人工评分**：≥ 2 名评分者；对模型身份（以及答案来自模型还是人）设盲，呈现顺序随机；评分细则（维度、Likert 级数及每级定义）事先写好并做校准培训；报告评分者间一致性（加权 kappa / ICC，见 `agreement-and-reliability.md`）；分歧由第三名资深评分者裁决或讨论达成共识（Tam 2024）。用 LLM 当裁判时：先在一部分样本上与人工评分比对一致性，一致性不够就不能替代人工；对裁判隐去答案出自哪个模型；两两比较时随机调换两个答案的先后位置（或两种顺序各评一次）；尽量用与被评模型不同来源的裁判模型；检查裁判是否偏爱更长的回答（按回答长度分层看评分）；裁判模型的版本、提示词和调用参数同样固定并报告。
 - **人类专家基线**：同一套题、同样的输入信息和时间限制、是否允许查资料；专家人数与年资；专家的准确率及 CI，并与模型做配对比较。
@@ -36,18 +36,36 @@
 | 按病例聚类的 CI | 按病例重抽样的 bootstrap（现写，B ≥ 2000）；或 `geepack::geeglm(correct ~ 1, id = case_id, family = binomial)` | 同左现写；或 `statsmodels.formula.api.gee("correct ~ 1", groups="case_id", data=df, family=sm.families.Binomial())` |
 | 两模型配对比较 | `exact2x2::mcnemar.exact(tab)`；`mcnemar.test(tab)` | `statsmodels.stats.contingency_tables.mcnemar(tab, exact=True)`；题目独立时差值 CI：`scipy.stats.bootstrap((a, b), 差值函数, paired=True)` |
 | ≥ 3 个模型总体检验 | `DescTools::CochranQTest(y, groups, blocks)` | `statsmodels.stats.contingency_tables.cochrans_q(x)` |
-| 每题多次运行（题目随机效应） | `lme4::glmer()`（公式见表下） | 无公认成熟的频率学派实现，建议用 R；或 GEE（`groups="question_id"`） |
+| 每题多次运行 | `lme4::glmer()`，含题目和"题目 × 模型"两个随机截距（公式见表下） | 无公认成熟的二分类 GLMM 实现：按题目汇总后做配对 t 检验 / McNemar（代码见表下）；或 GEE（`groups="question_id"`，题目嵌套在病例内时 `groups="case_id"`，稳健标准误已包含题目内的全部相关） |
 | 多重比较校正 | `p.adjust(p, method = "holm")` | `statsmodels.stats.multitest.multipletests(p, method="holm")` |
-| 运行间 / 评分者间一致性 | `irr::kappam.fleiss()`；`irr::kappa2(r, weight = "squared")`；`irr::icc()` | `statsmodels.stats.inter_rater.fleiss_kappa()`；`sklearn.metrics.cohen_kappa_score(weights="quadratic")`；`pingouin.intraclass_corr()` |
+| 运行间一致性（运行可互换） | `irr::kappam.fleiss()`；有缺失时 `irr::kripp.alpha(t(r), method = "nominal")` | `statsmodels.stats.inter_rater.fleiss_kappa(aggregate_raters(r)[0])`；有缺失时 `krippendorff.alpha(reliability_data=<运行 × 题目矩阵，缺失记 np.nan>, level_of_measurement="nominal")`（`r` 为题目 × 运行矩阵） |
+| 评分者间一致性（人工评分） | 按 `agreement-and-reliability.md` 选：`irr::kappa2(r, weight = "squared")`；`irr::icc()` | `sklearn.metrics.cohen_kappa_score(weights="quadratic")`；`pingouin.intraclass_corr()` |
 
 ```r
-lme4::glmer(correct ~ model + (1 | question_id), family = binomial, data = d)  # 每题多次运行
+# 每题多次运行：(1 | question_id:model) 是"题目 × 模型"的随机截距，不能省
+lme4::glmer(correct ~ model + (1 | question_id) + (1 | question_id:model), family = binomial, data = d)
+# 题目嵌套在病例内时再加 (1 | case_id)
+```
+
+```python
+# 不拟合混合模型：先按题目汇总，再以题目为单位配对比较（d 每行一次运行：question_id、model、correct）
+import pandas as pd
+from scipy import stats
+from statsmodels.stats.contingency_tables import mcnemar
+
+acc = d.pivot_table(index="question_id", columns="model", values="correct", aggfunc="mean")  # 每题平均正确率
+res = stats.ttest_rel(acc["B"], acc["A"])            # 准确率差值的配对 t 检验
+print(acc["B"].mean() - acc["A"].mean(), res.confidence_interval(), res.pvalue)
+maj = acc > 0.5                                       # 每题多数票（运行次数取奇数）
+tab = pd.crosstab(maj["A"], maj["B"]).reindex(index=[False, True], columns=[False, True], fill_value=0)
+print(mcnemar(tab.to_numpy(), exact=True).pvalue)
 ```
 
 ## 4. 常见的坑
 
 - 只写"ChatGPT"，不写版本和访问日期；在网页端测试（带记忆、联网或内置提示），结果无法复现。
 - 每题只跑一次，把单次结果当确定值；或跑了多次只报最好的一次。
+- 每题多次运行，却把每次运行当独立样本（普通卡方、逻辑回归），或混合模型里只放题目随机截距、漏掉"题目 × 模型"随机截距：标准误偏小，假阳性增多。
 - 在测试题上反复改提示词，再用同一套题报告结果——等于在测试集上调参。
 - 用公开考试题或教材题，不做污染评估就宣称"模型具备临床推理能力"。
 - 答案解析规则事后才定，或不同模型用不同规则；拒答和格式错误的计分不统一。
@@ -74,9 +92,9 @@ lme4::glmer(correct ~ model + (1 | question_id), family = binomial, data = d)  #
 ## 6. 对应报告规范
 
 - `tripod-llm`（TRIPOD-LLM 2025）：仓库索引有条目，暂无本地清单。按官方网站 https://tripod-llm.vercel.app/ 的最新版逐条人工核对，并注明所用版本（它是持续更新的"活文档"）。
-- 评价聊天机器人给出的健康建议、总结临床证据（医学问答类研究）：另按 CHART（Chatbot Assessment Reporting Tool，2025；12 条 39 小条，含模型标识、提示词工程、提问策略、样本量）逐条核对。仓库索引无条目、无本地清单，按原文人工核对。
+- 评价聊天机器人给出的健康建议、总结临床证据（医学问答类研究）：另按 CHART（Chatbot Assessment Reporting Tool，CHART Collaborative，*BMJ Med* 2025，doi:10.1136/bmjmed-2025-001632；12 条 39 小条，含模型标识、模型细节、提示词工程、提问策略、样本量）逐条核对，与 TRIPOD-LLM 一起作为这类研究的主要报告规范。没有本地逐条清单，按原文人工核对。
 - VLM 处理医学影像：另按 `claim`（CLAIM 2024）核对图像来源、预处理和参考标准相关条目。
-- 以诊断准确性为框架的评测：`stard`；进入临床流程的早期评价：`decide-ai`。
+- 以诊断准确性为框架的评测：`stard-ai`（AI 诊断准确性研究的主要规范）与 `stard` 合用，用法见 `diagnostic-accuracy-and-ai-evaluation.md` 第 6 节；进入临床流程的早期评价：`decide-ai`。
 
 ## 参考
 

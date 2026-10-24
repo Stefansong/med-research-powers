@@ -27,13 +27,13 @@
 │     ├── 视频标注？ → 标注一致性（Kappa/ICC）
 │     └── Benchmark 集？ → Benchmark 论文
 ├── 开发新设备/传感器？
-│     ├── 按 IDEAL 框架定位阶段
+│     ├── 按 IDEAL 框架定位阶段；报告用 IDEAL Reporting Guidelines（Bilbro 2021，Ann Surg，doi:10.1097/SLA.0000000000004180；Stage 1 / 2a / 2b / 4 分阶段清单，无本地清单；Stage 3 按设计用 CONSORT 2025 等）
 │     ├── Stage 1 原理验证 → Bench-top
 │     ├── Stage 2a-2b 可行性 → Pilot / 前瞻性队列
 │     └── Stage 3 对比验证 → RCT / Bland-Altman
 └── 综合 AI 医学证据？
       ├── 系统综述 → PRISMA 2020 + PRISMA-S
-      └── Meta 分析 → PRISMA 2020 + QUADAS-2 / PROBAST
+      └── Meta 分析 → PRISMA 2020 + QUADAS-2（诊断准确性）/ PROBAST+AI（预测模型，回归或 AI 方法均适用；Moons 2025，doi:10.1136/bmj-2024-082505）
 ```
 
 ## Core Design Elements
@@ -45,17 +45,19 @@
 - 优先外部验证（不同中心/时间段）
 - 必须报告：来源、时间范围、纳入排除标准、数据量、类别分布、去标识化方式
 
-**数据划分策略（按样本量分档）** 只维护一份，在
+**验证方式与数据划分**的规则只维护一份，在
 `${CLAUDE_PLUGIN_ROOT}/skills/data-analysis-planning/references/stat-method-decision-tree.yaml` 的
-`deep_learning_training.data_split`。分档边界：`n > 1000` / `200 ≤ n ≤ 1000` / `50 ≤ n < 200` / `n < 50`。
-这里的 n 是 SKILL.md Step 0 查到的真实可用患者数（排除后），不是计划中的理想数。
-设计时读取该表决定 hold-out / K-fold / 迁移学习 + nested CV / LOOCV，并注意：
-- K-fold 中同一患者的所有数据必须在同一折；报告每折性能和整体均值±SD
+`deep_learning_training.data_split`。按**模型类型**和**有效样本量**选——有效样本量是按患者计的事件数 / 较少一类的人数（用 SKILL.md Step 0 查到的真实可用数据，排除后），不是总人数：
+- **回归类及其他经典临床预测模型**（logistic、Cox、惩罚回归，预测变量预先定、基本不调参）：用全部数据建模，内部验证用 bootstrap 乐观校正（每次重做全部建模步骤）或重复 k 折交叉验证；**不做随机 hold-out 拆分**——拆分会用更少的事件建出更差的模型，测试集上的性能又估不准（Steyerberg 2001，doi:10.1016/S0895-4356(01)00341-9）
+- **要调超参数的 ML / 深度学习模型**：嵌套交叉验证（内层调参、外层估计性能）；只有每个集合的事件数都够时，才用按患者的训练 / 验证 / 测试划分——测试集要能把 C 统计量和校准（斜率、calibration-in-the-large）估得足够精确，按外部验证的样本量方法核算（Riley 2021，doi:10.1002/sim.9025）；不够就改用嵌套交叉验证
+- **外部 / 时间验证**（另一个中心或另一个时间段）优于任何随机划分；要声称模型可推广，必须有
+- 一律**按患者 ID 划分**（同一患者的所有图像 / 切片 / 视频帧在同一集合、同一折）并**按结局分层**；报告随机种子和每个集合 / 每折的患者数、事件数与类别分布
 - 使用迁移学习时报告预训练数据集和微调策略
-- n < 50 时深度学习样本不足：外部验证为**强制**项，并在 Limitations 充分讨论
+- 事件太少时，任何划分都救不了：减少候选参数、换更简单的模型、增加数据，或把模型标为探索性并在 Limitations 里讨论
 
-**样本量**（hard checkpoint 1 锁定；上面的分档只决定怎么划分数据，不能代替样本量依据）：
-- 风险预测模型（输出个体风险概率）：按 Riley 方法用 `pmsampsize` 算，"每个变量 10 个事件"不够；外部验证用 `pmvalsampsize`
+**样本量**（hard checkpoint 1 锁定；上面的验证方式不能代替样本量依据）：
+- 风险预测模型（输出个体风险概率）：按 Riley 方法用 `pmsampsize` 算，"每个变量 10 个事件"不够
+- 外部验证集 / 测试集：按 Riley 的外部验证样本量方法（C 统计量、校准斜率、O/E 的目标 CI 宽度；`pmvalsampsize`，Riley 2021）；数据量已固定时写出它能达到的精度
 - 诊断准确性（灵敏度/特异度）：按预期值和可接受的 95% CI 宽度算有病、无病各需多少人，再按患病率换算（Buderer 1996；`power_analysis.py` 的 diagnostic 模式）
 - 与医生比较的读片者研究：按多读者多病例（MRMC）方法定读者数和病例数
 - 输入值、出处和 R / Python 包见 `${CLAUDE_PLUGIN_ROOT}/skills/data-analysis-planning/references/method-cards/regression-and-prediction-models.md` 与 `diagnostic-accuracy-and-ai-evaluation.md`；写入 protocol 模板 C 第 2 节
@@ -70,7 +72,7 @@
 ### 3. Performance Metrics
 
 按任务类型选择指标 → 读取 `references/metrics-and-reporting.yaml`（分类 / 检测分割 / LLM-VLM / 连续回归 `regression` / 风险预测 `risk_prediction` / 公平性 / 稳健性 / 校准）。
-风险预测类必须同时报告区分度（AUROC）、校准（校准曲线、Brier）和临床净获益（DCA）。
+风险预测类必须同时报告区分度（AUROC）、校准（calibration-in-the-large / 校准截距、校准斜率、平滑校准曲线；Brier 和 ECE 只作补充；Van Calster 2019，doi:10.1186/s12916-019-1466-7）和临床净获益（DCA）。
 
 ### 4. Human-AI Comparison
 
@@ -112,11 +114,11 @@
   | 方案 | 方法 | 适用场景 |
   |------|------|---------|
   | 数据层面 | Oversampling (SMOTE) / Undersampling | 中度不平衡 (1:3~1:10)；模型要输出风险概率时慎用——会让预测概率整体偏高、校准变差，需在未重采样的数据上重新校准（van den Goorbergh 2022） |
-  | 损失函数 | Weighted CE / Focal Loss / Dice Loss | 严重不平衡 (>1:10) |
-  | 采样策略 | Balanced batch sampling | 训练时平衡各类别 |
+  | 损失函数 | Weighted CE / Focal Loss / Dice Loss | 严重不平衡 (>1:10)；类别加权在似然上相当于把少数类复制多份（过采样），同样把少数类的预测概率推高、破坏校准：输出风险概率前必须在未加权的数据上重新校准（如 logistic 重新校准），报告重新校准后的校准截距、斜率和曲线 |
+  | 采样策略 | Balanced batch sampling | 训练时平衡各类别；同样改变了模型看到的患病率，概率输出要重新校准 |
   | 评估层面 | **不用 Accuracy**，用 AUROC/AUPRC/F1 | 所有不平衡场景 |
 
-- 必须在 Methods 中报告采用的策略和理由
+- 必须在 Methods 中报告采用的策略和理由。只要改了训练时的类别比例或损失权重，输出的概率就不再是真实风险（van den Goorbergh 2022，doi:10.1093/jamia/ocac093）：要输出风险概率时，优先不做纠正、只调决策阈值；做了纠正就必须重新校准（在未重采样、未加权、不参与训练的数据上）并报告校准
 
 ### 9. Model Interpretability / Explainability（模型可解释性）
 
@@ -143,19 +145,20 @@
 | "Accuracy 95% 说明模型很好" | 类别不平衡时 Accuracy 毫无意义，必须看 AUROC/AUPRC |
 | "训练集上效果好就行" | 没有独立测试集/外部验证的结果不可信 |
 | "数据随机划分就行" | 同一患者不能同时在训练和测试集 |
-| "AUROC 高就有临床价值" | 必须做校准 + DCA 评估临床净获益 |
+| "AUROC 高就有临床价值" | 必须做校准（calibration-in-the-large、斜率、校准曲线）+ DCA 评估临床净获益 |
+| "类别不平衡就加权 / 过采样，概率照常输出" | 加权和重采样会把预测概率推高；输出风险前要在未加权的数据上重新校准，或者不纠正、只调阈值 |
 | "这是 AI 研究不需要临床规范" | 需要同时满足技术和临床两套规范 |
 | "我的器械直接做 RCT" | 先用 IDEAL 定位阶段，Stage 1-2 不适合 RCT |
 | "黑箱模型也能发表 / AI 评估不用报告可用性" | 用了可解释性方法要按 CLAIM 2024 第 31 条报告；进入临床流程的早期评价按 DECIDE-AI 报告人因（可用性、学习曲线）、输出如何呈现和用户与 AI 的一致性 |
 | "数据增强不需要报告" | 增强策略和参数必须完整报告，可复现 |
-| "200 例够 train/val/test 三分了" | 200 例应考虑 5-fold CV + 迁移学习 |
+| "例数多就按 60/20/20 随机拆分" | 划分按模型类型和事件数定，不看总人数：回归类预测模型用全部数据 + bootstrap；要调参的模型用嵌套交叉验证，或每个集合事件数都够时才拆分；外部 / 时间验证优先 |
 | "LLM 的 prompt 随手写就行" | Prompt、参数、模型版本都是方法的一部分，必须标准化并报告 |
 
 ## Convergence（AI/ML 特有完成条件）
 
 1. 研究类型已明确，对应报告规范已确定
-2. 数据集方案完整（来源、纳排、患者级划分、标注流程与一致性、Ground Truth 定义）
-3. 评估指标已选择并有依据（风险预测含校准与 DCA）
+2. 数据集方案完整（来源、纳排、验证方式与患者级划分（按模型类型和事件数选）、标注流程与一致性、Ground Truth 定义）
+3. 评估指标已选择并有依据（风险预测含校准——calibration-in-the-large、斜率、校准曲线——与 DCA）
 4. 外部验证计划已写明（或说明为何暂无并列入 Limitations）
 5. 人机对比方案已设计（如适用）
 6. 可复现性方案已规划（seed / 代码 / 环境）；LLM 研究已写 Prompt 标准化章节

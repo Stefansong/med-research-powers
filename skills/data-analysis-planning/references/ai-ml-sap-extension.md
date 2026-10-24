@@ -14,7 +14,7 @@ copy them into the SAP, cite the choice and the reason.
 
 - 候选模型（≥2）+ 一个简单基线（logistic regression / 经典 ML / 现有临床评分）
 - 预训练策略：ImageNet / 领域预训练 / 自监督；写明权重来源
-- 选择依据：任务类型（分类 / 分割 / 检测 / LLM-VLM 评估）+ 数据量（见第 10 节）
+- 选择依据：任务类型（分类 / 分割 / 检测 / LLM-VLM 评估）+ 有效样本量（按患者计的事件数 / 较少一类的人数，见第 10 节）
 - yaml：`deep_learning_classification` / `deep_learning_segmentation` / `deep_learning_detection`
 
 ## 9. 训练策略（超参数必须可复现）
@@ -24,11 +24,17 @@ copy them into the SAP, cite the choice and the reason.
 
 ## 10. 数据划分方案
 
-按样本量分档的划分方案**只在** yaml `deep_learning_training.data_split` 维护（study-design Type C 引用同一表）。SAP 里写：
-- 所选方案 + 理由（n 落在哪一档）
-- **必须按患者 ID 划分**（同一患者的所有图像/切片/帧在同一集合或同一折）——写明患者级划分逻辑和患者级标签规则（多数票 / 任一阳性）
-- 随机种子；各集合 / 各折的患者数、样本数、类别分布（用 `${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/patient_level_split.py` 生成，其 `split_summary.json` 直接贴入）
-- 外部验证集来源（不同中心 / 时间段），n < 50 时外部验证为强制项
+验证与划分规则**只在** yaml `deep_learning_training.data_split` 维护（study-design Type C 引用同一规则）。划分方式按**模型类型**和**有效样本量**（按患者计的事件数 / 较少一类的人数）定，不按总人数分档：
+- **回归类及其他经典临床预测模型**（logistic、Cox、惩罚回归，预测变量预先定、基本不调参）：用全部数据建模，内部验证用 bootstrap 乐观校正（每次重做全部建模步骤）或重复 k 折交叉验证；**不做随机 hold-out 拆分**（TRIPOD+AI；建模样本量按 Riley 方法 / `pmsampsize`，见方法要点卡 `regression-and-prediction-models.md`）。
+- **要调超参数的 ML / 深度学习模型**：嵌套交叉验证（内层调参、外层估计性能）；只有每一部分的事件数都够时，才用按患者的训练 / 验证 / 测试划分——写明每个集合的患者数和事件数，测试集要能把 C 统计量和校准（斜率、calibration-in-the-large）估得足够精确，按外部验证的样本量方法核算（Riley 2021，doi:10.1002/sim.9025）；不够就改用嵌套交叉验证。
+- **外部 / 时间验证**（另一个中心或另一个时间段）优于任何随机划分；要声称模型"可推广"时必须有。有多个中心或时间段时可做内部-外部验证（每次留出一个中心 / 时间段）。
+- 事件太少时，换哪种划分都补救不了：减少候选参数、换更简单的模型、补充数据，或把模型标为探索性。
+
+SAP 里写：
+- 所选验证方式 + 理由（模型类型；总事件数与每个集合 / 每折的事件数）
+- **必须按患者 ID 划分**（同一患者的所有图像/切片/帧在同一集合或同一折），**按患者级结局分层**——写明患者级划分逻辑和患者级标签规则（多数票 / 任一阳性）
+- 随机种子；各集合 / 各折的患者数、事件数、样本数、类别分布（用 `${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/patient_level_split.py` 生成，其 `split_summary.json` 直接贴入）
+- 外部验证集的来源（不同中心 / 时间段）和样本量依据；没有外部验证时，在 Limitations 里写明结论不能外推
 
 ## 11. 数据增强策略
 
@@ -76,6 +82,6 @@ copy them into the SAP, cite the choice and the reason.
 ## SAP 特有判断（yaml 里没有的）
 
 - 指标、划分、Ground Truth 必须与 Type C protocol 一致；新增指标标记为 post-hoc / exploratory
-- 样本量：沿用 protocol 已锁定的计算——风险预测模型按 Riley 方法（`pmsampsize`），灵敏度/特异度按可接受的 CI 宽度（Buderer 法），读片者研究按 MRMC 方法；第 10 节的按 n 分档只决定怎么划分数据，不能代替样本量依据（做法见方法要点卡 `regression-and-prediction-models.md`、`diagnostic-accuracy-and-ai-evaluation.md`）
-- 报告规范对应：影像 AI → CLAIM 2024（44 项）；预测模型 → TRIPOD+AI；诊断准确性 → STARD-AI（Nat Med 2025，doi:10.1038/s41591-025-03953-8）+ STARD 2015；LLM → TRIPOD-LLM（Nat Med 2025）。`reporting-standards` 有 CLAIM 2024、TRIPOD+AI、STARD 2015 的本地逐条清单；**STARD-AI 和 TRIPOD-LLM 没有本地清单**（STARD-AI 也不在规范索引里），要对照官方全文人工核对
+- 样本量：沿用 protocol 已锁定的计算——风险预测模型按 Riley 方法（`pmsampsize`），灵敏度/特异度按可接受的 CI 宽度（Buderer 法），读片者研究按 MRMC 方法，外部验证 / 测试集按 Riley 的外部验证样本量方法；第 10 节的验证方式不能代替样本量依据（做法见方法要点卡 `regression-and-prediction-models.md`、`diagnostic-accuracy-and-ai-evaluation.md`）
+- 报告规范对应：影像 AI → CLAIM 2024（44 项）；预测模型 → TRIPOD+AI；AI 诊断准确性研究 → **以 STARD-AI 为主要报告规范**（Sounderajah V, et al. *Nat Med*. 2025;31(10):3283-3289. doi:10.1038/s41591-025-03953-8；在 STARD 2015 的基础上新增或修改 18 条），与 STARD 2015 合用：没被改动的 STARD 2015 条目照原文满足，被修改的条目以 STARD-AI 的措辞为准，再加新增条目，每一行都对照 STARD-AI 官方清单核对（见 `method-cards/diagnostic-accuracy-and-ai-evaluation.md` 第 6 节）；LLM → TRIPOD-LLM（Nat Med 2025），评价聊天机器人给出健康建议或总结临床证据的研究另加 CHART（CHART Collaborative. *BMJ Med*. 2025;4(1):e001632. doi:10.1136/bmjmed-2025-001632；12 条 39 小条）。`reporting-standards` 有 CLAIM 2024、TRIPOD+AI、STARD 2015 的本地逐条清单；**STARD-AI、TRIPOD-LLM 和 CHART 没有本地逐条清单**，要对照官方全文人工核对
 - 公平性与稳健性（按性别 / 年龄 / 中心分层的 AUROC 与校准，跨中心 / 跨时间验证）在 SAP 里预先列为次要分析（yaml 无此节；见 study-design `metrics-and-reporting.yaml` 的 `fairness_and_bias` / `robustness`）

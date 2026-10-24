@@ -48,9 +48,9 @@ multiple_groups:
 
 ## Association / Correlation
 association:
-  continuous_vs_continuous:
-    normal: "Pearson correlation"
-    non_normal: "Spearman rank correlation"
+  continuous_vs_continuous:   # fixed in the SAP from the question and the variables, not from a normality pre-test
+    linear: "Pearson correlation — strength of a linear association; report r + 95% CI (Fisher z, which assumes approximate bivariate normality; bootstrap otherwise); sensitive to outliers"
+    monotonic: "Spearman rank correlation (or Kendall's tau) + 95% CI (bootstrap) — chosen in the SAP when the question is a monotonic association or a variable is ordinal, clearly skewed, bounded or expected to have outliers"
   adjust_confounders:
     continuous_outcome: "Multiple linear regression"
     binary_outcome: "Multiple logistic regression"
@@ -73,12 +73,12 @@ resampling:
 
 ## Longitudinal / Repeated Measures
 longitudinal:
-  two_timepoints:
-    differences_normal: "Paired t-test"
-    differences_non_normal: "Wilcoxon signed-rank test"
+  two_timepoints:   # same rule as two_groups.continuous.paired: fixed in the SAP, no normality test of the differences
+    default: "Paired t-test on the within-subject differences (prespecified; mean difference + 95% CI)"
+    rank_based: "Wilcoxon signed-rank test (Hodges-Lehmann estimate + CI) — chosen in the SAP when the differences are expected to be clearly skewed, ordinal or bounded; not chosen by a normality pre-test"
   multiple_timepoints:
     continuous:
-      balanced_complete: "Repeated-measures ANOVA (check sphericity with Mauchly's)"
+      balanced_complete: "Repeated-measures ANOVA with the Greenhouse-Geisser correction prespecified (Mauchly's test only as a description)"
       unbalanced_or_missing: "Linear mixed model (LMM, recommended default)"
     binary_or_count: "Generalized estimating equations (GEE)"
     note: "LMM handles missing data (MAR) better than RM-ANOVA; prefer LMM unless data is perfectly balanced"
@@ -87,66 +87,78 @@ longitudinal:
     subject_specific: "LMM (conditional model)"
 
 ## Survival Analysis (Extended)
+# Details, code and references: method-cards/survival-analysis.md (this block only routes).
 survival_extended:
   single_event:
-    comparison: "Log-rank test (Kaplan-Meier curves)"
-    model: "Cox proportional hazards regression"
-    assumption_check: "Schoenfeld residuals for proportional hazards assumption"
-    if_ph_violated: "Stratified Cox model or time-varying coefficients"
+    comparison: "Kaplan-Meier curves with a number-at-risk table + log-rank test (stratified log-rank for stratified randomisation)"
+    model: "Cox proportional hazards regression — HR + 95% CI; the number of covariates is set by the number of events"
+    assumption_check: "Schoenfeld residual test (cox.zph) together with the residual-vs-time plot; a non-significant test does not prove PH in small samples"
+    if_ph_violated:   # plan both branches in the SAP before the data are analysed
+      adjustment_covariate: "Stratify the Cox model on that covariate"
+      main_exposure: "Exposure x time interaction (HR by prespecified time periods) or the difference in restricted mean survival time (RMST) up to a prespecified tau; an AFT model is a further option"
   competing_risks:
     when: "Death from other causes, competing events that preclude outcome"
+    description: "Cumulative incidence function (CIF), not 1 - KM (1 - KM overestimates risk when competing events exist)"
     comparison: "Gray's test"
-    model: "Fine-Gray subdistribution hazard model or cause-specific Cox"
-    note: "Standard Kaplan-Meier overestimates risk when competing events exist"
+    model:
+      aetiology: "Cause-specific Cox (competing events censored) — answers 'does the exposure change the event rate among those still at risk'"
+      absolute_risk_or_prognosis: "Fine-Gray subdistribution hazard model — the subdistribution HR refers to the CIF, not to an ordinary hazard; report both models when both questions matter"
   time_varying_covariates:
-    model: "Extended Cox model with time-dependent covariates"
+    model: "Extended Cox model with time-dependent covariates (start-stop counting-process data)"
+  immortal_time:
+    when: "Exposure is only known after time zero (e.g. adjuvant treatment received during follow-up)"
+    method: "Exposure as a time-dependent covariate, or a landmark analysis with a prespecified landmark time — never classify patients from time zero by their final exposure status"
+  follow_up: "Median follow-up by the reverse Kaplan-Meier method"
   accelerated_failure_time:
-    when: "Proportional hazards assumption violated"
+    when: "Proportional hazards assumption violated, or a time-ratio interpretation is wanted"
     model: "AFT model (Weibull, log-normal, log-logistic)"
 
 ## Missing Data
 # SINGLE SOURCE for missing-data rules (SKILL.md files only reference this section).
-# Decide on two axes: (1) proportion missing, (2) missingness mechanism.
+# Decide from (1) the plausible missingness mechanism — argued from how the data were collected and from clinical
+# knowledge, because data cannot tell MAR from MNAR — and (2) which variables are missing and whether being a
+# complete case can depend on the outcome (Hughes 2019, doi:10.1093/ije/dyz032). The proportion missing is reported
+# and sets m, but it is NOT a basis for choosing the method: no upper threshold exists, and MI under MAR stays valid
+# with large proportions when the imputation model is right (Madley-Dowd 2019, doi:10.1016/j.jclinepi.2019.02.016).
+# Details and code: method-cards/missing-data.md.
 missing_data:
   assessment:
-    - "Report n and % missing per variable, counting disguised missing ('未查', '/', 'NA', 999 ...) as missing (data_profile.py reports this)"
-    - "Mechanism: Little's MCAR test — R naniar::mcar_test() or Python pyampute MCARTest; if neither is available, compare other variables between missing vs observed (t-test / chi-square) and show a missingness-pattern plot, then state MCAR cannot be confirmed"
-    - "Pattern analysis: monotone vs arbitrary"
-  by_proportion:
-    less_than_5_percent:
-      mcar: "Complete case analysis acceptable (report and justify)"
-      mar: "Multiple imputation preferred; complete case acceptable if justified and n large"
-      mnar: "Multiple imputation + MNAR sensitivity analysis"
-    5_to_20_percent:
-      mcar: "Multiple imputation (MICE, m>=20) — complete case loses power"
-      mar: "Multiple imputation (MICE, m>=20); include auxiliary variables and the outcome in the imputation model"
-      mnar: "Multiple imputation + MNAR sensitivity analysis (tipping point / delta adjustment)"
-    more_than_20_percent:
-      mcar_or_mar: "Multiple imputation (m>=20) + sensitivity analysis; discuss as a limitation"
-      mnar: "Pattern-mixture or selection models; consult a statistician"
-    variable_more_than_40_percent: "Discuss whether the variable should be kept at all"
+    - "Report n and % missing per variable and the % of incomplete cases, counting disguised missing ('未查', '/', 'NA', 999 ...) as missing (data_profile.py reports this)"
+    - "Mechanism: ask why each value is missing (not ordered because the patient was well? test not available at a centre? lost to follow-up?) and write the plausible mechanism per key variable. Little's test (R naniar::mcar_test(), Python pyampute MCARTest) can only reject MCAR, never confirm it; comparing baseline variables between patients with and without the value describes the pattern but cannot show MAR"
+    - "Pattern analysis: monotone vs arbitrary; which variables are missing together; by centre / period / source"
+  decision:
+    complete_case_unbiased_when: "For most regression models (linear, logistic, Cox, probit), a complete-case analysis is unbiased when the chance of being a complete case does not depend on the outcome given the model covariates — even if the missing exposure or confounder is MNAR. For logistic regression the exposure OR also stays unbiased when completeness depends on the outcome (and confounders) but not on the exposure; it is biased when completeness depends on both the outcome and the exposure. Argue this on clinical grounds in the SAP; report how many were excluded"
+    multiple_imputation_when: "Completeness plausibly depends on observed data, including the outcome (MAR), so complete cases would be biased; or auxiliary variables / incomplete cases carry information worth using. MI (MICE) with the outcome, every analysis-model term and auxiliary variables in the imputation model; m >= the % of incomplete cases and at least 20"
+    covariate_mnar_not_outcome_related: "A covariate missing because of its own (unseen) value, with completeness unrelated to the outcome given the covariates: complete cases stay unbiased while MI under MAR is biased — complete cases as the primary analysis"
+    outcome_only_missing: "Only the outcome missing and no auxiliary variables: the incomplete cases carry no information on the coefficients and MI adds nothing to a complete-case regression; MI helps only with auxiliary variables that predict the outcome"
+    mnar_outcome_related: "Missingness plausibly depends on unseen values AND on the outcome (e.g. the sickest patients miss the visit): neither complete cases nor MI under MAR is unbiased — choose the primary analysis by the rules above and prespecify an MNAR sensitivity analysis (delta adjustment / tipping point; pattern-mixture or selection model with a statistician)"
+    large_proportion: "No %-cut-off switches the method. Much missing data makes the results depend more on the untestable assumptions and on the imputation model: widen the sensitivity analyses and discuss it. Drop a variable only for a substantive reason stated in the SAP (it is not measured in practice, or its missingness cannot be modelled)"
   pooling: "Rubin's rules for pooling estimates across imputations (never average the imputed datasets)"
   tools:
-    python: "sklearn IterativeImputer(sample_posterior=True, random_state=i) looped m times + Rubin pooling, or statsmodels.imputation.mice (MICEData + MICE)"
-    r: "mice::mice(m=20) + pool()"
+    python: "sklearn IterativeImputer(sample_posterior=True, random_state=i) looped m times + Rubin pooling — it is experimental: `from sklearn.experimental import enable_iterative_imputer` must run before `from sklearn.impute import IterativeImputer`; or statsmodels.imputation.mice (MICEData + MICE)"
+    r: "mice::mice(m = <m>) + pool()"
   sensitivity:
     - "Compare complete case vs imputed results"
-    - "Vary MNAR assumptions (tipping point analysis)"
+    - "Vary MNAR assumptions (delta adjustment / tipping point analysis)"
 
 ## Causal Inference (Observational)
+# Details, code and references: method-cards/propensity-score.md (this block only routes).
 causal_inference:
   propensity_score:
     when: "Observational study estimating treatment/intervention effect"
     steps:
-      - "Build PS model (logistic regression with pre-treatment covariates)"
-      - "Assess overlap (common support) with PS distribution plots"
-      - "Choose method: matching, stratification, IPTW, or covariate adjustment"
-      - "Diagnose balance: standardized mean differences (Love plot, target SMD<0.1)"
-      - "Estimate treatment effect on matched/weighted sample"
-      - "Sensitivity analysis for unmeasured confounding (E-value)"
+      - "Name the estimand first — ATE (whole population), ATT (the treated) or ATO (overlap population); it decides the method, not the group sizes"
+      - "Build the PS model (logistic regression with pre-treatment confounders and outcome risk factors chosen from a DAG / clinical knowledge; splines and interactions allowed) after SAP approval and without the outcome read in"
+      - "Assess overlap (common support) with PS distribution plots; the rule for poor overlap (restrict and redefine the target population, or overlap weights) is prespecified"
+      - "Diagnose balance: SMD per covariate (Love plot, |SMD| < 0.1 as a rule of thumb) and variance ratios — no p-values, no C-statistic of the PS model; refine the PS model and re-check, still blind to the outcome"
+      - "Estimate the effect on the matched/weighted sample with a variance that respects the design (pair-cluster robust after matching; robust sandwich or bootstrap after weighting; bootstrap re-estimating PS and weights for weighted Cox)"
+      - "Missing confounders: within each imputed dataset estimate PS, match/weight, check balance and estimate the effect, then pool with Rubin's rules"
+      - "Sensitivity analyses: E-value (point estimate and the CI limit closer to 1); the other PS method; another caliper / truncation threshold; a doubly robust estimator (AIPW or TMLE)"
     methods:
-      matching: "1:1 nearest-neighbor with caliper (0.2×SD of logit PS)"
-      iptw: "Inverse probability of treatment weighting (check extreme weights)"
+      matching: "1:1 (or 1:k) nearest-neighbour without replacement, caliper 0.2 × SD of the logit PS — usually targets the ATT; report unmatched treated patients and the changed target population"
+      iptw: "Inverse probability of treatment weighting (ATE; stabilised weights optional) — report the weight distribution; any truncation threshold (e.g. 1st/99th percentile) is prespecified, trades bias for variance and no longer targets exactly the ATE, so report the untruncated result too"
+      overlap_weights: "Overlap weights (treated 1 − PS, controls PS) — target the ATO, down-weight patients with PS near 0 or 1; no truncation needed"
+      doubly_robust: "AIPW or TMLE — combine a PS model and an outcome model; consistent if either is correctly specified (sensitivity analysis, or primary when prespecified)"
       stratification: "Divide PS into 5+ strata, estimate within-stratum effects"
   instrumental_variables:
     when: "Unmeasured confounding suspected, valid instrument available"
@@ -158,10 +170,11 @@ causal_inference:
 ## Mediation Analysis
 mediation:
   when: "Testing whether effect of X on Y operates through mediator M"
-  traditional: "Baron-Kenny 4-step approach (for simple mediation)"
-  modern: "Causal mediation analysis (natural direct/indirect effects)"
-  confidence_intervals: "Bootstrap (≥5000 resamples) for indirect effect CI"
-  note: "Requires temporal ordering assumption: X → M → Y"
+  method: "Counterfactual (causal) mediation analysis — natural direct and indirect effects (NDE / NIE) defined on the counterfactual scale; allows an exposure-mediator interaction and binary or survival outcomes (VanderWeele 2016, doi:10.1146/annurev-publhealth-032315-021402). R: regmedint::regmedint() (regression-based, exposure-mediator interaction), mediation::mediate()"
+  assumptions: "No unmeasured confounding of exposure-outcome, mediator-outcome and exposure-mediator relations, and no mediator-outcome confounder affected by the exposure — list the adjustment set for each in the SAP; add a sensitivity analysis for unmeasured mediator-outcome confounding"
+  historical_only: "Baron-Kenny 4-step / product-of-coefficients approach: historical, not a planned method — it requires a significant total effect, ignores exposure-mediator interaction and gives no counterfactual definition of the indirect effect (with logistic or other non-linear models the product and difference of coefficients need not agree)"
+  confidence_intervals: "Bootstrap (≥5000 resamples) or quasi-Bayesian Monte Carlo for the indirect effect CI"
+  note: "Requires temporal ordering X → M → Y (mediator measured after the exposure and before the outcome)"
 
 ## Clustered / Hierarchical Data
 clustered_data:
@@ -195,12 +208,13 @@ omics:
     transcriptomics: "DESeq2 / edgeR (negative binomial models)"
     proteomics: "limma (moderated t-test)"
     metabolomics: "t-test or Wilcoxon with FDR correction"
+    single_cell: "Pseudobulk: sum raw counts per sample x cell type, then DESeq2 / edgeR / limma-voom with group (and batch) in the design — the sample, not the cell, is the unit; cell-level tests (e.g. Wilcoxon on cells) give false discoveries between conditions (Squair 2021, doi:10.1038/s41467-021-25960-2). Details: omics-methods.md"
   multiple_testing: "Benjamini-Hochberg FDR (q<0.05); report both raw and adjusted p"
   batch_effect:
     analysis: "Put batch in the model as a covariate: DESeq2 design = ~ batch + condition; limma / edgeR design matrix with a batch term"
     visualisation_only: "ComBat / limma::removeBatchEffect only for PCA, clustering and heatmaps — never on the data that go into differential testing (the limma help page says removeBatchEffect is not intended for use before linear modelling; pre-corrected data give over-confident results when groups are unbalanced across batches, Nygaard 2016, doi:10.1093/biostatistics/kxv027)"
     design: "If batch is completely confounded with group, no method can separate them — spread groups across batches at the design stage"
-  validation: "Split-sample or independent cohort validation"
+  validation: "Independent cohort preferred; within one data set use nested cross-validation or bootstrap with every selection step repeated — a single random split of a small omics cohort is unstable (same rule as deep_learning_training.data_split)"
 
 ## Interrupted Time Series
 time_series:
@@ -221,7 +235,7 @@ assumptions:
     caution: "Small n: tests have little power; large n: trivial departures are 'significant'. Decide on design grounds in the SAP (e.g. rank-based or log scale for outcomes known to be skewed)"
   homogeneity: "Levene's test — descriptive only; Welch's t-test / Welch's ANOVA are the prespecified default, so no Levene step is needed (not applicable for paired data)"
   independence: "Study design ensures this (not testable post-hoc)"
-  sphericity: "Mauchly's test (for repeated-measures ANOVA); if violated use Greenhouse-Geisser correction"
+  sphericity: "Prespecify the Greenhouse-Geisser correction (or a linear mixed model); Mauchly's test and the epsilon are descriptions only — choosing the correction from Mauchly's p-value is a two-stage pre-test like Levene → Student/Welch"
   proportional_hazards: "Schoenfeld residuals test + log-log survival plot"
 
 ## AI/ML Model Development and Evaluation
@@ -266,14 +280,23 @@ deep_learning_training:
   hyperparameter_reporting:
     required: [optimizer, learning_rate, lr_schedule, batch_size, epochs, early_stopping, weight_decay, dropout]
     recommended: [warmup_steps, gradient_clipping, mixed_precision, seed]
-  data_split:   # SINGLE SOURCE for the data-split table (study-design and data-analysis-planning reference it)
-    - {condition: "n > 1000", method: "Hold-out train/val/test (60/20/20)", note: "Patient-level split"}
-    - {condition: "200 <= n <= 1000", method: "5-fold cross-validation", note: "Patient-level folds; report mean±SD across folds"}
-    - {condition: "50 <= n < 200", method: "Transfer learning + nested CV", note: "Pretrained ImageNet/domain weights; report pretraining data and fine-tuning strategy"}
-    - {condition: "n < 50", method: "LOOCV or classical ML (insufficient for deep learning)", note: "Strong warning; external validation MANDATORY; discuss in Limitations"}
+  data_split:   # SINGLE SOURCE for the validation / data-split rule (study-design and data-analysis-planning reference it)
+    principle: "Choose the validation design by MODEL TYPE and EFFECTIVE sample size — number of events / patients in the smaller outcome class, counted per patient — never by total patient n alone (TRIPOD+AI; Collins 2024, doi:10.1136/bmj-2023-074819)"
+    regression_or_classical_model:
+      when: "Regression-based and other classical clinical prediction models (logistic, Cox, penalised regression; prespecified predictors, little or no tuning)"
+      method: "Develop on ALL available data; internal validation by bootstrap optimism correction (every modelling step repeated in each bootstrap sample) or repeated k-fold cross-validation. No random hold-out split: it develops a weaker model on fewer events and estimates its performance imprecisely (Steyerberg 2001, doi:10.1016/S0895-4356(01)00341-9)"
+      size: "Development size by Riley's criteria (pmsampsize; Riley 2020, doi:10.1136/bmj.m441) — details in method-cards/regression-and-prediction-models.md"
+    tuned_ml_or_dl_model:
+      when: "ML / deep-learning models whose hyperparameters, architecture or training length are tuned on the data"
+      method: "Nested cross-validation (inner loop tunes, outer loop estimates performance; Varma 2006, doi:10.1186/1471-2105-7-91), or a patient-level train / validation / test split only when every part has enough events"
+      split_condition: "Report patients and events in every split. The test set must allow a precise C-statistic and calibration (slope, calibration-in-the-large): size it like an external validation set (Riley 2021, doi:10.1002/sim.9025; Riley 2024, doi:10.1136/bmj-2023-074821). If the events do not allow that, use nested CV instead of a hold-out"
+      final_model: "With nested CV, refit the final model on all development data using the tuning procedure fixed in the SAP; the nested-CV estimate describes that procedure. Pretrained (transfer-learning) weights: report the pretraining data and the fine-tuning strategy"
+    external_or_temporal_validation: "Validation on a separate site or time period is preferred over any random split and is REQUIRED for claims of generalisability; with several centres or periods, internal-external validation (leave one centre / period out) shows heterogeneity (Collins 2024)"
+    too_few_events: "No split rescues too few events: reduce the candidate parameters, use a simpler model, add data, or label the model exploratory and discuss it in the Limitations"
   data_split_rules:
     - "Split by patient ID, never by image/slice/frame: all data of one patient stay in one set/fold"
-    - "Report the random seed and the class distribution of every set/fold"
+    - "Stratify the split / folds by the patient-level outcome"
+    - "Report the random seed and, for every set/fold, the number of patients, events and the class distribution"
     - "Never tune hyperparameters or augment on the test set (TTA excepted)"
     - "Tool: ${CLAUDE_PLUGIN_ROOT}/skills/data-collection-tools/scripts/patient_level_split.py (stratified, seeded, leakage check)"
   augmentation:

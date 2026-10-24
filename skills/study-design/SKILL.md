@@ -9,6 +9,8 @@ description: Use when designing any research study protocol (clinical/basic/AI-M
 
 所有类型研究的方案设计——临床、基础、AI/ML、定性、问卷调查。**设计由真实条件决定**：先分析病例/数据来源、事件数、资源等真实条件（Step 0），再判断研究类型、只读对应的模块文件（见 Router 表），统一产出 `study-protocol.md`（`type:` 字段区分五类）。模板和模块里的表格是必须覆盖的清单，不是填空表；各类型的决策树、专属规则和专属 Common Mistakes / Convergence / Red Flags 在模块文件里。
 
+> 总调度规则（直接调用本 skill 也适用，原文见 `${CLAUDE_PLUGIN_ROOT}/skills/using-med-research-powers/SKILL.md`）：**结局盲**——回顾性研究在 SAP 确认前不按暴露 / 分组看结局；**缺前置产物**——说缺什么，light / auto 下先往下做并记缺口，不拒绝；**checkpoint_mode** 默认 light，但 `study-protocol.md` 是硬确认 1；**只要一个产物**时交付后停下。
+
 ## Study Type Router
 
 **设计前必须先确定研究类型。** 不同类型有完全不同的方法学、样本量逻辑和报告规范。
@@ -31,10 +33,10 @@ description: Use when designing any research study protocol (clinical/basic/AI-M
 | 类型 | `type:` 值 | 读取模块 | 样本量逻辑 | 核心报告规范 |
 |------|-----------|---------|-----------|-------------|
 | Clinical Research | `clinical` | `references/modules/clinical.md` | Power analysis | CONSORT 2025 / STROBE / STARD / TRIPOD+AI |
-| Basic Science | `basic` | `references/modules/basic-science.md` | 生物学重复 >= 3 + power（动物） | ARRIVE 2.0 |
-| AI/ML Medical | `ai-ml` | `references/modules/ai-ml.md` | 患者级数据划分 + 外部验证；样本量用 Riley/pmsampsize、Buderer 或 MRMC | TRIPOD+AI / CLAIM 2024 / CONSORT-AI / DECIDE-AI |
+| Basic Science | `basic` | `references/modules/basic-science.md` | 生物学重复 >= 3 + power（动物：先定实验单位——单只 / 笼 / 窝，n 按实验单位数计） | ARRIVE 2.0 |
+| AI/ML Medical | `ai-ml` | `references/modules/ai-ml.md` | 验证方式按模型类型和事件数选（按患者划分）+ 外部验证；样本量用 Riley/pmsampsize、Buderer 或 MRMC | TRIPOD+AI / CLAIM 2024 / CONSORT-AI / DECIDE-AI |
 | Qualitative | `qualitative` | `references/modules/qualitative.md` | 信息饱和 | COREQ / SRQR |
-| Survey/Delphi | `survey` | `references/modules/survey-delphi.md` | 公式计算 / 专家数 | CHERRIES / CROSS / STROBE / COSMIN |
+| Survey/Delphi | `survey` | `references/modules/survey-delphi.md` | 公式计算（整群抽样乘设计效应）/ 专家数 | CHERRIES / CROSS / STROBE / COSMIN；Delphi 用 ACCORD |
 
 判断规则：
 - 既有临床数据又有 AI 模型 → 以"论文的主要贡献是什么"定：贡献是模型 → C；贡献是临床结论、AI 只是分析工具 → A，并加载 C 的数据划分与可复现性要求。
@@ -90,7 +92,8 @@ description: Use when designing any research study protocol (clinical/basic/AI-M
 
 先写参数从哪来，再算数字：
 - **预期效应量 / 事件率 / 比例必须有真实来源**：相近人群、相近设计的文献（写 PMID，并说明为什么能借用）；本中心预实验或历史数据（写时间段与例数）；或临床上有意义的最小差异（写依据）。"常用值"（如"取中等效应量""事件率按一半估计"）不是来源。
-- 按模块逻辑给出数字：power analysis（效应量、α、β、脱落率；生存结局按事件数）/ 生物学重复数 / 数据划分方案 + 外部验证（AI/预测模型的样本量用 Riley 标准 pmsampsize、敏感度/特异度精度法 Buderer、阅片研究 MRMC，见 Type C 模板第 2 节）/ 信息饱和范围 / 调查公式。样本量脚本统一用 `${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py`。
+- 按模块逻辑给出数字：power analysis（效应量、α、β、脱落率；生存结局按事件数）/ 生物学重复数 / 验证方式 + 外部验证（AI/预测模型的样本量用 Riley 标准 pmsampsize、敏感度/特异度精度法 Buderer、阅片研究 MRMC，见 Type C 模板第 2 节）/ 信息饱和范围 / 调查公式。
+- 工具：`${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py` 只覆盖常规的个体随机设计（两组均值 / 两组比例 / 生存 / 相关的优效性，两组均值和两组比例的非劣效 / 等效（`--hypothesis non-inferiority|equivalence --margin <Δ>`，单侧 α 默认 0.025），以及敏感度、特异度的精度法；当前支持哪些设计和检验方向以 `power_analysis.py --help` 为准）。脚本不覆盖的用专门方法，并写明方法和出处：预测模型开发 / 外部验证 → `pmsampsize` / `pmvalsampsize`；读片者研究 → MRMC 样本量；群随机试验和整群抽样 → 个体样本量 × 设计效应（ICC 写出处，群大小不等时用含变异系数的公式）；交叉、重复测量、多臂、成组序贯设计和生存结局的非劣效 → 按 `--help` 核对，不覆盖就用专门软件。
 - **用 Step 0 的可获得病例数核对可行性**：计划期内能不能达到所需例数 / 事件数。达不到就改设计（多中心、延长入组期、换结局、减少变量）并写理由，**不要反过来改小参数去凑手头的例数**。
 - 回顾性研究的例数由已有数据决定：用真实的可用例数与事件数说明能支撑什么分析（能纳入几个变量、能检出多大的差异——在看结果之前按固定例数计算，只用总例数和总事件数（需要时加各组人数），不按暴露/分组去数事件或看结局，也不是用观察到的效应算"事后 power"）。
 - 写不出依据 → 不要编一个数字，改写"需预实验 / 需文献效应量"并列为待办。
@@ -177,10 +180,10 @@ description: Use when designing any research study protocol (clinical/basic/AI-M
 - 然后 → `journal-selection`（暂定目标期刊，软确认，可随时更换）
 - 然后 → `data-analysis-planning`（制定 SAP，第 2 个硬确认）
 - 涉及动物实验 → protocol 必须按 ARRIVE 2.0 写，投稿前由 `reporting-standards` 检查
-- C 类涉及手术/器械创新 → 必须按 IDEAL 框架定位阶段后再选设计
+- C 类涉及手术/器械创新 → 必须按 IDEAL 框架定位阶段后再选设计；报告规范用 IDEAL Reporting Guidelines（索引 id ideal-reporting）
 
 ### 前置依赖（缺了按总调度"缺前置产物时"处理）
-- `research-question.md`（`research-question-formulation`）；用户选先往下做时，在 Step 0 把研究问题（PICO/PECO）问清写进 protocol 开头，不凭空凑
+- `research-question.md`（`research-question-formulation`）；先往下做时（light / auto 下默认先做，step 模式由用户选），在 Step 0 把研究问题（PICO/PECO）问清写进 protocol 开头，不凭空凑
 - **推荐**有 `literature-synthesis-summary.md`（缺少时提醒：效应量与 gap 定位缺文献支撑）
 
 ### 可选衔接

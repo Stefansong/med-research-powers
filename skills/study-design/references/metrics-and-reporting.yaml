@@ -1,8 +1,10 @@
 # AI Medical Study: Metrics and Reporting Map
 # Loaded by references/modules/ai-ml.md (Core Design Element 3 + Reporting Standards).
 # Standard names below match the reporting-standards index
-# (${CLAUDE_PLUGIN_ROOT}/skills/reporting-standards/references/checklists/standards-index.yaml);
-# entries marked "no local checklist" are not in that index and must be checked manually.
+# (${CLAUDE_PLUGIN_ROOT}/skills/reporting-standards/references/checklists/standards-index.yaml), which gives the
+# reference for each. Two names are NOT in the index and carry their source inline instead: QUADAS-C (bias tool)
+# and ISO 14155 (a device GCP standard, not a reporting guideline). Entries marked "no local checklist" have no
+# item-by-item file there and must be checked manually against the official checklist.
 
 ## Performance Metrics by Task Type
 
@@ -89,12 +91,12 @@ calibration_extended:
 ## Study Type → Reporting Standard Map
 
 mapping:
-  - {study: "AI-assisted diagnosis (diagnostic accuracy)", primary: "STARD 2015 + CLAIM 2024", supplement: "STARD-AI (Nat Med 2025, doi:10.1038/s41591-025-03953-8; no local checklist and not in standards-index — verify manually against the official text); MI-CLAIM; QUADAS-2 (QUADAS-C for comparative accuracy) for bias"}
+  - {study: "AI-assisted diagnosis (diagnostic accuracy)", primary: "STARD-AI 2025 (index id stard-ai; Sounderajah V et al. Nat Med 2025;31(10):3283-3289, doi:10.1038/s41591-025-03953-8) — the STARD 2015 items plus 18 new or modified AI items; check the unchanged STARD 2015 rows with stard-2015.yaml; the modified items replace the STARD 2015 wording, so check every row against the official STARD-AI checklist (no local checklist for the 18 new or modified items)", supplement: "CLAIM 2024 if the AI reads medical images; MI-CLAIM; QUADAS-2 for bias (QUADAS-C for comparative accuracy, e.g. AI vs clinicians — not in the index: Yang B et al. Ann Intern Med 2021;174(11):1592-1599, doi:10.7326/M21-2234)"}
   - {study: "AI clinical trial (RCT)", primary: "CONSORT 2025 + CONSORT-AI 2020", supplement: "SPIRIT 2025 + SPIRIT-AI 2020 for the protocol"}
   - {study: "AI decision support early evaluation", primary: "DECIDE-AI 2022", supplement: "CONSORT-AI if progressing to RCT"}
-  - {study: "Prediction model development / validation", primary: "TRIPOD+AI 2024", supplement: "PROBAST / PROBAST+AI for bias; TRIPOD-Cluster (BMJ 2023) if clustered data"}
-  - {study: "LLM/VLM medical evaluation", primary: "TRIPOD-LLM (Nat Med 2025)", supplement: "Journal-specific; report prompt standardization section"}
-  - {study: "Surgical video AI", primary: "STARD 2015 (if diagnostic framing)", supplement: "CLAIM 2024 (no dedicated surgical-video standard exists; apply imaging-AI reporting + DECIDE-AI if decision support)"}
-  - {study: "Medical device/instrument innovation", primary: "IDEAL framework", supplement: "ISO 14155 (no local checklist — verify manually)"}
-  - {study: "AI systematic review", primary: "PRISMA 2020 + PRISMA-S", supplement: "QUADAS-2 / PROBAST / ROBINS-I"}
+  - {study: "Prediction model development / validation", primary: "TRIPOD+AI 2024", supplement: "PROBAST+AI 2025 (updates PROBAST 2019) for bias; TRIPOD-Cluster (BMJ 2023) if clustered data"}
+  - {study: "LLM/VLM medical evaluation", primary: "TRIPOD-LLM (Nat Med 2025)", supplement: "CHART 2025 (index id chart) when the study evaluates a chatbot giving health advice or summarising clinical evidence; journal-specific; report prompt standardization section"}
+  - {study: "Surgical video AI", primary: "STARD-AI 2025 (index id stard-ai) when the video model is an index test judged against a reference standard (diagnostic-accuracy framing); otherwise the row for the design — TRIPOD+AI 2024 for prediction, DECIDE-AI 2022 for early clinical evaluation of decision support, CONSORT 2025 + CONSORT-AI 2020 for an RCT", supplement: "CLAIM 2024 for the imaging-AI items (the index has no surgical-video-specific reporting guideline)"}
+  - {study: "Medical device/instrument innovation", primary: "IDEAL Reporting Guidelines 2021 (index id ideal-reporting; Bilbro NA et al. Ann Surg 2021;273(1):82-85, doi:10.1097/SLA.0000000000004180) — stage-specific checklists for Stages 1, 2a, 2b and 4, no local checklist; first determine the stage with the IDEAL framework (index id ideal — staging only, not a reporting checklist); a Stage 3 study uses the guideline for its design (e.g. CONSORT 2025 for an RCT)", supplement: "IDEAL-D stage 0 for preclinical device work (see the ideal index entry); ISO 14155 is the good-clinical-practice standard for clinical investigations of medical devices, not a reporting guideline and not in the index (cite the current edition from iso.org; edition not verified here)"}
+  - {study: "AI systematic review", primary: "PRISMA 2020 + PRISMA-S (PRISMA-DTA for diagnostic accuracy reviews)", supplement: "QUADAS-2 / PROBAST+AI / ROBINS-I for bias"}
   - {study: "Medical imaging AI", primary: "CLAIM 2024 (44 items)", supplement: "MI-CLAIM; CLAIM 2020 is superseded — do not cite as current"}

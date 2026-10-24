@@ -34,7 +34,7 @@
 |---|---|---|
 | GEE | `geepack::geeglm(y ~ x, id = patient_id, family = binomial, corstr = "exchangeable")`（数据须先按 id 排序，同一聚类的行连在一起） | `statsmodels.formula.api.gee("y ~ x", groups="patient_id", data=df, family=sm.families.Binomial(), cov_struct=sm.cov_struct.Exchangeable())` |
 | GEE 小样本校正 + t 检验 | KC：`v <- geesmv::GEE.var.kc(y ~ x, id = "patient_id", family = binomial, data = d, corstr = "exchangeable")$cov.beta`；FG：`geesmv::GEE.var.fg()`（参数相同）。两者只返回各系数的方差（数据须按 id 排序），系数取同样设定的 `gee::gee()` 拟合结果；t 检验手算：`t <- b / sqrt(v)`，`p <- 2 * pt(-abs(t), df = K - length(b))`（K 为聚类数）。`glmtoolbox::glmgee()` 后 `vcov(fit, type = "bias-corrected")` 是 MD，它的 `summary()` 仍按 z 检验给 P 值 | `GEE(...).fit(cov_type="bias_reduced")` 只有 MD，结果表仍是 z 检验；t 检验手算：`2 * scipy.stats.t.sf(abs(res.params / res.bse), df=K - len(res.params))`。要 KC/FG 建议用 R |
-| 线性混合模型 | 用 `lmerTest::lmer()` 拟合（公式见表下；语法与 `lme4::lmer()` 相同），自由度与 P 值：`summary(fit, ddf = "Kenward-Roger")`（需要装 `pbkrtest`）。直接用 `lme4::lmer()` 拟合时 `summary()` 会静默忽略 `ddf`，只给 t 值、不给自由度和 P 值；已拟合的对象可先 `lmerTest::as_lmerModLmerTest(fit)` 转换 | `statsmodels.formula.api.mixedlm("y ~ x", df, groups="surgeon_id")` |
+| 线性混合模型 | 用 `lmerTest::lmer()` 拟合（公式见表下；语法与 `lme4::lmer()` 相同），自由度与 P 值：`summary(fit, ddf = "Kenward-Roger")`（需要装 `pbkrtest`）。直接用 `lme4::lmer()` 拟合时 `summary()` 会静默忽略 `ddf`，只给 t 值、不给自由度和 P 值；已拟合的对象可先 `lmerTest::as_lmerModLmerTest(fit)` 转换 | `statsmodels.formula.api.mixedlm("y ~ x", df, groups="surgeon_id").fit(reml=True)`：结果表只给 z 检验（`z`、`P>\|z\|` 两列，按正态分布近似），没有 Kenward-Roger / Satterthwaite 自由度，聚类少时 P 值偏小、CI 过窄。需要按第 2 节用 KR / Satterthwaite 时用 R（`lmerTest` + `pbkrtest`）；留在 Python 时报告按聚类重抽样的 bootstrap CI（代码见表下；聚类很少时 bootstrap 也不可靠，仍以 R 为准），并在 SAP 里写明不是 KR / Satterthwaite |
 | 二分类/计数结局的混合模型 | `lme4::glmer(..., family = binomial)`（公式见表下） | 无公认成熟的频率学派实现（`BinomialBayesMixedGLM` 是贝叶斯近似），建议用 R，或改用 GEE |
 | 由模型算 ICC | `performance::icc(fit)` | 由 `MixedLM` 的方差分量现算：随机截距方差 ÷（随机截距方差 + 残差方差） |
 | 按患者/术者划分 | 用插件脚本 `patient_level_split.py`（Python，命令行调用） | `patient_level_split.py`；`sklearn.model_selection.GroupKFold` / `StratifiedGroupKFold` |
@@ -42,6 +42,24 @@
 ```r
 lmerTest::lmer(y ~ x + (1 | surgeon_id), data = d)                  # 术者随机截距；summary(fit, ddf = "Kenward-Roger")
 lme4::glmer(y ~ x + (1 | patient_id), family = binomial, data = d)  # 二分类结局
+```
+
+Python 线性混合模型的聚类 bootstrap（整个聚类一起抽，重抽到的聚类各给一个新 ID）：
+
+```python
+import numpy as np
+import pandas as pd
+import statsmodels.formula.api as smf
+
+rng = np.random.default_rng(2024)                       # 种子写进 SAP
+groups = {g: d for g, d in df.groupby("surgeon_id")}
+ids = np.array(list(groups))
+boot = []
+for b in range(2000):
+    pick = rng.choice(ids, size=len(ids), replace=True)
+    bd = pd.concat([groups[g].assign(boot_id=i) for i, g in enumerate(pick)])
+    boot.append(smf.mixedlm("y ~ x", bd, groups="boot_id").fit(reml=True).params["x"])
+ci = np.percentile(boot, [2.5, 97.5])                   # x 的效应的 95% 百分位 CI
 ```
 
 二分类结局的 ICC 在潜变量尺度上算：随机截距方差 ÷（随机截距方差 + π²/3）；报告时写明用的哪种算法。
@@ -52,7 +70,7 @@ lme4::glmer(y ~ x + (1 | patient_id), family = binomial, data = d)  # 二分类�
 - 建模时考虑了聚类，数据划分却按图像/帧随机分：同一患者或同一术者同时进训练集和测试集。
 - 以为 ICC 很小就可以忽略聚类：DE 还取决于聚类大小，每个视频上千帧时，ICC 很小 DE 也很大。
 - 用 GEE 的系数解释"某一位术者"，或把混合模型的 OR 当成人群平均效应。
-- 聚类数少仍用普通三明治标准误 + z 检验；或做了偏差校正，却仍用软件默认的 z 检验 P 值。
+- 聚类数少仍用普通三明治标准误 + z 检验；或做了偏差校正，却仍用软件默认的 z 检验 P 值；线性混合模型用 statsmodels `mixedlm` 的 z 检验 P 值，却在 SAP 里写"Kenward-Roger 自由度"。
 - 聚类大小差别很大，样本量仍按等大聚类的设计效应公式算。
 - 看了结果才决定加不加随机斜率、换不换相关结构；模型不收敛、奇异拟合却不报告。
 - 双侧器官（左右肾）各算一例却不说明，也不按患者处理相关性。
@@ -69,7 +87,7 @@ lme4::glmer(y ~ x + (1 | patient_id), family = binomial, data = d)  # 二分类�
 
 ## 6. 对应报告规范
 
-- 先按研究类型选主规范：观察性研究 `strobe`（12a 统计方法、12e 敏感性分析）；诊断研究 `stard`；影像 AI `claim`（20：数据划分在哪一层互不重叠）。
+- 先按研究类型选主规范：观察性研究 `strobe`（12a 统计方法、12e 敏感性分析）；诊断研究 `stard`；AI 诊断准确性研究以 `stard-ai`（STARD-AI 2025，无本地清单）为主、与 `stard` 合用，被修改的条目以 STARD-AI 措辞为准（见 `diagnostic-accuracy-and-ai-evaluation.md` 第 6 节）；影像 AI `claim`（20：数据划分在哪一层互不重叠）。
 - 预测模型用聚类数据（多中心）：`tripod-ai`（12d、23b：跨聚类的异质性）+ `tripod-cluster`（TRIPOD-Cluster 2023，仓库索引有条目，无本地清单，需人工核对）。
 - 整群随机试验：`consort-2025` + `consort-cluster`（CONSORT-Cluster 2012，无本地清单，需人工核对）。
 

@@ -19,7 +19,7 @@
 ├── 描述群体特征（KAP/患病率/满意度）→ Cross-sectional Survey（STROBE；在线用 CHERRIES）
 ├── 开发新问卷/量表 → Questionnaire Development（COSMIN）
 ├── 验证已有问卷 → Validation Study（COSMIN）
-├── 专家共识 → Delphi Study（CROSS 报告调查方法；共识标准预先定义）
+├── 专家共识 → Delphi Study（报告规范 ACCORD——共识方法报告指南，Gattrell 2024，doi:10.1371/journal.pmed.1004326，无本地清单，需人工核对；共识标准预先定义）
 ├── 纵向变化 → Longitudinal Survey（→ 考虑 Module A 队列）
 └── 在线调查 → Web-based Survey（报告: CHERRIES）
 ```
@@ -49,7 +49,8 @@
 3. 专家内容效度 (Content Validity)
    → 5-10 位专家评审
    → 计算 I-CVI（条目水平）和 S-CVI（量表水平）
-   → I-CVI >= 0.78, S-CVI/Ave >= 0.90
+   → I-CVI >= 0.78（专家 >= 3 人时；Polit 2007，doi:10.1002/nur.20199）
+   → S-CVI/Ave >= 0.90（Polit & Beck 2006，doi:10.1002/nur.20147；阈值写在原文正文，摘要未载明，待核实）
 
 4. 认知访谈 (Cognitive Interviewing)
    → 5-10 位目标人群测试
@@ -71,9 +72,9 @@
 
 ### Step 2: 测量属性（量表验证）
 
-8 项测量属性（内容/结构/收敛/区分/效标效度 + 内部一致性/重测信度/反应度）的方法和判定标准表 → 读取 `references/survey-reference.yaml` 的 `psychometric_properties`。
+测量属性（内容/结构效度、内部一致性、重测信度、构念效度的假设检验、效标效度、反应度）的方法和判定标准表 → 读取 `references/survey-reference.yaml` 的 `psychometric_properties`（判定标准取自 COSMIN，写了出处）。
 
-**样本量关键判断：** EFA 至少条目数 × 5-10；CFA 至少 200 人；EFA 与 CFA 必须用不同样本。
+**样本量关键判断：** 因子分析的样本量按 COSMIN Risk of Bias checklist 结构效度一栏（Box 3）的样本量标准核对（Mokkink 2018，doi:10.1007/s11136-017-1765-4；具体倍数在清单附录，引用前核对原文）；常见的"条目数 × 5–10"只是经验规则，没有统一标准；EFA 与 CFA 必须用不同样本。
 
 ### Step 3: 抽样策略
 
@@ -81,13 +82,13 @@
 
 ### Step 4: 样本量计算
 
-公式与参数（横断面 n = Z²·p·(1-p)/d²、有限总体与应答率修正、量表验证、Delphi）→ 读取 `references/survey-reference.yaml` 的 `sample_size`。
+公式与参数（横断面 n = Z²·p·(1-p)/d²、整群抽样的设计效应、有限总体与应答率修正、量表验证、Delphi）→ 读取 `references/survey-reference.yaml` 的 `sample_size`。整群抽样（以机构 / 科室 / 社区为单位抽）时，简单随机的 n 必须乘设计效应，ICC 写出处；否则样本量偏小、CI 偏窄。
 
 ### Step 5: Delphi 方法（如适用）
 
 轮次流程、共识标准（>= 70-80% 同意率 / IQR <= 1 / 中位数 >= 7/9）、报告要求 → 读取 `references/survey-reference.yaml` 的 `delphi`。
 
-关键判断：通常 3 轮（最多 4 轮）；共识标准、停止规则、专家资格必须**预先定义**并写进 protocol。
+关键判断：通常 3 轮（最多 4 轮）；共识标准、停止规则、专家资格必须**预先定义**并写进 protocol。Delphi 等共识研究按 ACCORD 报告（CROSS 是问卷调查研究的报告规范，不用于共识研究）。
 
 ### Step 6: 数据收集
 
@@ -98,14 +99,17 @@
 ## Output
 
 生成 `study-protocol.md`（`type: survey`），骨架在 `references/protocol-templates.md` 的 "E. Survey" 部分。
-报告规范按 Survey Type Router：STROBE（横断面）/ CHERRIES（在线）/ CROSS（调查方法）/ COSMIN（量表开发与验证）。
+报告规范按 Survey Type Router：STROBE（横断面）/ CHERRIES（在线）/ CROSS（问卷调查研究）/ COSMIN（量表开发与验证）/ ACCORD（Delphi 等共识研究）。
 
 ## Common Mistakes（问卷特有）
 
 | 想法 | 现实 |
 |------|------|
 | "问卷随便写几个问题就行" | 需要概念框架、条目生成、专家审核、认知访谈、预试验 |
-| "Cronbach's alpha > 0.7 就行了" | 还需要结构效度（EFA/CFA）、收敛/区分效度 |
+| "Cronbach's alpha > 0.7 就行了" | alpha 只在结构效度已支持单维时才可解释，且要按每个单维分量表算（COSMIN）；还需要结构效度（EFA/CFA）和构念效度的假设检验 |
+| "CFI > 0.90、RMSEA < 0.08 就算拟合好" | 这是宽松的旧标准；COSMIN 把 CFI 或 TLI > 0.95、或 RMSEA < 0.06、或 SRMR < 0.08 定为结构效度充分（Prinsen 2018，doi:10.1007/s11136-018-1798-3） |
+| "整群抽样按简单随机的公式算样本量" | 要乘设计效应（ICC 写出处）；群大小不等时用含 CV 的公式 |
+| "Delphi 按 CROSS 报告" | CROSS 是问卷调查的报告规范；共识方法用 ACCORD |
 | "样本越大越好" | 大样本 + 低应答率 = 偏倚比小样本 + 高应答率更严重 |
 | "便利抽样没问题" | 必须在 Limitations 中讨论选择偏倚 |
 | "翻译量表直接用" | 必须回译 + 目标人群信效度重新验证 |

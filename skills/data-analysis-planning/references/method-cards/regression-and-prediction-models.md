@@ -31,7 +31,7 @@
 - 内部验证：bootstrap 乐观校正，每个 bootstrap 样本里重做全部建模步骤（包括变量选择、惩罚参数选择）；不用一次性随机拆分（浪费数据、降低效能）（Efthimiou 2024）。写明 bootstrap 次数与随机种子。
 - 性能指标：区分度——C 统计量（AUC）+ 95% CI；校准——calibration-in-the-large（平均预测风险与实际发生率是否一致）、校准斜率、平滑校准曲线（Van Calster 2019）；临床效用——决策曲线分析（DCA，decision curve analysis），阈值概率范围按临床理由预先定。ECE 等分箱指标只作补充。NRI、IDI 不是恰当的性能指标（校准差的模型也可能显得"更好"），期刊要求时只作补充，并与 DCA 净获益及校准、区分度的变化一起报告（Hilden 2014；Kerr 2014）。
 - 生存结局的预后模型（Cox、列线图）：校准和 DCA 都在预先定的时间点 t（如 3 年）上做——t 时刻的预测风险 = 1 − 该时刻预测生存率，与考虑删失后的实际发生率（KM 或平滑方法）比较；不能把"随访中是否发生事件"当二分类结局套用上面的二分类校准和 DCA（McLernon 2023；Austin 2020）。有竞争风险时用累积发生率（见 `survival-analysis.md`）。
-- 外部验证：验证数据的来源（其他中心或其他时间段）、样本量（`pmvalsampsize`）、表现不理想时的更新方法（重新校准截距或斜率）。
+- 外部验证：验证数据的来源（其他中心或其他时间段）、样本量（按 Riley 的外部验证样本量准则：要能把校准斜率、O/E、C 统计量和净获益估计得足够精确——二分类结局 Riley 2021，可用 `pmvalsampsize`；连续结局 Archer 2021；生存结局 Riley 2022，基于模拟。见第 3 节）、表现不理想时的更新方法（重新校准截距或斜率）。模型要调超参数、需要训练 / 验证 / 测试划分时，测试集的大小也按这些准则核算（yaml `deep_learning_training.data_split`）。
 - 呈现：最终模型的完整公式（截距 + 全部系数，含样条项）；列线图（nomogram）只是把公式画成图的一种展示方式，不能替代验证。
 
 ## 3. 写代码：推荐的成熟包
@@ -41,9 +41,9 @@
 | 画 DAG、找调整集 | `dagitty::adjustmentSets(dag, exposure = "X", outcome = "Y", type = "minimal")`（也可用 dagitty.net 网页） | 无公认成熟包，建议用 dagitty.net 网页或 R（pgmpy 有相关功能，但接口正在变动） |
 | 解释性回归 | `glm(y ~ x + z, family = binomial, data = d)`；`survival::coxph()` | `statsmodels.formula.api.logit()` / `ols()`；`sklearn` 的 `LogisticRegression` 默认带 L2 惩罚，不要用它报告 OR |
 | 预测模型样本量 | 二分类：`pmsampsize::pmsampsize(type = "b", cstatistic = <预期C>, parameters = <候选参数数>, prevalence = <发生率>)`；生存：`pmsampsize(type = "s", csrsquared = <预期 Cox-Snell R²>, parameters = , rate = <事件率>, timepoint = <预测时间点>, meanfup = <平均随访>)` | `pmsampsize`（Riley 团队出的 Python 版，需 Python ≥3.12）：`from pmsampsize.pmsampsize import pmsampsize` |
-| 外部验证样本量 | `pmvalsampsize::pmvalsampsize(type = "b", ...)` | `pmvalsampsize`（目前只支持二分类结局） |
+| 外部验证样本量 | 二分类结局：`pmvalsampsize::pmvalsampsize(type = "b", ...)`——CRAN 版和 Python 版目前都只支持二分类结局（`type = "b"`）。连续结局：按 Archer 2021 的闭式公式手算；生存结局：按 Riley 2022 基于模拟的方法（文中给了 R / Stata 代码） | `pmvalsampsize`（同样只支持二分类结局：`from pmvalsampsize.pmvalsampsize import pmvalsampsize`，`pmvalsampsize(type="b", ...)`）；连续 / 生存结局同左手算或模拟 |
 | 连续变量的样条 | `rms::lrm(y ~ rcs(age, 4) + ..., data = d, x = TRUE, y = TRUE)`；Cox 用 `rms::cph()` | `statsmodels` 公式里用 `cr(age, df=3, constraints="center")`（自然三次样条，与 RCS 同类，3 个自由度，参数数与 `rcs(age, 4)` 相同，但默认节点位置不同）。不能写成不带约束的 `cr(age, df=4)` 再配截距：样条各列加起来恒等于 1，与截距重复，模型照样"收敛"，但系数和标准误没有意义（标准误极大或为 NaN）；要么加 `constraints="center"`，要么公式里 `- 1` 去掉截距 |
-| 惩罚回归 | `glmnet::cv.glmnet(x, y, family = "binomial", alpha = 1)` | 先标准化再惩罚：`make_pipeline(StandardScaler(), LogisticRegressionCV(l1_ratios=(1.0,), solver="saga", scoring="neg_log_loss", max_iter=5000))`。glmnet 默认把预测变量标准化（`standardize = TRUE`），sklearn 不会——不标准化时惩罚力度和入选变量随测量单位改变；`scoring` 不写时按准确率选惩罚参数。要每折重新标准化，用 `GridSearchCV` 包住整个 Pipeline。系数在标准化尺度上，报告原单位的模型要除以 `scaler.scale_` 换算（1.8 版起用 `l1_ratios`，`penalty` 参数已弃用） |
+| 惩罚回归 | `glmnet::cv.glmnet(x, y, family = "binomial", alpha = 1)` | 先标准化再惩罚：`make_pipeline(StandardScaler(), LogisticRegressionCV(l1_ratios=(1.0,), solver="saga", scoring="neg_log_loss", max_iter=5000))`。glmnet 默认把预测变量标准化（`standardize = TRUE`），sklearn 不会——不标准化时惩罚力度和入选变量随测量单位改变；`scoring` 不写时按准确率选惩罚参数。要每折重新标准化，用 `GridSearchCV` 包住整个 Pipeline。系数在标准化尺度上，报告原单位的完整模型时斜率和截距都要换算：系数 = 标准化系数 ÷ `scaler.scale_`，截距 = 标准化截距 − Σ(标准化系数 × `scaler.mean_` ÷ `scaler.scale_`)（代码见表下；截距不换算，原单位模型算出的线性预测值就是错的）（1.8 版起用 `l1_ratios`，`penalty` 参数已弃用） |
 | bootstrap 内部验证 | `rms::validate(fit, method = "boot", B = <次数>)`；`rms::calibrate(fit, method = "boot", B = <次数>)`（默认 B=40 偏少；Cox 模型要给时间点 `u`，见下方生存模型行） | 无公认成熟包：用 `sklearn` / `statsmodels` 自写循环——每次重做全部建模步骤，在原数据上算性能，求平均乐观值 |
 | C 统计量 + CI | `pROC::ci.auc(roc_obj, method = "delong")`；生存模型 `survival::concordance()` | `sklearn.metrics.roc_auc_score` + `scipy.stats.bootstrap` |
 | 校准（二分类） | `CalibrationCurves::val.prob.ci.2(p, y)`（calibration-in-the-large、斜率、C 统计量及其 CI，平滑校准曲线）；手算：calibration-in-the-large = `glm(y ~ 1, offset = qlogis(p), family = binomial)` 的截距，斜率 = `glm(y ~ qlogis(p), family = binomial)` 的斜率。注意 `rms::val.prob(p, y)` 输出的 "Intercept" 来自截距和斜率同时估计的模型，不是 calibration-in-the-large（模型过拟合、斜率 <1 时两者不同） | `sklearn.calibration.calibration_curve` 只能分箱。calibration-in-the-large：`sm.GLM(y, np.ones(len(y)), family=sm.families.Binomial(), offset=logit(p)).fit()` 的截距；斜率：另拟合 `sm.GLM(y, sm.add_constant(logit(p)), family=sm.families.Binomial())` 取 logit(p) 的系数（`logit` 来自 `scipy.special`）。不要用第二个模型的截距当 calibration-in-the-large |
@@ -51,6 +51,15 @@
 | 生存模型：t 时刻的校准 | `rms::calibrate(fit, u = <t>, method = "boot", B = <次数>)`（`fit` 用 `cph(..., x = TRUE, y = TRUE, surv = TRUE, time.inc = <t>)` 拟合）；外部验证：`riskRegression::Score(list(model = fit), formula = Surv(time, status) ~ 1, data = val, times = <t>, plots = "calibration")` 后 `plotCalibration()`（同时给 t 时刻的 AUC 和 Brier） | `lifelines.calibration.survival_probability_calibration(cph, df, t0=<t>)`（平滑校准曲线及 ICI、E50；`cph` 为 lifelines 的回归模型） |
 | 生存模型：t 时刻的 DCA | `dcurves::dca(Surv(time, status) ~ risk_t, data = d, time = <t>, thresholds = )`，`risk_t` 为 t 时刻预测风险（1 − 预测生存率） | `dcurves.dca(data=df, outcome="status", modelnames=["risk_t"], time=<t>, time_to_outcome_col="time", thresholds=...)` |
 | 列线图 | `rms::nomogram(fit)`（先 `dd <- datadist(d); options(datadist = "dd")`） | 无公认成熟包，建议用 R |
+
+惩罚回归（sklearn Pipeline）换回原单位的完整模型：
+
+```python
+scaler, lr = pipe[0], pipe[-1]                     # make_pipeline(StandardScaler(), LogisticRegressionCV(...))
+coef = lr.coef_.ravel() / scaler.scale_            # 原单位的系数
+intercept = lr.intercept_[0] - (lr.coef_.ravel() * scaler.mean_ / scaler.scale_).sum()
+# 核对：intercept + X @ coef 应与 pipe.decision_function(X) 一致
+```
 
 ## 4. 常见的坑
 
@@ -64,7 +73,7 @@
 - 为"类别不平衡"做过采样、欠采样或 SMOTE：预测概率被系统性抬高，校准变差，AUC 并不提高（van den Goorbergh 2022）；需要调灵敏度时改阈值即可。
 - 生存模型把"随访期间是否发生事件"当二分类结局做校准或 DCA，忽略删失。
 - 以为用了 LASSO 就不用管样本量。
-- 样本不大还按 70/30 拆分做"内部验证"；bootstrap 时只对最终模型重抽样、不重做变量选择——乐观被低估。
+- 按总人数（如"超过 1000 例"）决定做 70/30 或 60/20/20 随机拆分，做回归类预测模型的"内部验证"：浪费事件数，开发出的模型更弱，验证结果也不精确（Steyerberg 2001）；划分方式按模型类型和事件数定（yaml `deep_learning_training.data_split`）。bootstrap 时只对最终模型重抽样、不重做变量选择——乐观被低估。
 - 把"每个变量 10 个事件"当作样本量够用的充分条件；应按 Riley 方法算。
 - 以为画了列线图就等于"模型验证过了"。
 - 校准斜率明显 <1（预测过于极端，提示过拟合）却不报告、不讨论。
@@ -79,7 +88,7 @@
 
 ## 6. 对应报告规范
 
-- 预测模型开发或验证：`tripod-ai`（TRIPOD+AI 2024），重点 9a（候选预测变量怎么选）、10（样本量）、11（缺失）、12b（预测变量的函数形式）、12c（建模步骤与内部验证方法）、12e（性能指标）、21（每个分析的人数与事件数）、22（完整模型）、23a（性能及 CI）；期刊仍要求 2015 版时用 `tripod-2015`；多中心数据加 `tripod-cluster`（仓库索引有条目，无本地清单，需人工核对）；偏倚风险自查可用 `probast`（机器学习 / AI 模型用更新版 PROBAST+AI，Moons 2025）。
+- 预测模型开发或验证：`tripod-ai`（TRIPOD+AI 2024），重点 9a（候选预测变量怎么选）、10（样本量）、11（缺失）、12b（预测变量的函数形式）、12c（建模步骤与内部验证方法）、12e（性能指标）、21（每个分析的人数与事件数）、22（完整模型）、23a（性能及 CI）；期刊仍要求 2015 版时用 `tripod-2015`；多中心数据加 `tripod-cluster`（仓库索引有条目，无本地清单，需人工核对）；偏倚风险自查用 `probast-ai`（PROBAST+AI，Moons 2025；回归和机器学习 / AI 模型都适用，可替代 `probast` 2019 版）。
 - 解释性回归（观察性研究）：`strobe` 的 12a（统计方法，含怎样控制混杂）、16a（未调整与调整估计，说明调整了哪些混杂及理由）、16b（连续变量分组时报告切点）。
 
 ## 参考
@@ -87,6 +96,10 @@
 - Riley RD, Ensor J, Snell KIE, et al. Calculating the sample size required for developing a clinical prediction model. *BMJ*. 2020;368:m441. doi:10.1136/bmj.m441
 - Efthimiou O, Seo M, Chalkou K, Debray T, Egger M, Salanti G. Developing clinical prediction models: a step-by-step guide. *BMJ*. 2024;386:e078276. doi:10.1136/bmj-2023-078276
 - Collins GS, Moons KGM, Dhiman P, et al. TRIPOD+AI statement: updated guidance for reporting clinical prediction models that use regression or machine learning methods. *BMJ*. 2024;385:e078378. doi:10.1136/bmj-2023-078378
+- Riley RD, Debray TPA, Collins GS, et al. Minimum sample size for external validation of a clinical prediction model with a binary outcome. *Stat Med*. 2021;40(19):4230-4251. doi:10.1002/sim.9025
+- Archer L, Snell KIE, Ensor J, Hudda MT, Collins GS, Riley RD. Minimum sample size for external validation of a clinical prediction model with a continuous outcome. *Stat Med*. 2021;40(1):133-146. doi:10.1002/sim.8766
+- Riley RD, Collins GS, Ensor J, et al. Minimum sample size calculations for external validation of a clinical prediction model with a time-to-event outcome. *Stat Med*. 2022;41(7):1280-1295. doi:10.1002/sim.9275
+- Steyerberg EW, Harrell FE Jr, Borsboom GJ, Eijkemans MJ, Vergouwe Y, Habbema JD. Internal validation of predictive models: efficiency of some procedures for logistic regression analysis. *J Clin Epidemiol*. 2001;54(8):774-781. doi:10.1016/S0895-4356(01)00341-9
 - Riley RD, Snell KIE, Martin GP, et al. Penalization and shrinkage methods produced unreliable clinical prediction models especially when sample size was small. *J Clin Epidemiol*. 2021;132:88-96. doi:10.1016/j.jclinepi.2020.12.005
 - Van Calster B, van Smeden M, De Cock B, Steyerberg EW. Regression shrinkage methods for clinical prediction models do not guarantee improved performance: simulation study. *Stat Methods Med Res*. 2020;29(11):3166-3178. doi:10.1177/0962280220921415
 - Van Calster B, McLernon DJ, van Smeden M, Wynants L, Steyerberg EW. Calibration: the Achilles heel of predictive analytics. *BMC Med*. 2019;17(1):230. doi:10.1186/s12916-019-1466-7

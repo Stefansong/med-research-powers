@@ -28,6 +28,8 @@
 
 **关键判断**：3 个独立传代的细胞分别做实验 = n=3；同一批细胞分 3 个孔 = n=1。
 
+更准确的说法是 **n = 实验单位数**：实验单位是能被独立随机分配到不同处理的最小单位（Lazic 2018，doi:10.1371/journal.pbio.2005282）——处理整笼给（饲料、饮水）时是笼，处理给孕鼠时是窝，处理逐只给时是单只动物；同一只动物的多张切片、多个细胞只是观察单位，不增加 n。动物实验的实验单位与笼效应见 `animal-study.md`。
+
 ### 3. 盲法
 
 - 动物实验：分组、给药、评估由不同人完成
@@ -43,16 +45,16 @@
 
 ### 5. 样本量
 
-- 动物实验必须做 power analysis：`${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py` 或 G*Power，效应量来自文献或预实验，并按 3R 原则解释为何是这个数
+- 动物实验必须做 power analysis：先定实验单位（单只 / 笼 / 窝，见 `animal-study.md`），样本量按实验单位数算（笼为单位时是笼数）；`${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py` 或 G*Power，效应量来自文献或预实验，并按 3R 原则解释为何是这个数
 - 细胞实验：生物学重复 >= 3，如需检验小效应则按 power 计算重复次数
 - 没有先例、无法估计效应量时 → 先做预实验，并在 protocol 里写明"预实验后重新计算"
 
 ## Experiment Templates
 
 具体实验设计模板在 `references/experiment-templates/`（相对 `study-design` 目录）：
-- `western-blot.md` — WB 设计、抗体信息、定量方法
-- `qpcr.md` — qPCR 设计、引物信息、ΔΔCt 分析
-- `animal-study.md` — 动物信息、伦理（IACUC）、ARRIVE 2.0 要求
+- `western-blot.md` — WB 设计、抗体信息、线性范围验证与归一化（内参 / 总蛋白）、定量方法
+- `qpcr.md` — qPCR 设计、多个内参的验证、引物信息、log（ΔCq）尺度上的分析、MIQE 2.0
+- `animal-study.md` — 动物信息、实验单位与笼效应、伦理（IACUC）、ARRIVE 2.0 Essential 10
 
 根据实验类型加载对应模板，用它查漏，按本实验的实际条件写进 `study-protocol.md` 的"实验设计"章节——模板里的方括号和"如 …"只是提示，不是默认值。
 
@@ -78,7 +80,8 @@
 
 ## 报告规范
 
-- 动物实验 → ARRIVE 2.0（21 项），伦理审查 IACUC
+- 动物实验 → ARRIVE 2.0（21 项；其中 Essential 10 是最低要求），伦理审查 IACUC
+- qPCR → MIQE 2.0（Bustin 2025，doi:10.1093/clinchem/hvaf043；无本地清单，需人工核对）
 - 涉及临床样本 → 补做 `research-ethics`（人体样本伦理、人类遗传资源）
 - 其他基础实验无统一规范，按期刊 Methods 要求 + 上述 Core Principles 写
 
@@ -97,7 +100,7 @@
 ## Convergence（基础研究特有完成条件）
 
 1. 对照组完整（阴性+阳性+载体，如适用）
-2. 重复方案明确（生物学 >= 3，技术 >= 2）
+2. 实验单位已定义（动物实验：单只 / 笼 / 窝），重复方案明确（按实验单位计的生物学重复 >= 3，技术 >= 2）
 3. 盲法和随机化方案已确定
 4. 样本量有依据（power analysis 或文献先例）
 5. 验证层级已规划（至少到第 2 层）

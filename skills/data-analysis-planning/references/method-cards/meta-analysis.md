@@ -2,38 +2,37 @@
 
 > 适用：系统综述中对多项研究的定量合并——干预效果、暴露与结局的关联、诊断准确性（诊断试验 Meta）。　不适用：网状 Meta（间接比较，需专门方法，报告看 `prisma-nma`）；个体患者数据（IPD）Meta 的一阶段模型；不做定量合并的范围综述（`prisma-scr`）。
 
-## 1. 计划前先看数据的什么
+## 1. 计划前先看什么
 
-这里的"数据"是从纳入研究里提取出来的研究级数据。只看结构和质量，**不看**各研究效应值的方向和大小，不先画森林图：
-- 每个结局纳入几项研究、各是什么设计（RCT / 队列 / 病例对照 / 横断面）——设计不同的研究原则上分开合并。
-- 结果以什么形式报告：事件数/总数、均数/SD、中位数/IQR、HR 及 CI、调整后还是未调整的效应；量表和单位是否一致。
-- 零事件研究有几项，是否有两组都为零的研究。
-- 多臂试验、同一队列的多篇报告（重复发表）、同一研究在多个时间点或多个结局上的结果——会造成重复计算或相关的效应值。
-- 提取的完整度：缺 SD、缺 CI、只有图表没有数字的研究有多少，需要换算或向作者索取。
-- 诊断试验 Meta：能否还原每项研究的 2×2 表（TP、FP、FN、TN）；各研究用的阈值是否相同。
-- 偏倚风险评估结果的分布（高风险研究有几项），以便预先安排敏感性分析。
+Meta 分析的方案要在**提取结果数据之前**定稿并注册，所以计划阶段看不到纳入研究的任何结局数据：零事件研究有几项、2×2 表能不能还原、缺不缺 SD、偏倚风险评估的结果，都要提取或评价之后才知道，不能拿来定计划。**不看**各研究效应值的方向和大小，不先画森林图。计划前能用的只有：
+- 预检索 / 范围检索（scoping search）的题目、摘要和方法部分：大概有多少项可能纳入的研究、各是什么设计（RCT / 队列 / 病例对照 / 横断面）——设计不同的研究原则上分开合并；不记录任何效应值。
+- 这个领域通常怎样报告结局（事件数/总数、均数/SD、中位数/IQR、HR 及 CI，调整还是未调整）、量表和单位是否统一——从已有综述、核心结局集或领域知识了解，不逐项读纳入研究的结果。
+- 可能的数据结构问题：多臂试验、同一队列的多篇报告（重复发表）、多个时间点或多个结局——从方法部分即可判断。
+- 诊断试验 Meta：领域内常用的阈值和参考标准。
+
+结果数据里才能看到的情况，在方案里写成"如果……就……"的预定规则（见第 2 节"特殊数据"）：零事件和两组都为零的研究怎么处理；缺 SD、只有中位数/IQR 或只有图时怎么换算、是否向作者索取；2×2 表不能还原时怎么办；各研究阈值不同时怎么办；高偏倚风险的研究在敏感性分析里怎么处理。提取后按规则执行；需要偏离时记录理由，作为与方案的偏离报告。
 
 ## 2. 计划里必须预先写明
 
 以下内容写进研究方案并在 PROSPERO 等平台注册，**在提取结果之前**定好：
 - **效应量**：二分类结局用 RR / OR / RD（病例对照研究只能用 OR；RD 表达绝对差别）；连续结局量表相同用 MD，不同用 SMD（Hedges' g）；生存结局用 HR（合并 log HR 及其 SE）。中位数/IQR 换算成均数/SD 的方法预先写明。
-- **模型**：按研究间是否可能存在真实差异预先选定，默认随机效应；不能看了异质性检验结果再改。τ²（研究间方差）用 REML 估计（RevMan 现默认 REML，Cochrane Handbook v6.5 §10.10.4.4），不用 DerSimonian-Laird 默认值；合并效应的 CI 用 Hartung-Knapp-Sidik-Jonkman（HKSJ）法（IntHout 2014；Handbook 建议在 τ² > 0 且研究数 > 2 时使用）。τ² 估计为 0 或只有 2 项研究时怎么办也要预先写：这时 HKSJ 调整后的标准误可能比普通随机效应的标准误还小，CI 反而变窄；可预先选用校正版——规定调整后的标准误不小于普通标准误（metafor `test = "adhoc"`；meta `adhoc.hakn.ci = "se"`），或改报普通随机效应 CI 并说明理由。研究只有 2–4 项时说明随机效应估计不稳定。
+- **模型**：按研究间是否可能存在真实差异预先选定，默认随机效应；不能看了异质性检验结果再改。τ²（研究间方差）用 REML 估计（RevMan 现默认 REML，Cochrane Handbook v6.5 §10.10.4.4），不用 DerSimonian-Laird 默认值；合并效应的 CI 用 Hartung-Knapp-Sidik-Jonkman（HKSJ）法（IntHout 2014；Handbook 建议在 τ² > 0 且研究数 > 2 时使用）。τ² 估计为 0 或研究很少时怎么办也要预先写：τ² 估计为 0、各研究结果比按抽样误差预期的还要接近时，HKSJ 调整后的标准误可能比普通随机效应的标准误还小，CI 反而变窄——可预先选用校正版，规定调整后的标准误不小于普通标准误（metafor `test = "adhoc"`；meta `adhoc.hakn.ci = "se"`；Röver 2015）。只有 2 项研究时通常正好相反：t 分布只剩 1 个自由度（97.5% 分位数为 12.71），HKSJ 的 CI 一般比普通随机效应 CI 宽好几倍，常常宽到没有信息量；只在两项研究结果几乎相同的少数情况下才更窄。研究只有 2–4 项时说明随机效应估计不稳定；只有 2 项时预先写明报告哪种 CI（如 HKSJ 为主、普通随机效应 CI 作对照，或只作描述性合并）及理由。
 - **异质性**：报告 τ²、I²（及其 CI）、Q 检验和 95% 预测区间（IntHout 2016 主张常规报告；研究很少时预测区间很宽、也不稳定，照实报告并说明，不要因此省略）。预测区间的算法各软件不同（如 meta 默认 `method.predict = "V"`，用 k − 1 个自由度；`"HTS"` 用 k − 2），写明所用方法。
 - **小研究效应/发表偏倚**：研究数 ≥ 10 项才做漏斗图检验（Sterne 2011）；连续结局用 Egger 检验，OR 用 Harbord 或 Peters 检验，诊断试验用 Deeks 检验；剪补法只作敏感性分析。
 - **亚组与 meta 回归**：只做方案里预先列出的少数几个变量，写明理由和预期方向；用亚组间差异检验（交互），不比较各亚组 P 值；研究数少时不做 meta 回归，结果一律视为跨研究的观察性发现。
 - **敏感性分析**：留一法；剔除高偏倚风险研究；换 τ² 估计方法或固定效应模型；稀有事件换合并方法（Mantel-Haenszel / Peto）和连续性校正方式。
-- **特殊数据**：零事件的连续性校正规则；多臂试验共享对照组的拆分；同一研究多个相关效应值时按什么规则只取一个，或改用多水平模型。
+- **特殊数据**（提取前写成预定规则，见第 1 节）：零事件和两组都为零的研究怎么处理（连续性校正规则，或不需要校正的方法）；缺 SD、只有中位数/IQR 时的换算方法或向作者索取；多臂试验共享对照组的拆分；同一研究多个相关效应值时按什么规则只取一个，或改用多水平模型。
 - **诊断试验 Meta**：用双变量随机效应模型（Reitsma 2005；无协变量时与 HSROC 等价）同时合并灵敏度和特异度；报告 SROC 曲线及 95% 置信区域和预测区域；各研究阈值不同时以 SROC/HSROC 为主。**首选按二项分布拟合的广义线性混合模型（binomial GLMM）**：直接用每项研究的 TP、FN、FP、TN 计数，有研究报告灵敏度或特异度 100%（某格为 0）时不需要连续性校正（Chu 2006）。`mada::reitsma()` 在 logit 尺度上用正态近似，只要任一研究有 0 格，默认给**所有研究的所有格子**都加 0.5（`correction = 0.5, correction.control = "all"`），会把合并的灵敏度、特异度往 0.5 方向拉；AI 研究里 100% 很常见，偏倚更明显——只在没有 0 格时使用，或作敏感性分析。研究少、数据稀疏、双变量模型不收敛时，退为灵敏度、特异度各自的单变量随机效应 logistic 模型（Takwoingi 2017）。
-- **偏倚风险**：按设计选工具——RCT 用 RoB 2，非随机干预研究用 ROBINS-I，诊断试验用 QUADAS-2，预测模型用 PROBAST（回归或 AI/机器学习模型都可用更新版 PROBAST+AI，Moons 2025）；比较两种及以上检查准确性的研究（如 AI vs 医生、AI 辅助 vs 不辅助），在 QUADAS-2 之外再用 QUADAS-C 评价"比较"本身的偏倚（Yang 2021）；两名评价者独立评价后核对。
+- **偏倚风险**：按设计选工具——RCT 用 RoB 2，非随机干预研究用 ROBINS-I，诊断试验用 QUADAS-2，预测模型用 PROBAST（回归或 AI/机器学习模型都可用更新版 PROBAST+AI，Moons 2025）；比较两种及以上检查准确性的研究（如 AI vs 医生、AI 辅助 vs 不辅助），在 QUADAS-2 之外再用 QUADAS-C 评价"比较"本身的偏倚（Yang 2021）；两名评价者独立评价后核对（至少一名是人；AI 最多担任其中一名，并在 Methods 写明工具、版本和人工核对方式——PRISMA 2020 item 8/9）。暴露（非干预）的队列研究用 ROBINS-E（Higgins 2024，doi:10.1016/j.envint.2024.108602）；NOS 只在期刊 / 既定方案要求或没有合适 ROBINS 工具时用，并说明其局限。
 - **证据确定性**：每个主要结局分别做 GRADE 评级（偏倚风险、不一致性、间接性、不精确性、发表偏倚五个降级因素），做结果汇总表（Summary of Findings）。
-- **数据提取**：两人独立提取，分歧的解决方式。
+- **数据提取**：两名评价者独立提取（至少一名是人；用了 AI 写明工具与核对方式），分歧的解决方式，记录一致性。
 
 ## 3. 写代码：推荐的成熟包
 
 | 任务 | R | Python |
 |---|---|---|
 | 效应量计算 | `metafor::escalc(measure = "RR", ai = , bi = , ci = , di = )`（`"OR"`、`"SMD"` 等） | `statsmodels.stats.meta_analysis.effectsize_2proportions()`、`effectsize_smd()` |
-| 随机效应合并（REML + HKSJ） | `metafor::rma(yi, vi, method = "REML", test = "knha")`（按计划需要校正版时 `test = "adhoc"`）；`meta::metagen(TE, seTE, sm = "RR", method.tau = "REML", method.random.ci = "HK", prediction = TRUE)`（校正版加 `adhoc.hakn.ci = "se"`） | `statsmodels.stats.meta_analysis.combine_effects(eff, var, method_re="pm", use_t=True)`：τ² 只有 Paule-Mandel/DL，没有 REML，结果表中 "random effect wls" 行为 HKSJ；功能不全，建议用 R |
+| 随机效应合并（REML + HKSJ） | `metafor::rma(yi, vi, method = "REML", test = "knha")`（按计划需要校正版时 `test = "adhoc"`）；`meta::metagen(TE, seTE, sm = "RR", method.tau = "REML", method.random.ci = "HK", prediction = TRUE)`（校正版加 `adhoc.hakn.ci = "se"`） | `statsmodels.stats.meta_analysis.combine_effects(eff, var, method_re="pm", use_t=True)`：τ² 用 Paule-Mandel（`"pm"`，迭代，截断在 0），没有 REML；结果表中 "random effect wls" 行为 HKSJ。不要用 `method_re="dl"`：DL 不把负的 τ² 截断为 0（研究结果比抽样误差预期的还一致时 DL 的矩估计为负；在 statsmodels 0.14.6 和 statsmodels 0.15.0 上核实），合并估计和 CI 都会错，甚至落在所有研究的结果之外——必须报告 DL 时先检查 `res.tau2 >= 0`，为负就按 τ² = 0 自己重算。功能不全，建议用 R |
 | 二分类原始计数 | `meta::metabin(event.e, n.e, event.c, n.c, sm = "RR", method.tau = "REML", method.random.ci = "HK")` | 同上，建议用 R |
 | 预测区间 | `predict(res)`（metafor，看 `pi.lb`/`pi.ub`）；meta 用 `prediction = TRUE` | 无公认成熟包，建议用 R |
 | 漏斗图与检验 | `metafor::funnel()`、`metafor::regtest()`；`meta::metabias(m, method.bias = "Egger", k.min = 10)` | 无公认成熟包，建议用 R |
@@ -72,7 +71,7 @@
 
 - `prisma-2020`（PRISMA 2020，本地清单 `prisma-2020.yaml`）：重点 13a–13f（合成方法、异质性、敏感性分析）、14（报告偏倚评估）、15（证据确定性评估）、19–22（各研究结果、合成结果、报告偏倚、证据确定性）。
 - 以下在仓库索引中有条目、无本地清单，需按官方清单人工核对：`prisma-dta`（诊断试验）、`moose`（观察性研究 Meta，与 PRISMA 2020 合用）、`prisma-s`（检索报告）、`prisma-p`（方案）、`tripod-srma`（预测模型的系统综述）、`prisma-nma`（网状 Meta）。
-- 偏倚风险工具：`rob-2`、`robins-i`、`quadas-2`、`probast`（索引条目已注明 AI 模型可用 PROBAST+AI）；QUADAS-C 仓库索引无条目，按原文人工核对；证据确定性：`grade`；综述方法学质量自查：`amstar-2`。
+- 偏倚风险工具：`rob-2`、`robins-i`（索引注明 ROBINS-I V2 草案）、`robins-e`、`quadas-2`、`probast-ai`（PROBAST+AI，回归和 AI 模型都适用；仍用 2019 版时 `probast`）；QUADAS-C 仓库索引无条目，按原文人工核对；证据确定性：`grade`；综述方法学质量自查：`amstar-2`。
 
 ## 参考
 
@@ -82,5 +81,6 @@
 - Reitsma JB, Glas AS, Rutjes AW, et al. Bivariate analysis of sensitivity and specificity produces informative summary measures in diagnostic reviews. *J Clin Epidemiol*. 2005;58(10):982-990. doi:10.1016/j.jclinepi.2005.02.022
 - Chu H, Cole SR. Bivariate meta-analysis of sensitivity and specificity with sparse data: a generalized linear mixed model approach. *J Clin Epidemiol*. 2006;59(12):1331-1332. doi:10.1016/j.jclinepi.2006.06.011
 - Takwoingi Y, Guo B, Riley RD, Deeks JJ. Performance of methods for meta-analysis of diagnostic test accuracy with few studies or sparse data. *Stat Methods Med Res*. 2017;26(4):1896-1911. doi:10.1177/0962280215592269
+- Röver C, Knapp G, Friede T. Hartung-Knapp-Sidik-Jonkman approach and its modification for random-effects meta-analysis with few studies. *BMC Med Res Methodol*. 2015;15:99. doi:10.1186/s12874-015-0091-1
 - Moons KGM, Damen JAA, Kaul T, et al. PROBAST+AI: an updated quality, risk of bias, and applicability assessment tool for prediction models using regression or artificial intelligence methods. *BMJ*. 2025;388:e082505. doi:10.1136/bmj-2024-082505
 - Yang B, Mallett S, Takwoingi Y, et al. QUADAS-C: a tool for assessing risk of bias in comparative diagnostic accuracy studies. *Ann Intern Med*. 2021;174(11):1592-1599. doi:10.7326/M21-2234
