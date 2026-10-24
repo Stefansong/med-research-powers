@@ -19,7 +19,7 @@ Med-Research-Powers（MRP）是一个 [Claude Code](https://claude.ai/code) 插�
 | **Skills** | 20 个 skill，覆盖完整科研流程——每个 skill 都可以用 `/mrp:<skill 名>` 直接调用 |
 | **斜杠命令** | 7 个命令，对应最常用的入口 |
 | **研究类型** | 临床、基础/实验、AI/ML、定性、问卷/Delphi（统一入口路由） |
-| **报告规范** | 47 项报告规范 —— CONSORT 2025、SPIRIT 2025、STROBE、PRISMA 2020、TRIPOD+AI 2024、DECIDE-AI、CLAIM 2024、IDEAL、ARRIVE 2.0、COREQ、CHERRIES、COSMIN …… |
+| **报告规范** | 54 项报告规范 —— CONSORT 2025、SPIRIT 2025、STROBE、PRISMA 2020、TRIPOD+AI 2024、STARD-AI、DECIDE-AI、CLAIM 2024、CHART、TARGET、IDEAL 报告指南、ARRIVE 2.0、COREQ、CHERRIES、COSMIN …… |
 | **期刊模板** | 240 本期刊，覆盖 30+ 专科 |
 | **统计方法** | 15+ 类方法，配前提假设驱动的决策树 |
 | **Python 脚本** | 10 个内置脚本（前提检验、样本量、数据体检、重跑核对、绘图样式、.docx 导出、期刊模板抽取、患者级划分、随机分组、流程状态） |
@@ -36,18 +36,18 @@ AI 科研智能体每次都会犯同样的错。MRP 用有引导的流程取代"
 
 | 没有 MRP | 有 MRP |
 |---|---|
-| 直接开跑分析 | 先定义假设（PICO / FINER） |
+| 直接开跑分析 | 先定义问题——假设或估计目标（PICO / FINER） |
 | 挑一个"看起来对"的统计检验 | 决策树基于**已验证**的前提假设选方法 |
 | 用 CONSORT 2010 | 用 CONSORT 2025（30 项，含子项共 42 行；已正式取代 2010） |
 | 写完稿子就说"完成" | 投稿前先过 6 道关卡 |
-| 自信地编造参考文献 | 每一条引用都对照 PubMed 核对（配置了 PubMed MCP 时自动核验，否则用 DOI / 网络检索人工核对） |
+| 自信地编造参考文献 | 每一条引用都对照 PubMed 核对（配置了 PubMed MCP 时经 MCP 核验，否则查 PubMed 的 E-utilities 或核对 DOI；只靠网络检索找到的保持 ⏳ Unverified） |
 | 只报 `p < 0.05`，没有效应量 | 必须给效应量 + 95% CI + 精确 p 值 |
-| 忽视报告规范 | 从 47 项报告规范里匹配研究类型对应的那一项 |
+| 忽视报告规范 | 从 54 项报告规范里匹配研究类型对应的那一项 |
 | AI 数据随机划分 | 患者级划分，提示数据泄漏与外部验证 |
 
 **核心理念 —— 有引导的流程，而非建议：**
 
-1. **先定义，再设计** —— PICO/FINER，没有假设不做分析。
+1. **先定义，再设计** —— PICO/FINER，没有预先定义的问题不做分析（比较性研究写假设，描述性和预测研究写目的与估计目标）。
 2. **先计划，再执行** —— 任何检验前先有统计分析计划（SAP）。
 3. **先核验，再投稿** —— 6 道投稿前关卡；CONSORT 2025 合规。
 4. **先看数据，再定计划** —— 先给真实数据做体检，按体检结果写分析计划，再针对这份数据现写分析代码；内置脚本只做固定的事（数据体检、前提检验、样本量、绘图样式、导出）。
@@ -146,7 +146,7 @@ research-question-formulation
 ```
 
 - **`study-design`** 是统一入口路由，覆盖 Type A（临床）、B（基础/实验）、C（AI/ML）、D（定性）、E（问卷/Delphi）。五类都写同一个文件 `study-protocol.md`（文件里的 `type:` 字段区分）。
-- **`research-ethics`** 在主线上：伦理批准和注册放在收集数据之前，而不是投稿时才查。
+- **`research-ethics`** 在主线上：伦理批准和注册放在收集数据之前，而不是投稿时才查。去标识化的患者数据仍是个人信息：外部 AI 服务（包括运行 MRP 的这个 AI 对话）默认只拿匿名化数据或汇总结果，除非它清单里的条件（合法性基础、委托处理协议、个人信息保护影响评估、出境程序、数据持有方书面许可且伦理批准的方案写明此用途）全部满足。
 - **`peer-review-simulation`** 在 6 道关卡之前，**`manuscript-export`** 在关卡之后——关卡没过不必重新导出 `.docx`。
 - 辅助 skill（`pubmed-search`、`reporting-standards`、`team-collaboration`、`using-med-research-powers`、`writing-mrp-skills`）由其他 skill 调用，或随时可用。
 
@@ -176,7 +176,7 @@ Skill 根据自然语言意图自动触发——你无需记住名字；每个 s
 
 | # | Skill | 何时使用 | 输出 |
 |---|-------|---------|------|
-| 1 | **research-question-formulation** | 模糊想法需要明确的问题 + 假设（PICO/PIRD/FINER）。 | `research-question.md` |
+| 1 | **research-question-formulation** | 模糊想法需要明确的问题 + 假设，描述性 / 预测研究则写目的与估计目标（PICO/PIRD/FINER）。 | `research-question.md` |
 | 2 | **literature-synthesis** | 系统检索与综述文献、寻找 research gap（PRISMA 流程）。 | `search-strategy.md`、`screening-log.md`、`literature-references.md`、`literature-synthesis-summary.md` |
 | 3 | **study-design** | 根据真实条件（病例来源、预计事件数、资源）设计研究方案——临床/基础/AI-ML/定性/问卷（Type A–E 路由）。 | `study-protocol.md` |
 | 4 | **research-ethics** | 收集数据前检查 IRB/IACUC、知情同意、隐私、注册、COI；起草伦理声明。 | `ethics-statement.md` |
@@ -212,7 +212,7 @@ Skill 根据自然语言意图自动触发——你无需记住名字；每个 s
 
 | # | Skill | 何时使用 | 输出 |
 |---|-------|---------|------|
-| 17 | **pubmed-search** | 用 PubMed MCP 检索、核验引用、批量取元数据。 | 检索结果、核验报告、格式化参考文献 |
+| 17 | **pubmed-search** | 用 PubMed MCP 检索、核验引用、批量取元数据（没有 MCP 时经 WebFetch 查 PubMed 的 E-utilities，或由你自查）。 | 检索结果、核验报告、格式化参考文献 |
 
 ### 元层（Meta）
 
@@ -230,7 +230,7 @@ Skill 根据自然语言意图自动触发——你无需记住名字；每个 s
 
 | 命令 | 作用 | 路由到 |
 |------|------|--------|
-| `/mrp:research-question` | 把模糊想法变成 PICO 问题 + 假设 | `research-question-formulation` |
+| `/mrp:research-question` | 把模糊想法变成 PICO 问题 + 假设（或目的与估计目标） | `research-question-formulation` |
 | `/mrp:analyze-data` | 还没有 `analysis-plan.md` → 先写 SAP；SAP 已批准 → 执行分析 | `data-analysis-planning` → `statistical-analysis` |
 | `/mrp:write-manuscript` | 撰写医学研究稿件（IMRaD 或综述） | `manuscript-writing` |
 | `/mrp:peer-review` | 模拟同行评审（4 审稿人 + 8 维度评分） | `peer-review-simulation` |
@@ -273,11 +273,11 @@ Skill 根据自然语言意图自动触发——你无需记住名字；每个 s
 |------|------|------|---------|
 | **A** | 临床 | RCT、队列、横断面、交叉、非劣效、适应性、真实世界、注册研究 | CONSORT 2025 / SPIRIT 2025 / STROBE |
 | **B** | 基础 / 实验 | 细胞、动物、分子（WB、qPCR、ELISA、流式、IF） | ARRIVE 2.0 |
-| **C** | AI / ML | 影像、视频、LLM、器械 | TRIPOD+AI 2024 / DECIDE-AI / CLAIM 2024 / IDEAL |
+| **C** | AI / ML | 影像、视频、LLM、器械 | TRIPOD+AI 2024 / STARD-AI / DECIDE-AI / CLAIM 2024 / IDEAL |
 | **D** | 定性 | 访谈、焦点小组、扎根理论、混合方法 | COREQ / SRQR |
-| **E** | 问卷 / Delphi | 问卷、量表开发/验证、共识研究 | CHERRIES / CROSS / COSMIN |
+| **E** | 问卷 / Delphi | 问卷、量表开发/验证、共识研究 | CHERRIES / CROSS / COSMIN；共识研究（Delphi）：ACCORD |
 
-多类型研究可叠加相应模块。AI/ML 模块要求患者级数据划分、4 档样本量策略、类别不平衡处理与决策曲线分析（DCA）。
+多类型研究可叠加相应模块。AI/ML 模块按模型类型和事件数选验证方式（回归类模型用 bootstrap，要调参的 ML/DL 用嵌套交叉验证，声称可推广必须有外部 / 时间验证；一律按患者划分），写明样本量依据（pmsampsize / pmvalsampsize、Buderer、MRMC），类别不平衡纠正后要重新校准，并报告校准（calibration-in-the-large、斜率、校准曲线）与决策曲线分析（DCA）。
 
 `manuscript-writing` 同样支持原始研究**以及** 5 种综述：叙述性、系统、meta 分析、scoping、mini-review。
 
@@ -290,13 +290,13 @@ Skill 根据自然语言意图自动触发——你无需记住名字；每个 s
 | 关卡 | 检查内容 | 未通过处理 |
 |---|---|---|
 | **1. 报告规范** | 根据研究类型匹配正确规范；逐项检查（CONSORT 2025：30 项，含子项共 42 行）。要求 0 个 Critical 错误。 | `reporting-standards` → 回 `manuscript-writing` 修改 |
-| **2. 统计完整性** | 效应量 + 95% CI（不能只有 p 值）、精确 p 值、多重比较校正、敏感性分析、可复现脚本、SAP 偏离记录 | 返回 `statistical-analysis` |
+| **2. 统计完整性** | 效应量 + 95% CI（不能只有 p 值）、精确 p 值、多重比较校正、敏感性分析、可复现脚本（`reproduce-check.md` 结论"一致" = `reproduce_check.py` 退出码 0）、SAP 偏离记录 | 返回 `statistical-analysis` |
 | **3. 声明核验** | (A) 通过 `pubmed-search` 核验参考文献真实性——逐条查 PMID/DOI。(B) 数据一致性——摘要、结果、表格中的数字互相对应。(C) 声明-证据对齐。(D) 方法-结果匹配。(E) 预设分析 vs 探索性分析区分。(F) AI 幻觉模式。 | 修复参考文献 / 数据 |
 | **4. 图表质量** | Arial/Helvetica 字体、最小 ≥6pt、≥300 DPI（线条图 ≥600）、坐标轴标签 + 单位、色盲友好配色、图注 | 返回 `figure-generation` |
-| **5. 伦理与合规** | 方法中注明 IRB 批准号、知情同意声明、利益冲突披露、资助来源、数据可用性声明、临床试验注册（如适用） | 返回 `research-ethics` |
-| **6. 形式要求** | 字数在期刊限制内、摘要字数、参考文献数量、短标题 ≤50 字符、3–6 个关键词、缩写首次出现时展开全称、作者信息完整 | 调整格式 |
+| **5. 伦理与合规** | 方法中注明 IRB 批准号，或有书面依据的免除审查（谁认定、依据哪一条）；知情同意声明或免除知情同意的说明；利益冲突披露、资助来源、数据可用性声明；临床试验注册及（中国研究者发起的临床研究）国家医学研究登记备案信息系统的备案状态（如适用）；`ethics-statement.md` 中没有未解决的数据治理缺失项 | 返回 `research-ethics` |
+| **6. 形式要求** | 正文字数（按期刊条目 `limits` 的规则计）、摘要字数、参考文献与图 / 表数量对照期刊限制——条目未核实时先到期刊官网确认上限——、短标题 ≤50 字符、3–6 个关键词、缩写首次出现时展开全称、作者信息完整、章节顺序 | 调整格式 |
 
-Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功但无命中）· ❌ Mismatch（找到了但作者/年份/标题不符）· ⏳ Unverified（工具报错——请重试，这*不等于*文献不存在）· ℹ️ Non-PubMed（书籍、指南、arXiv——改用 DOI / 网络检索核对）。
+Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功但无命中）· ❌ Mismatch（找到了但作者/年份/标题不符）· ⏳ Unverified（尚未确认：工具报错——请重试——或只靠网络检索找到 / 没能核对；这*不等于*文献不存在，需人工核对）· ℹ️ Non-PubMed（书籍、指南、arXiv——改用 DOI / 网络检索核对）。
 
 ---
 
@@ -346,7 +346,7 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 
 ## 多数据库文献检索
 
-`literature-synthesis` 同时检索多个数据库，以 PubMed MCP 作为主要检索引擎。
+`literature-synthesis` 按多个数据库规划检索；Claude 自己检索时用的是 PubMed MCP。
 
 ### PubMed MCP 功能
 
@@ -366,11 +366,13 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 
 | 研究类型 | 主要数据库 | 补充数据库 |
 |---|---|---|
-| 临床 / 生物医学 | PubMed | Cochrane, Embase |
+| 临床 / 生物医学 | PubMed | Cochrane CENTRAL, Embase |
 | AI/ML 医学 | PubMed + arXiv | IEEE Xplore, ACM DL |
-| 系统综述 | PubMed + Cochrane + Embase | Web of Science |
+| 系统综述 | PubMed + Cochrane CENTRAL + Embase | Web of Science |
 | 基础 / 分子 | PubMed | bioRxiv, medRxiv |
-| 手术视频 / 器械 | PubMed + IEEE | Scopus |
+| 手术视频 / 器械 | PubMed + IEEE Xplore | Scopus |
+
+PubMed 通过 PubMed MCP 检索；Embase、Cochrane Library、Web of Science、Scopus、IEEE Xplore 无法用 Claude 的工具检索——Claude 写好检索式，由你在库内运行并导入导出文件，否则报告为 "Not searched"；WebSearch 的 `site:` 查询（arXiv、medRxiv、bioRxiv）只算补充检索。
 
 ### 输出文件（4 个）
 
@@ -390,51 +392,51 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 - **分析**：`data-analysis-planning` 先用只读的 `data_profile.py` 给真实数据做体检（只看结构和质量——变量、编码、缺失、事件总数、聚类结构；**绝不**看变量与结局的关系）；前瞻性研究则分析 protocol 和 CRF。
 - **计划**：你在确认节点 2 批准的 SAP 第 1 节就是"数据现状与由此做出的选择"（例如事件数决定能放几个预测变量、同一患者多个结石要用 GEE/混合模型）。方法用[决策树](skills/data-analysis-planning/references/stat-method-decision-tree.yaml)加 10 张[方法要点卡](skills/data-analysis-planning/references/method-cards/README.md)来选——每张写明必做步骤、常见坑、核实过的 R/Python 包和必报内容。
 - **执行**：`statistical-analysis` 先对照 SAP 再体检一次数据，然后**针对这份数据**用你习惯的语言（R 或 Python）现写清洗和分析代码，每段注明对应 SAP 的第几条。
-- **自检**：用 `reproduce_check.py` 从头重跑、结果必须一致；每一步人数连得上、能直接画流程图；SAP → 代码 → 结果逐条对照；所有偏离写进 `analysis-log.md`。
+- **自检**：用 `reproduce_check.py` 在全新进程里重跑（每次运行前清空输出，输出之外的缓存会被提示）、结果必须一致；每一步人数连得上、能直接画流程图；SAP → 代码 → 结果逐条对照；所有偏离写进 `analysis-log.md`。
 
 决策树覆盖 15+ 类方法：
 
 | 类别 | 方法 |
 |---|---|
 | **两组比较** | 独立/配对 t 检验、Welch's t 检验、Mann-Whitney U、Wilcoxon 符号秩检验、卡方检验、Fisher 精确检验 |
-| **多组比较** | 单因素 ANOVA + Tukey、Welch's ANOVA + Games-Howell、Kruskal-Wallis + Dunn's、Friedman + Nemenyi、重复测量 ANOVA |
+| **多组比较** | 单因素 ANOVA + Tukey、Welch's ANOVA + Games-Howell、Kruskal-Wallis + Dunn's、Friedman + Nemenyi、重复测量 ANOVA（预先规定 Greenhouse-Geisser 校正）或线性混合模型 |
 | **相关 / 回归** | Pearson、Spearman、线性回归、Logistic 回归、Poisson / 负二项回归 |
-| **生存分析** | Log-rank、Kaplan-Meier、Cox 比例风险模型、竞争风险（Fine-Gray）、AFT 模型、时变协变量 |
+| **生存分析** | Log-rank、Kaplan-Meier、Cox 比例风险模型、比例风险不成立时的 RMST、竞争风险（病因别 Cox / Fine-Gray）、landmark 分析、AFT 模型、时变协变量 |
 | **纵向 / 混合模型** | 线性混合模型（LMM）、广义估计方程（GEE）、重复测量 ANOVA |
-| **因果推断** | 倾向评分（匹配、IPTW、分层）、工具变量（2SLS）、双重差分 |
-| **中介分析** | Baron-Kenny、因果中介（自然直接/间接效应）、Bootstrap 置信区间 |
-| **缺失数据** | MCAR 检验（Little's test）、多重插补（MICE, m≥20）、MNAR 敏感性分析、临界点分析 |
+| **因果推断** | 倾向评分（先定目标效应 ATE / ATT / ATO；匹配、IPTW、重叠权重、分层）、双重稳健估计（AIPW / TMLE）、工具变量（2SLS）、双重差分 |
+| **中介分析** | 反事实（因果）中介分析：自然直接/间接效应、暴露-中介交互、Bootstrap 置信区间（Baron-Kenny 只作历史背景） |
+| **缺失数据** | 按可能的缺失机制和"是否完整是否与结局有关"在完整病例分析与多重插补之间选择（不按缺失百分比阈值）、MICE（m ≥ 不完整病例百分比，且至少 20）、MNAR 敏感性分析（delta 调整、临界点分析） |
 | **聚类数据** | ICC 计算、设计效应、随机截距/斜率模型、聚类稳健 GEE |
 | **交互 / 亚组** | 交互项、森林图、预设 vs 探索性标注 |
-| **高维 / 组学** | PCA、UMAP/t-SNE、DESeq2、edgeR、limma、FDR 校正、批次效应去除（ComBat） |
+| **高维 / 组学** | PCA、UMAP/t-SNE、DESeq2、edgeR、limma、FDR 校正、批次作为模型协变量（ComBat 只用于作图）、单细胞 pseudobulk 差异表达 |
 | **间断时间序列** | 分段回归、ARIMA、对照 ITS |
-| **诊断与 AI/ML 评估** | AUROC/AUPRC、DeLong、校准、决策曲线分析（DCA）、自助 CI |
+| **诊断与 AI/ML 评估** | AUROC/AUPRC、DeLong、校准、决策曲线分析（DCA）、自助 CI；按模型类型和事件数选验证方式（bootstrap / 嵌套交叉验证 / 外部验证） |
 | **多重比较** | Bonferroni、Holm、Benjamini-Hochberg FDR |
-| **假设检验** | Shapiro-Wilk、D'Agostino-Pearson、Levene's、Mauchly 球形检验、Schoenfeld 残差 |
+| **假设检验** | Shapiro-Wilk、D'Agostino-Pearson、Levene's、Mauchly 球形检验、Schoenfeld 残差——只作诊断、不当关卡：方法以 SAP 为准（包括 SAP 预先规定的、明显偏离时的备选方法） |
 
 ---
 
-## 报告规范（47）
+## 报告规范（54）
 
-完整的机读索引见 [`skills/reporting-standards/references/checklists/standards-index.yaml`](skills/reporting-standards/references/checklists/standards-index.yaml)。**47 项规范中有 21 项附带从原文逐条转写的 checklist YAML**（CONSORT 2025、CONSORT-AI、SPIRIT 2025、SPIRIT-AI、TIDieR、TREND、RECORD、STROBE、PRISMA 2020、PRISMA-ScR、STARD 2015、TRIPOD 2015、TRIPOD+AI、CLAIM 2024、DECIDE-AI、ARRIVE 2.0、CHERRIES、CROSS、CARE、SQUIRE 2.0、CHEERS 2022）；其余只给官方来源，并明确要求 Claude 不得编造条目。
+完整的机读索引见 [`skills/reporting-standards/references/checklists/standards-index.yaml`](skills/reporting-standards/references/checklists/standards-index.yaml)。**54 项规范中有 21 项附带从原文逐条转写的 checklist YAML**（CONSORT 2025、CONSORT-AI、SPIRIT 2025、SPIRIT-AI、TIDieR、TREND、RECORD、STROBE、PRISMA 2020、PRISMA-ScR、STARD 2015、TRIPOD 2015、TRIPOD+AI、CLAIM 2024、DECIDE-AI、ARRIVE 2.0、CHERRIES、CROSS、CARE、SQUIRE 2.0、CHEERS 2022）；其余给出已核实的来源（DOI 或官方网址），并明确要求 Claude 不得编造条目。
 
 ### 按研究类型分类
 
 | 类别 | 标准 |
 |---|---|
 | **临床试验** | CONSORT 2025（30 项，含子项共 42 行）、CONSORT-AI、CONSORT-Cluster、CONSORT 非劣效扩展、TREND（非随机试验）、SPIRIT 2025（34 条目，只用于 protocol）、SPIRIT-AI、TIDieR、CONSORT-Harms |
-| **观察性研究** | STROBE（22 条目）、RECORD、STROCSS 2024（外科队列 / 病例对照） |
+| **观察性研究** | STROBE（22 条目）、RECORD、STROCSS 2024（外科队列 / 病例对照）、TARGET 2025（目标试验模拟，21 条目） |
 | **系统综述** | PRISMA 2020（27 条目）、PRISMA-P、PRISMA-ScR、PRISMA-S、PRISMA-DTA、PRISMA-NMA、TRIPOD-SRMA（2023）、AMSTAR 2、GRADE |
 | **指南评估** | AGREE II（2010；6 个领域 23 条目 + 2 项总体评价） |
 | **观察性研究 Meta 分析** | MOOSE（35 条目） |
-| **诊断准确性** | STARD 2015（30 条目） |
-| **AI 与预测** | TRIPOD 2015（22 项，旧版）、TRIPOD+AI 2024（27 条目）、TRIPOD-LLM（2025）、TRIPOD-Cluster（2023，19 条目）、CLAIM 2024（44 条目；取代 CLAIM 2020）、MI-CLAIM、DECIDE-AI（17 条 AI 专属 + 10 条通用）、PROBAST |
-| **外科与器械** | IDEAL 框架（Pre-IDEAL / 第 0 阶段 + 5 阶段） |
+| **诊断准确性** | STARD 2015（30 条目）、STARD-AI 2025（AI 指标检查：STARD 2015 + 18 条新增或修改条目） |
+| **AI 与预测** | TRIPOD 2015（22 项，旧版）、TRIPOD+AI 2024（27 条目）、TRIPOD-LLM（2025）、TRIPOD-Cluster（2023，19 条目）、CLAIM 2024（44 条目；取代 CLAIM 2020）、MI-CLAIM、DECIDE-AI（17 条 AI 专属 + 10 条通用）、CHART 2025（聊天机器人健康建议研究，12 条 39 小条）、PROBAST / PROBAST+AI（2025；预测模型的偏倚风险工具） |
+| **外科与器械** | IDEAL 框架（定阶段：Pre-IDEAL / 第 0 阶段 + 5 阶段）；IDEAL 报告指南 2021（Stage 1、2a、2b、4 分阶段清单） |
 | **定性研究** | COREQ（32 条目）、SRQR（21 条目） |
-| **问卷与量表** | CHERRIES（网络问卷）、CROSS（横断面调查）、COSMIN 2.0（2025；测量工具） |
+| **问卷与量表** | CHERRIES（网络问卷）、CROSS（横断面调查）、COSMIN 2.0（2025；测量工具）、ACCORD 2024（Delphi / 共识研究，35 条目） |
 | **临床前研究** | ARRIVE 2.0（21 条目） |
 | **其他** | CARE（病例报告）、SQUIRE（质量改进）、CHEERS（卫生经济学） |
-| **偏倚评估工具** | Cochrane RoB 2、ROBINS-I、Newcastle-Ottawa 量表（满分 9）、MINORS、QUADAS-2 |
+| **偏倚评估工具** | Cochrane RoB 2、ROBINS-I（V2 草案见 riskofbias.info）、ROBINS-E、Newcastle-Ottawa 量表（满分 9，有局限，仅在必要时用）、MINORS、QUADAS-2（PROBAST / PROBAST+AI 见"AI 与预测"） |
 
 > **CONSORT 2010 已正式被取代** —— MRP 始终路由到 CONSORT 2025（30 项，含子项共 42 行）。[Hopewell et al., BMJ 2025; doi:10.1136/bmj-2024-081123]
 
@@ -470,9 +472,9 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 | **开放获取** | PLOS Medicine, PLOS ONE, Nature Communications, Scientific Reports |
 | **中国 SCI** | Chinese Medical Journal, Science Bulletin, Signal Transduction, eClinicalMedicine |
 
-每个模板包含：字数限制、摘要格式（结构化/非结构化）、参考文献格式及上限、图表限制、章节结构、特殊要求（Key Points 框、Research in Context 面板、Reporting Summary）、投稿系统和 ORCID 政策。期刊家族规则（Lancet / JAMA / Nature 子刊）只保存在这个文件里。
+每个模板包含：字数限制、摘要格式（结构化/非结构化）、参考文献格式及上限、图表限制、章节结构、特殊要求（Key Points 框、Research in Context 面板、Reporting Summary）、投稿系统和 ORCID 政策。期刊家族规则（Lancet / JAMA / Nature 子刊）只保存在这个文件里。每条还有机器可读的 `limits` 块（原始研究的正文字数上限及不计入的部分、摘要字数、参考文献、图 / 表或图表合计、按页限制的期刊给页数、参考值标 `soft`）；5 个条目另有其他文章类型的 `limits_by_type`（其中四条是系统综述，一条是综述和 brief report）。`manuscript-export` 与 Gate 6 只按这个块检查数字。94 个条目有 `guidelines_checked`（2026-09 按期刊作者指南复核过）；其余 146 个条目，`get_journal_template.py` 和导出报告会提示上限未按期刊现行作者指南核对，各 skill 会提醒先到期刊官网确认。`system` 与 `citation_style` 用固定词表（见文件头注释）。
 
-库里的影响因子和 APC 都带数据年份：42 本常投期刊（泌尿、影像、AI/数字健康、顶级综合与肿瘤刊）有 `IF_year`/`IF_source` 字段，是出版社官网公布的 JCR 2025 或 2024 值；其余仍是 JCR 2022 值（规则见 `data_as_of`）。各 skill 引用时会标年份并建议先上网复核。若某期刊未收录，MRP 会通过网络检索其"Instructions for Authors"。
+库里的影响因子和 APC 都带数据年份：82 本期刊（来自 26 个专科，以泌尿、影像、综合、肿瘤、AI/数字健康和外科刊为主）有 `IF_year`/`IF_source` 字段，是出版社官网公布的 JCR 2025 或 2024 值；其余仍是 JCR 2022 值（规则见 `data_as_of`）。各 skill 引用时会标年份并建议先上网复核。若某期刊未收录，MRP 会通过网络检索其"Instructions for Authors"。
 
 ---
 
@@ -482,23 +484,24 @@ Gate 3 的引用核验状态：✅ Verified · ⚠️ Not found（查询成功�
 
 | 脚本 | 位置 | 用途 |
 |------|------|------|
-| `assumption_tests.py` | `statistical-analysis/scripts/` | 前提诊断（Shapiro-Wilk / D'Agostino-Pearson、Levene）只作描述，不用来切换检验；给出按设计的默认方法（Welch）和 SAP 预先规定时才用的秩检验备选；Cohen's d 含 CI |
-| `power_analysis.py` | `statistical-analysis/scripts/` | 跨设计的样本量/效能：两组、两组率（合并方差 Fleiss 公式，可选连续性校正）、诊断准确性、生存、相关——含脱落率调整 |
-| `data_profile.py` | `statistical-analysis/scripts/` | 只读数据体检（CSV/XLSX，兼容 GBK）：伪装缺失、"<0.1" 这类截断值、数值存成文本、日期解析失败、重复患者 ID、结局事件总数（同一患者多行时按患者计）、测量值被误判为 ID 时可用 `--not-id`、疑似隐私字段（按列名、身份证/手机号样式或"每名患者一个取值"识别，只报列名不显示取值）——不改数据，不计算任何与结局的关系 |
-| `reproduce_check.py` | `statistical-analysis/scripts/` | 在全新进程里把分析命令跑两次并逐个比较输出（表格逐单元格、xlsx 公式、SVG/.gz 按内容、屏幕输出）——退出码 0 一致 / 1 不一致 / 2 运行失败；中断时放回原有输出；`--exclude`、`--keep-last` |
-| `pub_style.py` | `figure-generation/scripts/` | 期刊图表样式（Nature、Lancet、JAMA、NEJM 配色）、色盲友好选项、按期刊栏宽精确导出（RGB TIFF + PDF，≥300 DPI）、显著性标注（含对数轴） |
-| `export_docx.py` | `manuscript-export/scripts/` | 由期刊模板库驱动，Markdown → 符合期刊排版的 `.docx`（段落、1–6 级标题、嵌套列表、带对齐的表格、代码块、强调、链接）；生成 `export-report.md`（字数、占位符、未转换的引用键） |
-| `get_journal_template.py` | `manuscript-writing/scripts/` | 从 240 本期刊的 YAML 里按 id 抽取单条模板（不整读文件） |
-| `patient_level_split.py` | `data-collection-tools/scripts/` | 患者级训练 / 验证 / 测试集划分（集合之间不泄漏） |
-| `randomization.py` | `data-collection-tools/scripts/` | RCT 的区组 / 分层随机分组表 |
-| `mrp_state.py` | `using-med-research-powers/scripts/` | 每个主线 skill 结束时读取和更新 `.mrp-state.json` |
+| `assumption_tests.py` | `statistical-analysis/scripts/` | 前提诊断（Shapiro-Wilk / D'Agostino-Pearson、Levene、Mauchly + Greenhouse-Geisser ε）只作描述，不用来切换检验；给出按设计的默认方法（Welch；3 个及以上重复测量为混合模型或 Greenhouse-Geisser 校正的重复测量方差分析）和 SAP 预先规定时才用的秩检验备选；Cohen's d 含 CI |
+| `power_analysis.py` | `statistical-analysis/scripts/` | 先验样本量：两组均值、两组率（合并方差 Fleiss 公式，可选连续性校正）、生存、相关（双侧或单侧优效性）；两组均值和两组率的非劣效与等效（率用 Farrington-Manning）；诊断准确性（Buderer，可选 Wilson 区间）——含脱落率调整；覆盖范围见 --help |
+| `data_profile.py` | `statistical-analysis/scripts/` | 只读数据体检（CSV/XLSX，兼容 GBK）：伪装缺失、"<0.1" 这类截断值（与 "<60 / ≥60" 这类分组区间区分）、数值存成文本与检验单异常标记（"5.6↑"、"7.8 H"）、数值列里的文字（只列写法）、日期解析失败、把几行并进一格的引号错误、重复患者 ID、结局事件总数（同一患者多行时按患者计）、测量值被误判为 ID 时可用 `--not-id`、疑似隐私字段（按列名、身份证/手机号/邮箱样式、像姓名（含"张*"这类遮挡写法和拼音）/地址/病历号的取值、文字里出现的人名或"每名患者一个取值"识别，只报列名，不显示这些列的取值和含人名或编号的工作表名——是按样式识别的，报告外发前仍要人工看一遍）——不改数据，不计算任何与结局的关系；退出码 0 完成 / 2 参数或文件错误 |
+| `reproduce_check.py` | `statistical-analysis/scripts/` | 在全新进程里把分析命令跑两次并逐个比较输出（表格逐单元格、xlsx 公式、DOCX/PPTX/SVG/.gz 按内容、屏幕输出，加 `--compare-stderr` 时还有错误输出）——退出码 0 一致 / 1 不一致 / 2 运行失败；中断时放回原有输出；移走后没有哪次运行重新生成的文件会放回原处；`--exclude`（shell 通配符）、`--keep-last`（只删本工具建的检查文件夹，按内容判断，不删手工做的、改过的或在检查之外得到的版本的唯一副本） |
+| `pub_style.py` | `figure-generation/scripts/` | 期刊图表样式（Nature、Lancet、JAMA、NEJM 配色；Nature / Lancet / JAMA 系列各刊用本系列栏宽，其他期刊用通用栏宽 + 色盲友好的 Okabe-Ito 配色并提示一行）、按期刊栏宽精确导出（RGB TIFF + PDF，≥300 DPI，重新出图逐字节相同）、显著性标注（含对数轴）；需要 matplotlib ≥3.6 |
+| `export_docx.py` | `manuscript-export/scripts/` | 由期刊模板库的 `limits` 驱动，Markdown → 符合期刊排版的 `.docx`（段落、1–6 级标题、嵌套列表、带对齐的表格、代码块、强调、链接；带页码和行号；综述等用 `--article-type`，期刊中立导出用 `--journal generic`）；生成 `export-report.md`（字数——汉字逐字计、图 / 表 / 参考文献数、占位符、未转换的引用键和原样保留的 Markdown）；查不了的限制不给 ✅（❓ / not checked，未核实条目标 ✅*）；退出码 0 成功 / 2 出错 |
+| `get_journal_template.py` | `manuscript-writing/scripts/` | 从 240 本期刊的 YAML 里按 id 抽取单条模板（不整读文件）；条目未核实（无 guidelines_checked）时给出警告；退出码 0 找到 / 1 无匹配 / 2 参数或文件错误 |
+| `patient_level_split.py` | `data-collection-tools/scripts/` | 患者级训练 / 验证 / 测试集或 K 折划分（集合之间不泄漏；ID 按文本读，只差首尾空格 / 大小写 / 全角的写法算同一患者；中间多一个空格仍算不同 ID） |
+| `randomization.py` | `data-collection-tools/scripts/` | RCT 的简单 / 区组 / 分层随机分组表，由负责分配的人在项目文件夹以外运行（`--out` 必填，拒绝写进项目文件夹，不加 `--force` 不覆盖，文件只有所有者可读写） |
+| `mrp_state.py` | `using-med-research-powers/scripts/` | 每个主线 skill 结束时读取和更新 `.mrp-state.json`（第一次写入时自动创建；不跟随符号链接；`show` 输出清洗过的值并标明是数据；退出码 0 成功 / 2 出错 / 3 画像字段未设置） |
 
 使用示例：
 
 ```python
-import os, sys
-sys.path.insert(0, os.path.join(os.environ.get("CLAUDE_PLUGIN_ROOT", "."), "skills", "statistical-analysis", "scripts"))
-sys.path.insert(0, os.path.join(os.environ.get("CLAUDE_PLUGIN_ROOT", "."), "skills", "figure-generation", "scripts"))
+# 先把辅助脚本复制进项目（一次即可），分析代码不依赖插件也能运行：
+#   cp "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/assumption_tests.py" .
+#   cp "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/power_analysis.py" .
+#   cp "$CLAUDE_PLUGIN_ROOT/skills/figure-generation/scripts/pub_style.py" .
 
 from assumption_tests import full_check          # 前提检验
 result = full_check(group1, group2, paired=False)
@@ -506,16 +509,16 @@ print(f"Recommended test: {result['recommended_test']}")  # 只作描述；用�
 
 # 数据体检和重跑核对是命令行工具：
 #   python3 "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/data_profile.py" data.xlsx --id patient_id --outcome recurrence --report data-profile.md
-#   python3 "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/reproduce_check.py" --cmd "Rscript analysis.R" --outputs results/
+#   python3 "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/reproduce_check.py" --cmd "Rscript analysis.R" --outputs results/ --compare-stdout --report reproduce-check.md
 
 from power_analysis import two_groups            # 样本量计算
-result = two_groups(effect_size=0.5, power=0.80, dropout=0.15)
+result = two_groups(effect_size=0.5, power=0.80, dropout=0.15)   # 每组 64 例，按 15% 脱落放大后每组 76 例
 
 from pub_style import apply_style                # 出版图表样式
 apply_style('lancet')
 ```
 
-依赖安装：`pip install -r requirements.txt`。
+依赖安装：`pip install -r requirements.txt`（需要 Python 3.10 或更新版本；各包的最低版本写在该文件里）。
 
 ---
 
@@ -527,7 +530,7 @@ MRP 使用 Claude Code 的子代理工具（**Agent**，旧名 Task）并行化�
 
 | 触发条件 | 并行任务 |
 |---|---|
-| 文献综述涉及 ≥2 个数据库 | 每个数据库一个子代理，同步检索 |
+| 文献综述涉及 ≥2 个检索来源 | PubMed 检索与 WebSearch 补充检索由子代理并行执行；你自己在库内检索的数据库，导入导出文件后再一起合并 |
 | 同行评审模拟 | 4 个子代理作为独立审稿人，并行评估 |
 
 ### 需用户确认的并行
@@ -579,13 +582,13 @@ MRP 用项目目录里的 `.mrp-state.json` 记录研究进度，新会话可以
     "research-question.md": {"version": 1},
     "study-protocol.md": {"version": 2, "change_log": "Primary outcome clarified after checkpoint 1"}
   },
-  "target_journal": "European Urology",
+  "target_journal": "european-urology",
   "checkpoint_mode": "light",
   "next_step": "data-analysis-planning"
 }
 ```
 
-字段：`project`、`current_stage`、`completed_skills[{skill, date, outputs[]}]`、`artifacts{}`、`target_journal`、`checkpoint_mode`（`"light"` | `"step"` | `"auto"`）、`next_step`。Schema 见 [`skills/using-med-research-powers/references/state-schemas.md`](skills/using-med-research-powers/references/state-schemas.md)。这个文件只存于本地项目目录，绝不上传。
+字段：`project`、`current_stage`、`completed_skills[{skill, date, outputs[]}]`、`artifacts{}`、`target_journal`（期刊库 id；`mrp_state.py set target_journal=` 给全名也会换成 id）、`checkpoint_mode`（`"light"` | `"step"` | `"auto"`）、`next_step`。Schema 见 [`skills/using-med-research-powers/references/state-schemas.md`](skills/using-med-research-powers/references/state-schemas.md)。这个文件只存于本地项目目录，绝不上传。
 
 ---
 
@@ -595,12 +598,14 @@ MRP 用项目目录里的 `.mrp-state.json` 记录研究进度，新会话可以
 
 | 文件 | 由谁生成 | 说明 |
 |------|---------|------|
-| `manuscript.docx` | `export_docx.py` | 符合期刊排版的主文件（字体、行距、章节顺序和特殊栏目来自期刊模板） |
-| `export-report.md` | `export_docx.py` | 字数（正文 / 摘要 / 参考文献分开统计）、参考文献与图数量、残留占位符 |
+| `manuscript.docx` | `export_docx.py` | 符合期刊排版的主文件（字体、行距、章节顺序和特殊栏目来自期刊模板）；带页码和行号 |
+| `export-report.md` | `export_docx.py` | 字数（正文 / 摘要 / 参考文献分开统计，正文按期刊 `body_excludes` 计）、参考文献 / 图 / 表数量与期刊限制对照、残留占位符、转换说明 |
 | `figures/*.tiff` | `figure-generation`（`pub_style.py`） | 图片文件，≥300 DPI（线条图 ≥600） |
 | 表格 `.xlsx` | `manuscript-writing` 里的 pandas / openpyxl 代码片段 | 不是内置脚本——期刊要求表格单独上传时运行该片段 |
 
 标题页和补充材料由 `manuscript-writing` 以 Markdown 起草；期刊要求单独文件时用同一个脚本转换。
+
+还没定期刊？`--journal generic` 导出期刊中立的 Word 版（标准版式，不查限制）。稿件不是原始研究时加 `--article-type review | systematic_review | research_letter | brief_report | case_report`：库里有该类型的限制就按它检查，没有就在报告里写明未检查。条目没有 `guidelines_checked` 时，报告开头会给出警告，通过的数字标 ✅*：先到期刊官网确认上限再据此判断。
 
 ---
 
@@ -620,7 +625,7 @@ MRP 将 Superpowers 方法学框架从软件工程适配到医学研究。
 | `finishing-a-development-branch` | `journal-selection` + `submission-preparation` | 期刊定位 + 投稿信替代合并/部署 |
 | `writing-skills` | `writing-mrp-skills` | 相同的元技能，保证可扩展性 |
 | — | `literature-synthesis` | 软件工程中无对应物；研究需要证据综述 |
-| — | `reporting-standards` | 软件工程中无对应物；47 项领域特定合规规范 |
+| — | `reporting-standards` | 软件工程中无对应物；54 项领域特定合规规范 |
 | — | `research-ethics` | 软件工程中无对应物；IRB/IACUC 要求 |
 
 ---
@@ -628,8 +633,8 @@ MRP 将 Superpowers 方法学框架从软件工程适配到医学研究。
 ## 环境要求
 
 - **Claude Code**（CLI、桌面端、网页端或 IDE 扩展）。
-- **Python 3** 及 [`requirements.txt`](requirements.txt) 里的包（`scipy`、`statsmodels`、`matplotlib`、`pandas`、`numpy`、`python-docx`、`openpyxl`、`pyyaml`），供内置脚本使用——skill 本身不依赖它们。
-- **PubMed MCP**（可选但推荐）：任何提供上述 7 个函数（`search_articles`、`get_article_metadata`、`find_related_articles`、`lookup_article_by_citation`、`convert_article_ids`、`get_full_text_article`、`get_copyright_status`）的 MCP server。工具写法为 `mcp__<server 名>__<函数>`，server 名以你当前会话的工具列表为准（claude.ai 连接器为 `claude_ai_PubMed`，本地常见为 `PubMed`）。配置了它，引用会自动核验；没有配置，就退化为 DOI / 网络检索的人工核对。
+- **Python 3.10 或更新版本** 及 [`requirements.txt`](requirements.txt) 里的包（`scipy`、`statsmodels`、`matplotlib`、`pandas`、`numpy`、`python-docx`、`openpyxl`、`pyyaml`；最低版本见该文件），供内置脚本使用——skill 本身不依赖它们。CI 在 Python 3.10 和 3.12 上测试。
+- **PubMed MCP**（可选但推荐）：任何提供上述 7 个函数（`search_articles`、`get_article_metadata`、`find_related_articles`、`lookup_article_by_citation`、`convert_article_ids`、`get_full_text_article`、`get_copyright_status`）的 MCP server。工具写法为 `mcp__<server 名>__<函数>`，server 名以你当前会话的工具列表为准（claude.ai 连接器为 `claude_ai_PubMed`，本地常见为 `PubMed`）。配置了它，引用会自动核验；没有配置时，Claude 能用 WebFetch 就查 PubMed 的 E-utilities，否则核对 DOI 或把清单交给你自查——只靠网络检索找到的引用保持 ⏳ Unverified。
 
 ---
 
@@ -638,14 +643,14 @@ MRP 将 Superpowers 方法学框架从软件工程适配到医学研究。
 ```
 med-research-powers/
 ├── .claude-plugin/        plugin.json（name: mrp）、marketplace.json
-├── .github/               ci.yml（守卫、pytest、shellcheck、plugin validate、hook 冒烟）、evals.yml（手动）、issue/PR 模板
+├── .github/               ci.yml（守卫、ruff、Python 3.10 / 3.12 及最低版本依赖上的 pytest、shellcheck、plugin validate、hook 冒烟）、evals.yml（手动）、dependabot.yml、issue/PR 模板
 ├── commands/              7 个斜杠命令（薄路由 → skill）
 ├── skills/                20 个 skill，每个含：SKILL.md + references/ + scripts/
 ├── hooks/                 session-start.sh（读取 .mrp-state.json，报告恢复点）
 ├── docs/                  architecture.md、USER-MANUAL.md、images/
-├── tools/                 check_consistency.py —— 仓库守卫（版本、计数、路径、链接）
-├── tests/                 内置脚本的 pytest 测试
-├── evals/                 `claude plugin eval` 用例 —— skill 路由回归（见 evals/README.md）
+├── tools/                 check_consistency.py —— 仓库守卫（版本、计数、路径、链接与锚点、每个 skill 的 eval 覆盖、workflow 固定版本）
+├── tests/                 pytest 测试：内置脚本、hook、守卫和参考数据（清单、期刊库、方法要点卡的代码）
+├── evals/                 `claude plugin eval` 用例 —— skill 路由（每个 skill）、防误触发的反例、行为检查（见 evals/README.md）
 ├── examples/              一个合成的示例项目（状态文件、研究问题、Type C protocol）
 ├── install.sh             安装脚本（插件 / 软链接）
 ├── requirements.txt       内置脚本的 Python 依赖

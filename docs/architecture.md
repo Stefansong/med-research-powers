@@ -19,7 +19,7 @@ flowchart TD
     end
 
     subgraph PHASE2["Phase 2: Analysis Engine"]
-        DAP[data-analysis-planning<br/>SAP: 7-Section Analysis Plan]
+        DAP[data-analysis-planning<br/>SAP: 7 sections + 8–16 for AI/ML]
         DCT[data-collection-tools<br/>only when data are still to be collected<br/>CRFs / Annotation Templates / Split + Randomization Scripts]
         COLLECT([You collect data])
         SA[statistical-analysis<br/>Cleaning + Assumptions + Execution + Scripts]
@@ -30,7 +30,7 @@ flowchart TD
         MW[manuscript-writing<br/>IMRaD + 5 Review Types + get_journal_template.py]
         PRS[peer-review-simulation<br/>4 Reviewers + Editor Summary]
         PSV[pre-submission-verification<br/>6-Gate Check]
-        RS[reporting-standards<br/>47 Standards]
+        RS[reporting-standards<br/>54 Standards]
         PS[pubmed-search<br/>Citation Verification]
     end
 
@@ -98,11 +98,11 @@ Auxiliary skills not on the main line: `pubmed-search` (called by literature-syn
 flowchart LR
     subgraph GATE["6-Gate Verification (all must pass, then the user confirms — Checkpoint 3)"]
         G1["Gate 1<br/>Reporting Standards<br/>CONSORT 2025 (30 items) / STROBE / PRISMA..."]
-        G2[Gate 2<br/>Statistical Completeness<br/>Effect Size + CI + Scripts]
+        G2[Gate 2<br/>Statistical Completeness<br/>Effect Size + CI + reproduce-check.md]
         G3[Gate 3<br/>Claim Verification<br/>PubMed MCP via pubmed-search]
         G4[Gate 4<br/>Figure Quality<br/>DPI + Font + Colorblind]
-        G5[Gate 5<br/>Ethics Compliance<br/>IRB + Consent + COI]
-        G6[Gate 6<br/>Formal Requirements<br/>Word Count + References]
+        G5[Gate 5<br/>Ethics Compliance<br/>IRB approval or documented exemption + Consent + COI]
+        G6["Gate 6<br/>Formal Requirements<br/>Counts vs the journal entry's limits"]
     end
 
     G1 --> G2 --> G3 --> G4 --> G5 --> G6
@@ -118,7 +118,7 @@ flowchart LR
     style G3 fill:#3498db,color:#fff
 ```
 
-Gate 3 citation statuses: ✅ Verified · ⚠️ Not found · ❌ Mismatch · ⏳ Unverified (tool error — retry) · ℹ️ Non-PubMed (DOI / web check).
+Gate 3 citation statuses: ✅ Verified · ⚠️ Not found · ❌ Mismatch · ⏳ Unverified (tool error — retry; or found only by web search / not checked — manual check) · ℹ️ Non-PubMed (DOI / web check).
 
 ## 3. Peer Review Simulation
 
@@ -158,13 +158,13 @@ flowchart TD
     STRATEGY --> DB1 & DB2 & DB3 & DB4 & DB5
 
     DB1["PubMed<br/>(PubMed MCP: mcp__SERVER__function)<br/>7 functions"]
-    DB2["arXiv<br/>(WebSearch)<br/>AI/ML papers"]
-    DB3["Cochrane<br/>(WebSearch)<br/>Systematic reviews"]
-    DB4["IEEE / ACM<br/>(WebSearch)<br/>Engineering/CS"]
-    DB5["medRxiv / bioRxiv<br/>(WebSearch)<br/>Preprints"]
+    DB2["arXiv<br/>(WebSearch, supplementary)<br/>AI/ML papers"]
+    DB3["Embase / Cochrane / WoS<br/>(user runs search string,<br/>imports export)"]
+    DB4["IEEE Xplore / ACM DL<br/>(user runs search string,<br/>imports export)<br/>Engineering/CS"]
+    DB5["medRxiv / bioRxiv<br/>(WebSearch, supplementary)<br/>Preprints"]
 
     DB1 & DB2 & DB3 & DB4 & DB5 --> DEDUP[Deduplication]
-    DEDUP --> SCREEN1["Title/Abstract Screening<br/>(get_article_metadata)"]
+    DEDUP --> SCREEN1["Title/Abstract Screening<br/>2 independent reviewers, ≥1 human"]
     SCREEN1 --> SCREEN2["Full-Text Screening<br/>(get_full_text_article)"]
     SCREEN2 --> SNOW["Similar-Article Search<br/>(find_related_articles)"]
     SNOW --> INCLUDED[Included Studies]
@@ -177,7 +177,7 @@ flowchart TD
     style DB1 fill:#3498db,color:#fff
     style DB2 fill:#e67e22,color:#fff
     style DB3 fill:#2ecc71,color:#fff
-    style DB4 fill:#9b59b6,color:#fff
+    style DB4 fill:#2ecc71,color:#fff
     style DB5 fill:#1abc9c,color:#fff
 ```
 
@@ -249,8 +249,8 @@ Modes (`checkpoint_mode` in `.mrp-state.json`): **light** (default, above) · **
 ```mermaid
 flowchart TD
     subgraph PLUGIN["mrp (plugin) — marketplace med-research-powers"]
-        PJ[".claude-plugin/plugin.json<br/>name: mrp · v6.4.2 · SessionStart hook<br/>commands/ and skills/ are auto-discovered"]
-        HOOK["hooks/session-start.sh<br/>Reads whitelisted fields of .mrp-state.json,<br/>reports the resume point"]
+        PJ[".claude-plugin/plugin.json<br/>name: mrp · v6.4.2 · SessionStart hook (10 s timeout)<br/>commands/ and skills/ are auto-discovered"]
+        HOOK["hooks/session-start.sh<br/>Reads whitelisted fields of .mrp-state.json<br/>(regular file only, first 64 KiB, values cleaned),<br/>reports the resume point"]
         META["skills/using-med-research-powers<br/>Orchestrator: routing + checkpoints + mrp_state.py"]
     end
 
@@ -281,9 +281,9 @@ flowchart TD
 
     subgraph REFS["Reference Data"]
         R1["stat-method-decision-tree.yaml<br/>15+ method categories"]
-        R2["checklists/standards-index.yaml<br/>47 reporting standards"]
+        R2["checklists/standards-index.yaml<br/>54 reporting standards (21 with a local checklist)"]
         R3["checklists/consort-2025.yaml<br/>30 items (42 rows incl. sub-items)"]
-        R4["journal-templates.yaml<br/>240 journals, 30+ specialties, data_as_of"]
+        R4["journal-templates.yaml<br/>240 journals, 30+ specialties, data_as_of<br/>limits per entry · unverified entries flagged"]
         R5["metrics-and-reporting.yaml<br/>AI metrics + fairness + robustness"]
         R6["Experiment templates<br/>WB, qPCR, Animal (ARRIVE 2.0)"]
     end
@@ -308,13 +308,13 @@ flowchart TD
     style STATE fill:#d35400,color:#fff
 ```
 
-Quality gates in CI (`.github/workflows/ci.yml`): `tools/check_consistency.py` (versions, counts, script paths, SKILL.md frontmatter, links, README/README_CN sync), `pytest tests/`, `sh -n` + shellcheck on the hook and installer, `claude plugin validate --strict`, and a hook smoke test.
+Quality gates in CI (`.github/workflows/ci.yml`, all blocking): `tools/check_consistency.py` (versions, counts computed from the repo, script paths, SKILL.md frontmatter, links and #anchors, README/README_CN sync, an eval case for every skill, workflow pinning), `ruff check --select F,E9`, `pytest tests/` on Python 3.10 and 3.12 and once more at the minimum versions in `requirements.txt`, `sh -n` + shellcheck on the hook and installer, `claude plugin validate --strict` with a pinned Claude Code release, and hook smoke tests.
 
 ## 8. Reporting Standards Coverage Map
 
 ```mermaid
 mindmap
-  root(("47 Reporting<br/>Standards"))
+  root(("54 Reporting<br/>Standards"))
     Clinical Trials
       CONSORT 2025
       CONSORT-AI
@@ -329,6 +329,7 @@ mindmap
       STROBE
       RECORD
       STROCSS
+      TARGET 2025
     Systematic Reviews
       PRISMA 2020
       PRISMA-P
@@ -345,16 +346,21 @@ mindmap
       MOOSE
     Diagnostic
       STARD 2015
+      STARD-AI 2025
     AI & Prediction
+      TRIPOD 2015
       TRIPOD+AI 2024
       TRIPOD-LLM 2025
       TRIPOD-Cluster 2023
       CLAIM 2024
       MI-CLAIM
       DECIDE-AI
+      CHART 2025
       PROBAST
+      PROBAST+AI 2025
     Surgery & Devices
-      IDEAL
+      IDEAL framework
+      IDEAL Reporting Guidelines 2021
     Qualitative
       COREQ
       SRQR
@@ -362,6 +368,7 @@ mindmap
       CHERRIES
       CROSS
       COSMIN
+      ACCORD 2024
     Preclinical
       ARRIVE 2.0
     Other
@@ -371,6 +378,7 @@ mindmap
     Bias Tools
       RoB 2
       ROBINS-I
+      ROBINS-E
       NOS
       MINORS
       QUADAS-2

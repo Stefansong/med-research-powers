@@ -19,7 +19,7 @@ Inspired by [Superpowers](https://github.com/obra/superpowers) (software-enginee
 | **Skills** | 20 skills covering the full research pipeline — every skill is callable as `/mrp:<skill-name>` |
 | **Slash Commands** | 7 commands for the most common entry points |
 | **Study Designs** | Clinical, basic/bench, AI/ML, qualitative, survey/Delphi (one unified router) |
-| **Reporting Standards** | 47 standards — CONSORT 2025, SPIRIT 2025, STROBE, PRISMA 2020, TRIPOD+AI 2024, DECIDE-AI, CLAIM 2024, IDEAL, ARRIVE 2.0, COREQ, CHERRIES, COSMIN … |
+| **Reporting Standards** | 54 standards — CONSORT 2025, SPIRIT 2025, STROBE, PRISMA 2020, TRIPOD+AI 2024, STARD-AI, DECIDE-AI, CLAIM 2024, CHART, TARGET, IDEAL Reporting Guidelines, ARRIVE 2.0, COREQ, CHERRIES, COSMIN … |
 | **Journal Templates** | 240 journals across 30+ specialties |
 | **Statistical Methods** | 15+ method categories with an assumption-driven decision tree |
 | **Python Scripts** | 10 bundled scripts (assumptions, power, data profile, reproduce check, figure styling, .docx export, journal-template lookup, patient-level split, randomization, pipeline state) |
@@ -36,18 +36,18 @@ AI research agents make the same mistakes every time. MRP replaces "best-effort 
 
 | Without MRP | With MRP |
 |---|---|
-| Jumps straight to analysis | Defines the hypothesis first (PICO / FINER) |
+| Jumps straight to analysis | Defines the question first — hypothesis or estimand (PICO / FINER) |
 | Picks a statistical test "that seems right" | Decision tree selects the test based on **verified** assumptions |
 | Uses CONSORT 2010 | Uses CONSORT 2025 (30 items, 42 rows incl. sub-items; officially supersedes 2010) |
 | Writes a manuscript and declares "done" | 6-gate verification before any submission step |
-| Fabricates references confidently | Every citation is checked against PubMed (automatically when a PubMed MCP is configured, otherwise by DOI / web search) |
+| Fabricates references confidently | Every citation is checked against PubMed (through the PubMed MCP when it is configured, otherwise through PubMed's E-utilities or by DOI; a web-search hit alone stays ⏳ Unverified) |
 | Reports `p < 0.05` with no effect size | Requires effect size + 95% CI + exact p-value |
-| Ignores reporting standards | Matches study type to the correct standard from 47 options |
+| Ignores reporting standards | Matches study type to the correct standard from 54 options |
 | Splits AI data randomly | Patient-level splits; flags data leakage and external validation |
 
 **Core philosophy — guided workflows, not suggestions:**
 
-1. **Define before design** — PICO/FINER framework; no analysis without a hypothesis.
+1. **Define before design** — PICO/FINER framework; no analysis without a pre-defined question (a hypothesis for comparative studies, aims and estimands for descriptive and prediction studies).
 2. **Plan before execute** — a Statistical Analysis Plan (SAP) before any test runs.
 3. **Verify before submit** — 6-gate pre-submission check; CONSORT 2025 compliance.
 4. **Look at the data before planning** — profile the real data, plan from what it shows, and write analysis code for this dataset; bundled scripts only do fixed jobs (data profile, assumption checks, sample size, figure style, export).
@@ -146,7 +146,7 @@ research-question-formulation
 ```
 
 - **`study-design`** is a unified router covering Type A (clinical), B (basic/bench), C (AI/ML), D (qualitative), and E (survey/Delphi). Every type writes the same file, `study-protocol.md` (a `type:` field says which).
-- **`research-ethics`** sits on the main line: approval and registration come before data collection, not at submission time.
+- **`research-ethics`** sits on the main line: approval and registration come before data collection, not at submission time. De-identified patient data are still personal data: external AI services — including the AI chat that runs MRP — get anonymised data or aggregate results only, unless every condition in its checklist (lawful basis, data-processing agreement, impact assessment, cross-border procedure, written permission and an approved protocol that names the use) is met.
 - **`peer-review-simulation`** runs before the 6-gate check, and **`manuscript-export`** runs after it — so a failed gate never means re-exporting a `.docx`.
 - Auxiliary skills (`pubmed-search`, `reporting-standards`, `team-collaboration`, `using-med-research-powers`, `writing-mrp-skills`) are called by other skills or usable any time.
 
@@ -176,7 +176,7 @@ Skills trigger from natural-language intent — you do not need to memorize name
 
 | # | Skill | Use it when… | Output |
 |---|-------|--------------|--------|
-| 1 | **research-question-formulation** | A vague idea needs a clear question + hypothesis (PICO/PIRD/FINER). | `research-question.md` |
+| 1 | **research-question-formulation** | A vague idea needs a clear question + hypothesis, or aims and estimands for descriptive / prediction studies (PICO/PIRD/FINER). | `research-question.md` |
 | 2 | **literature-synthesis** | Searching & synthesizing literature; finding the research gap (PRISMA flow). | `search-strategy.md`, `screening-log.md`, `literature-references.md`, `literature-synthesis-summary.md` |
 | 3 | **study-design** | Designing any protocol from the real conditions (case sources, expected events, resources) — clinical / basic / AI-ML / qualitative / survey (Type A–E router). | `study-protocol.md` |
 | 4 | **research-ethics** | Checking IRB/IACUC, consent, privacy, registration, COI before data collection; drafting the ethics statement. | `ethics-statement.md` |
@@ -212,7 +212,7 @@ Skills trigger from natural-language intent — you do not need to memorize name
 
 | # | Skill | Use it when… | Output |
 |---|-------|--------------|--------|
-| 17 | **pubmed-search** | Searching PubMed, verifying citations, or fetching metadata via the PubMed MCP. | Search results, verification reports, formatted references |
+| 17 | **pubmed-search** | Searching PubMed, verifying citations, or fetching metadata via the PubMed MCP (without it: PubMed's E-utilities through WebFetch, or a search you run). | Search results, verification reports, formatted references |
 
 ### Meta Layer
 
@@ -230,7 +230,7 @@ Commands are shortcuts for the most common entry points. Every other skill is in
 
 | Command | What it does | Routes to |
 |---------|--------------|-----------|
-| `/mrp:research-question` | Turn a vague idea into a PICO question + hypothesis | `research-question-formulation` |
+| `/mrp:research-question` | Turn a vague idea into a PICO question + hypothesis (or aims and estimands) | `research-question-formulation` |
 | `/mrp:analyze-data` | No `analysis-plan.md` yet → write the SAP; SAP approved → run the analysis | `data-analysis-planning` → `statistical-analysis` |
 | `/mrp:write-manuscript` | Draft a medical research manuscript (IMRaD or review) | `manuscript-writing` |
 | `/mrp:peer-review` | Simulate peer review (4 reviewers + 8-dimension scoring) | `peer-review-simulation` |
@@ -273,11 +273,11 @@ Checkpoint 1 — please approve the protocol before I continue.
 |------|--------|----------|---------------------|
 | **A** | Clinical | RCT, cohort, cross-sectional, crossover, non-inferiority, adaptive, real-world, registry | CONSORT 2025 / SPIRIT 2025 / STROBE |
 | **B** | Basic / bench | cell, animal, molecular (WB, qPCR, ELISA, flow, IF) | ARRIVE 2.0 |
-| **C** | AI / ML | imaging, video, LLM, device | TRIPOD+AI 2024 / DECIDE-AI / CLAIM 2024 / IDEAL |
+| **C** | AI / ML | imaging, video, LLM, device | TRIPOD+AI 2024 / STARD-AI / DECIDE-AI / CLAIM 2024 / IDEAL |
 | **D** | Qualitative | interview, focus group, grounded theory, mixed methods | COREQ / SRQR |
-| **E** | Survey / Delphi | questionnaires, scale development/validation, consensus | CHERRIES / CROSS / COSMIN |
+| **E** | Survey / Delphi | questionnaires, scale development/validation, consensus | CHERRIES / CROSS / COSMIN; consensus (Delphi): ACCORD |
 
-Multi-type studies stack the relevant modules. The AI/ML module requires patient-level data splits, a 4-band sample-size strategy, class-imbalance handling, and decision-curve analysis.
+Multi-type studies stack the relevant modules. The AI/ML module chooses the validation design by model type and events (bootstrap for regression models, nested CV for tuned ML/DL, external or temporal validation for any claim of generalisability; always split by patient), justifies sample size (pmsampsize / pmvalsampsize, Buderer, MRMC), requires recalibration after class-imbalance corrections, and reports calibration (calibration-in-the-large, slope, curve) and decision-curve analysis.
 
 `manuscript-writing` similarly handles original research **plus** 5 review types: narrative, systematic, meta-analysis, scoping, and mini-review.
 
@@ -290,13 +290,13 @@ Claude is instructed to run `pre-submission-verification` whenever you say "done
 | Gate | Checks | Fail action |
 |------|--------|-------------|
 | **1. Reporting Standards** | Matches study type to the correct standard; checks every item (CONSORT 2025: 30 items, 42 rows incl. sub-items). 0 Critical failures required. | `reporting-standards` → fix in `manuscript-writing` |
-| **2. Statistical Completeness** | Effect sizes + 95% CI (not just p-values), exact p-values, multiple-comparison correction, sensitivity analysis, reproducible scripts, SAP-deviation documentation | Back to `statistical-analysis` |
+| **2. Statistical Completeness** | Effect sizes + 95% CI (not just p-values), exact p-values, multiple-comparison correction, sensitivity analysis, reproducible scripts (`reproduce-check.md` verdict "consistent" = `reproduce_check.py` exit 0), SAP-deviation documentation | Back to `statistical-analysis` |
 | **3. Claim Verification** | (A) Reference authenticity via `pubmed-search` — every PMID/DOI is looked up. (B) Data consistency — numbers match across Abstract, Results, Tables. (C) Claims–evidence alignment. (D) Methods–results matching. (E) Pre-specified vs exploratory distinction. (F) AI-hallucination patterns. | Fix references / data |
 | **4. Figure Quality** | Arial/Helvetica font, ≥6 pt minimum, ≥300 DPI (line art ≥600), axis labels + units, colorblind-safe palette, figure legends | Back to `figure-generation` |
-| **5. Ethics & Compliance** | IRB approval number in Methods, informed-consent statement, COI disclosure, funding source, data-availability statement, trial registration (if applicable) | Back to `research-ethics` |
-| **6. Formal Requirements** | Word count within journal limit, abstract word count, reference count, running title ≤50 chars, 3–6 keywords, abbreviations expanded on first use, complete author info | Adjust formatting |
+| **5. Ethics & Compliance** | IRB approval number in Methods — or a documented exemption from review (who decided, on which rule) —, informed-consent statement or documented waiver, COI disclosure, funding source, data-availability statement, trial registration and, for investigator-initiated clinical research in China, the national registration-filing status (if applicable), no open data-governance gaps in `ethics-statement.md` | Back to `research-ethics` |
+| **6. Formal Requirements** | Body word count (counted as the journal entry's `limits` say), abstract word count, reference and figure / table counts against the journal's limits — an unverified journal entry's limits are confirmed on the journal's site first —, running title ≤50 chars, 3–6 keywords, abbreviations expanded on first use, complete author info, section order | Adjust formatting |
 
-Citation verification statuses used in Gate 3: ✅ Verified · ⚠️ Not found (query succeeded, no hit) · ❌ Mismatch (found, but authors/year/title differ) · ⏳ Unverified (tool error — retry, this is *not* "does not exist") · ℹ️ Non-PubMed (books, guidelines, arXiv — checked by DOI / web search).
+Citation verification statuses used in Gate 3: ✅ Verified · ⚠️ Not found (query succeeded, no hit) · ❌ Mismatch (found, but authors/year/title differ) · ⏳ Unverified (not confirmed yet: a tool error — retry — or a citation found only by web search or not checked at all; this is *not* "does not exist", it needs a manual check) · ℹ️ Non-PubMed (books, guidelines, arXiv — checked by DOI / web search).
 
 ---
 
@@ -346,7 +346,7 @@ The four reviewers run as separate sub-agents in parallel (Claude Code's Agent t
 
 ## Multi-Database Literature Search
 
-`literature-synthesis` searches across multiple databases, with the PubMed MCP as the primary engine.
+`literature-synthesis` plans the search across several databases; the PubMed MCP is the engine Claude searches with itself.
 
 ### PubMed MCP Functions
 
@@ -366,11 +366,13 @@ The 7 function names are fixed; the tool prefix is `mcp__<server>__<function>`, 
 
 | Research Type | Primary | Supplementary |
 |---------------|---------|---------------|
-| Clinical / Biomedical | PubMed | Cochrane, Embase |
+| Clinical / Biomedical | PubMed | Cochrane CENTRAL, Embase |
 | AI/ML Medical | PubMed + arXiv | IEEE Xplore, ACM DL |
-| Systematic Review | PubMed + Cochrane + Embase | Web of Science |
+| Systematic Review | PubMed + Cochrane CENTRAL + Embase | Web of Science |
 | Basic / Molecular | PubMed | bioRxiv, medRxiv |
-| Surgical Video / Devices | PubMed + IEEE | Scopus |
+| Surgical Video / Devices | PubMed + IEEE Xplore | Scopus |
+
+PubMed is searched through the PubMed MCP; Embase, Cochrane Library, Web of Science, Scopus and IEEE Xplore cannot be searched by Claude's tools — Claude writes the search string, you run it and import the export (otherwise the source is reported as "Not searched"); WebSearch `site:` queries (arXiv, medRxiv, bioRxiv) count only as supplementary searching.
 
 ### Output Files (4)
 
@@ -390,51 +392,51 @@ The 7 function names are fixed; the tool prefix is `mcp__<server>__<function>`, 
 - **Analyse**: `data-analysis-planning` first profiles the real data with the read-only `data_profile.py` (structure and quality only — variables, coding, missingness, event totals, clustering; **never** associations with the outcome), or, for prospective studies, the protocol and CRF.
 - **Plan**: the SAP you approve at checkpoint 2 opens with "data situation and the choices it drives" (e.g. events → how many predictors; repeated stones per patient → GEE/mixed model). Methods are chosen with the [decision tree](skills/data-analysis-planning/references/stat-method-decision-tree.yaml) plus ten [method cards](skills/data-analysis-planning/references/method-cards/README.md) — must-do steps, pitfalls, vetted R/Python packages and reporting items for each common method.
 - **Execute**: `statistical-analysis` re-profiles the data against the SAP, then writes cleaning and analysis code **for this dataset** in your preferred language (R or Python), each block tagged with its SAP item.
-- **Self-check**: re-run from scratch with `reproduce_check.py` (identical outputs), patient counts that connect step by step into a flow diagram, a SAP-to-code-to-result table, and every deviation logged in `analysis-log.md`.
+- **Self-check**: re-run in fresh processes with `reproduce_check.py`, outputs cleared before each run (identical outputs; caches outside the outputs are flagged), patient counts that connect step by step into a flow diagram, a SAP-to-code-to-result table, and every deviation logged in `analysis-log.md`.
 
 The decision tree covers 15+ method categories:
 
 | Category | Methods |
 |----------|---------|
 | **Two Groups** | Independent/paired t-test, Welch's t-test, Mann-Whitney U, Wilcoxon signed-rank, Chi-squared, Fisher's exact |
-| **Multiple Groups** | One-way ANOVA + Tukey, Welch's ANOVA + Games-Howell, Kruskal-Wallis + Dunn's, Friedman + Nemenyi, repeated-measures ANOVA |
+| **Multiple Groups** | One-way ANOVA + Tukey, Welch's ANOVA + Games-Howell, Kruskal-Wallis + Dunn's, Friedman + Nemenyi, repeated-measures ANOVA (Greenhouse-Geisser correction prespecified) or linear mixed model |
 | **Correlation / Regression** | Pearson, Spearman, linear regression, logistic regression, Poisson / negative binomial |
-| **Survival Analysis** | Log-rank, Kaplan-Meier, Cox proportional hazards, competing risks (Fine-Gray), AFT models, time-varying covariates |
+| **Survival Analysis** | Log-rank, Kaplan-Meier, Cox proportional hazards, RMST when PH fails, competing risks (cause-specific Cox / Fine-Gray), landmark analysis, AFT models, time-varying covariates |
 | **Longitudinal / Mixed Models** | Linear mixed models (LMM), generalized estimating equations (GEE), repeated-measures ANOVA |
-| **Causal Inference** | Propensity score (matching, IPTW, stratification), instrumental variables (2SLS), difference-in-differences |
-| **Mediation Analysis** | Baron-Kenny, causal mediation (natural direct/indirect effects), bootstrap CIs |
-| **Missing Data** | MCAR testing (Little's test), multiple imputation (MICE, m≥20), MNAR sensitivity, tipping-point analysis |
+| **Causal Inference** | Propensity score with a named estimand (ATE / ATT / ATO): matching, IPTW, overlap weights, stratification; doubly robust (AIPW / TMLE); instrumental variables (2SLS), difference-in-differences |
+| **Mediation Analysis** | Counterfactual (causal) mediation: natural direct/indirect effects, exposure-mediator interaction, bootstrap CIs (Baron-Kenny only as historical background) |
+| **Missing Data** | Complete-case vs multiple imputation chosen by the plausible mechanism and whether completeness depends on the outcome (no %-threshold), MICE (m ≥ % incomplete cases, at least 20), MNAR sensitivity (delta adjustment, tipping point) |
 | **Clustered Data** | ICC calculation, design effect, random intercept/slope models, cluster-robust GEE |
 | **Interaction / Subgroup** | Interaction terms, forest plots, pre-specified vs exploratory labeling |
-| **High-Dimensional / Omics** | PCA, UMAP/t-SNE, DESeq2, edgeR, limma, FDR correction, batch-effect removal (ComBat) |
+| **High-Dimensional / Omics** | PCA, UMAP/t-SNE, DESeq2, edgeR, limma, FDR correction, batch as a model covariate (ComBat for visualisation only), single-cell pseudobulk DE |
 | **Interrupted Time Series** | Segmented regression, ARIMA, controlled ITS |
-| **Diagnostic & AI/ML Evaluation** | AUROC/AUPRC, DeLong, calibration, decision-curve analysis, bootstrap CIs |
+| **Diagnostic & AI/ML Evaluation** | AUROC/AUPRC, DeLong, calibration, decision-curve analysis, bootstrap CIs; validation design by model type and events (bootstrap / nested CV / external validation) |
 | **Multiple Comparison** | Bonferroni, Holm, Benjamini-Hochberg FDR |
-| **Assumption Tests** | Shapiro-Wilk, D'Agostino-Pearson, Levene's, Mauchly's sphericity, Schoenfeld residuals |
+| **Assumption Tests** | Shapiro-Wilk, D'Agostino-Pearson, Levene's, Mauchly's sphericity, Schoenfeld residuals — diagnostics, not gatekeepers: the method follows the SAP, including any alternative it prespecifies for a clear departure |
 
 ---
 
-## Reporting Standards (47)
+## Reporting Standards (54)
 
-The full, machine-readable index lives in [`skills/reporting-standards/references/checklists/standards-index.yaml`](skills/reporting-standards/references/checklists/standards-index.yaml). **21 of the 47 standards ship with an item-by-item checklist YAML transcribed from the source paper** (CONSORT 2025, CONSORT-AI, SPIRIT 2025, SPIRIT-AI, TIDieR, TREND, RECORD, STROBE, PRISMA 2020, PRISMA-ScR, STARD 2015, TRIPOD 2015, TRIPOD+AI, CLAIM 2024, DECIDE-AI, ARRIVE 2.0, CHERRIES, CROSS, CARE, SQUIRE 2.0, CHEERS 2022); for the rest the index gives the official source and Claude is told not to invent items.
+The full, machine-readable index lives in [`skills/reporting-standards/references/checklists/standards-index.yaml`](skills/reporting-standards/references/checklists/standards-index.yaml). **21 of the 54 standards ship with an item-by-item checklist YAML transcribed from the source paper** (CONSORT 2025, CONSORT-AI, SPIRIT 2025, SPIRIT-AI, TIDieR, TREND, RECORD, STROBE, PRISMA 2020, PRISMA-ScR, STARD 2015, TRIPOD 2015, TRIPOD+AI, CLAIM 2024, DECIDE-AI, ARRIVE 2.0, CHERRIES, CROSS, CARE, SQUIRE 2.0, CHEERS 2022); for the rest the index gives a verified reference (DOI or official URL) and Claude is told not to invent items.
 
 ### Standards by Study Type
 
 | Category | Standards |
 |----------|-----------|
 | **Clinical Trials** | CONSORT 2025 (30 items, 42 rows incl. sub-items), CONSORT-AI, CONSORT-Cluster, CONSORT non-inferiority extension, TREND (non-randomised trials), SPIRIT 2025 (34 items, protocols only), SPIRIT-AI, TIDieR, CONSORT-Harms |
-| **Observational** | STROBE (22 items), RECORD, STROCSS 2024 (surgical cohort / case-control) |
+| **Observational** | STROBE (22 items), RECORD, STROCSS 2024 (surgical cohort / case-control), TARGET 2025 (target trial emulation, 21 items) |
 | **Systematic Reviews** | PRISMA 2020 (27 items), PRISMA-P, PRISMA-ScR, PRISMA-S, PRISMA-DTA, PRISMA-NMA, TRIPOD-SRMA (2023), AMSTAR 2, GRADE |
 | **Guidelines Appraisal** | AGREE II (2010; 23 items in 6 domains + 2 overall ratings) |
 | **Meta-analysis of Observational** | MOOSE (35 items) |
-| **Diagnostic** | STARD 2015 (30 items) |
-| **AI & Prediction** | TRIPOD 2015 (22 items, legacy), TRIPOD+AI 2024 (27 items), TRIPOD-LLM (2025), TRIPOD-Cluster (2023, 19 items), CLAIM 2024 (44 items; supersedes CLAIM 2020), MI-CLAIM, DECIDE-AI (17 AI-specific + 10 generic items), PROBAST |
-| **Surgery & Devices** | IDEAL framework (Pre-IDEAL / Stage 0 + 5 stages) |
+| **Diagnostic** | STARD 2015 (30 items), STARD-AI 2025 (AI index tests: STARD 2015 + 18 new or modified items) |
+| **AI & Prediction** | TRIPOD 2015 (22 items, legacy), TRIPOD+AI 2024 (27 items), TRIPOD-LLM (2025), TRIPOD-Cluster (2023, 19 items), CLAIM 2024 (44 items; supersedes CLAIM 2020), MI-CLAIM, DECIDE-AI (17 AI-specific + 10 generic items), CHART 2025 (chatbot health advice, 12 items / 39 subitems), PROBAST / PROBAST+AI (2025; risk-of-bias tools for prediction models) |
+| **Surgery & Devices** | IDEAL framework (staging: Pre-IDEAL / Stage 0 + 5 stages); IDEAL Reporting Guidelines 2021 (stage-specific checklists for Stages 1, 2a, 2b, 4) |
 | **Qualitative** | COREQ (32 items), SRQR (21 items) |
-| **Surveys & Instruments** | CHERRIES (web surveys), CROSS (cross-sectional surveys), COSMIN 2.0 (2025; measurement instruments) |
+| **Surveys & Instruments** | CHERRIES (web surveys), CROSS (cross-sectional surveys), COSMIN 2.0 (2025; measurement instruments), ACCORD 2024 (Delphi / consensus, 35 items) |
 | **Preclinical** | ARRIVE 2.0 (21 items) |
 | **Other** | CARE (case reports), SQUIRE (QI), CHEERS (health economics) |
-| **Bias Assessment Tools** | Cochrane RoB 2, ROBINS-I, Newcastle-Ottawa Scale (max 9), MINORS, QUADAS-2 |
+| **Bias Assessment Tools** | Cochrane RoB 2, ROBINS-I (V2 draft on riskofbias.info), ROBINS-E, Newcastle-Ottawa Scale (max 9; only with caveats), MINORS, QUADAS-2 (PROBAST / PROBAST+AI: see AI & Prediction) |
 
 > **CONSORT 2010 is officially superseded** — MRP always routes to CONSORT 2025 (30 items, 42 rows incl. sub-items). [Hopewell et al., BMJ 2025; doi:10.1136/bmj-2024-081123]
 
@@ -470,9 +472,9 @@ Formatting requirements (word limits, abstract format, reference style, section 
 | **Open Access** | PLOS Medicine, PLOS ONE, Nature Communications, Scientific Reports |
 | **Chinese SCI** | Chinese Medical Journal, Science Bulletin, Signal Transduction, eClinicalMedicine |
 
-Each template includes: word limit, abstract format (structured/unstructured), reference style and limit, figure/table limits, section structure, special requirements (Key Points box, Research in Context panel, Reporting Summary), submission system, and ORCID policy. The journal-family rules (Lancet / JAMA / Nature sub-journals) are kept in that file only.
+Each template includes: word limit, abstract format (structured/unstructured), reference style and limit, figure/table limits, section structure, special requirements (Key Points box, Research in Context panel, Reporting Summary), submission system, and ORCID policy. The journal-family rules (Lancet / JAMA / Nature sub-journals) are kept in that file only. Every entry also has a machine-readable `limits` block for an original article (body word limit and what it excludes, abstract words, references, figures / tables or combined display items, a page limit where the journal limits pages, and `soft` for guidance values); 5 entries add `limits_by_type` for other article types (four for systematic reviews, one for reviews and brief reports). `manuscript-export` and Gate 6 check numbers only against this block. 94 entries carry `guidelines_checked` (re-checked against the journal's author guidelines in 2026-09); for the other 146, `get_journal_template.py` and the export report warn that the limits were not checked against the current guidelines, and the skills tell you to confirm them on the journal's site. `system` and `citation_style` use fixed vocabularies (listed in the file header).
 
-Impact factors and APCs carry their vintage: 42 frequently targeted journals (urology, radiology, AI/digital health, top general and oncology titles) have `IF_year`/`IF_source` fields with the publisher-reported JCR 2025 or 2024 value; the rest still hold JCR 2022 values (`data_as_of` explains the rule). Skills always state the year and re-check the top candidates on the web before you rely on them. If a journal isn't listed, MRP fetches its "Instructions for Authors" via web search.
+Impact factors and APCs carry their vintage: 82 journals (from 26 specialties, most of them urology, radiology, general medical, oncology, AI/digital health and surgery titles) have `IF_year`/`IF_source` fields with the publisher-reported JCR 2025 or 2024 value; the rest still hold JCR 2022 values (`data_as_of` explains the rule). Skills always state the year and re-check the top candidates on the web before you rely on them. If a journal isn't listed, MRP fetches its "Instructions for Authors" via web search.
 
 ---
 
@@ -482,23 +484,24 @@ Only tools and guard-rails live in scripts — formulas that are easy to get sil
 
 | Script | Location | Purpose |
 |--------|----------|---------|
-| `assumption_tests.py` | `statistical-analysis/scripts/` | Assumption diagnostics (Shapiro-Wilk / D'Agostino-Pearson, Levene) reported as descriptions — they never switch the test; the design default (Welch) plus the rank-based alternative for when the SAP prespecifies it; Cohen's d with CI |
-| `power_analysis.py` | `statistical-analysis/scripts/` | Sample size / power across designs: two-group, proportions (pooled-variance Fleiss formula, optional continuity correction), diagnostic accuracy, survival, correlation — with dropout adjustment |
-| `data_profile.py` | `statistical-analysis/scripts/` | Read-only data check-up (CSV/XLSX, GBK-aware): disguised missing values, censored strings like "<0.1", numbers stored as text, date failures, repeated patient IDs, outcome event totals (per patient when rows repeat), `--not-id` for measurements mistaken for IDs, possible identifier columns (by name, ID-card/phone pattern, or one-value-per-patient; values never printed) — never modifies data, never computes associations with the outcome |
-| `reproduce_check.py` | `statistical-analysis/scripts/` | Runs an analysis command twice in fresh processes and compares every output (tables cell by cell, xlsx formulas, SVG/.gz by content, screen output) — exit 0 identical / 1 different / 2 failed; Ctrl-C restores earlier outputs; `--exclude`, `--keep-last` |
-| `pub_style.py` | `figure-generation/scripts/` | Journal figure styling (Nature, Lancet, JAMA, NEJM palettes), colorblind-safe options, export at the exact journal column width (RGB TIFF + PDF, ≥300 DPI), significance bars (log axes too) |
-| `export_docx.py` | `manuscript-export/scripts/` | Markdown → journal-formatted `.docx` (paragraphs, headings 1–6, nested lists, tables with alignment, code blocks, emphasis, links), driven by the journal template library; writes `export-report.md` with word counts, placeholders and unconverted citation keys |
-| `get_journal_template.py` | `manuscript-writing/scripts/` | Extract one journal's entry by id from the 240-journal YAML (no whole-file reads) |
-| `patient_level_split.py` | `data-collection-tools/scripts/` | Patient-level train / validation / test split (no leakage across sets) |
-| `randomization.py` | `data-collection-tools/scripts/` | Block / stratified randomization lists for RCTs |
-| `mrp_state.py` | `using-med-research-powers/scripts/` | Read and update `.mrp-state.json` at the end of each pipeline skill |
+| `assumption_tests.py` | `statistical-analysis/scripts/` | Assumption diagnostics (Shapiro-Wilk / D'Agostino-Pearson, Levene, Mauchly + Greenhouse-Geisser epsilon) reported as descriptions — they never switch the test; the design default (Welch; mixed model or Greenhouse-Geisser-corrected RM-ANOVA for 3+ repeated conditions) plus the rank-based alternative for when the SAP prespecifies it; Cohen's d with CI |
+| `power_analysis.py` | `statistical-analysis/scripts/` | A priori sample size: two means, two proportions (pooled-variance Fleiss formula, optional continuity correction), survival, correlation (two- or one-sided superiority); non-inferiority and equivalence for two means and two proportions (Farrington-Manning for proportions); diagnostic accuracy (Buderer, optional Wilson basis) — with dropout adjustment; scope in --help |
+| `data_profile.py` | `statistical-analysis/scripts/` | Read-only data check-up (CSV/XLSX, GBK-aware): disguised missing values, censored strings like "<0.1" (told apart from grouped bins like "<60 / ≥60"), numbers stored as text and lab abnormal flags ("5.6↑", "7.8 H"), words in numeric columns (shown as tokens), date failures, stray quotes that merge rows, repeated patient IDs, outcome event totals (per patient when rows repeat), `--not-id` for measurements mistaken for IDs, possible identifier columns (by name, ID-card/phone/e-mail pattern, values shaped like names — also masked or pinyin — addresses or record numbers, a person named inside free text, or one-value-per-patient; values of recognised identifier columns and sheet names that contain a name or a number are not printed — these are pattern checks, so look the report over before sharing it) — never modifies data, never computes associations with the outcome; exit 0 done / 2 invalid arguments or unreadable file |
+| `reproduce_check.py` | `statistical-analysis/scripts/` | Runs an analysis command twice in fresh processes and compares every output (tables cell by cell, xlsx formulas, DOCX/PPTX/SVG/.gz by content, screen output and, with `--compare-stderr`, stderr) — exit 0 identical / 1 different / 2 failed; Ctrl-C restores earlier outputs; files it moved aside that no run wrote again are put back; `--exclude` (shell glob), `--keep-last` (deletes only its own check folders, and only when every file it moved aside was an earlier check's result or still has an identical copy in place or in a kept check) |
+| `pub_style.py` | `figure-generation/scripts/` | Journal figure styling (Nature, Lancet, JAMA, NEJM palettes; every Nature / Lancet / JAMA family journal gets its family's widths, other journals generic widths + the colour-blind-safe Okabe-Ito palette with a one-line notice), export at the exact journal column width (RGB TIFF + PDF, ≥300 DPI) as byte-reproducible files, significance bars (log axes too); needs matplotlib ≥3.6 |
+| `export_docx.py` | `manuscript-export/scripts/` | Markdown → journal-formatted `.docx` (paragraphs, headings 1–6, nested lists, tables with alignment, code blocks, emphasis, links; page and line numbers), driven by the journal template library's `limits` (`--article-type` for reviews, letters …; `--journal generic` for a journal-neutral export); writes `export-report.md` with word counts (CJK characters counted one by one), figure / table / reference counts, placeholders, unconverted citation keys and Markdown left as text; never prints ✅ for a limit it could not check (❓ / not checked, ✅* for unverified journal entries); exit 0 ok / 2 error |
+| `get_journal_template.py` | `manuscript-writing/scripts/` | Extract one journal's entry by id from the 240-journal YAML (no whole-file reads); warns when an entry is unverified (no guidelines_checked); exit 0 found / 1 no match / 2 bad arguments or file |
+| `patient_level_split.py` | `data-collection-tools/scripts/` | Patient-level train / validation / test or K-fold split (no leakage across sets; IDs read as text, spellings that differ only in leading / trailing spaces, case or full-width characters kept together; an inner space still makes a different ID) |
+| `randomization.py` | `data-collection-tools/scripts/` | Simple / block / stratified randomization lists for RCTs, run by the person responsible for allocation outside the project folder (`--out` required, refuses a path inside the project, never overwrites without `--force`, owner-only files) |
+| `mrp_state.py` | `using-med-research-powers/scripts/` | Read and update `.mrp-state.json` at the end of each pipeline skill (creates it on the first write; never follows a symlinked state file; `show` prints cleaned values, labelled as data; exit 0 ok / 2 error / 3 profile field not set) |
 
 Usage example:
 
 ```python
-import os, sys
-sys.path.insert(0, os.path.join(os.environ.get("CLAUDE_PLUGIN_ROOT", "."), "skills", "statistical-analysis", "scripts"))
-sys.path.insert(0, os.path.join(os.environ.get("CLAUDE_PLUGIN_ROOT", "."), "skills", "figure-generation", "scripts"))
+# copy the helpers into the project once, so the analysis code runs without the plugin:
+#   cp "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/assumption_tests.py" .
+#   cp "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/power_analysis.py" .
+#   cp "$CLAUDE_PLUGIN_ROOT/skills/figure-generation/scripts/pub_style.py" .
 
 from assumption_tests import full_check          # assumption testing
 result = full_check(group1, group2, paired=False)
@@ -506,16 +509,16 @@ print(f"Recommended test: {result['recommended_test']}")  # descriptive only —
 
 # data check-up and re-run check are command-line tools:
 #   python3 "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/data_profile.py" data.xlsx --id patient_id --outcome recurrence --report data-profile.md
-#   python3 "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/reproduce_check.py" --cmd "Rscript analysis.R" --outputs results/
+#   python3 "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/reproduce_check.py" --cmd "Rscript analysis.R" --outputs results/ --compare-stdout --report reproduce-check.md
 
 from power_analysis import two_groups            # sample size
-result = two_groups(effect_size=0.5, power=0.80, dropout=0.15)
+result = two_groups(effect_size=0.5, power=0.80, dropout=0.15)   # n_per_group 64, 76 per group after 15% dropout
 
 from pub_style import apply_style                # publication figure styling
 apply_style('lancet')
 ```
 
-Install the dependencies with `pip install -r requirements.txt`.
+Install the dependencies with `pip install -r requirements.txt` (Python 3.10 or later; the minimum package versions are in that file).
 
 ---
 
@@ -527,7 +530,7 @@ MRP uses Claude Code's sub-agent tool (**Agent**, formerly named Task) to parall
 
 | Trigger | Parallel tasks |
 |---------|----------------|
-| Literature synthesis with ≥2 databases | One sub-agent per database, simultaneous search |
+| Literature synthesis with ≥2 search sources | PubMed and the supplementary web searches run as parallel sub-agents; databases you search yourself are merged when you import their exports |
 | Peer-review simulation | 4 sub-agents as independent reviewers, parallel evaluation |
 
 ### User-Confirmed Parallel
@@ -579,13 +582,13 @@ MRP tracks research progress in `.mrp-state.json` in your project directory, so 
     "research-question.md": {"version": 1},
     "study-protocol.md": {"version": 2, "change_log": "Primary outcome clarified after checkpoint 1"}
   },
-  "target_journal": "European Urology",
+  "target_journal": "european-urology",
   "checkpoint_mode": "light",
   "next_step": "data-analysis-planning"
 }
 ```
 
-Fields: `project`, `current_stage`, `completed_skills[{skill, date, outputs[]}]`, `artifacts{}`, `target_journal`, `checkpoint_mode` (`"light"` | `"step"` | `"auto"`), `next_step`. Schema: [`skills/using-med-research-powers/references/state-schemas.md`](skills/using-med-research-powers/references/state-schemas.md). The file stays in your local project directory and is never uploaded.
+Fields: `project`, `current_stage`, `completed_skills[{skill, date, outputs[]}]`, `artifacts{}`, `target_journal` (the journal's library id; `mrp_state.py set target_journal=` also takes the full name and stores the id), `checkpoint_mode` (`"light"` | `"step"` | `"auto"`), `next_step`. Schema: [`skills/using-med-research-powers/references/state-schemas.md`](skills/using-med-research-powers/references/state-schemas.md). The file stays in your local project directory and is never uploaded.
 
 ---
 
@@ -595,12 +598,14 @@ Most journals require Word format for submission. After the 6 gates pass, `manus
 
 | File | Produced by | Notes |
 |------|-------------|-------|
-| `manuscript.docx` | `export_docx.py` | Journal-formatted main file (font, spacing, section order and special panels from the journal template) |
-| `export-report.md` | `export_docx.py` | Word counts (body / abstract / references separately), reference & figure counts, leftover placeholders |
+| `manuscript.docx` | `export_docx.py` | Journal-formatted main file (font, spacing, section order and special panels from the journal template); page and line numbers |
+| `export-report.md` | `export_docx.py` | Word counts (body / abstract / references separately, body per the journal's `body_excludes`), reference, figure and table counts against the journal's limits, leftover placeholders, conversion notes |
 | `figures/*.tiff` | `figure-generation` (`pub_style.py`) | Figure files, ≥300 DPI (line art ≥600) |
 | Tables `.xlsx` | pandas / openpyxl snippet in `manuscript-writing` | Not a bundled script — run the snippet when a journal wants tables as a separate workbook |
 
 Title page and supplementary material are drafted as Markdown by `manuscript-writing`; convert them with the same script when the journal requires separate files.
+
+No journal chosen yet? `--journal generic` gives a journal-neutral Word file (standard layout, no limit checks). For an article that is not original research, add `--article-type review | systematic_review | research_letter | brief_report | case_report`: the report checks that type's limits where the library has them and otherwise says plainly that they were not checked. An entry without `guidelines_checked` gets a warning at the top of the report, and passing counts are marked ✅*: confirm the limits on the journal's site before relying on them.
 
 ---
 
@@ -620,7 +625,7 @@ MRP adapts the Superpowers methodology framework from software engineering to me
 | `finishing-a-development-branch` | `journal-selection` + `submission-preparation` | Journal targeting + cover letter replace merge/deploy |
 | `writing-skills` | `writing-mrp-skills` | Same meta-skill for extensibility |
 | — | `literature-synthesis` | No software equivalent; research requires evidence review |
-| — | `reporting-standards` | No software equivalent; 46 domain-specific compliance standards |
+| — | `reporting-standards` | No software equivalent; 54 domain-specific compliance standards |
 | — | `research-ethics` | No software equivalent; IRB/IACUC requirements |
 
 ---
@@ -628,8 +633,8 @@ MRP adapts the Superpowers methodology framework from software engineering to me
 ## Requirements
 
 - **Claude Code** (CLI, desktop, web, or IDE extension).
-- **Python 3** with the packages in [`requirements.txt`](requirements.txt) (`scipy`, `statsmodels`, `matplotlib`, `pandas`, `numpy`, `python-docx`, `openpyxl`, `pyyaml`) for the bundled scripts — the skills themselves work without them.
-- **PubMed MCP** (optional but recommended): any MCP server that exposes the 7 functions above (`search_articles`, `get_article_metadata`, `find_related_articles`, `lookup_article_by_citation`, `convert_article_ids`, `get_full_text_article`, `get_copyright_status`). Tools are addressed as `mcp__<server>__<function>`; the server name comes from your session's tool list (`claude_ai_PubMed` for the claude.ai connector, commonly `PubMed` locally). With it configured, citations are verified automatically; without it, verification falls back to manual DOI / web-search checks.
+- **Python 3.10 or later** with the packages in [`requirements.txt`](requirements.txt) (`scipy`, `statsmodels`, `matplotlib`, `pandas`, `numpy`, `python-docx`, `openpyxl`, `pyyaml`; minimum versions in that file) for the bundled scripts — the skills themselves work without them. CI tests Python 3.10 and 3.12.
+- **PubMed MCP** (optional but recommended): any MCP server that exposes the 7 functions above (`search_articles`, `get_article_metadata`, `find_related_articles`, `lookup_article_by_citation`, `convert_article_ids`, `get_full_text_article`, `get_copyright_status`). Tools are addressed as `mcp__<server>__<function>`; the server name comes from your session's tool list (`claude_ai_PubMed` for the claude.ai connector, commonly `PubMed` locally). With it configured, citations are verified automatically; without it, Claude queries PubMed's E-utilities through WebFetch where it can, otherwise checks DOIs or hands you the list — citations found only by web search stay ⏳ Unverified.
 
 ---
 
@@ -638,14 +643,14 @@ MRP adapts the Superpowers methodology framework from software engineering to me
 ```
 med-research-powers/
 ├── .claude-plugin/        plugin.json (name: mrp), marketplace.json
-├── .github/               ci.yml (guard, pytest, shellcheck, plugin validate, hook smoke test), evals.yml (manual), issue/PR templates
+├── .github/               ci.yml (guard, ruff, pytest on Python 3.10 / 3.12 and at the minimum versions, shellcheck, plugin validate, hook smoke tests), evals.yml (manual), dependabot.yml, issue/PR templates
 ├── commands/              7 slash commands (thin routers → skills)
 ├── skills/                20 skills, each: SKILL.md + references/ + scripts/
 ├── hooks/                 session-start.sh (reads .mrp-state.json, reports the resume point)
 ├── docs/                  architecture.md, USER-MANUAL.md, images/
-├── tools/                 check_consistency.py — repository guard (versions, counts, paths, links)
-├── tests/                 pytest suite for the bundled scripts
-├── evals/                 `claude plugin eval` cases — skill routing regression (see evals/README.md)
+├── tools/                 check_consistency.py — repository guard (versions, counts, paths, links and anchors, eval coverage, workflow pinning)
+├── tests/                 pytest suite: bundled scripts, the hook, the guard and the reference data (checklists, journal library, method-card recipes)
+├── evals/                 `claude plugin eval` cases — skill routing (every skill), over-triggering negatives, behaviour (see evals/README.md)
 ├── examples/              a synthetic example project (state file, research question, Type C protocol)
 ├── install.sh             installer (plugin / symlink)
 ├── requirements.txt       Python packages for the bundled scripts
