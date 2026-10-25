@@ -908,3 +908,63 @@ def test_library_example_copies_the_script_instead_of_importing_from_the_plugin(
     r = subprocess.run([sys.executable, "run.py"], cwd=target.parent, env=env, capture_output=True, text=True,
                        timeout=120)
     assert r.returncode == 0 and r.stdout.strip() == "ok", r.stderr
+
+
+# ─── final round: consoles that cannot show Chinese, a new --out-dir, a stale variants file ───
+
+@pytest.mark.parametrize("console", [{"PYTHONIOENCODING": "cp1252"}, {"PYTHONIOENCODING": "ascii:surrogateescape"},
+                                     {"PYTHONUTF8": "0", "LC_ALL": "C", "LANG": "C"}])
+def test_a_console_that_cannot_show_chinese_does_not_fail_a_written_split(tmp_path, console):
+    import subprocess
+    src = tmp_path / "cn.csv"
+    src.write_text("pid,lab\n" + "".join(f"P{i},{'阳性' if i % 2 else '阴性'}\n" for i in range(12)) + "p1 ,阳性\n",
+                   encoding="utf-8")
+    env = {k: v for k, v in os.environ.items() if k not in ("PYTHONIOENCODING", "PYTHONUTF8")}
+    env.update(console)
+    r = subprocess.run([sys.executable, os.path.abspath(pls.__file__), str(src), "--patient-col", "pid",
+                        "--label-col", "lab", "--out-dir", str(tmp_path / "o")], capture_output=True, env=env,
+                       timeout=120)
+    assert r.returncode == 0 and b"Traceback" not in r.stderr, r.stderr     # was: exit 1 after the files were written
+    assert b"[Split] wrote" in r.stdout
+    assert b"\\u9633\\u6027" in r.stdout or "PYTHONIOENCODING" not in console     # 阳性 as an escape
+    assert sorted(p.name for p in (tmp_path / "o").iterdir()) == sorted(pls.OUTPUT_FILES)
+
+
+def test_a_failed_write_removes_the_out_dir_it_created(tmp_path, capsys, monkeypatch):
+    import builtins
+    csv = tmp_path / "d.csv"
+    _one_row_per_patient([0, 1] * 10).to_csv(csv, index=False)
+
+    def disk_full(path, *a, **k):
+        if "split_summary" in str(path):
+            raise OSError(28, "No space left on device")
+        return builtins.open(path, *a, **k)
+
+    monkeypatch.setattr(pls, "open", disk_full, raising=False)
+    new = tmp_path / "new" / "splits"
+    _cli_error(capsys, pls.main, [str(csv), "--patient-col", "patient_id", "--out-dir", str(new)])
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["d.csv"]          # was: an empty new/splits left behind
+    (tmp_path / "kept").mkdir()
+    _cli_error(capsys, pls.main, [str(csv), "--patient-col", "patient_id", "--out-dir", str(tmp_path / "kept")])
+    assert (tmp_path / "kept").is_dir() and list((tmp_path / "kept").iterdir()) == []   # an existing folder stays
+
+
+def test_a_partial_move_names_a_stale_id_variants_file(tmp_path, capsys, monkeypatch):
+    out = tmp_path / "o"
+    with_variants = tmp_path / "a.csv"
+    with_variants.write_text("pid,label\nP1,0\np1 ,0\nP2,1\nP3,0\nP4,1\n", encoding="utf-8")
+    pls.main([str(with_variants), "--patient-col", "pid", "--out-dir", str(out)])
+    clean = tmp_path / "b.csv"
+    clean.write_text("pid,label\nP1,0\nP2,1\nP3,0\nP4,1\n", encoding="utf-8")
+    capsys.readouterr()
+    real_replace = os.replace
+
+    def locked(src, dst):
+        if str(dst).endswith("split_patients.csv"):
+            raise PermissionError(13, "Permission denied")
+        real_replace(src, dst)
+
+    monkeypatch.setattr(pls.os, "replace", locked)
+    err = _cli_error(capsys, pls.main, [str(clean), "--patient-col", "pid", "--out-dir", str(out)])
+    assert "未替换 split_patients.csv, split_summary.json" in err
+    assert "split_id_variants.csv 也还在" in err and (out / "split_id_variants.csv").exists()

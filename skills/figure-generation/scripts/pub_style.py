@@ -19,11 +19,13 @@ the Nature, Lancet and JAMA families get their family's house widths and palette
 gets the generic 85/127/170 mm widths and the colour-blind-safe Okabe-Ito palette, with a one-line
 notice on stderr (once per journal) — check that journal's figure guide.
 
-Reproducible files: save_figure writes no creation date into PDF / SVG / EPS and uses a fixed SVG
-id salt, so saving an unchanged figure again gives byte-identical files (reproduce_check passes).
+Reproducible files: save_figure writes no creation date into PDF / SVG / SVGZ / EPS (and no gzip
+timestamp into SVGZ) and uses a fixed SVG id salt, so saving an unchanged figure again gives
+byte-identical files (reproduce_check passes).
 metadata= is checked for every format before any file is written: each format gets the keys its
-writer can store (SVG takes Author / Subject as Creator / Description), the rest are skipped with
-one warning.
+writer can store (SVG / SVGZ take Author / Subject as Creator / Description), the rest are skipped
+with one warning. PGF typesets its text with LaTeX (rcParams['pgf.texsystem'], xelatex by default):
+it is rendered in memory first, so a missing TeX stops save_figure before any file is written.
 
 Export keeps the figure size: a journal_figsize('nature') figure is saved exactly 89 mm wide
 (no bbox_inches='tight' cropping). save_figure() lays the figure out inside that fixed size
@@ -299,16 +301,17 @@ def _save_tiff_rgb(fig, out, dpi):
 
 
 # Saving the same figure twice must give identical files (reproduce_check): no creation date in
-# PDF / SVG (removed via metadata) or EPS / PS (SOURCE_DATE_EPOCH), and a fixed salt for SVG ids.
-_NO_DATE = {'pdf': {'CreationDate': None}, 'svg': {'Date': None}}
+# PDF / SVG / SVGZ (removed via metadata) or EPS / PS (SOURCE_DATE_EPOCH), a fixed salt for SVG ids and
+# no timestamp in the SVGZ gzip header (_save_svgz).
+_NO_DATE = {'pdf': {'CreationDate': None}, 'svg': {'Date': None}, 'svgz': {'Date': None}}
 _SVG_HASHSALT = 'mrp-pub-style'
 # metadata keys each savefig writer stores: SVG's Dublin Core set (any other key raises ValueError), the
 # PostScript Creator comment (other keys are ignored); PDF and PNG take any key. savefig(metadata=...)
 # is refused for jpg / tiff etc., so those formats get none.
+_SVG_METADATA_KEYS = ('Title', 'Coverage', 'Date', 'Description', 'Format', 'Identifier', 'Language', 'Relation',
+                      'Source', 'Type', 'Creator', 'Contributor', 'Publisher', 'Rights', 'Keywords')
 _METADATA_KEYS = {
-    'pdf': None, 'png': None,
-    'svg': ('Title', 'Coverage', 'Date', 'Description', 'Format', 'Identifier', 'Language', 'Relation',
-            'Source', 'Type', 'Creator', 'Contributor', 'Publisher', 'Rights', 'Keywords'),
+    'pdf': None, 'png': None, 'svg': _SVG_METADATA_KEYS, 'svgz': _SVG_METADATA_KEYS,
     'eps': ('Creator',), 'ps': ('Creator',),
 }
 _SVG_KEY_FOR = {'Author': 'Creator', 'Subject': 'Description'}     # the PDF names of two SVG fields
@@ -325,7 +328,7 @@ def _metadata_by_format(formats, metadata):
         md = dict(_NO_DATE.get(fmt, {}))
         for k, v in (metadata or {}).items():
             key = k
-            if fmt == 'svg' and k in _SVG_KEY_FOR and _SVG_KEY_FOR[k] not in metadata:
+            if fmt in ('svg', 'svgz') and k in _SVG_KEY_FOR and _SVG_KEY_FOR[k] not in metadata:
                 key = _SVG_KEY_FOR[k]                   # an explicit Creator / Description wins
             if allowed is None or key in allowed:
                 md[key] = v
@@ -349,6 +352,34 @@ def _check_metadata(fig, metadata_by_format):
                     fig.savefig(io.BytesIO(), format=fmt, dpi=72, metadata=md)
             except Exception as e:
                 raise ValueError(f"metadata 不能写入 {fmt.upper()}：{e}（没有保存任何文件）") from None
+
+
+def _check_pgf(fig):
+    """PGF typesets its text through LaTeX (rcParams['pgf.texsystem']): check that the TeX program is there
+    and render the figure into memory first, so a missing or failing TeX stops save_figure before any file
+    exists."""
+    import io
+    import shutil
+    tex = mpl.rcParams['pgf.texsystem']
+    if shutil.which(tex) is None:
+        raise ValueError(f"PGF 要用 {tex} 排版文字，但找不到 {tex}（没有保存任何文件；装好 TeX，或从 formats 去掉 'pgf'）")
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            fig.savefig(io.BytesIO(), format='pgf')
+    except Exception as e:
+        raise ValueError(f"PGF 要用 {tex} 排版文字，试排时出错：{e}（没有保存任何文件；或从 formats 去掉 'pgf'）") from None
+
+
+def _save_svgz(fig, out, dpi, metadata):
+    """SVGZ = the SVG (with its metadata, no date) gzipped with mtime 0: matplotlib's own svgz writer stores
+    the current time in the gzip header, so two saves always differed."""
+    import gzip
+    import io
+    buf = io.BytesIO()
+    fig.savefig(buf, format='svg', dpi=dpi, metadata=metadata)
+    with open(out, 'wb') as f, gzip.GzipFile(filename='', mode='wb', fileobj=f, mtime=0) as gz:
+        gz.write(buf.getvalue())
 
 
 def _normalised_formats(fig, formats):
@@ -395,11 +426,12 @@ def save_figure(fig, filename, formats=('tiff', 'pdf'), dpi=None, line_art=True,
     A UserWarning is issued if content still extends beyond the figure edge.
     dpi resolution: explicit `dpi` > `kind` ('line_art' 600 / 'combination' 500 / 'halftone' 300)
     > `line_art` flag (True → 600, False → 300). Line art (plots with thin lines/text) needs 600.
-    The files are reproducible: no creation date in PDF / SVG / EPS and a fixed SVG id salt (an
-    svg.hashsalt the user set is kept). metadata: extra savefig metadata (e.g. {'Title': ..., 'Author': ...})
-    for PDF / SVG / PNG / EPS, each format getting the keys its writer stores (SVG: Author → Creator,
-    Subject → Description; EPS: Creator only); other keys are skipped for that format with one warning.
-    It is checked before any file is written. TIFF and other formats get no metadata.
+    The files are reproducible: no creation date in PDF / SVG / SVGZ / EPS, no gzip timestamp in SVGZ and
+    a fixed SVG id salt (an svg.hashsalt the user set is kept). metadata: extra savefig metadata (e.g.
+    {'Title': ..., 'Author': ...}) for PDF / SVG / SVGZ / PNG / EPS, each format getting the keys its writer
+    stores (SVG / SVGZ: Author → Creator, Subject → Description; EPS: Creator only); other keys are skipped
+    for that format with one warning. It is checked before any file is written. TIFF and other formats get
+    no metadata. 'pgf' needs a TeX installation; it is rendered in memory first, before any file is written.
     formats: names in any case ('TIFF' is 'tiff', '.pdf' is 'pdf'); each file gets the lower-case name as
     its extension (figure1.tiff); a format matplotlib cannot write is refused before any file is written.
     """
@@ -429,11 +461,15 @@ def save_figure(fig, filename, formats=('tiff', 'pdf'), dpi=None, line_art=True,
     with mpl.rc_context(rc), _fixed_source_date():
         if metadata:
             _check_metadata(fig, md_by_format)
+        if 'pgf' in formats:
+            _check_pgf(fig)
         _warn_if_clipped(fig)
         for fmt in formats:
             out = f'{filename}.{fmt}'
             if fmt in ('tiff', 'tif'):
                 _save_tiff_rgb(fig, out, dpi)
+            elif fmt == 'svgz':
+                _save_svgz(fig, out, dpi, md_by_format['svgz'])
             else:
                 md = md_by_format.get(fmt)
                 fig.savefig(out, dpi=dpi, format=fmt, **({'metadata': md} if md else {}))

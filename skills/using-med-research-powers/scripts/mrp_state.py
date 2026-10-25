@@ -8,7 +8,7 @@ mrp_state.py — the only writer of MRP's two state files.
 Usage (run from the project directory, or pass --dir):
 
   # project state
-  mrp_state.py init --project "AI bladder-cancer CT study"   # optional: done / set / checkpoint create the file
+  mrp_state.py init --project "AI bladder-cancer CT study"   # optional: done / set / checkpoint / note create the file
   mrp_state.py done study-design --output study-protocol.md --next research-ethics
   mrp_state.py done statistical-analysis --output results-summary.md --output analysis-log.md \
                     --next figure-generation
@@ -26,7 +26,8 @@ Usage (run from the project directory, or pass --dir):
 
 Values are written verbatim as JSON strings; nothing in these files is ever executed. A note (`note`,
 `done --note`) is stored cleaned like `show` cleans it (line breaks become spaces) and cut to NOTE_MAX_BYTES.
-done / set / checkpoint / note create .mrp-state.json when it does not exist yet (init only names the project).
+done / set / checkpoint / note create .mrp-state.json when it does not exist yet, with an empty next_step
+(init names the project and starts next_step at research-question-formulation).
 target_journal holds the journal's library id (journal-templates.yaml, or the project's
 journal-overrides.yaml); `set target_journal=` also takes the journal's full name and stores its id.
 `show` prints the state as data: only the schema's fields (unknown keys are counted, not shown), the
@@ -37,8 +38,9 @@ A state or profile file — or its .tmp file — or a journal-overrides.yaml tha
 regular file is refused, never followed. So are a file with an integer of more than INT_MAX_DIGITS
 digits, a command-line argument that is not UTF-8 and — on a write, `profile get` and `profile show` —
 text holding a lone UTF-16 surrogate (a JSON escape such as \\ud800 that is not half of a pair; `show`
-drops such characters instead). Exit codes: 0 = ok, 2 = error (one line on stderr, no traceback; nothing
-is written and no .tmp file is left), 3 = `profile get`: field not set.
+drops such characters instead). Exit codes: 0 = ok, 2 = error (one line on stderr, no traceback, also for
+bad usage; nothing is written and no .tmp file is left), 3 = `profile get`: field not set. A console that
+cannot show a character (Chinese under LC_ALL=C or PYTHONIOENCODING=ascii) gets it as an escape (\\u4e2d).
 Only Python's standard library is used, plus PyYAML (when installed) to read journal-overrides.yaml.
 """
 
@@ -93,6 +95,20 @@ def fail(msg) -> None:
     """Bad usage or an unreadable / malformed / unsafe file: one line on stderr, exit 2."""
     print(str(msg).replace("\n", " "), file=sys.stderr)
     sys.exit(2)
+
+
+def safe_console() -> None:
+    """stdout / stderr write a character they cannot encode as an escape (\\u4e2d) instead of crashing:
+    Chinese text on a console that cannot show it (PYTHONIOENCODING=ascii, LC_ALL=C with PYTHONUTF8=0,
+    whose stdout uses surrogateescape) or a non-UTF-8 path in a message."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            "中\udcff".encode(getattr(stream, "encoding", None) or "utf-8", getattr(stream, "errors", None) or "strict")
+        except (UnicodeError, LookupError):
+            try:
+                stream.reconfigure(errors="backslashreplace")
+            except (AttributeError, ValueError):
+                pass
 
 
 _NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
@@ -376,14 +392,14 @@ def state_path(args) -> Path:
     return Path(base) / STATE_NAME
 
 
-def empty_state(project: str) -> dict:
+def empty_state(project: str, next_step: str = "research-question-formulation") -> dict:
     return {
         "schema_version": 1,
         "project": project,
         "created": today(),
         "updated": today(),
         "current_stage": "",
-        "next_step": "research-question-formulation",
+        "next_step": next_step,
         "checkpoint_mode": "light",
         "target_journal": "",
         "hard_checkpoints": {k: None for k in CHECKPOINTS},
@@ -431,11 +447,13 @@ def read_state(p: Path):
 
 
 def load_state(args) -> dict:
-    """State for a write command; no state file yet → a new one (done / set / checkpoint create it)."""
+    """State for a write command; no state file yet → a new one (done / set / checkpoint / note create it).
+    Its next_step is empty, not init's research-question-formulation: the project may be anywhere in the
+    pipeline (the hook would announce that step as the next one)."""
     st = read_state(state_path(args))
     if st is None:
         args.new_state = True
-        st = empty_state("")
+        st = empty_state("", next_step="")
     return st
 
 
@@ -609,7 +627,7 @@ def cmd_done(args):
         st["notes"].append({"date": today(), "skill": args.skill, "note": note})
     write_state(args, st)
     print(f"已记录 {clean(args.skill)} 完成；current_stage={clean(st['current_stage'])}; "
-          f"next_step={clean(st['next_step'])}" + (f"（备注超过 {NOTE_MAX_BYTES} 字节，已截断）" if cut else ""))
+          f"next_step={clean(st['next_step']) or '(未设置)'}" + (f"（备注超过 {NOTE_MAX_BYTES} 字节，已截断）" if cut else ""))
 
 
 def cmd_note(args):
@@ -752,12 +770,17 @@ def cmd_profile(args):
 
 
 # ── CLI ────────────────────────────────────────────────────────────────────────
+class Parser(argparse.ArgumentParser):
+    def error(self, message):            # one line on stderr, exit 2 (argparse prints a usage block)
+        fail(f"用法错误（{self.prog}）：{message}；用 --help 查看用法")
+
+
 def build_parser():
-    ap = argparse.ArgumentParser(description="MRP project state / user profile helper")
+    ap = Parser(description="MRP project state / user profile helper")
     ap.add_argument("--dir", help="项目目录（默认 $CLAUDE_PROJECT_DIR 或当前目录）")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    s = sub.add_parser("init", help="创建 .mrp-state.json 并命名项目（可选：done/set/checkpoint 会自动创建）")
+    s = sub.add_parser("init", help="创建 .mrp-state.json 并命名项目（可选：done/set/checkpoint/note 会自动创建）")
     s.add_argument("--project", required=True)
     s.add_argument("--checkpoint-mode", choices=CHECKPOINT_MODES)
     s.add_argument("--force", action="store_true")
@@ -799,11 +822,7 @@ def build_parser():
 
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else list(argv)
-    if getattr(sys.stdout, "errors", None) == "strict":       # a non-UTF-8 path in a message never crashes
-        try:
-            sys.stdout.reconfigure(errors="backslashreplace")
-        except (AttributeError, ValueError):
-            pass
+    safe_console()
     for i, a in enumerate(argv, 1):         # non-UTF-8 bytes arrive as lone surrogates (surrogateescape)
         if _SURROGATE.search(a):
             fail(f"第 {i} 个命令行参数不是有效的 UTF-8 文本（终端或脚本的编码不对？）；请改成 UTF-8 后重试")

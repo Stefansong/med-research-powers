@@ -66,7 +66,9 @@ Outputs (in --out-dir):
     split_id_variants.csv  only when some patient IDs were written in several ways: each spelling
 Warnings are also printed on stderr. Exit status 0 = written; 2 = invalid arguments, an
 unreadable / unusable input file, or outputs that cannot be written -- the files already in
---out-dir are then left as they were (one line on stderr, no traceback).
+--out-dir are then left as they were, and an --out-dir the run created is removed again (one line
+on stderr, no traceback). A console that cannot show Chinese (e.g. PYTHONIOENCODING=cp1252) gets
+the summary with escapes (\\u9633) instead of stopping the run.
 
 Library use (project code never imports from the plugin install path): copy this file into the
 project once -- it reads nothing else from the plugin -- e.g. as the project's tools/data_split.py:
@@ -399,6 +401,20 @@ def _fail(msg):
     raise SystemExit(2)
 
 
+def _safe_console():
+    """stdout / stderr write a character they cannot encode as an escape (\\u9633) instead of crashing after
+    the outputs were written: Chinese labels or warnings on a console that cannot show them
+    (PYTHONIOENCODING=cp1252, LC_ALL=C with PYTHONUTF8=0), a non-UTF-8 path in a message."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            '中\udcff'.encode(getattr(stream, 'encoding', None) or 'utf-8', getattr(stream, 'errors', None) or 'strict')
+        except (UnicodeError, LookupError):
+            try:
+                stream.reconfigure(errors='backslashreplace')
+            except (AttributeError, ValueError):
+                pass
+
+
 class _Parser(argparse.ArgumentParser):
     def error(self, message):            # one line on stderr, exit 2 (argparse prints a usage block)
         _fail(f"参数错误：{message}（用 --help 查看用法）")
@@ -568,8 +584,8 @@ def _write_outputs(out_dir, tables, encoding, summary):
     cannot write fails before anything is touched), then written to a temporary file in out_dir; the
     files are moved into place only when all of them were written, the summary last. A
     split_id_variants.csv left over from an earlier run is removed after that. Raises _Unwritable or
-    OSError when nothing in out_dir was changed, _PartialWrite when a move failed after others had
-    succeeded; temporary files never stay behind."""
+    OSError when nothing in out_dir was changed (folders made for out_dir are removed again),
+    _PartialWrite when a move failed after others had succeeded; temporary files never stay behind."""
     contents = {}
     for name, table in tables.items():
         text = table.to_csv(index=False)
@@ -581,9 +597,14 @@ def _write_outputs(out_dir, tables, encoding, summary):
     for name in contents:                         # a folder in the way would fail halfway through the moves
         if os.path.isdir(os.path.join(out_dir, name)):
             raise IsADirectoryError(errno.EISDIR, f"{name} 是一个文件夹", os.path.join(out_dir, name))
-    os.makedirs(out_dir, exist_ok=True)
+    new_dirs = []                                 # folders made here, deepest first
+    d = os.path.abspath(out_dir)
+    while not os.path.lexists(d):
+        new_dirs.append(d)
+        d = os.path.dirname(d)
     temps, done = {}, []
     try:
+        os.makedirs(out_dir, exist_ok=True)
         for name, data in contents.items():
             temps[name] = os.path.join(out_dir, f'.{name}.{secrets.token_hex(4)}.tmp')
             with open(temps[name], 'xb') as f:
@@ -606,9 +627,16 @@ def _write_outputs(out_dir, tables, encoding, summary):
                 os.remove(tmp)
             except OSError:
                 pass
+        if not done:                              # nothing written: no empty --out-dir left behind
+            for d in new_dirs:
+                try:
+                    os.rmdir(d)
+                except OSError:
+                    break
 
 
 def main(argv=None):
+    _safe_console()
     p = _Parser(description='Patient-level, stratified, seeded data split with leakage check.')
     p.add_argument('csv', help='one row per sample (image/slice/record) with a patient id column')
     p.add_argument('--patient-col', required=True)
@@ -681,8 +709,11 @@ def main(argv=None):
         _fail(f"无法写入 {args.out_dir}：{e.strerror or e}；没有写入任何输出文件（目录里原有的文件未改动）")
     except _PartialWrite as e:
         rest = [n for n in [*tables, 'split_summary.json'] if n not in e.done]
+        stale = ('split_id_variants.csv' not in tables
+                 and os.path.isfile(os.path.join(args.out_dir, 'split_id_variants.csv')))
         _fail(f"无法写入 {args.out_dir}：{e.error.strerror or e.error}。已替换 {', '.join(e.done)}，"
-              + (f"未替换 {', '.join(rest)}：这些输出来自不同的运行，不要使用；" if rest else
+              + (f"未替换 {', '.join(rest)}" + ("，上次运行留下的 split_id_variants.csv 也还在" if stale else "")
+                 + "：这些输出来自不同的运行，不要使用；" if rest else
                  "但上次运行留下的 split_id_variants.csv 没能删除（它不属于这次划分）；")
               + "关闭占用这些文件的程序（如 Excel）后重跑")
     except _Unwritable as e:

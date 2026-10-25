@@ -435,3 +435,35 @@ def test_format_aliases_duplicates_and_unknown_formats(tmp_path):
         pub_style.save_figure(fig, str(tmp_path / "c" / "c"), formats=("pdf", "docx"))
     plt.close(fig)
     assert list((tmp_path / "c").iterdir()) == []                         # checked before any file is written
+
+
+# ─── final round: reproducible SVGZ with its metadata, PGF without TeX ───
+
+def test_svgz_has_no_timestamp_and_keeps_the_metadata_of_the_svg(tmp_path, monkeypatch):
+    import gzip
+    monkeypatch.delenv("SOURCE_DATE_EPOCH", raising=False)
+    fig, ax = plt.subplots(figsize=(2, 1.5))
+    ax.plot([0, 1], [0, 1])
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        pub_style.save_figure(fig, str(tmp_path / "f"), formats=("svgz", "svg"),
+                              metadata={"Author": "Dr X", "Title": "T1"})
+    plt.close(fig)
+    raw = (tmp_path / "f.svgz").read_bytes()
+    assert raw[4:8] == b"\0\0\0\0"                          # gzip mtime: was the time of saving
+    svg = gzip.decompress(raw)
+    assert svg == (tmp_path / "f.svg").read_bytes()          # was: a <dc:date> and no metadata
+    assert b"<dc:title>Dr X</dc:title>" in svg and b"<dc:date>" not in svg
+    assert not [w for w in caught if "已跳过" in str(w.message)]
+
+
+def test_pgf_without_tex_is_refused_before_any_file_is_written(tmp_path, monkeypatch):
+    (tmp_path / "bin").mkdir()
+    monkeypatch.setenv("PATH", str(tmp_path / "bin"))       # no TeX on this PATH
+    fig, ax = plt.subplots(figsize=(2, 1.5))
+    ax.plot([0, 1], [0, 1])
+    (tmp_path / "out").mkdir()
+    with pytest.raises(ValueError, match="PGF"):
+        pub_style.save_figure(fig, str(tmp_path / "out" / "f"), formats=("tiff", "pdf", "pgf"))
+    plt.close(fig)
+    assert list((tmp_path / "out").iterdir()) == []           # was: f.tiff and f.pdf, then a TeX error

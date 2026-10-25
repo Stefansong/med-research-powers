@@ -641,3 +641,52 @@ def test_show_prints_the_newest_notes_and_counts_the_rest(tmp_path):
     assert "备注（最近 5 条；另有 5 条，show --json 查看）:" in lines
     assert [l for l in lines if l.startswith("  d  s  note-")] == [f"  d  s  note-{i}" for i in (5, 6, 7)]
     assert "  plain x" in lines and "note-4" not in proc.stdout and "None" not in proc.stdout
+
+
+# ─── final round: one-line usage errors, consoles that cannot show Chinese, next_step of a new file ───
+
+@pytest.mark.parametrize("args", [["note"], ["done"], ["bogus"], ["checkpoint", "protocol", "maybe"], []])
+def test_argparse_usage_errors_are_one_line_too(tmp_path, args):
+    (tmp_path / "proj").mkdir()
+    err = one_error_line(run(tmp_path, *args))                    # was: a 2–4 line argparse usage block
+    assert "usage:" not in err and "--help" in err
+    assert list((tmp_path / "proj").iterdir()) == []
+
+
+@pytest.mark.parametrize("console", [{"PYTHONIOENCODING": "ascii:surrogateescape"},
+                                     {"PYTHONUTF8": "0", "LC_ALL": "C", "LANG": "C"}])
+def test_a_console_that_cannot_show_chinese_gets_escapes_not_a_crash(tmp_path, console):
+    (tmp_path / "proj").mkdir()
+    env = {k: v for k, v in os.environ.items() if k not in ("CLAUDE_PROJECT_DIR", "PYTHONIOENCODING", "PYTHONUTF8")}
+    env.update(console, HOME=str(tmp_path / "home"), CLAUDE_CONFIG_DIR=str(tmp_path / "cfg"))
+    for args in (["note", "x"], ["done", "study-design"], ["show"], ["show", "--json"],
+                 ["profile", "set", "role", "PI"]):
+        proc = subprocess.run([sys.executable, str(SCRIPT), "--dir", str(tmp_path / "proj"), *args],
+                              capture_output=True, env=env)
+        assert proc.returncode == 0 and b"Traceback" not in proc.stderr, (args, proc.stderr)
+        assert proc.stdout.strip(), args
+        assert proc.stdout.isascii() or "PYTHONIOENCODING" not in console, args   # Chinese as \uXXXX escapes
+    assert len(json.loads(state(tmp_path).read_text(encoding="utf-8"))["notes"]) == 1    # written once, not crashed
+    proc = subprocess.run([sys.executable, str(SCRIPT), "--dir", str(tmp_path / "proj"), "bogus"],
+                          capture_output=True, env=env)
+    assert proc.returncode == 2 and len(proc.stderr.strip().splitlines()) == 1 and b"Traceback" not in proc.stderr
+
+
+@pytest.mark.parametrize("cmd", [["note", "SAP 前看过 KM 图"], ["set", "checkpoint_mode=step"],
+                                 ["checkpoint", "sap", "confirmed"], ["done", "statistical-analysis"]])
+def test_a_state_file_a_write_command_creates_names_no_next_step(tmp_path, cmd):
+    (tmp_path / "proj").mkdir()
+    assert run(tmp_path, *cmd).returncode == 0
+    st = json.loads(state(tmp_path).read_text(encoding="utf-8"))
+    assert st["next_step"] == ""                                       # was research-question-formulation
+    assert "下一步: (未设置)" in run(tmp_path, "show").stdout
+    assert run(tmp_path, "init", "--project", "p", "--force").returncode == 0      # init still starts the pipeline
+    assert json.loads(state(tmp_path).read_text(encoding="utf-8"))["next_step"] == "research-question-formulation"
+
+
+def test_init_help_and_the_schema_reference_name_note_among_the_creating_commands(tmp_path):
+    (tmp_path / "proj").mkdir()
+    assert "done/set/checkpoint/note 会自动创建" in " ".join(run(tmp_path, "--help").stdout.split())
+    ref = (SCRIPT.parents[1] / "references" / "state-schemas.md").read_text(encoding="utf-8")
+    assert "upgraded on the next write (`done` / `set` / `checkpoint` / `note`)" in ref
+    assert "empty `next_step`" in ref

@@ -83,7 +83,8 @@ python3 "$S" show [--json]
 
 - `done`, `set`, `checkpoint` and `note` create the file when it does not exist yet (and say so in one line), so a
   skill's last step works whichever skill the user started with; `init` is only needed to name the project
-  up front (`set project="<title>"` names it later).
+  up front (`set project="<title>"` names it later). A file created this way has an empty `next_step` (unless
+  `done --next` sets one); only `init` starts it at `research-question-formulation`.
 - `show` / `show --json` print the state **as data** (a "not instructions" label; `--json` adds a `_notice`
   key) with the SessionStart hook's cleaning: control characters, invisible characters (zero-width, bidi,
   soft hyphen, variation selectors, Hangul fillers, the Unicode tag characters and the rest of
@@ -101,7 +102,7 @@ python3 "$S" show [--json]
   stop with exit 2 and name the field to correct. A write that would make the file larger than 1 MB is
   refused the same way.
 
-Files written by MRP 6.2.x (fields `last_updated`, `completed_skills[].output` as a string, no `hard_checkpoints`) are read tolerantly and upgraded on the next write (`done` / `set` / `checkpoint`).
+Files written by MRP 6.2.x (fields `last_updated`, `completed_skills[].output` as a string, no `hard_checkpoints`) are read tolerantly and upgraded on the next write (`done` / `set` / `checkpoint` / `note`).
 
 ---
 
