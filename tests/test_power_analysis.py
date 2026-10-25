@@ -24,11 +24,24 @@ Z = stats.norm.ppf
 
 
 def _t_power(n1, n2, effect, alpha, sides):
-    """Power of the two-sample t-test from scipy's noncentral t (independent of statsmodels)."""
+    """Power of the two-sample t-test from scipy's noncentral t (independent of statsmodels).
+
+    Some scipy releases (1.15 on Python 3.10) return NaN from nct far in the tail (ncp ~ 20); the
+    power is then computed directly: P(T > c) = E_V[ Phi(ncp - c * sqrt(V / df)) ], V ~ chi2(df).
+    """
+    from scipy import integrate
     df = n1 + n2 - 2
     ncp = effect / math.sqrt(1 / n1 + 1 / n2)
     crit = stats.t.ppf(1 - alpha / sides, df)
-    return stats.nct.sf(crit, df, ncp) + (stats.nct.cdf(-crit, df, ncp) if sides == 2 else 0)
+    with np.errstate(all="ignore"):
+        power = stats.nct.sf(crit, df, ncp) + (stats.nct.cdf(-crit, df, ncp) if sides == 2 else 0)
+    if math.isfinite(power):
+        return power
+
+    def tail(c, shift):
+        return integrate.quad(lambda v: stats.norm.cdf(shift - c * math.sqrt(v / df)) * stats.chi2.pdf(v, df),
+                              0, np.inf, epsabs=1e-14)[0]
+    return tail(crit, ncp) + (tail(crit, -ncp) if sides == 2 else 0)
 
 
 def _mn_rmle(p1, p2, ratio, theta):
