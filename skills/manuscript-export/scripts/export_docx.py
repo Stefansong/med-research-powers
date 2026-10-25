@@ -222,13 +222,14 @@ _RANGE_RE = re.compile(r"(\d[\d,]*)\s*(?:-|–|—|to)\s*~?\s*(\d[\d,]*)")
 # Only when it comes before the first number: in "3000 words (no limit on references)" it is about something else.
 _NO_LIMIT_RE = re.compile(r"unlimited|\bno(?:\s+[a-z-]+){0,2}\s+(?:limits?|maximum)\b|\bno\s+strict\b|"
                           r"\bnot\s+limited\b")
-# What a "no limit" phrase names (_no_limit_scope): another article type, the original article, a part.
+# What a "no limit" phrase names (_no_limit_scope): another article type ("review articles" and "case report
+# papers" are that type, not original articles), the original article, a part.
 _SCOPE_TOKEN_RE = re.compile(
-    r"\b(?:(?P<other_type>(?:systematic |narrative |invited |mini-?)?reviews?|meta-analys[ie]s|(?:research )?letters?"
+    r"\b(?:(?P<other_type>(?:(?:systematic |narrative |invited |mini-?)?reviews?|meta-analys[ie]s|(?:research )?letters?"
     r"|correspondence|case (?:reports?|series)|editorials?|commentar(?:y|ies)|perspectives?|viewpoints?|opinions?"
     r"|(?:brief|short|rapid) (?:reports?|communications?|articles?|papers?)|technical notes?"
     r"|special (?:articles?|reports?)|consensus (?:statements?|papers?)|(?:study )?protocols?"
-    r"|other (?:article )?(?:types?|articles?|papers?|submissions?))"
+    r"|other (?:article )?(?:types?|articles?|papers?|submissions?))(?: (?:articles?|papers?|submissions?|manuscripts?))?)"
     r"|(?P<original>(?:original|research)(?: research| investigations?| contributions?| articles?| papers?| reports?)*"
     r"|full(?:-length)? (?:articles?|papers?)|articles?|papers?|submissions?|manuscripts?)"
     r"|(?P<words>words?|word count|(?:main |body )?text|body|length)"
@@ -238,14 +239,23 @@ _SCOPE_TOKEN_RE = re.compile(
     r"|(?P<tables>tables?)"
     r"|(?P<display>display items?)"
     r"|(?P<misc>legends?|captions?|supplement\w*|appendi\w+|online|methods|key points|keywords?|authors?|title"
-    r"|pages?))\b")
+    r"|pages?|colou?r(?:ed)?))\b")
+# "see the guide for authors" / "author guidelines" name no part (the "authors" in them is not the author list)
+_AUTHOR_GUIDE_RE = re.compile(r"\b(?:authors?'?s?\s+(?:guidelines?|guide|instructions|information)"
+                              r"|(?:guidelines?|guide|instructions|information)\s+(?:for|to)\s+authors?)\b")
 # the parts named that mean "this limit", per part (_read_limit's `part`); "words" alone is handled apart
 _PART_TOKENS = {"words": set(), "abstract": {"abstract"}, "references": {"references"},
                 "figures": {"figures", "display"}, "tables": {"tables", "display"}}
 _CLAUSE_END_RE = re.compile(r"[;()\[\]—]|,(?!\d)|\.\s")
 _NUM_OR_SIGN_RE = re.compile(r"[≤<≥>~]|\d[\d,]*")
-_SCOPE_PREP_RE = re.compile(r"\s*(?:(?:is|are)\s+)?(?:for|on|to|in|of|regarding|concerning)\s+(?:the\s+|all\s+|any\s+)?"
+_SCOPE_PREP_RE = re.compile(r"\s*(?:(?:is|are|apply|applies|exists?|(?:is|are)\s+(?:set|imposed|given|placed))\s+)?"
+                            r"(?:for|on|to|in|of|regarding|concerning)\s+(?:the\s+|all\s+|any\s+)?"
                             r"(?:(?:total\s+)?number\s+of\s+)?")
+_NOT_STATED_RE = re.compile(r"\s*(?:(?:is|are|was|were)\s+)?(?:stated|specified|given|mentioned|indicated|listed|found"
+                            r"|provided)\b")
+_ONLY_RE = re.compile(r"\s*[—–:-]\s*([^;,()\[\]—.\d]*?)\s+only\b")
+# a bracket right after a clause about another article type / part belongs to it: "no limit for reviews (up to 10)"
+_TRAILING_BRACKET_RE = re.compile(r"\s*(?:\([^()]*\)|\[[^\[\]]*\])")
 _SEE_GUIDELINES_RE = re.compile(r"\bsee (?:the )?(?:author|journal)(?:'s)? guidelines")
 # a minimum, not a maximum: "more than 30 expected", "at least 20", "≥30", "minimum 3000"
 _MIN_RE = re.compile(r"\bmore than\b|\bat least\b|\bminimum\b|\bmin\.|≥|>=|(?<![<≤])>\s*\d")
@@ -265,23 +275,35 @@ def _no_limit_scope(s, m, part):
     Vancouver'), the original article or this part ('no reference limit' for references); 'other' when it
     names another article type ('no limit for reviews') or another part ('no limit on references' for the
     word limit, 'no limit on supplementary figures'); 'unclear' when it is about something not recognised
-    ('no limit in the guide') or names a part when `part` is not known."""
-    start = max([d.end() for d in _CLAUSE_END_RE.finditer(s, 0, m.start())]
-                + [n.end() for n in _NUM_OR_SIGN_RE.finditer(s, 0, m.start())], default=0)
+    ('no limit in the guide') or names a part when `part` is not known.
+    What comes before the phrase in its clause counts too, also with other words between ('reviews and
+    letters have no limit', 'methods section unlimited', 'supplementary figures are unlimited'), and so
+    does the subject of a bracket the phrase opens ('reviews (no limit)')."""
+    def clause_start(pos):
+        return max([d.end() for d in _CLAUSE_END_RE.finditer(s, 0, pos)]
+                   + [n.end() for n in _NUM_OR_SIGN_RE.finditer(s, 0, pos)], default=0)
+    start = clause_start(m.start())
     end = min([d.start() for d in _CLAUSE_END_RE.finditer(s, m.end())][:1]
               + [n.start() for n in _NUM_OR_SIGN_RE.finditer(s, m.end())][:1], default=len(s))
+    if re.fullmatch(r"no\s+(?:limits?|maximum)", m.group(0)) and _NOT_STATED_RE.match(s, m.end(), end):
+        return "unclear", set(), (start, end)        # "no limit stated / given": the guide is silent on it
+    scan = _AUTHOR_GUIDE_RE.sub(lambda g: "#" * len(g.group(0)), s)                 # same positions as s
     names = {t.lastgroup for t in _SCOPE_TOKEN_RE.finditer(m.group(0))}             # "no reference limit"
-    before = list(_SCOPE_TOKEN_RE.finditer(s, start, m.start()))                     # "references not limited"
-    if before and re.fullmatch(r"[\s:=–-]*(?:(?:is|are)\s+)?", s[before[-1].end():m.start()]):
-        names.add(before[-1].lastgroup)
-    prep = _SCOPE_PREP_RE.match(s, m.end(), end)                                    # "no limit for reviews"
+    lead = start
+    if s[start - 1:start] == "(" and not s[start:m.start()].strip():                # "reviews (no limit)"
+        lead = clause_start(start - 1)
+    names.update(t.lastgroup for t in _SCOPE_TOKEN_RE.finditer(scan, lead, m.start()))  # "references not limited"
+    only = _ONLY_RE.match(scan, end)                                                # "no limit — reviews only"
+    if only:
+        names.update(t.lastgroup for t in _SCOPE_TOKEN_RE.finditer(only.group(1)))
+    prep = _SCOPE_PREP_RE.match(scan, m.end(), end)                                 # "no limit for reviews"
     if prep:
-        after = [t.lastgroup for t in _SCOPE_TOKEN_RE.finditer(s, prep.end(), end)]
+        after = [t.lastgroup for t in _SCOPE_TOKEN_RE.finditer(scan, prep.end(), end)]
         if not after and not re.fullmatch(r"\s*(?:number|count|size|quantity)?\s*", s[prep.end():end]):
             return "unclear", names, (start, end)
         names.update(after)
     else:                                                                           # "unlimited references"
-        t = _SCOPE_TOKEN_RE.match(s, m.end() + len(s[m.end():end]) - len(s[m.end():end].lstrip()), end)
+        t = _SCOPE_TOKEN_RE.match(scan, m.end() + len(s[m.end():end]) - len(s[m.end():end].lstrip()), end)
         if t:
             names.add(t.lastgroup)
     if "other_type" in names and "original" not in names:
@@ -308,8 +330,11 @@ def _read_limit(value, kind="words", part=None):
     `part` (words / abstract / references / figures / tables; from `kind` when not given) is what the
     limit is about: a "no limit" before the number counts only when it is about this part and the
     original article — 'no limit for reviews; ≤40' → 40, 'no limit on references; 3000 words' → 3000 for
-    the word limit; when it is unclear what it is about → None + note, never no_limit; a number followed by
-    'no limit for original articles' → None + note.
+    the word limit; 'reviews and letters have no limit; research articles 3500 words' → 3500, 'supplementary
+    figures are unlimited; ≤6' → 6 for figures; a bracket after such a clause is part of it ('no limit for
+    reviews (up to 10 figures); 3000 words' → 3000); when it is unclear what it is about ('no limit in the
+    guide', 'no limit stated') → None + note, never no_limit; a number followed by 'no limit for original
+    articles' → None + note.
     A second, larger maximum in the same text (another article type) is named in the note."""
     out = {"value": None, "soft": False, "pages": None, "no_limit": False, "note": None}
     s = str(value if value is not None else "").strip().lower()
@@ -329,6 +354,8 @@ def _read_limit(value, kind="words", part=None):
             return out
         other.append((start, end))
     for start, end in other:          # about another article type / part: read the rest of the text
+        br = _TRAILING_BRACKET_RE.match(s, end)       # "no limit for reviews (up to 10 figures); 3000 words"
+        end = br.end() if br else end
         s = s[:start] + " " * (end - start) + s[end:]
     if other:
         first = _NUM_RE.search(s)
@@ -1515,42 +1542,90 @@ def count_words(text: str, stats=None) -> int:
 
 
 # A legend / caption starts its block: "Figure 2. …", "**Fig. 3 | …**", "## Figure 1", "Figure 1a:",
-# "Figure 4 Kaplan–Meier …", "图1 …", "Table 1. …", "表 2：…" ("Figure 1 shows …" is running text).
-_CAPTION_TAIL = r"(?:[A-Za-z](?![A-Za-z]))?\s*(?:[.:：|｜—–]|-\s|$|\s+(?=[A-Z㐀-鿿]))"
+# "Figure 4 Kaplan–Meier …", "图1 …", "图 2．…", "Table 1. …", "表 2：…" ("Figure 1 shows …" is running text).
+_CAPTION_TAIL = r"(?:[A-Za-z](?![A-Za-z]))?\s*(?:[.:：|｜—–．。]|-\s|$|\s+(?=[A-Z㐀-鿿]))"
 _FIG_CAPTION_RE = re.compile(r"\s*(?:Figure|FIGURE|Fig\.?|FIG\.?|图)\s*(\d{1,3})" + _CAPTION_TAIL)
 _TAB_CAPTION_RE = re.compile(r"\s*(?:Table|TABLE|Tab\.|表)\s*(\d{1,3})" + _CAPTION_TAIL)
-# In-text mentions ("Figure 3", "Figs. 2–4", "如图1所示", "Table 2"); supplementary ones are skipped.
-# 图N / 表N / 图 N is a citation whatever comes before it (对图3, 结合表2, 通过图4, 比较图2与图3 …), except
-# where 图 / 表 ends a known word: 发表5篇, 代表4级, 试图9次, 列表3项, 地图3张, 意图 / 示意图2, 时间表2 ….
-# The words, by what comes before 图 / 表; ("外", "此另…"): 外表 is a word, but 此外表5 is 此外 + 表5.
-_CJK_COMPOUND_PREFIXES = {
-    "图": ("试", "企", ("意", "注留"), "地", "蓝", "版", "构", "截", "绘", "力"),
-    "表": ("发", "代", "列", "图", "报", "仪", ("外", "此另以之除额"), ("量", "变剂含数质流测总本入用"), "课", "制",
-          "时间", "时刻", "统计", "日程", "一览"),
+# In-text mentions: "Figure 3", "Figs. 2–4", "Figures 6 and 7", "Figs 6, 7", Lancet / BMJ "(figure 7)" and
+# "table 5", "如图1所示", "图6、7", "表1和2"; supplementary ones are skipped. 图N / 表N is a citation whatever comes
+# before it (对图3, 结合表2, 通过图4, 比较图2与图3 …), except
+#   * when the number counts something — a unit or measure word follows it (_CJK_UNIT_RE): 调查表300份,
+#     动态心电图24 h, 试图9次, 发表5篇, 代表4级;
+#   * when 图 / 表 ends a word (_CJK_COMPOUNDS): 心电图, 超声心动图, 流程图, 列线图, 森林图, 示意图, 地图, 调查表,
+#     问卷表, 登记表, 评估表, 记录表, 随访表, 量表, 时间表 …. Such a word followed by a bare number (森林图3,
+#     示意图2) may still cite Figure 3 / 2: unclear_mentions() reports it when it would raise the count.
+# A word given as (word, chars) is not that word after one of the chars: 测试 / 尝试 + 图3, 注意 + 图3, 下列 + 表2,
+# 此外 + 表5, 样本量 + 表2, 绘制 + 表2, 参照 + 表2.
+_ZHI = "绘编复控抑限机体研强压管"                 # 绘制 / 编制 / 控制 … + 图N / 表N
+_CJK_COMPOUNDS = {
+    "图": (("试", "测尝考调笔面口应"), "企", ("意", "注留"), "地", "蓝", "版", "构", "截", "绘", "力", ("制", _ZHI),
+          ("作", "所"), "画", ("视", "重忽审注凝检"), "插", "草", "拼", "贪", "妄", "宏", "鸿", "原", "简", "略", "子",
+          "云",
+          # medical recordings and statistical charts
+          "电", "心动", "超声", "眼底", "解剖", "线", "流程", "森林", "漏斗", "热", "直方", "散点", "饼", "柱状", "树状",
+          "条状", "网状", "条形", "扇形", "环形", "波形", "雷达", "提琴", "恩", "气泡", "火山", "鱼骨", "布", "网络",
+          "矩阵", "面积", "堆积", "堆叠", "框", "趋势", "剖面", "平面", "截面", "断面", "谱", "家系", "关系"),
+    "表": ("发", "代", ("列", "下上"), "图", "报", "仪", ("外", "此另以之除额"), ("量", "变剂含数质流测总本入用"), "课",
+          ("制", _ZHI), "时间", "时刻", "统计", "日程", "课程", "流程", "议程", "一览", "填", "手", "钟", "电",
+          # forms, questionnaires and statistical tables
+          "查", "卷", "记", "录", "估", "告", "请", ("照", "参按依遵仿比"), "访", "温", "评分", "计分", "积分", "评定",
+          "汇总", "核对", "同意", "体检", "签到", "班", "绩", "历", "进度", "价目", "明细", "价格", "规格", "命", "列联",
+          "四格", "叉", "频数", "三线", "换算"),
 }
+# After 图N / 表N: the number counts something, it is not a label (单位 / 量词). Characters that also start
+# common words after a citation are excluded there: 表2例数, 表1人口学, 表2年龄, 表2次要, 表2种族 ….
+_CJK_UNIT_RE = re.compile(
+    r"\s*(?:[份张页幅块台篇套枚遍岁倍秒%％]|例(?![数如外])|人(?![口群员体工均数类种])|名(?![称单词])"
+    r"|次(?![要级数序生])|个(?![体人案性])|项(?!目)|种(?![类族群])|级(?!别)|天(?!然)|周(?![期围边])|月(?!经)"
+    r"|年(?![龄度报])|小时|分钟"
+    r"|(?:mg|μg|ug|ng|kg|ml|mL|dl|dL|mmol|μmol|IU|cm|mm|min|bpm|mmHg|Hz|ms)(?![A-Za-z])"
+    r"|(?<=\s)[hdsgL](?![A-Za-z]))")      # a one-letter unit only after a space ("24 h"): "图2d" is panel d
+_EN_LABELS = {"图": r"Figures?|FIGURES?|figures?|Figs?\.?|FIGS?\.?|figs?\.?",
+              "表": r"Tables?|TABLES?|tables?|Tabs?\.|TABS?\.|tabs?\."}
 
 
-def _cjk_cite(char):
+def _cite_re(char):
     guards = []
-    for prefix in _CJK_COMPOUND_PREFIXES[char]:
+    for prefix in _CJK_COMPOUNDS[char]:
         word, unless = (prefix, "") if isinstance(prefix, str) else prefix
         guards.append(f"(?<!(?<![{unless}]){word})" if unless else f"(?<!{word})")
-    return "".join(guards) + char + r"\s*(\d{1,3})(?!\d)(?:\s*[-–—~～至]\s*(\d{1,3})(?!\d))?"
+    return re.compile(rf"(?:(?<![A-Za-z])(?P<en>{_EN_LABELS[char]})|{''.join(guards)}(?P<zh>{char}))"
+                      r"\s*(?P<n>\d{1,3})(?!\d)")
 
 
-_FIG_CITE_RE = re.compile(r"(?<![A-Za-z])(?:Figures?|FIGURES?|Figs?\.?|FIGS?\.?)\s*(\d{1,3})(?!\d)"
-                          r"(?:\s*(?:[-–—]|to)\s*(\d{1,3})(?!\d))?|" + _cjk_cite("图"))
-_TAB_CITE_RE = re.compile(r"(?<![A-Za-z])(?:Tables?|TABLES?|Tabs?\.)\s*(\d{1,3})(?!\d)"
-                          r"(?:\s*(?:[-–—]|to)\s*(\d{1,3})(?!\d))?|" + _cjk_cite("表"))
+_FIG_CITE_RE, _TAB_CITE_RE = _cite_re("图"), _cite_re("表")
+# 图N / 表N after any CJK character (compound words included), for unclear_mentions()
+_BARE_CITE_RE = {_FIG_CITE_RE: re.compile(r"(?<=[㐀-鿿])图\s*(\d{1,3})(?!\d)"),
+                 _TAB_CITE_RE: re.compile(r"(?<=[㐀-鿿])表\s*(\d{1,3})(?!\d)")}
+# lower-case "figure 2" / "table 5" is a citation (Lancet, BMJ), but not "a figure 3 times higher", "life table 5-year"
+_EN_ARTICLE_RE = re.compile(r"(?<![A-Za-z])(?:a|an|the|this|that|each|every|any|one)\s+$", re.IGNORECASE)
+_EN_UNIT_RE = re.compile(r"\s*(?:-\s*)?(?:%|(?:percent|per\s*cent|times|fold|years?|months?|weeks?|days?|hours?"
+                         r"|patients?|participants?|people|persons?|cases?)\b)", re.IGNORECASE)
+_PANEL_RE = re.compile(r"(?:[A-Za-z](?:\s*[-–—,，、]\s*[A-Za-z](?![A-Za-z]))*(?![A-Za-z])"
+                       r"|[(（][A-Za-z](?:\s*[-–—,]\s*[A-Za-z])*[)）])?")       # 1A, 2a,b, 1A–C, 1(A)
+_NUM3_RE = re.compile(r"\d{1,3}(?!\d)")
+_RANGE_SEP_RE = re.compile(r"\s*(?:[-–—~～至]|to\b)\s*(?=\d)")
+_EN_LIST_SEP_RE = re.compile(r"(?:\s*[,，]\s*(?:and\s+|&\s*)?|\s+and\s+|\s*&\s*)(?=\d)")
+_ZH_LIST_SEP_RE = re.compile(r"\s*[、和与及]\s*(?=\d)")
+# after a singular "Figure 6, 7" the 7 must close the list — "(Figure 6, 7)" — not start a clause: "Figure 6, 7 patients"
+_LIST_END_RE = re.compile(r"\s*(?:[)\]）】;；,，。]|\.(?!\d)|and\b|&|[-–—]|$)")
 # right before a mention, it is not a main one: Supplementary Figure 2, 附图1, 补充表2, 补充材料表1, 扩展数据图1
 _NOT_MAIN_RE = re.compile(r"(?:supplement\w*|extended data|appendix|online|"
                           r"(?:附录?|补充|扩展数据|在线)(?:材料|资料|数据|文件)?(?:中的?)?)\s*$", re.IGNORECASE)
+# A block of figure-legends.md that starts with a supplementary label, or with "Figure" / "Table" and no number:
+# not a main legend, but reported (never dropped silently).
+_LEGEND_NOT_MAIN_RE = re.compile(
+    r"\s*(?:(?:supplement\w*|extended\s+data|appendix|online)\s+(?:figure|fig\.?|table|tab\.)s?\s*(?-i:S)?\s*\d"
+    r"|e(?:figure|fig\.?|table)s?\s*\d|(?:figure|fig\.?|table)s?\s*(?-i:S)\s*\d"
+    r"|(?:附录?|补充|扩展数据|在线)\S{0,6}?[图表]\s*(?-i:S)?\s*\d|[图表]\s*(?-i:S)\s*\d)", re.IGNORECASE)
+_LEGEND_NO_NUMBER_RE = re.compile(r"\s*(?:Figure|FIGURE|Table|TABLE)\s*(?:[IVX]+\b)?\s*(?:[:.|｜—–]|-\s)")
 # One reference per line in references.md: "[12] …" / "(12) …" (numbered "12. …" items are lists);
 # up to 3 digits, so a wrapped line starting with a year "(2020) …" is not a new reference.
 _REF_ENTRY_RE = re.compile(r"^[ \t]{0,3}(?:\[\d{1,3}\]|\(\d{1,3}\))[ \t]*\S")
-# One legend per line in figure-legends.md.
-_LEGEND_LINE_RE = re.compile(r"^[ \t]{0,3}(?:[*_]{1,3}|#{1,6}[ \t]+)?[ \t]*(?:Figure|FIGURE|Fig\.?|FIG\.?|图|"
-                             r"Table|TABLE|表)\s*\d")
+# One legend per line in figure-legends.md (supplementary ones too, so they are not joined to the legend before).
+_LEGEND_LINE_RE = re.compile(r"^[ \t]{0,3}(?:[*_]{1,3}|#{1,6}[ \t]+)?[ \t]*(?:(?:Supplement\w*|Extended Data)\s+|e)?"
+                             r"(?:Figure|FIGURE|Fig\.?|FIG\.?|图|Table|TABLE|表)\s*S?\d"
+                             r"|^[ \t]{0,3}(?:[*_]{1,3})?[ \t]*(?:附|补充)[图表]")
 _CODE_SPAN_RE = re.compile(r"(`+)(.+?)\1")
 _IMAGE_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
 # Markdown that is written as literal text (OS-7): reported so it can be fixed before submission.
@@ -1579,14 +1654,76 @@ def caption_kind(plain: str):
     return None
 
 
+def _mention(plain, m):
+    """[(first, last)] for the numbers of one mention found by _FIG_CITE_RE / _TAB_CITE_RE ('Figures 2–4 and 6'
+    → [(2, 4), (6, 6)], 'Figs 6, 7' → [(6, 6), (7, 7)], '图6、7' → [(6, 6), (7, 7)]); [] when the number counts
+    something instead ('调查表300份', '心电图24 h', 'a figure 3 times higher')."""
+    zh, en = m.group("zh"), m.group("en")
+    if zh and _CJK_UNIT_RE.match(plain, m.end()):
+        return []
+    if en and en[0].islower() and (_EN_ARTICLE_RE.search(plain[max(0, m.start() - 20):m.start()])
+                                   or _EN_UNIT_RE.match(plain, m.end())):
+        return []
+    plural = bool(en) and en.rstrip(".")[-1] in "sS"
+    out, a, k = [], int(m.group("n")), m.end()
+    while True:
+        k, b = _PANEL_RE.match(plain, k).end(), a
+        r = _RANGE_SEP_RE.match(plain, k)
+        n = _NUM3_RE.match(plain, r.end()) if r else None
+        if n and not (zh and _CJK_UNIT_RE.match(plain, n.end())):
+            b, k = int(n.group()), _PANEL_RE.match(plain, n.end()).end()
+        out.append((a, b))
+        sep = (_ZH_LIST_SEP_RE if zh else _EN_LIST_SEP_RE).match(plain, k)
+        n = _NUM3_RE.match(plain, sep.end()) if sep else None
+        if not n or (zh and _CJK_UNIT_RE.match(plain, n.end())):
+            return out
+        if (en and not plural and "," in sep.group()
+                and not _LIST_END_RE.match(plain, _PANEL_RE.match(plain, n.end()).end())):
+            return out
+        a, k = int(n.group()), n.end()
+
+
 def cited_numbers(plain: str, rx) -> set:
-    """Figure / table numbers mentioned in running text (both ends of '2–4'); 'Supplementary
-    Figure 2', 'Extended Data Fig. 1', 'eFigure 1', 'Figure S1', '附图1', '补充表2' are not main figures."""
+    """Figure / table numbers mentioned in running text (every number of a list such as 'Figures 6 and 7' /
+    '图6、7', both ends of '2–4'); 'Supplementary Figure 2', 'Extended Data Fig. 1', 'eFigure 1', 'Figure S1',
+    '附图1', '补充表2' are not main figures; '调查表300份', '心电图24 h' are not citations."""
     nums = set()
     for m in rx.finditer(plain):
         if not _NOT_MAIN_RE.search(plain[max(0, m.start() - 25):m.start()]):
-            nums.update(int(g) for g in m.groups() if g)
+            for a, b in _mention(plain, m):
+                nums.update((a, b))
     return nums
+
+
+def unclear_mentions(plain: str, rx) -> list:
+    """[(number, text)] for 图N / 表N right after a word that ends in 图 / 表, without a unit after the number
+    (森林图3, 示意图2, 检查表2): read as that word, not counted, but it may also cite Figure / Table N."""
+    labels = {m.start("zh") for m in rx.finditer(plain) if m.group("zh")}
+    return [(int(m.group(1)), plain[max(0, m.start() - 3):m.end()]) for m in _BARE_CITE_RE[rx].finditer(plain)
+            if m.start() not in labels and not _CJK_UNIT_RE.match(plain, m.end())
+            and not _NOT_MAIN_RE.search(plain[max(0, m.start() - 25):m.start()])]
+
+
+def legend_start(plain: str):
+    """(kind, numbers, label) for a block of figure-legends.md that starts with a figure / table label, in any
+    form ('Figure 7 (A) …', 'Figure 7, …', 'Figure 7 18F-PSMA …', '图7生存曲线', 'Figures 1–3. …' → {1, 2, 3});
+    numbers is None for a supplementary label ('Supplementary Figure 7', 'Figure S1', 'eTable 2', '附图1') or a
+    label without a number ('Figure: …'); None when the block does not start with a label."""
+    head = plain.lstrip(" \t*_#>[(（【")
+    label = " ".join(head.split()[:3])[:40]
+    other = _LEGEND_NOT_MAIN_RE.match(head) or _LEGEND_NO_NUMBER_RE.match(head)
+    if other:
+        return ("table" if re.search(r"tab|表", other.group(0), re.IGNORECASE) else "figure"), None, label
+    for kind, rx in (("figure", _FIG_CITE_RE), ("table", _TAB_CITE_RE)):
+        m = rx.match(head)
+        spans = _mention(head, m) if m else []
+        if spans:
+            nums = set()
+            for a, b in spans:
+                lo, hi = min(a, b), max(a, b)
+                nums.update(range(lo, hi + 1) if hi - lo <= 50 else (lo, hi))
+            return kind, nums, label
+    return None
 
 
 def subscripts(text: str):
@@ -1684,7 +1821,8 @@ def _add_rule(doc):
 def _new_stats():
     return {"words": {}, "body_keys": [], "ref_count": 0, "ref_unnumbered": 0, "ref_file": False,
             "fig_numbers": set(), "fig_cited": set(), "fig_embedded": 0, "fig_legends": 0,
-            "legends_unrecognised": 0, "table_count": 0, "table_numbers": set(), "table_cited": set(),
+            "legends_unrecognised": 0, "legends_other": {"figure": [], "table": []}, "fig_unclear": [],
+            "table_count": 0, "table_numbers": set(), "table_cited": set(), "table_unclear": [],
             "legend_words": 0, "table_words": 0, "cjk_chars": 0,
             "placeholders": [], "warnings": [], "notes": [], "citations": [], "sections_included": [],
             "missing_required": [], "missing_optional": [], "not_exported": [], "review_sections": [],
@@ -1747,12 +1885,18 @@ def _render_elements(doc, elements, config, section_id, filename, stats, kind="o
             else:
                 words += n
             if kind == "body":
-                stats["fig_cited"] |= cited_numbers(plain, _FIG_CITE_RE)
-                stats["table_cited"] |= cited_numbers(plain, _TAB_CITE_RE)
-            elif kind == "legends" and top and not cap and t != "heading":
-                if t == "numbered":                          # "1. Kaplan–Meier curves …"
+                for key, rx in (("fig", _FIG_CITE_RE), ("table", _TAB_CITE_RE)):
+                    stats[f"{key}_cited"] |= cited_numbers(plain, rx)
+                    stats[f"{key}_unclear"] += unclear_mentions(plain, rx)
+            elif kind == "legends" and top and not cap:
+                lead = legend_start(plain)                   # "Figure 7 (A) …", "图7生存曲线", "Figure S1. …"
+                if lead and lead[1]:
+                    stats["fig_numbers" if lead[0] == "figure" else "table_numbers"].update(lead[1])
+                elif lead:
+                    stats["legends_other"][lead[0]].append(lead[2])
+                elif t == "numbered":                        # "1. Kaplan–Meier curves …"
                     stats["fig_numbers"].add(int(el["number"]))
-                else:
+                elif t != "heading":
                     stats["legends_unrecognised"] += 1
             elif kind == "references" and top and t != "heading":
                 if t in ("numbered", "bullet") or _REF_ENTRY_RE.match(el["src"][0][1]):
@@ -1914,8 +2058,15 @@ def build_docx(manuscript_dir: str, config: dict, output_path: str) -> dict:
                 "legends" if section_id == "figure-legends" else "other")
         entry_re = {"references": _REF_ENTRY_RE, "legends": _LEGEND_LINE_RE}.get(kind)
         _, elements = _read_section(path, label, stats, entry_re)
-        if section_id in SECTION_TITLES and not any(e["type"] == "heading" for e in elements):
-            doc.add_heading(SECTION_TITLES[section_id], level=1)
+        if section_id in SECTION_TITLES and not any(e["type"] == "heading" and e["level"] == 1 for e in elements):
+            # Key Points / Research in Context get their H1 (also when the file has only ## subsections, which
+            # would otherwise land under the Abstract); a "## Research in Context" title is promoted instead
+            first = elements[0] if elements else None
+            if (first and first["type"] == "heading" and plain_text(first["text"]).strip(" :：*").lower()
+                    == SECTION_TITLES[section_id].lower()):
+                first["level"] = 1
+            else:
+                doc.add_heading(SECTION_TITLES[section_id], level=1)
         key = os.path.splitext(label)[0] if section_id == "review" else section_id
         _render_elements(doc, elements, config, key, label, stats, kind)
         if kind == "body":
@@ -1981,6 +2132,25 @@ def _status(count, key, config, uncertain=None):
     return f"{shown} | ≤{limit} | " + ("✅" if config.get("verified", True) else "✅*")
 
 
+def _count_doubts(stats, kind, count):
+    """Why a figure / table count may be too low (the row shows ❓ instead of ✅), or None: a legends file
+    whose blocks are not recognised, legends that are supplementary or have no number, and a word ending in
+    图 / 表 followed by a number above the count (森林图7: Figure 7?)."""
+    legends_file, reasons = stats["legends_file"] or "figure-legends.md", []
+    if kind == "figure" and stats["legends_unrecognised"] and not stats["fig_numbers"]:
+        reasons.append(f"{legends_file} has {stats['legends_unrecognised']} block(s) but none starts with "
+                       "'Figure N' — count the figures manually")
+    other = stats["legends_other"][kind]
+    if other:
+        reasons.append(f"{legends_file} also has {len(other)} {kind} legend(s) not counted as main {kind}s "
+                       f"(supplementary or without a number: {'; '.join(other[:3])}) — check")
+    unclear = [u for u in stats["fig_unclear" if kind == "figure" else "table_unclear"] if u[0] > count]
+    if unclear:
+        n, text = max(unclear)
+        reasons.append(f"the text has '{text}', read as a word, not as {kind.capitalize()} {n} — check")
+    return "; ".join(reasons) or None
+
+
 def _figure_count(stats):
     """(count, uncertain reason, detail): the highest of distinct legend numbers, the highest figure
     number cited in the text, and embedded images."""
@@ -1988,11 +2158,7 @@ def _figure_count(stats):
     count = max(len(legends), cited, stats["fig_embedded"])
     detail = (f"legends: {len(legends)}, highest number cited: {cited or '—'}, "
               f"embedded images: {stats['fig_embedded']}")
-    reason = None
-    if stats["legends_unrecognised"] and not legends:
-        reason = (f"{stats['legends_file'] or 'figure-legends.md'} has {stats['legends_unrecognised']} "
-                  "block(s) but none starts with 'Figure N' — count the figures manually")
-    return count, reason, detail
+    return count, _count_doubts(stats, "figure", count), detail
 
 
 def _table_count(stats):
@@ -2000,7 +2166,7 @@ def _table_count(stats):
     count = max(stats["table_count"], len(stats["table_numbers"]), cited)
     detail = (f"Markdown tables: {stats['table_count']}, captions: {len(stats['table_numbers'])}, "
               f"highest number cited: {cited or '—'}")
-    return count, None, detail
+    return count, _count_doubts(stats, "table", count), detail
 
 
 def _reference_count(stats):
@@ -2089,6 +2255,7 @@ def generate_report(stats: dict, config: dict, output_path: str, supp_path=None,
     figs, fig_reason, fig_detail = _figure_count(stats)
     tabs, tab_reason, tab_detail = _table_count(stats)
     refs, ref_reason = _reference_count(stats)
+    items_reason = "; ".join(r for r in (fig_reason, tab_reason) if r) or None
     abstract = w.get("abstract")
     combined = lim.get("display_items") is not None or bool(config.get("combined"))
     body_cells = _status(body, "body_words", config)
@@ -2097,7 +2264,7 @@ def generate_report(stats: dict, config: dict, output_path: str, supp_path=None,
     if per_item and config.get("limits_checked"):
         # "each table or figure counts as N words": the text alone within the limit is not a pass
         per_item_row = (f"| Body + {per_item} words per table / figure (template rule; {figs + tabs} tables / "
-                        f"figures) | {_status(body + per_item * (figs + tabs), 'body_words', config, fig_reason)} |")
+                        f"figures) | {_status(body + per_item * (figs + tabs), 'body_words', config, items_reason)} |")
         if body_cells.endswith(("✅", "✅*")):
             body_cells = body_cells.rsplit("|", 1)[0] + "| ℹ️ text only — see the next row"
         if lim.get("body_words") is None:
@@ -2111,7 +2278,7 @@ def generate_report(stats: dict, config: dict, output_path: str, supp_path=None,
              f"| References (entries) | {_status(refs, 'references', config, ref_reason)} |"]
     if combined:
         rows.append(f"| Display items (figures {figs} + tables {tabs}; combined limit) | "
-                    f"{_status(figs + tabs, 'display_items', config, fig_reason)} |")
+                    f"{_status(figs + tabs, 'display_items', config, items_reason)} |")
     if not combined or lim.get("figures") is not None:
         rows.append(f"| Figures ({fig_detail}) | {_status(figs, 'figures', config, fig_reason)} |")
     if not combined or lim.get("tables") is not None:
@@ -2132,11 +2299,13 @@ def generate_report(stats: dict, config: dict, output_path: str, supp_path=None,
     if config.get("limits_checked") and not config.get("verified", True):
         head.append(f"- ⚠️ **Unverified journal entry:** {UNVERIFIED_WARNING}.")
     special = config.get("special_yaml") or []
-    pending = [re.sub(r"^待核实\s*[:：]?\s*", "", str(s).strip())       # values the last check could not confirm;
-               for s in (special if isinstance(special, list) else [special])   # their limits are null (JD-4)
-               if str(s).strip().startswith("待核实")]
+    pending = [re.sub(r"\s*[—–-]+\s*confirm\.?$", "", re.sub(r"^待核实\s*[:：]?\s*", "", str(s).strip()))
+               for s in (special if isinstance(special, list) else [special])   # values the last check could not
+               if str(s).strip().startswith("待核实")]                            # confirm; limits null (JD-4)
     if pending:
-        head.append(f"- ⚠️ **Unconfirmed in the library (待核实):** {' | '.join(pending)} — confirm on the journal site.")
+        # an item that already says what to confirm ("— confirm before trimming references") is not told again
+        tail = "." if re.search(r"\bconfirm\b", pending[-1], re.IGNORECASE) else " — confirm on the journal site."
+        head.append(f"- ⚠️ **Unconfirmed in the library (待核实):** {' | '.join(pending)}{tail}")
     if config.get("generic"):
         head.append(f"- ℹ️ {config['skip_reason']}")
     else:
@@ -2227,8 +2396,9 @@ def generate_report(stats: dict, config: dict, output_path: str, supp_path=None,
         "caption paragraphs (\"**Figure 1.** …\", \"Table 2. …\") are counted separately — treat them as "
         "approximate. Each CJK character counts as one word.",
         "- Figures = the highest of: distinct legend numbers (\"Figure N\" / \"Fig. N\" / \"图N\" at the start of a "
-        "block), the highest figure number cited in the text, embedded `![...]()` images (outside comments and "
-        "code). References = numbered, bulleted or \"[N]\" / \"(N)\" entries of references.md.",
+        "block), the highest figure number cited in the text (every number of a list such as \"Figures 6 and 7\" "
+        "/ \"图6、7\"; \"调查表300份\" or \"心电图24 h\" is not a citation), embedded `![...]()` images (outside "
+        "comments and code). References = numbered, bulleted or \"[N]\" / \"(N)\" entries of references.md.",
         "- Consecutive lines form one paragraph (Markdown soft wrap; no space is added between CJK characters). "
         "Separate paragraphs with a blank line; end a line with two spaces or `\\` to keep a line break.",
         "- Figures are **not** embedded: `![...]()` lines are kept as text; upload final figure files separately.",

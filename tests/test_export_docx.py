@@ -719,6 +719,59 @@ def test_no_limit_for_another_type_or_part_in_overrides_free_text_report(tmp_pat
     assert "Check manually — `figures`: the template says 'no limit in the guide for authors'" in r.stdout
 
 
+@pytest.mark.parametrize("value,kind,part,limit", [
+    # the article type named before the phrase, with words between
+    ("Reviews and letters have no limit; research articles 3500 words", "words", "words", 3500),
+    ("Reviews have no length limit; 4000 for research", "words", "words", 4000),
+    ("Reviews (no limit); 3000 words", "words", "words", 3000),
+    # "review articles" / "review papers" / "case report articles" are that article type, not original articles
+    ("No limit for review articles; research articles: 3000 words", "words", "words", 3000),
+    ("no limit for review articles; 3000 words for original articles", "words", "words", 3000),
+    ("Review papers: no limit; 3000 words", "words", "words", 3000),
+    ("no limit for case report articles; 3000 words", "words", "words", 3000),
+    ("No limit — reviews only; original ≤40", "count", "references", 40),
+    # another part named before the phrase
+    ("Supplementary figures are unlimited; ≤6", "count", "figures", 6),
+    ("Online-only figures: no limit; ≤6 in print", "count", "figures", 6),
+    ("Methods section unlimited; main text 3000 words", "words", "words", 3000),
+    ("No limits apply to supplementary material; main text ≤3500 words", "words", "words", 3500),
+    ("no limit for colour figures; ≤8", "count", "figures", 8),
+    # the bracket of a clause about another type goes with it
+    ("No limit for reviews (up to 10 figures); original articles 3000 words", "words", "words", 3000),
+])
+def test_no_limit_for_another_type_or_part_named_anywhere_in_its_clause(value, kind, part, limit):
+    rd = _load_module()._read_limit(value, kind, part)
+    assert (rd["value"], rd["no_limit"]) == (limit, False), rd
+
+
+@pytest.mark.parametrize("value", ["no limit stated", "no limit given; ≤40 recommended", "no limit in the guide for authors"])
+def test_a_guide_that_is_silent_is_check_manually_not_no_limit(value):
+    rd = _load_module()._read_limit(value, "count", "references")
+    assert rd["value"] is None and not rd["no_limit"] and "unclear" in rd["note"], rd
+
+
+def test_scoped_no_limit_in_an_overrides_entry_without_limits_block(tmp_path):
+    ov = write_overrides(tmp_path, {
+        "id": "scoped2", "journal": "Scoped Two", "guidelines_checked": "2026-09",
+        "word_limit": "No limit for reviews (up to 10 figures); original articles 3000 words",
+        "references": "No limit for review articles; ≤40 for original articles",
+        "figures": "Supplementary figures are unlimited; ≤6", "tables": "Reviews and letters have no limit; ≤4"})
+    m = _load_module()
+    config = m.get_journal_config("scoped2", str(YAML), str(ov))
+    lim = config["limits"]
+    assert (lim["body_words"], lim["references"], lim["figures"], lim["tables"]) == (3000, 40, 6, 4), lim
+    assert not config["no_limit_keys"]
+    refs = "# References\n\n" + "".join(f"{i}. Placeholder reference {i}.\n" for i in range(1, 42))
+    d = synth_manuscript(tmp_path, {"results.md": "# Results\n\n" + " ".join(["w"] * 3100)
+                                    + " See Figures 6 and 7.\n", "references.md": refs})
+    r = run_export(d, "scoped2", tmp_path / "x.docx", "--report-only", "--overrides", str(ov))
+    assert r.returncode == 0, r.stderr
+    rows = report_rows(r.stdout)
+    assert rows["Body"] == ["3105", "≤3000", "⚠️ 超出 105"], r.stdout
+    assert rows["References"] == ["41", "≤40", "⚠️ 超出 1"] and rows["Figures"] == ["7", "≤6", "⚠️ 超出 1"], r.stdout
+    assert "no fixed limit (template)" not in r.stdout
+
+
 def test_body_parts_named_in_free_text():
     m = _load_module()
     ex, inc = m._body_parts_from_text("7000 (including main figure legends; excluding STAR Methods, "
@@ -942,6 +995,35 @@ def test_pending_items_are_named_in_the_limit_section(tmp_path):
     assert r.returncode == 0 and "Unconfirmed in the library (待核实):** abstract length" in r.stdout
 
 
+def test_pending_item_that_already_says_confirm_is_not_told_twice(tmp_path):
+    d = synth_manuscript(tmp_path, {"results.md": "# Results\n\nshort text\n"})
+    r = run_export(d, "nature-medicine", tmp_path / "x.docx", "--report-only")    # "… in 2026-09 — confirm"
+    assert r.returncode == 0, r.stderr
+    line = next(ln for ln in r.stdout.splitlines() if "Unconfirmed in the library" in ln)
+    assert line.endswith("not re-checked in 2026-09 — confirm on the journal site.") and "confirm — confirm" not in line
+    entry = {"id": "pend2", "journal": "Pending Two", "guidelines_checked": "2026-09", "limits": {"body_words": 5000},
+             "special": ["待核实: reference limit (≤40) not stated — confirm before trimming references"]}
+    r = run_export(d, "pend2", tmp_path / "x.docx", "--report-only", "--overrides", str(write_overrides(tmp_path, entry)))
+    line = next(ln for ln in r.stdout.splitlines() if "Unconfirmed in the library" in ln)
+    assert line.endswith("not stated — confirm before trimming references.") and "journal site" not in line
+
+
+@pytest.mark.parametrize("ric", [
+    "## Evidence before this study\n\nPlaceholder.\n\n## Added value of this study\n\nPlaceholder.\n",
+    "## Research in Context\n\n### Evidence before this study\n\nPlaceholder.\n",
+])
+def test_research_in_context_with_only_subheadings_gets_its_own_h1(manuscript, tmp_path, ric):
+    # without it the subsections land under the Abstract heading
+    (manuscript / "research-in-context.md").write_text(ric, encoding="utf-8")
+    out = tmp_path / "lancet.docx"
+    assert run_export(manuscript, "lancet", out).returncode == 0
+    h = [(p.style.name, p.text) for p in Document(str(out)).paragraphs if p.style.name.startswith("Heading")]
+    k = h.index(("Heading 1", "Research in Context"))
+    assert h.index(("Heading 1", "Abstract")) < k
+    assert h[k + 1][1] == "Evidence before this study" and h[k + 1][0] != "Heading 1"
+    assert [t for _, t in h].count("Research in Context") == 1
+
+
 # ─── journal-neutral export (SB-9) ─────────────────────────────────────────
 
 def test_generic_journal_exports_without_limit_checks(manuscript, tmp_path):
@@ -1076,6 +1158,165 @@ def test_chinese_introduction_without_tables_is_not_over_the_table_limit(tmp_pat
     r = run_export(d, "bju-international", tmp_path / "x.docx", "--report-only")
     rows = report_rows(r.stdout)
     assert rows["Tables"][0] == "0" and rows["Figures"][0] == "0" and "超出" not in r.stdout
+
+
+# Words that end in 图 / 表 (one or more per entry of _CJK_COMPOUNDS): never a figure / table label.
+CJK_FIGURE_WORDS = ("试图", "企图", "意图", "示意图", "地图", "蓝图", "版图", "结构图", "截图", "绘图", "力图", "制图", "作图",
+                    "画图", "视图", "透视图", "插图", "草图", "拼图", "贪图", "妄图", "宏图", "鸿图", "原图", "简图", "略图",
+                    "子图", "词云图", "心电图", "动态心电图", "脑电图", "肌电图", "超声心动图", "超声图", "眼底图", "解剖图",
+                    "列线图", "曲线图", "折线图", "箱线图", "流程图", "森林图", "漏斗图", "热图", "热力图", "直方图",
+                    "散点图", "饼图", "柱状图", "树状图", "条状图", "网状图", "条形图", "扇形图", "环形图", "波形图",
+                    "雷达图", "小提琴图", "韦恩图", "气泡图", "火山图", "鱼骨图", "分布图", "瀑布图", "网络图", "矩阵图",
+                    "面积图", "堆积图", "堆叠图", "框图", "趋势图", "剖面图", "平面图", "截面图", "断面图", "频谱图",
+                    "家系图", "关系图")
+CJK_TABLE_WORDS = ("发表", "代表", "列表", "图表", "报表", "仪表", "外表", "量表", "课表", "制表", "时间表", "时刻表",
+                   "统计表", "日程表", "课程表", "流程表", "议程表", "一览表", "填表", "手表", "钟表", "电表", "调查表",
+                   "核查表", "检查表", "问卷表", "登记表", "记录表", "评估表", "报告表", "病例报告表", "申请表", "对照表",
+                   "随访表", "体温表", "评分表", "计分表", "积分表", "评定表", "汇总表", "核对表", "知情同意表", "体检表",
+                   "签到表", "排班表", "成绩表", "病历表", "进度表", "价目表", "明细表", "价格表", "规格表", "生命表",
+                   "寿命表", "列联表", "四格表", "交叉表", "频数表", "三线表", "换算表")
+
+
+def test_every_cjk_compound_entry_has_a_word_in_these_tests():
+    m = _load_module()
+    for char, words in (("图", CJK_FIGURE_WORDS), ("表", CJK_TABLE_WORDS)):
+        for entry in m._CJK_COMPOUNDS[char]:
+            stem = (entry if isinstance(entry, str) else entry[0]) + char
+            assert any(w.endswith(stem) for w in words), f"add a word ending in {stem} to the test list"
+
+
+@pytest.mark.parametrize("word", CJK_FIGURE_WORDS + CJK_TABLE_WORDS)
+def test_cjk_compound_words_are_not_citations(word):
+    # a bare number after the word is read as the word ("森林图3": the forest plot), but reported as unclear
+    m = _load_module()
+    rx = m._FIG_CITE_RE if word.endswith("图") else m._TAB_CITE_RE
+    for text in (f"患者{word}3", f"患者{word} 3", f"患者{word}3份"):
+        assert not m.cited_numbers(text, m._FIG_CITE_RE) and not m.cited_numbers(text, m._TAB_CITE_RE), text
+    assert [n for n, _ in m.unclear_mentions(f"患者{word}3", rx)] == [3]
+    assert not m.unclear_mentions(f"患者{word}3份", rx)                    # a count: certainly not a citation
+
+
+@pytest.mark.parametrize("unit", ["份", "例", "人", "名", "次", "张", "页", "项", "个", "幅", "篇", "岁", "倍", "天",
+                                  "周", "月", "年", "小时", "分钟", "%", "％", " h", " d", " min", "min", " mg", "mg",
+                                  " ml", " mL", " kg", " cm", " mm"])
+def test_a_number_followed_by_a_unit_is_not_a_citation(unit):
+    # whatever word comes before 图 / 表 (here one that is no compound): 收集表300份, 行图24 h …
+    m = _load_module()
+    assert not m.cited_numbers(f"共收集表30{unit}", m._TAB_CITE_RE)
+    assert not m.cited_numbers(f"随后行图24{unit}", m._FIG_CITE_RE)
+    assert not m.unclear_mentions(f"共收集表30{unit}", m._TAB_CITE_RE)
+
+
+@pytest.mark.parametrize("text,fig,tab", [
+    ("共发放调查表300份。所有患者行动态心电图24 h监测。", set(), set()),
+    ("测试图3", {3}, set()), ("尝试图3", {3}, set()), ("如下列表2所示", set(), {2}), ("绘制表2", set(), {2}),
+    ("参照表2", set(), {2}), ("对图3进行分析", {3}, set()), ("结合表2可见", set(), {2}), ("通过图4可以看出", {4}, set()),
+    ("将表2中的数据", set(), {2}), ("为图1所示", {1}, set()), ("观察图4", {4}, set()), ("比较图2与图3", {2, 3}, set()),
+    ("见图1A", {1}, set()), ("图1–3", {1, 3}, set()), ("表 2", set(), {2}), ("此外表5显示", set(), {5}),
+    ("注意图3", {3}, set()), ("如图1d所示", {1}, set()),
+    # words after the number that only look like a unit
+    ("表1人口学特征", set(), {1}), ("表2年龄分布", set(), {2}), ("表2次要结局", set(), {2}), ("表2例数", set(), {2}),
+])
+def test_cjk_citations_next_to_units_and_compounds(text, fig, tab):
+    m = _load_module()
+    assert (m.cited_numbers(text, m._FIG_CITE_RE), m.cited_numbers(text, m._TAB_CITE_RE)) == (fig, tab)
+
+
+@pytest.mark.parametrize("text,fig,tab", [
+    ("Figures 6 and 7", {6, 7}, set()), ("Figs 6, 7", {6, 7}, set()), ("Figure 6 and 7", {6, 7}, set()),
+    ("(Figures 6, 7)", {6, 7}, set()), ("Figures 6–8", {6, 8}, set()), ("Figures 5, 6, and 7", {5, 6, 7}, set()),
+    ("Figures 6 & 7", {6, 7}, set()), ("(Fig. 6, 7)", {6, 7}, set()), ("Figure 6, 7 and 8", {6, 7, 8}, set()),
+    ("Figure 2a, b and 3", {2, 3}, set()), ("Tables 4 and 5", set(), {4, 5}), ("Tables 1-3 and 5", set(), {1, 3, 5}),
+    ("图6、7", {6, 7}, set()), ("表1、2", set(), {1, 2}), ("图6和图7", {6, 7}, set()), ("表1和2", set(), {1, 2}),
+    # Lancet / BMJ lower case
+    ("(figure 7)", {7}, set()), ("fig 7", {7}, set()), ("see table 5.", set(), {5}), ("figures 2 and 3", {2, 3}, set()),
+    # not a list / not a citation
+    ("As shown in Figure 2, 15 patients died.", {2}, set()), ("图2、3例患者", {2}, set()),
+    ("a figure 3 times higher", set(), set()), ("the table 5 nurses used", set(), set()),
+    ("life table 5-year survival", set(), set()), ("the table was long", set(), set()),
+    ("Supplementary Figures 6 and 7", set(), set()),
+])
+def test_lists_and_lower_case_citations_count_every_number(text, fig, tab):
+    m = _load_module()
+    assert (m.cited_numbers(text, m._FIG_CITE_RE), m.cited_numbers(text, m._TAB_CITE_RE)) == (fig, tab)
+
+
+def export_files(mod, tmp_path, files, journal="bju-international"):
+    """Export a manuscript folder with these files; returns (stats, report text)."""
+    d = synth_manuscript(tmp_path, files)
+    config = mod.get_journal_config(journal, str(YAML))
+    stats = mod.build_docx(str(d), config, str(tmp_path / "out.docx"))
+    return stats, mod.generate_report(stats, config, str(tmp_path / "out.docx"))
+
+
+def row_status(report, bucket):
+    return next(l for l in report.splitlines() if l.startswith(f"| {bucket}")).rstrip(" |").rsplit("|", 1)[1].strip()
+
+
+LEGENDS_3 = "\n\n".join(f"**Figure {i}.** Placeholder legend {i}." for i in range(1, 4)) + "\n\n"
+CITES_3 = "# Results\n\nSee Figure 1. See Figure 2. See Figure 3."
+TABLES_3 = "".join(f"**Table {i}.** Placeholder\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n" for i in range(1, 4))
+
+
+@pytest.mark.parametrize("files,bucket", [
+    # the 4th figure only in a list or in lower case (bju-international: ≤3 figures, ≤3 tables)
+    *[({"results.md": f"{CITES_3} Also {cite}.\n", "figure-legends.md": LEGENDS_3}, "Figures")
+      for cite in ("Figures 3 and 4", "Figs 3, 4", "Figure 3 and 4", "(Figures 3, 4)", "Figures 3 & 4", "(figure 4)",
+                   "fig 4")],
+    ({"results.md": "# Results\n\nSee Figure 1. See Figures 2 and 3. See Figures 3 and 4.\n"}, "Figures"),
+    ({"results.md": "# 结果\n\n如图1所示。见图2、4。\n", "figure-legends.md": LEGENDS_3}, "Figures"),
+    # the 4th legend in a form that is not "Figure 4." / "Figure 4 Kaplan"
+    *[({"results.md": CITES_3 + "\n", "figure-legends.md": LEGENDS_3 + legend + "\n"}, "Figures")
+      for legend in ("Figure 4 (A) Placeholder", "Figure 4 18F-placeholder scan", "Figure 4, placeholder",
+                     "图 4．占位图注", "图4占位图注", "Figure 4 placeholder", "Supplementary Figure 4. Placeholder",
+                     "Figure: Placeholder without a number")],
+    # the 4th table only in a list or in lower case
+    ({"results.md": f"# Results\n\n{TABLES_3}See Tables 3 and 4.\n"}, "Tables"),
+    ({"results.md": f"# Results\n\n{TABLES_3}See table 4.\n"}, "Tables"),
+    ({"results.md": f"# 结果\n\n{TABLES_3}见表3、4。\n"}, "Tables"),
+])
+def test_one_figure_or_table_over_the_limit_is_never_a_pass(mod, tmp_path, files, bucket):
+    _, report = export_files(mod, tmp_path, files)
+    status = row_status(report, bucket)
+    assert not status.startswith("✅"), report
+    assert status.startswith(("⚠️", "❓")), status
+
+
+def test_supplementary_legends_in_the_legends_file_are_named_not_dropped(mod, tmp_path):
+    stats, report = export_files(mod, tmp_path, {"results.md": CITES_3 + "\n", "figure-legends.md": LEGENDS_3
+                                                 + "Supplementary Figure 4. Placeholder\nFigure S5. Placeholder\n"})
+    assert stats["fig_numbers"] == {1, 2, 3} and len(stats["legends_other"]["figure"]) == 2
+    row = next(l for l in report.splitlines() if l.startswith("| Figures"))
+    assert "| ≥3 | ≤3 | ❓" in row and "Supplementary Figure 4." in row and "Figure S5." in row
+
+
+def test_legends_in_other_forms_are_counted(mod, tmp_path):
+    md = LEGENDS_3 + "Figure 4 (A) A. (B) B.\n\nFigure 5, placeholder\n\n图 6．占位\n\n图7占位\n\nFigures 8–9. Placeholder\n"
+    stats, report = export_files(mod, tmp_path, {"results.md": "# Results\n\nText.\n", "figure-legends.md": md})
+    assert stats["fig_numbers"] == set(range(1, 10)) and stats["legends_unrecognised"] == 0
+    assert "| 9 | ≤3 | ⚠️ 超出 6 |" in next(l for l in report.splitlines() if l.startswith("| Figures"))
+
+
+def test_chinese_methods_with_questionnaires_and_ecg_are_not_over_the_limits(mod, tmp_path):
+    stats, report = export_files(mod, tmp_path, {
+        "methods.md": "# 方法\n\n共发放调查表300份，回收问卷表286份。所有患者行动态心电图24 h监测，并复查超声心动图2次。"
+                      "绘制列线图1个、森林图1张；填写登记表、评估表、记录表、随访表各1份。\n",
+        "results.md": "# 结果\n\n如图1所示。图2显示曲线。见表1。\n\n**Table 1.** 占位\n\n| a | b |\n|---|---|\n| 1 | 2 |\n",
+        "figure-legends.md": "**Figure 1.** Placeholder.\n\n**Figure 2.** Placeholder.\n"})
+    assert stats["fig_cited"] == {1, 2} and stats["table_cited"] == {1}
+    assert row_status(report, "Figures") == "✅" and row_status(report, "Tables") == "✅", report
+    assert "Figure 24" not in report and "超出" not in report
+
+
+def test_a_compound_word_with_a_number_above_the_count_is_unclear_not_a_pass(mod, tmp_path):
+    # "森林图4" is read as the word 森林图 (forest plot), but it may cite Figure 4: ❓, never ✅
+    files = {"results.md": "# 结果\n\n如图1所示。图2、图3显示曲线。亚组分析森林图4显示结果一致。\n", "figure-legends.md": LEGENDS_3}
+    _, report = export_files(mod, tmp_path, files)
+    row = next(l for l in report.splitlines() if l.startswith("| Figures"))
+    assert "| ≥3 | ≤3 | ❓" in row and "森林图4" in row
+    files["results.md"] = files["results.md"].replace("森林图4", "森林图2")       # not above the count: no doubt
+    _, report = export_files(mod, tmp_path, files)
+    assert row_status(report, "Figures") == "✅"
 
 
 def test_missing_abstract_is_not_a_pass(mod, tmp_path):
