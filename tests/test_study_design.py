@@ -57,21 +57,63 @@ def _expand(token, all_ids):
     return [i for i in all_ids if re.fullmatch(token + r"[a-d]", i)]
 
 
-NEGATION = r"(?:不是|并非|不必|无需|无须|不需要|不用|不要|未必|不一定|可以不|不|非|无|未|勿)"
+NEGATION = r"(?:不是|并非|不必|无需|无须|不需要|不用|不要|未必|不一定|可以不|没有|不|非|无|未|勿|别)"
+# up to three characters of the same phrase between a negation and the rule: "不再是上限", "也不再必须有", "未必都是上限"
+NEAR = r"[^，。；、,;:：（）()|\s]{0,3}"
+# words that take back, in the same clause, a rule stated just before them: "不能混笼（实际上通常照样混笼）",
+# "必须有（没有也行）", "是上限（其实不是）"
+REVERSAL = (r"(?:也可以|也可|亦可|也行|也没关系|无所谓|照样|照常|照旧|仍可|仍然可以|还是可以|其实不|其实并|实际上(?:通常|往往|也|并|可以|不)"
+            r"|不一定|未必|并非|不再|可省|可免|可忽略|可不)")
 
 
 def _affirms(text, phrase):
-    """`phrase` is stated and nowhere negated right before it, so "是上限" → "不是上限" or "必须有" → "不是必须有"
-    (edits that keep the substring but reverse the meaning) fail."""
-    return phrase in text and not re.search(NEGATION + r"\s*" + re.escape(phrase), text)
+    """`phrase` (a string, or a compiled pattern) is stated, not negated just before it ("是上限" → "不是上限" /
+    "不再是上限", "必须有" → "也不再必须有") and not taken back after it in the same clause ("不能混笼（实际上通常照样
+    混笼）"): edits that keep the substring but reverse the meaning fail."""
+    rx = phrase.pattern if isinstance(phrase, re.Pattern) else re.escape(phrase)
+    ends = [m.end() for m in re.finditer(rx, text)]
+    if not ends or re.search(NEGATION + NEAR + "(?:" + rx + ")", text):
+        return False
+    return not any(re.match(r"[^。；;|\n]{0,40}?" + REVERSAL, text[e:]) for e in ends)
 
 
-def _only_inside(text, pattern, container):
-    """Every match of `pattern` lies inside one match of `container` (e.g. the description of a forbidden
-    procedure), and there is at least one."""
+FIRST_PERIOD = r"第\s*[一1]\s*个?\s*(?:期|阶段|周期)|首期|first period|period 1\b"
+PROHIBIT = r"不做|不要|不能|不应|不可|不得|避免|禁止|切勿|勿|而不是|不是"
+PERMIT = r"也可以|也可|亦可|也行|可以|照样|即可|没问题"
+
+
+def _only_forbidden(text, pattern, container):
+    """There is a match of `pattern`, and every match lies inside one match of `container` (the description of a
+    forbidden procedure) or in a clause that forbids it ("不要只用第一期数据"); "只看第一期的数据也可以" fails."""
     spans = [m.span() for m in re.finditer(container, text)]
-    hits = [m.start() for m in re.finditer(pattern, text)]
-    return bool(hits) and all(any(a <= h < b for a, b in spans) for h in hits)
+    hits = list(re.finditer(pattern, text))
+    for m in hits:
+        if any(a <= m.start() < b for a, b in spans):
+            continue
+        start = max(text.rfind(c, 0, m.start()) for c in "。；;|\n") + 1
+        end = min([i for i in (text.find(c, m.end()) for c in "。；;|\n") if i >= 0] or [len(text)])
+        if not re.search(PROHIBIT, text[start:m.start()]) or re.search(PERMIT, text[m.end():end]):
+            return False
+    return bool(hits)
+
+
+OMIT = r"忽略|省略|省去|省掉|可省|略去|去掉|不计|不乘|免(?:乘|去|除|计)|可免|不考虑|不用|不必|无需|无须|可不"
+FORBID = r"不能|不可|不得|不应|不要|绝不|切勿|勿|别|禁止|避免"
+
+
+def _drops_design_effect(text):
+    """The text that leaves the design effect out ("ICC<0.01 时设计效应可省去", "设计效应取 1", "无需乘设计效应"), or None.
+    The formula "设计效应 = 1 + (m − 1)·ICC" and a prohibition ("设计效应不能省略", "不能省略设计效应") are not that."""
+    for m in re.finditer(r"设计效应([^；。，,|\n]{0,10}?)(?:" + OMIT + ")", text):
+        if not re.search(FORBID, m.group(1)):
+            return m.group()
+    m = re.search(r"设计效应\s*(?:=|＝|取|按|视为|当作|设为|等于)\s*1(?![\d.])(?!\s*[+＋])", text)
+    if m:
+        return m.group()
+    for m in re.finditer(NEGATION + r"[^；。|\n]{0,4}设计效应", text):
+        if not re.search(r"省|略|忽|漏|丢|少", m.group()):              # "不能省略设计效应" keeps it
+            return m.group()
+    return None
 
 
 # ── MA-8: the clinical protocol template covers every SPIRIT 2025 item ───────────────────────
@@ -99,17 +141,17 @@ def test_clinical_module_crossover_cluster_probast():
     cross = rows["**交叉试验**"]
     assert "序列效应检验" not in cross
     # the wording carries the advice: no two-stage pre-test (it inflates type I error), rely on wash-out
-    assert "**不做两阶段分析**" in cross and "I 类错误明显膨胀" in cross
+    assert _affirms(cross, "**不做两阶段分析**") and "I 类错误明显膨胀" in cross
     assert "残留效应靠设计排除" in cross and "洗脱期" in cross and "或只用每一期末段的测量" in cross
-    # "use only the first period" appears only as the description of the forbidden two-stage procedure
-    first_period = r"(?:只|仅)(?:用|分析|保留)第\s*[一1]\s*期"
-    assert _only_inside(cross, first_period, r"\*\*不做两阶段分析\*\*（[^）]*）"), cross
+    # the first period alone ("只用 / 只看 / 仅取第一期") appears only as the description of the forbidden two-stage
+    # procedure, or where it is forbidden again
+    assert _only_forbidden(cross, FIRST_PERIOD, r"\*\*不做两阶段分析\*\*（[^）]*）"), cross
     assert "10.1002/sim.4780081202" in text and "10.1136/bmj.l4378" in text     # Freeman 1989; CONSORT crossover
     cluster = rows["**群随机试验**"]
     assert "群大小不等时用 1 + ((CV² + 1)·m̄ − 1)·ICC" in cluster and "10.1093/ije/dyl129" in text
-    assert "| 个体样本量 × 设计效应 |" in cluster                    # the sample-size column applies it
-    assert not re.search(r"设计效应\s*(?:可|可以)?(?:忽略|不计|省略)|直接用\s*`?power_analysis", cluster), cluster
-    assert not re.search(NEGATION + r"[^；。|]{0,4}设计效应", cluster), cluster
+    assert re.search(r"\| 个体样本量 × 设计效应[^|]*\|", cluster)     # the sample-size column applies it
+    assert not re.search(r"直接用\s*`?power_analysis", cluster), cluster
+    assert not _drops_design_effect(cluster), _drops_design_effect(cluster)
     assert "PROBAST+AI" in text and "10.1136/bmj-2024-082505" in text
     ai = _read(MODULES / "ai-ml.md")
     assert "PROBAST+AI" in ai and "QUADAS-2 / PROBAST）" not in ai
@@ -196,7 +238,17 @@ def test_skill_scopes_power_analysis():
         assert word in step3, word
     # cluster trials: the individual sample size times the design effect, never power_analysis.py as it is
     assert "群随机试验和整群抽样 → 个体样本量 × 设计效应（ICC 写出处" in step3
-    assert not re.search(r"设计效应\s*(?:可|可以)?(?:忽略|不计|省略)|直接用\s*`?\$?\{?[^`]*power_analysis", step3)
+    assert not re.search(r"直接用\s*`?\$?\{?[^`]*power_analysis", step3)
+    assert not _drops_design_effect(step3), _drops_design_effect(step3)
+
+
+@pytest.mark.parametrize("path", [SD / "SKILL.md", MODULES / "clinical.md", MODULES / "survey-delphi.md",
+                                  REFS / "survey-reference.yaml", REFS / "protocol-templates.md"])
+def test_design_effect_is_never_dropped(path):
+    """Wherever cluster sampling or cluster randomisation is covered, nothing says the design effect may be left out."""
+    text = _read(path)
+    assert "设计效应" in text
+    assert not _drops_design_effect(text), _drops_design_effect(text)
 
 
 # ── CG-8: qPCR / Western blot analysis scale, reference genes, MIQE ───────────────────────────
@@ -224,13 +276,19 @@ def test_western_blot_template():
 
 # ── CG-9: animal study — experimental unit, cage effects, ARRIVE Essential 10 ────────────────
 
+# mixing groups within a cage said to be fine after all ("通常照样混笼", "也可以混笼")
+MIXING_ALLOWED = re.compile(r"(?:照样|照常|照旧|仍(?:然)?可以?|也可以?|亦可|通常|一般|往往|实际上)(?:(?!不|勿|别|禁止|避免)[^。；\n]){0,6}"
+                            r"混笼")
+
+
 def test_animal_template():
     text = _read(EXPT / "animal-study.md")
     assert "实验单位 = 能被独立随机分配到不同处理的最小单位，n 按实验单位数计" in text
     assert "10.1371/journal.pbio.2005282" in text
     assert "实验单位是笼时，样本量按笼数算" in text
     assert "每笼混合分组（避免笼效应）" not in text
-    assert "笼位安排：按实验单位定，没有统一做法" in text and "**不能**混笼" in text
+    assert "笼位安排：按实验单位定，没有统一做法" in text and _affirms(text, "**不能**混笼")
+    assert not MIXING_ALLOWED.search(text), MIXING_ALLOWED.search(text).group()
     # which unit: feed / water / whole-cage treatment → cage; dam-level treatment → litter; slices are not n
     assert re.search(r"处理加在饲料 / 饮水 / 笼内环境里，或整笼一起处理 → \*\*笼\*\*（[^）]*不是独立的 n）", text)
     assert re.search(r"处理施加在孕鼠 / 母鼠身上、看子代 → \*\*窝\*\*", text)
@@ -259,7 +317,9 @@ def test_basic_template_animal_section_counts_experimental_units():
     assert "处理加在饲料 / 饮水 / 笼内环境或整笼处理 → 笼；" in unit
     assert re.search(r"处理给孕鼠 / 母鼠、看子代 → 窝\]$", unit), unit
     cage = next(line for line in lines if line.startswith("- Housing & cage allocation"))
-    assert "处理可能经笼互相影响时不能混笼" in cage and "随机效应 / 区组" in cage
+    assert _affirms(cage, re.compile(r"处理可能经笼互相影响时(?:(?!不|非|无|未|并)\S){0,3}不能混笼"))
+    assert "随机效应 / 区组" in cage
+    assert not MIXING_ALLOWED.search(cage), MIXING_ALLOWED.search(cage).group()
     # ARRIVE 2.0 Recommended Set item 15 (housing and husbandry) has a place in the slot
     assert "ARRIVE 2.0 第 15 条" in cage and "饲养条件" in cage and "环境丰富化" in cage
     size = next(line for line in lines if line.startswith("- Sample size"))
