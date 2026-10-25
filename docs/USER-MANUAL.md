@@ -275,7 +275,7 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/manuscript-export/scripts/export_docx.py" -
 python "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/reproduce_check.py" --cmd "python3 analysis_script.py" --outputs results/ --compare-stdout --report reproduce-check.md --keep-last 1
 ```
 
-各次运行的副本在 `.reproduce-check/`（自动 git 忽略，可能含患者级结果）。`--keep-last 1` 只保留最近一次检查：只删本工具建的检查文件夹；检查前就在 `--outputs` 里、没有哪次运行重新生成的文件（如手工整理的表）检查后放回原处；`--keep-last` 按内容判断，检查前的某个版本在原处和留下的检查副本里都找不到时（放不回原处、被手工改过等），那次检查不删，报告里会写明；较早一次检查运行生成的结果不算（分析在两次检查之间改过时，不会因此每两次检查留下一个文件夹）。`--outputs` 之外的缓存不会被清空，报告会列出能认出的缓存。数据、配置等输入文件不要放在 `--outputs` 里——检查前这些路径里的文件会被移走。
+各次运行的副本在 `.reproduce-check/`（自动 git 忽略，可能含患者级结果）。`--keep-last 1` 只保留最近一次检查：只删本工具建的检查文件夹；检查前就在 `--outputs` 里、没有哪次运行重新生成的文件（如手工整理的表）检查后放回原处；`--keep-last` 按内容判断，检查前的某个版本在原处和留下的检查副本里都找不到时（放不回原处、被手工改过等），那次检查不删，报告里会写明；较早一次检查运行生成的结果不算（分析在两次检查之间改过时，不会因此每两次检查留下一个文件夹）；判断依据是每个检查文件夹状态文件里的内容清单，检查文件夹里的副本之后被改过或新放进文件时，这个文件夹保留；记录不完整（检查被中断）时那次检查不做清理。从旧版本升级后的旧文件夹没有内容清单，会被保留并写明原因，确认后手工删一次。`--outputs` 之外的缓存不会被清空，报告会列出能认出的缓存。数据、配置等输入文件不要放在 `--outputs` 里——检查前这些路径里的文件会被移走。
 
 ### 主要参考文件
 

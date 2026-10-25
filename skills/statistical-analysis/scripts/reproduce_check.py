@@ -49,12 +49,16 @@ What it does
 --outputs, --report, --json and --keep-dir paths are relative to --cwd. <keep-dir> defaults to
 <cwd>/.reproduce-check/<time>/; that folder gets its own .gitignore (the copies may hold
 patient-level results), and --keep-last N deletes all but the N most recent checks -- only
-folders this tool made (status file), and never one whose pre-existing/ holds a file whose
-content is not also in its original place or in a check that is kept (so a hand-made or
-hand-edited version is never deleted). The exception: a file that was an earlier check's result
-(the same content as that check's last-run copy when this check started, which the status file
-records) does not keep a folder, so an output that changes between checks does not leave one
-folder behind for every second check.
+folders this tool made (status file), and never one that may hold the only copy of a version:
+a file in pre-existing/ whose content is not also in its original place or in a check that is
+kept, or a file in run<k>/ or logs/ that is not what the check wrote there (each check's status
+file lists the sha256 of every copy it made; a folder without that list, from an earlier
+version, is kept). So a hand-made or hand-edited version is never deleted. The exception: a
+file that was an earlier check's result (the same content as that check's last-run copy as its
+status file lists it -- not as the copy reads now) does not keep a folder, so an output that
+changes between checks does not leave one folder behind for every second check. A check that
+could not record which of its pre-existing files were such results (interrupted while it
+recorded them, or its status file could not be written) deletes no folder.
 Exit code: 0 identical (within tolerance) · 1 outputs differ · 2 a run failed, the check was
 interrupted, or there was nothing to compare (also: invalid arguments).
 """
@@ -104,10 +108,14 @@ MAX_LINES = 20
 MAX_GZ = 256 << 20                                   # decompressed size limit for .gz / .docx outputs
 TOOL = "reproduce_check.py"
 MARKER = ".reproduce-check-run.json"                 # status file inside every check folder
+MARKER_TMP = MARKER + ".tmp"                          # written first, then renamed over the status file
 FROM_CHECKS = "pre_existing_from_checks"             # status-file key: {rel: digest} of the pre-existing/
                                                      # files an earlier check's run wrote
+MANIFEST = "copies"                                  # status-file key: {"pre-existing" / "run<k>" / "logs":
+                                                     # {path inside it: digest}} of what the check wrote there
 CHECK_DIR_RE = re.compile(r"^\d{8}-\d{6}-")
-CHECK_PARTS_RE = re.compile(r"^(?:pre-existing|logs|run\d+(?:-failed|-interrupted)?|\.reproduce-check-run\.json)$")
+CHECK_PARTS_RE = re.compile(r"^(?:pre-existing|logs|run\d+(?:-failed|-interrupted)?|"
+                            r"\.reproduce-check-run\.json(?:\.tmp)?)$")
 RUN_DIR_RE = re.compile(r"^run\d+(?:-failed|-interrupted)?$")
 GITIGNORE = ("# reproduce_check.py: copies of analysis outputs from each check (they may contain\n"
              "# patient-level results). Never commit them; delete a check folder once it is reviewed.\n*\n")
@@ -375,47 +383,119 @@ def _run_dirs(folders, pre_existing=False):
     return found
 
 
-def _last_run_dir(folder):
-    """The copy of what a check left in place: its highest-numbered run<k>/ (a run that completed)."""
-    best, k = None, -1
-    try:
-        children = list(folder.iterdir())
-    except OSError:
+def _is_copy_part(p):
+    """pre-existing/, logs/ or a run folder of a check folder (a real directory)."""
+    return _is_real_dir(p) and (p.name in ("pre-existing", "logs") or bool(RUN_DIR_RE.match(p.name)))
+
+
+def _manifest(folder, memo, known=None):
+    """What a check wrote into its folder: {"pre-existing" / "logs" / "run<k>...": {path: digest}}.
+    Digests already in known (recorded right after the run that wrote them) are kept as they were.
+    Raises OSError when a copy cannot be read."""
+    out = {}
+    for c in sorted(folder.iterdir(), key=lambda c: c.name):
+        if not _is_copy_part(c):
+            continue
+        old = (known or {}).get(c.name) or {}
+        out[c.name] = {sub: old[sub] if sub in old else _digest_memo(p, memo) for sub, p in _files_at(c).items()}
+    return out
+
+
+def _marker_manifest(marker):
+    """The manifest a status file holds, or None (an earlier version's folder, or a check that could
+    not record it)."""
+    man = marker.get(MANIFEST)
+    if not isinstance(man, dict) or not all(isinstance(v, dict) for v in man.values()):
         return None
-    for c in children:
-        m = re.match(r"^run(\d+)$", c.name)
-        if m and int(m.group(1)) > k and _is_real_dir(c):
-            best, k = c, int(m.group(1))
-    return best
+    return man
+
+
+def _last_run(manifest):
+    """The manifest entry of what a check left in place: its highest-numbered run<k> (a completed run)."""
+    best, k = None, -1
+    for name, files in manifest.items():
+        m = re.match(r"^run(\d+)$", name)
+        if m and int(m.group(1)) > k:
+            best, k = files, int(m.group(1))
+    return best or {}
+
+
+def _written_by_runs(manifest):
+    """{(path, digest)} of every file a check's runs wrote, by its manifest."""
+    return {(sub, d) for name, files in (manifest or {}).items() if RUN_DIR_RE.match(name)
+            for sub, d in files.items()}
 
 
 def _from_earlier_checks(pre, current, keep_root, memo):
     """Files just moved into pre-existing/ that an earlier check's run wrote: the same content as that
-    check's last-run copy (what it left in place), or as a file its status file records as one (a
-    failed check copies its pre-existing/ back into place). -> {rel: digest}. Kept in the status file:
-    --keep-last does not keep a check folder for the previous check's results; it protects only the
-    other files (made or edited by hand, or written by a run outside the checks)."""
+    check's last-run copy (what it left in place) as its status file lists it, or as a file its status
+    file records as one (a failed check copies its pre-existing/ back into place). -> {rel: digest}.
+    Only what the status files say counts, never what a copy holds now (it may have been edited by
+    hand). Kept in the status file: --keep-last does not keep a check folder for the previous check's
+    results; it protects only the other files (made or edited by hand, or written by a run outside the
+    checks)."""
     found = {}
     files = _files_at(pre) if _is_real_dir(pre) else {}
     if not files:
         return found
     sources = []
     for folder, _ in _check_folders(keep_root):
+        if folder == current:
+            continue
         marker = _read_marker(folder)
-        if folder == current or not _made_here(marker):
+        man = _marker_manifest(marker) if _made_here(marker) else None
+        if man is None:                   # nothing to verify against (an earlier version, a damaged status file)
             continue
         rec = marker.get(FROM_CHECKS)
-        sources.append((_last_run_dir(folder), rec if isinstance(rec, dict) else {}))
+        sources.append((_last_run(man), rec if isinstance(rec, dict) else {}))
     for rel, src in files.items():
-        for last, rec in reversed(sources):                # the most recent check first
-            try:
-                if (last is not None and os.path.lexists(last / rel) and _same_content(src, last / rel, memo)) \
-                        or (rel in rec and rec[rel] == _digest_memo(src, memo)):
-                    found[rel] = _digest_memo(src, memo)
-                    break
-            except OSError:
-                continue
+        try:
+            d = _digest_memo(src, memo)
+        except OSError:
+            continue
+        if any(last.get(rel) == d or rec.get(rel) == d for last, rec in sources):
+            found[rel] = d
     return found
+
+
+def _user_versions(keep, cwd, st):
+    """This check's pre-existing/ files whose content is neither in place nor something a check's run
+    wrote (by the status files of the other checks and this check's own copies, and the earlier
+    checks' results found when it started): -> (gone, replaced, elsewhere). gone: their place is empty
+    (or a directory); replaced: a file with other content is there now; elsewhere: {rel: [the other
+    check folders' pre-existing/ or run folders that hold the same content now]}."""
+    gone, replaced, elsewhere = [], [], {}
+    pre = keep / "pre-existing"
+    files = _files_at(pre) if _is_real_dir(pre) else {}
+    if not files:
+        return gone, replaced, elsewhere
+    memo, from_checks = st["memo"], st["from_checks"] or {}
+    written, places = _written_by_runs(st.get("manifest")), []
+    for folder, _ in _check_folders(st["keep_root"]):
+        if folder == keep:
+            continue
+        marker = _read_marker(folder)
+        if _made_here(marker):
+            written |= _written_by_runs(_marker_manifest(marker))
+            places += _run_dirs([folder], pre_existing=True)
+    for rel, src in files.items():
+        try:
+            d = _digest_memo(src, memo)
+        except OSError:
+            d = None
+        if d is not None and from_checks.get(rel) == d:
+            continue
+        live = cwd / rel
+        in_place = os.path.lexists(live) and not _is_real_dir(live)
+        if in_place and _same_content(src, live, memo):
+            continue
+        if d is not None and (rel, d) in written:
+            continue
+        (replaced if in_place else gone).append(rel)
+        copies = [f"{p}/" for p in places if os.path.lexists(p / rel) and _same_content(src, p / rel, memo)]
+        if copies:
+            elsewhere[rel] = copies
+    return gone, replaced, elsewhere
 
 
 def _only_copies(pre, base, copy_dirs, memo, record=None):
@@ -1143,7 +1223,8 @@ def _link_text(p):
     return f"链接 → {os.readlink(p)}" if os.path.islink(p) else "普通文件"
 
 
-def compare_runs(snapshots, outputs, rtol, atol, exclude=()):
+def compare_runs(snapshots, outputs, rtol, atol, exclude=(), memo=None):
+    memo = {} if memo is None else memo                 # sha256 by path (the manifest already has them)
     maps = [_collect(outputs, base=s) for s in snapshots]
     names = sorted(set().union(*[set(m) for m in maps])) if maps else []
     excluded = [n for n in names if _excluded(n, exclude)]
@@ -1157,7 +1238,7 @@ def compare_runs(snapshots, outputs, rtol, atol, exclude=()):
             res["different"].append({"file": rel, "method": "文件集合", "equal": False,
                                      "details": [f"第 {'、'.join(map(str, missing))} 次运行没有生成这个文件"]})
             continue
-        hashes = [_digest(m[rel]) for m in maps]
+        hashes = [_digest_memo(m[rel], memo) for m in maps]
         if len(set(hashes)) == 1:
             res["identical"].append(rel)
             continue
@@ -1261,7 +1342,26 @@ def files_with_run_date(files, days, window=None):
 
 # ─── the check folders (.reproduce-check/) ─────────────────────────────────
 
+def _atomic_write(path, text):
+    """Write a status file so that it is never left half-written: a temporary file next to it, then
+    renamed over it (a crash leaves the old status file or the new one, never a truncated one)."""
+    tmp = path.with_name(MARKER_TMP)
+    try:
+        with open(tmp, "w", encoding="utf-8") as fh:
+            fh.write(text)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
+
+
 def _write_marker(keep, status, **extra):
+    """-> True if the status file was written. A signal is acted on once the file is in place."""
     try:
         data = {"tool": TOOL, "status": status, "pid": os.getpid(),
                 "time": _dt.datetime.now().isoformat(timespec="seconds"), "started": _started(keep), **extra}
@@ -1270,9 +1370,11 @@ def _write_marker(keep, status, **extra):
             text.encode("utf-8")
         except UnicodeEncodeError:                     # a file name that is not valid UTF-8: escape it
             text = json.dumps(data)
-        (keep / MARKER).write_text(text, encoding="utf-8")
+        with _Deferred():
+            _atomic_write(keep / MARKER, text)
+        return True
     except OSError:
-        pass
+        return False
 
 
 def _read_marker(folder):
@@ -1331,45 +1433,125 @@ def _unmarked(keep_root):
     return sorted(out)
 
 
-def _prunable(folder, cwd, copy_dirs, memo):
-    """-> None if --keep-last may delete this check folder, else the reason why not. Only folders
-    this tool made, holding only what a check writes, and whose pre-existing/ files were all either
-    written by an earlier check's run (the status file records them) or have their content somewhere
-    else: in their original place (written again by the runs with the same content, or put back), or
-    in copy_dirs (run folders and pre-existing/ of the checks that are kept)."""
-    marker = _read_marker(folder)
-    if not _made_here(marker):
-        return "没有可识别的本工具状态文件，不是本工具建的文件夹"
-    try:
-        foreign = sorted(c.name for c in folder.iterdir() if not CHECK_PARTS_RE.match(c.name))
-    except OSError as e:
-        return f"无法读取（{e}）"
-    if foreign:
-        return f"里面有不是本工具写的文件（{'、'.join(foreign[:3])}）"
-    base = Path(marker["cwd"]) if isinstance(marker.get("cwd"), str) and os.path.isdir(marker["cwd"]) else cwd
-    record = marker.get(FROM_CHECKS) if isinstance(marker.get(FROM_CHECKS), dict) else None
-    gone, changed = _only_copies(folder / "pre-existing", base, copy_dirs, memo, record)
-    if not (gone or changed):
-        return None
+def _own_part(p):
+    """A part of a check folder this tool writes: its status file (a regular file) or one of the
+    folders pre-existing/, logs/, run<k>/ (a real directory). Anything else was put there by someone else."""
+    if not CHECK_PARTS_RE.match(p.name):
+        return False
+    if p.name in (MARKER, MARKER_TMP):
+        return p.is_file() and not p.is_symlink()
+    return _is_real_dir(p)
+
+
+def _altered_copies(folder, children, manifest, memo):
+    """Files in the run folders and logs/ of a check folder that are not what the check wrote there,
+    by the manifest in its status file: -> (changed, added). changed: other content now; added: not
+    in the manifest (put there later, or no manifest at all). A copy that was deleted loses nothing."""
+    changed, added = [], []
+    for c in sorted(children, key=lambda c: c.name):
+        if not (_is_copy_part(c) and c.name != "pre-existing"):
+            continue
+        files = (manifest or {}).get(c.name)
+        for sub, p in _files_at(c).items():
+            name = f"{c.name}/{sub}"
+            if files is None or sub not in files:
+                added.append(name)
+                continue
+            try:
+                if _digest_memo(p, memo) != files[sub]:
+                    changed.append(name)
+            except OSError:
+                changed.append(name)
+    return changed, added
+
+
+def _altered_text(changed, added, manifest):
+    if manifest is None:
+        return (f"状态文件里没有那次检查各个副本的内容清单（较早版本的本工具建的，或那次检查没能记下），无法确认 "
+                f"run<k>/、logs/ 里的 {len(added)} 个文件（{_names(added, 3)}）是那次检查写下的、之后没有被改过或加过")
+    parts = []
+    if changed:
+        parts.append(f"{len(changed)} 个和那次检查写下时状态文件记录的内容不同（{_names(changed, 3)}）")
+    if added:
+        parts.append(f"{len(added)} 个是那次检查之后才放进去的（{_names(added, 3)}）")
+    return ("run<k>/、logs/ 里有 " + "，".join(parts) +
+            "：不是那次检查写下的版本（可能是手工改过或加进去的），这里可能是它们唯一的副本")
+
+
+def _pre_existing_text(folder, gone, changed, record, manifest, memo):
+    """Why pre-existing/ files keep a check folder: where they are not, and what they are."""
     where = []
     if gone:
         where.append(f"{len(gone)} 个在原处已经没有了（{_names(gone, 3)}）")
     if changed:
         where.append(f"{len(changed)} 个和原处现在的同名文件内容不同（{_names(changed, 3)}）")
-    if record is None:
-        origin = ["这个文件夹的状态文件没有记录其中哪些是较早的检查运行生成的（较早版本的本工具建的，或那次检查"
-                  "没有走到记录这一步），只能当作可能是手工做的或改过的版本"]
-    else:
-        edited = [rel for rel in gone + changed if rel in record]
-        others = [rel for rel in gone + changed if rel not in record]
-        origin = []
-        if others:
-            origin.append((("它" if len(others) == 1 else "它们") if not edited else _names(others, 3) + " ") +
-                          "在那次检查开始时和当时留着的各次检查的运行结果都不同（手工做的或改过的，或是在检查之外运行分析得到的）")
-        if edited:
-            origin.append(f"{_names(edited, 3)} 是较早的检查运行生成的，但这里的副本在那次检查之后被改过")
-    return (f"pre-existing/ 里检查前就有的文件中，有 {'，'.join(where)}；{'；'.join(origin)}；"
+    listed = (manifest or {}).get("pre-existing")
+    added, edited_result, edited, original = [], [], [], []
+    for rel in gone + changed:
+        try:
+            d = _digest_memo(folder / "pre-existing" / rel, memo)
+        except OSError:
+            d = None
+        if listed is not None and rel not in listed:
+            added.append(rel)
+        elif record is not None and rel in record:       # recorded as an earlier check's result, changed since
+            edited_result.append(rel)
+        elif listed is not None and listed[rel] != d:
+            edited.append(rel)
+        else:
+            original.append(rel)
+    groups = sum(map(bool, (added, edited_result, edited, original)))
+
+    def who(files):
+        return ("它" if len(files) == 1 else "它们") if groups == 1 else _names(files, 3) + " "
+    origin = []
+    if added:
+        origin.append(f"{who(added)}是那次检查之后才放进 pre-existing/ 的")
+    if edited_result:
+        origin.append(f"{who(edited_result)}是较早的检查运行生成的，但这里的副本在那次检查之后被改过")
+    if edited:
+        origin.append(f"{who(edited)}在 pre-existing/ 里的副本在那次检查之后被改过")
+    if original and record is None:
+        origin.append(f"这个文件夹的状态文件没有记录{'' if groups == 1 else ' ' + _names(original, 3) + ' '}"
+                      "是不是较早的检查运行生成的（较早版本的本工具建的，或那次检查没有走到记录这一步），"
+                      "只能当作可能是手工做的或改过的版本")
+    elif original:
+        origin.append(f"{who(original)}在那次检查开始时不是状态文件里核对得到的较早检查运行结果：可能是手工做的或改过的、"
+                      "在检查之外运行分析得到的，也可能是某次检查的结果、但那次检查的副本或状态文件当时已经删除、"
+                      "读不出或没有内容清单")
+    return (f"pre-existing/ 里的文件中，有 {'，'.join(where)}；{'；'.join(origin)}；"
             "在原处和留下的检查副本里都没有内容相同的一份，那里是这些版本唯一的副本")
+
+
+def _prunable(folder, cwd, copy_dirs, memo):
+    """-> None if --keep-last may delete this check folder, else the reason why not. Only folders
+    this tool made, holding only what a check writes: nothing but its own parts, run folders and logs/
+    exactly as the status file's manifest lists them (an edited or added copy may be the only one),
+    and pre-existing/ files that were all either written by an earlier check's run (the status file
+    records them) or have their content somewhere else: in their original place (written again by the
+    runs with the same content, or put back), or in copy_dirs (run folders and pre-existing/ of the
+    checks that are kept)."""
+    marker = _read_marker(folder)
+    if not _made_here(marker):
+        return "没有可识别的本工具状态文件，不是本工具建的文件夹"
+    try:
+        children = list(folder.iterdir())
+    except OSError as e:
+        return f"无法读取（{e}）"
+    foreign = sorted(c.name for c in children if not _own_part(c))
+    if foreign:
+        return f"里面有不是本工具写的文件（{'、'.join(foreign[:3])}）"
+    manifest = _marker_manifest(marker)
+    reasons = []
+    changed, added = _altered_copies(folder, children, manifest, memo)
+    if changed or added:
+        reasons.append(_altered_text(changed, added, manifest))
+    base = Path(marker["cwd"]) if isinstance(marker.get("cwd"), str) and os.path.isdir(marker["cwd"]) else cwd
+    record = marker.get(FROM_CHECKS) if isinstance(marker.get(FROM_CHECKS), dict) else None
+    gone, changed = _only_copies(folder / "pre-existing", base, copy_dirs, memo, record)
+    if gone or changed:
+        reasons.append(_pre_existing_text(folder, gone, changed, record, manifest, memo))
+    return "；".join(reasons) or None
 
 
 def _folder_size(path):
@@ -1441,6 +1623,29 @@ STREAMS = (("stdout", "屏幕输出（stdout）", "--compare-stdout"), ("stderr"
 
 def _stream_tag(label):
     return f"({label.replace('（', ' ').rstrip('）')})"          # "(屏幕输出 stdout)"
+
+
+def _where_text(files, only, elsewhere, keep_dir):
+    """Where the pre-check versions of these files are now: only in this check's pre-existing/ (then
+    --keep-last keeps this folder), there and in other check folders (--keep-last keeps at least one
+    copy, not necessarily this one), or -- neither -- the same as a check's run wrote."""
+    groups = [(kind, g) for kind, g in (
+        ("only", [f for f in files if f in only]),
+        ("copies", [f for f in files if f not in only and f in elsewhere]),
+        ("run", [f for f in files if f not in only and f not in elsewhere])) if g]
+    pre, out = f"{keep_dir}/pre-existing/", []
+    for kind, g in groups:
+        lead = "检查前的版本" if len(groups) == 1 else f"{_names(g, 5)} 检查前的版本"
+        if kind == "only":
+            out.append(f"{lead}只在 {pre} 里，需要的话从那里取回，--keep-last 不会删除这个文件夹")
+        elif kind == "copies":
+            where = "；".join(f"{f}：{'、'.join(elsewhere[f][:3])}" + (" 等" if len(elsewhere[f]) > 3 else "")
+                             for f in g[:5])
+            out.append(f"{lead}在 {pre} 里，别的检查文件夹里也有内容相同的一份（{where}{' 等' if len(g) > 5 else ''}），"
+                       "需要的话从那里取回；--keep-last 至少留下其中一份，不一定是这个文件夹")
+        else:
+            out.append(f"{lead}和某次检查运行生成的结果相同")
+    return "；".join(out)
 
 
 def _file_set_note(files, cmp):
@@ -1527,11 +1732,12 @@ def render(result):
     if r.get("put_back"):
         lines.append(f"- 其中没有哪次运行重新生成的 {len(r['put_back'])} 个文件已复制回原处（不是这次运行的结果）："
                      + _names(r["put_back"]))
+    elsewhere = r.get("pre_existing_elsewhere") or {}
     if r.get("pre_existing_replaced"):
         rp = r["pre_existing_replaced"]
-        lines.append(f"- 其中 {len(rp)} 个文件这次运行重新生成了，但检查前的版本内容不同、也不是哪次检查运行生成的"
-                     f"（手工改过，或是在检查之外运行分析得到的）：{_names(rp)}；检查前的版本只在 "
-                     f"{r['keep_dir']}/pre-existing/ 里，需要的话从那里取回，--keep-last 不会删除这个文件夹")
+        lines.append(f"- 其中 {len(rp)} 个文件这次运行重新生成了，但检查前的版本内容不同、也不是状态文件里核对得到的"
+                     f"哪次检查运行生成的（手工改过、在检查之外运行分析得到的，或是记录已经不在了的某次检查的结果）："
+                     f"{_names(rp)}；" + _where_text(rp, set(rp) - set(elsewhere), elsewhere, r["keep_dir"]))
     nb = r.get("not_put_back") or []
     reasons = {"earlier_run": "较早的运行生成过、最后一次运行没有生成：放回旧版本会混在这次的结果里",
                "dir": "那里现在是这次运行生成的目录"}
@@ -1542,23 +1748,17 @@ def render(result):
         text = reasons.get(why) or "复制时出错：" + "；".join(sorted({x["why"] for x in group}))[:300]
         if why == "earlier_run":
             text += _file_set_note([x["file"] for x in group], cmp)
-        only = [x["file"] for x in group if x.get("only_copy", True)]
-        line = f"- 检查前已有的 {len(group)} 个文件没有放回原处（{text}）：{_names([x['file'] for x in group])}"
-        where = f"检查前的版本只在 {r['keep_dir']}/pre-existing/ 里，--keep-last 不会删除这个文件夹"
-        if len(only) == len(group):
-            line += f"；{where}"
-        elif only:
-            line += f"；其中 {_names(only, 5)} 的{where}，其余的检查前版本和某次检查运行生成的结果相同"
-        else:
-            line += "；它们检查前的版本和某次检查运行生成的结果相同"
-        lines.append(line)
+        files = [x["file"] for x in group]
+        only = {x["file"] for x in group if x.get("only_copy", True)}
+        lines.append(f"- 检查前已有的 {len(group)} 个文件没有放回原处（{text}）：{_names(files)}；"
+                     + _where_text(files, only, elsewhere, r["keep_dir"]))
     kr = r.get("keep_root") or {}
     if kr:
         line = f"- {kr['path']} 里现有 {kr['n_checks']} 次检查的副本，共 {kr['mb']:.1f} MB"
         if kr.get("pruned"):
             line += (f"（按 --keep-last 删除了较早的 {len(kr['pruned'])} 次：只删本工具建的检查文件夹，而且它们 "
                      "pre-existing/ 里的每个文件要么是更早一次检查运行生成的结果，要么在原处或留下的检查副本里"
-                     "还有内容相同的一份）")
+                     "还有内容相同的一份，run<k>/、logs/ 里的文件也都和状态文件记录的一样）")
         line += ("；副本里可能有患者级结果：看完可以删除，或下次加 --keep-last 1 只保留最近一次"
                  + ("；该目录有自己的 .gitignore，不会被 git 提交" if kr.get("gitignored") else
                     "；请把它加进 .gitignore，不要提交"))
@@ -1608,9 +1808,9 @@ def _parser():
     p.add_argument("--keep-dir", help="存放各次运行副本的目录（相对于 --cwd；默认 <cwd>/.reproduce-check/<时间>/）")
     p.add_argument("--keep-last", type=int, metavar="N",
                    help="检查结束后只保留最近 N 次检查的副本，删除更早的（默认全部保留）；只删本工具建的文件夹，"
-                        "pre-existing/ 里有文件的这份内容在原处和留下的检查副本里都没有时，那次检查不删"
-                        "（手工做的或改过的版本不会被删）；较早一次检查运行生成的结果不算（检查开始时和那次检查"
-                        "最后一次运行的副本相同，状态文件里有记录）")
+                        "pre-existing/ 里有文件的这份内容在原处和留下的检查副本里都没有时，或 run<k>/、logs/ 里的文件"
+                        "和状态文件记录的不同（改过或加过）时，那次检查不删（手工做的或改过的版本不会被删）；"
+                        "较早一次检查运行生成的结果不算（检查开始时和状态文件记录的那次检查最后一次运行的副本相同）")
     p.add_argument("--compare-stdout", action="store_true",
                    help="把各次运行打印到屏幕的内容（stdout）也计入结论（结果只打印在屏幕上时必须加）")
     p.add_argument("--compare-stderr", action="store_true",
@@ -1791,6 +1991,34 @@ def _outside_outputs(before, after, result):
             "或关掉缓存后重查；确认不是缓存（如输入数据）就不用管")
 
 
+def _record_progress(keep, st, result):
+    """Status file while the check runs: which pre-existing/ files an earlier check's run wrote, and
+    the digest of every copy made so far, taken right after the run that made it (so a later edit of
+    a copy shows, and a check killed outright still says what its runs wrote)."""
+    try:
+        st["manifest"] = _manifest(keep, st["memo"], st["manifest"])
+    except OSError:
+        return
+    extra = {MANIFEST: st["manifest"]}
+    if st["from_checks"] is not None:
+        extra[FROM_CHECKS] = st["from_checks"]
+    _write_marker(keep, "running", command=result["command"], cwd=result["cwd"], **extra)
+
+
+def _mark_only_copies(result, keep, cwd, st):
+    """Which pre-check versions are now only in pre-existing/ (gone, or replaced by other content) and
+    not something a check's run wrote -- edited by hand, or made outside a check -- and where else
+    the same content is kept."""
+    try:
+        gone, replaced, elsewhere = _user_versions(keep, cwd, st)
+    except OSError:
+        return
+    result["pre_existing_replaced"], result["pre_existing_elsewhere"] = replaced, elsewhere
+    mine = set(gone) | set(replaced)
+    for x in result["not_put_back"]:
+        x["only_copy"] = x["file"] in mine and x["file"] not in elsewhere
+
+
 def _check(args, cmd, shell, cwd, outputs, keep, result, st, named):
     for d in st["mkdirs"]:                    # "> results/stdout.txt" needs results/ before the shell starts
         try:
@@ -1808,6 +2036,7 @@ def _check(args, cmd, shell, cwd, outputs, keep, result, st, named):
         result["pre_existing_from_checks"] = len(st["from_checks"])
     except OSError:                           # not recorded: --keep-last then protects every pre-existing file
         st["from_checks"] = None
+    _record_progress(keep, st, result)
     st["new_dirs"] = _missing_parents(outputs, cwd)
     skip = {o.path for o in outputs} | {st["keep_root"]}
     before = _tree_state(cwd, skip)
@@ -1852,6 +2081,7 @@ def _check(args, cmd, shell, cwd, outputs, keep, result, st, named):
                 _copy_out(outputs, snap)
         st["snapshots"].append(snap)
         result["snapshots"].append(f"run{k}/")
+        _record_progress(keep, st, result)
 
     t_end = time.time()
     after = _tree_state(cwd, skip)
@@ -1859,17 +2089,11 @@ def _check(args, cmd, shell, cwd, outputs, keep, result, st, named):
     with _Deferred():
         result["put_back"], result["not_put_back"] = _restore_missing(keep / "pre-existing", cwd, st["snapshots"])
     st["phase"] = "compare"
-    # files whose pre-check version is now only in pre-existing/: gone (not put back) or replaced by
-    # other content -- and not something a check's run wrote (edited by hand, or made outside a check)
-    run_dirs = _run_dirs(p for p, _ in _check_folders(st["keep_root"]))
-    gone, result["pre_existing_replaced"] = _only_copies(keep / "pre-existing", cwd, run_dirs, st["memo"],
-                                                         st["from_checks"])
-    for x in result["not_put_back"]:
-        x["only_copy"] = x["file"] in gone
+    _mark_only_copies(result, keep, cwd, st)
     result["last_run_in_place"] = True
     days.add(_dt.date.today())
     _WINDOW.update(start=t_start, end=t_end)
-    cmp = compare_runs(st["snapshots"], outputs, args.rtol, args.atol, args.exclude)
+    cmp = compare_runs(st["snapshots"], outputs, args.rtol, args.atol, args.exclude, st["memo"])
     streams = {}
     for key, label, flag in STREAMS:
         logs = [keep / "logs" / f"run{k}.{key}.txt" for k in range(1, args.runs + 1)]
@@ -2000,7 +2224,7 @@ def _main(argv):
             (keep_root / ".gitignore").write_text(GITIGNORE, encoding="utf-8")
             gitignored = True
         keep = Path(tempfile.mkdtemp(prefix=_dt.datetime.now().strftime("%Y%m%d-%H%M%S-"), dir=str(keep_root)))
-        (keep / MARKER).write_text(json.dumps({"tool": TOOL, "started": time.time()}), encoding="utf-8")
+        _atomic_write(keep / MARKER, json.dumps({"tool": TOOL, "started": time.time()}))
     except OSError as e:
         return _fail(f"无法创建副本目录 {keep_root}：{e}")
     stale = [p for p, status in _check_folders(keep_root) if status == "running" and p != keep]
@@ -2009,7 +2233,7 @@ def _main(argv):
     result = {"command": cmd_text, "cwd": str(cwd), "outputs": [o.raw for o in outputs], "runs": [],
               "n_runs": args.runs, "rtol": args.rtol, "atol": args.atol, "keep_dir": str(keep),
               "snapshots": [], "messages": [], "warnings": [], "pre_existing": 0, "pre_existing_from_checks": 0,
-              "restored": None,
+              "pre_existing_replaced": [], "pre_existing_elsewhere": {}, "restored": None,
               "put_back": [], "not_put_back": [], "interrupted": False, "last_run_in_place": False,
               "comparison": None, "keep_root": None, "exit_code": 2}
     for p in stale:
@@ -2017,7 +2241,7 @@ def _main(argv):
             result["warnings"].append(f"较早的一次检查（{p}）没有正常结束（可能被强行终止）：它运行前移走的文件"
                                       f"还在 {p}/pre-existing/，请确认是否需要放回原处")
     st = {"phase": "start", "k": 0, "pre": 0, "snapshots": [], "keep_dirs": None, "new_dirs": [],
-          "mkdirs": mkdirs, "keep_root": keep_root, "from_checks": None, "memo": {}}
+          "mkdirs": mkdirs, "keep_root": keep_root, "from_checks": None, "memo": {}, "manifest": None}
     old = _install_handlers()                 # kept until the report is written
     _SIG["keep"] = str(keep)
     try:
@@ -2029,7 +2253,7 @@ def _main(argv):
             _abort(result, st, outputs, keep, cwd, f"检查被中断（{name}）：分析命令已被结束")
         except Exception as e:                # an unexpected error must not leave the outputs moved away
             _abort(result, st, outputs, keep, cwd, f"检查出错（{type(e).__name__}: {e}）")
-        _housekeeping(args, result, keep, keep_root, cwd, cmd_text, gitignored, st["from_checks"])
+        _housekeeping(args, result, keep, keep_root, cwd, cmd_text, gitignored, st)
         _SIG["defer"] += 1                    # from here on a signal only waits: the report gets written
         code = _finish(result, report, json_path)
         _SIG["keep"] = "done"
@@ -2039,17 +2263,39 @@ def _main(argv):
         _SIG["defer"], _SIG["pending"] = 0, None
 
 
-def _housekeeping(args, result, keep, keep_root, cwd, cmd_text, gitignored, from_checks=None):
-    """Status file (with from_checks: which pre-existing/ files an earlier check's run wrote; None when
-    the check stopped before that was known), --keep-last and the size of the copies. The check is
-    over: neither an error nor Ctrl-C here may cost the user the report."""
+def _housekeeping(args, result, keep, keep_root, cwd, cmd_text, gitignored, st):
+    """Status file (which pre-existing/ files an earlier check's run wrote -- not known when the check
+    stopped before that was recorded -- and the manifest of every copy in the check folder), --keep-last
+    and the size of the copies. Without those records nothing is pruned: deleting an older check would
+    delete what the next check needs to recognise its results. The check is over: neither an error nor
+    Ctrl-C here may cost the user the report."""
     removed, pruning = [], False
     try:
         status = "interrupted" if result["interrupted"] else ("finished" if result["exit_code"] in (0, 1) else "failed")
+        from_checks = st["from_checks"]
+        if from_checks is None and not _files_at(keep / "pre-existing"):
+            from_checks = {}                             # nothing was moved aside: nothing to record
+        try:
+            manifest = _manifest(keep, st["memo"], st["manifest"])
+        except OSError:
+            manifest = None
         extra = {FROM_CHECKS: from_checks} if from_checks is not None else {}
-        _write_marker(keep, status, command=cmd_text, cwd=str(cwd), exit_code=result["exit_code"], **extra)
-        pruning = bool(args.keep_last)
-        kept = _prune(keep_root, keep, args.keep_last, cwd, removed) if args.keep_last else []
+        if manifest is not None:
+            extra[MANIFEST] = manifest
+        written = _write_marker(keep, status, command=cmd_text, cwd=str(cwd), exit_code=result["exit_code"], **extra)
+        missing = None
+        if not written:
+            missing = "这次检查的状态文件没有写成功"
+        elif from_checks is None:
+            missing = "检查前移走的文件里哪些是较早一次检查的运行结果没有记录下来（检查在记录时被中断或出错）"
+        elif manifest is None:
+            missing = "这次检查的各个副本没能记进状态文件"
+        if args.keep_last and missing:
+            result["messages"].append(
+                f"这次没有按 --keep-last 删除较早的检查副本：{missing}；删掉较早的副本，下次检查就无法核对哪些文件是"
+                "检查运行生成的结果。下次检查会照常整理")
+        pruning = bool(args.keep_last) and not missing
+        kept = _prune(keep_root, keep, args.keep_last, cwd, removed) if pruning else []
         pruning = False
         result["keep_root"] = {"path": str(keep_root), "n_checks": len(_check_folders(keep_root)),
                                "mb": _folder_size(keep_root) / 1e6, "pruned": removed, "kept": kept,
@@ -2077,6 +2323,7 @@ def _abort(result, st, outputs, keep, cwd, message):
             _put_back(outputs, keep, st, "interrupted" if result["interrupted"] else "failed", result, cwd)
         elif st["phase"] == "restore":
             result["put_back"], result["not_put_back"] = _restore_missing(keep / "pre-existing", cwd, st["snapshots"])
+            _mark_only_copies(result, keep, cwd, st)
         result["messages"].append(message)
     except Exception as e:
         result["messages"].append(message)

@@ -298,6 +298,31 @@ def test_two_groups_equivalence_with_a_narrow_margin_is_sized_not_refused(margin
 
 
 @needs_statsmodels
+def test_two_groups_equivalence_needing_hundreds_of_millions_per_group_is_sized_not_refused():
+    # the search bound went 2.7e8 -> 1.07e9 and refused at once, without the power at 1e9 being looked at:
+    # every design needing ~2.7e8 to 1e9 per group was "所需样本量超过 10 亿"
+    margin = 0.00025
+    res = pa.two_groups(0, hypothesis="equivalence", margin=margin, dropout=0)
+    normal = (Z(0.975) + Z(0.9)) ** 2 * 2 / margin ** 2                       # 3.36e8 per group
+    assert res["n1"] == res["n2"] > 2.7e8
+    assert res["n1"] == pytest.approx(normal, rel=1e-5)    # t = z here; the χ² integral is good to ~1e-7 in power
+    assert pa._tost_power_t(res["n1"], res["n2"], 0, margin, 0.025) == pytest.approx(0.80, abs=1e-5)
+    with pytest.raises(ValueError, match="10 亿"):
+        pa.two_groups(0, hypothesis="equivalence", margin=0.0001, dropout=0)  # 2.1e9: still refused
+
+
+def test_proportion_equivalence_needing_hundreds_of_millions_per_group_is_sized_not_refused():
+    for margin in (1e-4, 7.3e-5):                                           # 5.3e8 and 9.9e8 per group
+        res = pa.proportion(0.5, 0.5, hypothesis="equivalence", margin=margin, dropout=0)
+        q1, q2 = _mn_rmle(0.5, 0.5, 1.0, margin)
+        n1 = (Z(0.975) * math.sqrt(q1 * (1 - q1) + q2 * (1 - q2)) + Z(0.9) * math.sqrt(0.5)) ** 2 / margin ** 2
+        assert 2.7e8 < res["n1"] == res["n2"] <= 1e9
+        assert res["n1"] == pytest.approx(n1, abs=1)
+    with pytest.raises(ValueError, match="10 亿"):
+        pa.proportion(0.5, 0.5, hypothesis="equivalence", margin=7.2e-5, dropout=0)   # 1.02e9
+
+
+@needs_statsmodels
 @pytest.mark.parametrize("margin,ratio,expected", [
     (999, 1.0, (2, 2)),          # was 2 / 2 with "检验效能已达 0.000"
     (1000, 1.0, (2, 2)),
@@ -463,6 +488,45 @@ def test_proportion_equivalence_asymmetric_against_independent_formula_and_simul
     assert sd[-margin] != pytest.approx(sd[margin], rel=1e-3)          # the case really is asymmetric
     sim = _fm_equivalence_power_sim(p1, p2, res["n1"], res["n2"], margin, 0.025, 200000, seed=5)
     assert sim == pytest.approx(0.80, abs=0.015)
+
+
+def _ni_power_sim(p1, p2, n1, n2, margin, alpha, reps, seed):
+    """Farrington-Manning non-inferiority (higher is better, H0: p2 − p1 ≤ −margin), simulated."""
+    rng = np.random.default_rng(seed)
+    x1, x2 = rng.binomial(n1, p1, reps), rng.binomial(n2, p2, reps)
+    q1, q2 = _fm_rmle_vec(x1, n1, x2, n2, margin)
+    z = (x2 / n2 - x1 / n1 + margin) / np.sqrt(q1 * (1 - q1) / n1 + q2 * (1 - q2) / n2)
+    return float(np.mean(z > Z(1 - alpha)))
+
+
+@pytest.mark.parametrize("hypothesis,p,margin,n,simulated", [
+    ("equivalence", 0.02, 0.4, 10, (0.65, 0.75)),        # expected events 0.2: simulated power 0.70, not 0.80
+    ("equivalence", 0.5, 0.5, 18, (0.63, 0.72)),         # 9 events, but 18 per group: 0.68
+    ("non-inferiority", 0.5, 0.4, 22, (0.72, 0.79)),     # 0.76
+    ("equivalence", 0.02, 0.1, 81, (0.81, 0.88)),        # 81 per group, but 1.6 expected events: 0.84
+])
+def test_proportion_small_samples_carry_a_one_line_warning(hypothesis, p, margin, n, simulated):
+    res = pa.proportion(p, p, hypothesis=hypothesis, margin=margin, dropout=0)
+    assert res["n1"] == res["n2"] == n
+    small = [w for w in res["warnings"] if "正态近似不可靠" in w]
+    assert len(small) == 1 and "\n" not in small[0] and f"n1 = {n}、n2 = {n}" in small[0]
+    assert "Farrington-Manning" in small[0] and "模拟" in small[0]
+    sim = (_fm_equivalence_power_sim if hypothesis == "equivalence" else _ni_power_sim)(
+        p, p, n, n, margin, 0.025, 100000, seed=3)
+    assert simulated[0] < sim < simulated[1]                 # the approximation is off at this size, as the warning says
+
+
+@pytest.mark.parametrize("call", [
+    lambda: pa.proportion(0.5, 0.5, hypothesis="equivalence", margin=0.1, dropout=0),     # 523 per group
+    lambda: pa.proportion(0.85, 0.85, hypothesis="non-inferiority", margin=0.10, dropout=0),
+    lambda: pa.proportion(0.05, 0.05, hypothesis="equivalence", margin=0.1, dropout=0),   # 129, 6.5 events
+    lambda: pa.proportion(0.30, 0.50, dropout=0),                                          # superiority: not affected
+])
+def test_proportion_no_small_sample_warning_for_ordinary_sizes(call):
+    assert not any("正态近似不可靠" in w for w in call()["warnings"])
+    assert pa._small_sample_note(30, 30, 0.5, 0.5) is None and pa._small_sample_note(29, 30, 0.5, 0.5)
+    assert pa._small_sample_note(100, 100, 0.05, 0.05) is None and pa._small_sample_note(99, 100, 0.05, 0.05)
+    assert "n2·(1−p2) = 4" in pa._small_sample_note(100, 200, 0.5, 0.98)
 
 
 @pytest.mark.parametrize("call,needle", [

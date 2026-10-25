@@ -995,3 +995,196 @@ def test_a_file_not_put_back_that_is_excluded_is_explained(tmp_path):
     text = report.read_text(encoding="utf-8")
     line = next(ln for ln in text.splitlines() if "没有放回原处" in ln)
     assert "见上" not in line and "--exclude 排除在比较之外" in line and "## 不一致的文件" not in text
+
+
+# ─── regressions found when the --keep-last fixes were verified (round 3) ─────────────
+
+from pathlib import Path  # noqa: E402
+
+EST1 = "import os\nos.makedirs('results', exist_ok=True)\nopen('results/t.csv', 'w').write('est 1\\n')\n"
+
+
+def _marker(folder):
+    return json.loads((Path(folder) / rc.MARKER).read_text(encoding="utf-8"))
+
+
+def _kept(res):
+    return {k["folder"]: k["why"] for k in res["keep_root"]["kept"]}
+
+
+# a copy in run<k>/ that the user corrected by hand and put back in place is not "that check's output": the
+# status file lists what the run wrote, and the next check compares with that, not with the copy as it reads now
+# (before: recorded as an earlier check's result, and two checks later no copy of the corrected table was left)
+def test_a_hand_corrected_run_copy_put_back_in_place_is_not_taken_for_a_check_result(tmp_path):
+    code, res = _runs(tmp_path, EST1, "--outputs", "results/", "--keep-last", "1")
+    c1 = Path(res["keep_dir"])
+    corrected = "est 1 (corrected by hand)\n"
+    _write(c1 / "run2" / "results" / "t.csv", corrected)
+    _write(tmp_path / "results" / "t.csv", corrected)
+    report = tmp_path / "r.md"
+    code, res = _runs(tmp_path, EST1, "--outputs", "results/", "--keep-last", "1", "--report", str(report))
+    assert code == 0 and res["pre_existing_from_checks"] == 0 and res["pre_existing_replaced"] == ["results/t.csv"]
+    for _ in range(2):
+        code, res = _runs(tmp_path, EST1, "--outputs", "results/", "--keep-last", "1")
+        assert code == 0 and [p for p in tmp_path.rglob("t.csv") if p.read_text("utf-8") == corrected]
+    why = _kept(res)[c1.name]                                        # kept: its run2/ copy is not what the run wrote
+    assert "run2/results/t.csv" in why and "状态文件记录的内容不同" in why and "pre-existing" not in why
+    assert _kept(res).keys() == {c1.name}
+    # the status file lists what the run wrote; the report of check 2 said where the corrected version is
+    assert _marker(c1)[rc.MANIFEST]["run2"] == {"results/t.csv": rc._sha256(tmp_path / "results" / "t.csv")}
+    line = next(ln for ln in report.read_text(encoding="utf-8").splitlines() if "重新生成了" in ln)
+    assert f"{c1 / 'run2'}/" in line and "至少留下其中一份" in line and "只在" not in line
+
+
+# a file edited or added inside run<k>/ or logs/ (or added to pre-existing/) keeps its check folder, with the reason:
+# "only what a check writes" looked at the top-level names only, so such files were deleted without notice
+def test_files_edited_or_added_inside_run_logs_or_pre_existing_keep_the_folder(tmp_path):
+    names = []
+    for _ in range(3):
+        code, res = _runs(tmp_path, EST1, "--outputs", "results/")
+        names.append(Path(res["keep_dir"]))
+    a, b, c = names
+    _write(a / "run2" / "results" / "t.csv", "my corrected table\n")       # edited in run2/
+    _write(a / "run2" / "notes.txt", "my notes on this check\n")           # added next to it
+    _write(a / "logs" / "review.txt", "notes in logs\n")
+    _write(b / "pre-existing" / "results" / "README.txt", "notes in pre-existing\n")
+    (c / "logs" / "run1.stdout.txt").write_text("edited log\n", encoding="utf-8")
+    report = tmp_path / "r.md"
+    code, res = _runs(tmp_path, EST1, "--outputs", "results/", "--keep-last", "1", "--report", str(report))
+    kept = _kept(res)
+    assert code == 0 and set(kept) == {a.name, b.name, c.name} and res["keep_root"]["pruned"] == []
+    assert "1 个和那次检查写下时状态文件记录的内容不同（run2/results/t.csv）" in kept[a.name]
+    assert "2 个是那次检查之后才放进去的（logs/review.txt、run2/notes.txt）" in kept[a.name]
+    assert "results/README.txt" in kept[b.name] and "之后才放进 pre-existing/" in kept[b.name]
+    assert "logs/run1.stdout.txt" in kept[c.name] and "run2" not in kept[c.name]
+    assert report.read_text(encoding="utf-8").count("没有按 --keep-last 删除") == 3
+    for p in (a / "run2" / "notes.txt", a / "logs" / "review.txt", b / "pre-existing" / "results" / "README.txt"):
+        assert p.is_file()
+    # once the copies are as the checks wrote them again (and the additions gone), the folders can go
+    (a / "run2" / "results" / "t.csv").write_text("est 1\n", encoding="utf-8")
+    for p in (a / "run2" / "notes.txt", a / "logs" / "review.txt", b / "pre-existing" / "results" / "README.txt"):
+        p.unlink()
+    (c / "logs" / "run1.stdout.txt").write_text("", encoding="utf-8")
+    code, res = _runs(tmp_path, EST1, "--outputs", "results/", "--keep-last", "1")
+    assert code == 0 and res["keep_root"]["kept"] == [] and _folders(tmp_path) == [os.path.basename(res["keep_dir"])]
+
+
+# a folder of an earlier version (no list of what its runs wrote) cannot be checked for edited copies: kept
+def test_a_check_folder_without_a_manifest_of_its_copies_is_kept(tmp_path):
+    legacy = tmp_path / ".reproduce-check" / "20240101-000000-old"
+    _write(legacy / "run1" / "results" / "t.csv", "est 1\n")
+    _write(legacy / "logs" / "run1.stdout.txt", "")
+    _write(legacy / rc.MARKER, json.dumps({"status": "finished", "pid": 1, "started": 1.0}))
+    code, res = _runs(tmp_path, EST1, "--outputs", "results/", "--keep-last", "1")
+    why = _kept(res)["20240101-000000-old"]
+    assert code == 0 and "没有那次检查各个副本的内容清单" in why and "run1/results/t.csv" in why
+
+
+# Ctrl-C while the check records which pre-existing files are earlier checks' results: that check deletes nothing,
+# so the next one can still recognise the previous result (before: it was labelled hand-made and kept for ever)
+def test_a_check_interrupted_while_recording_deletes_nothing(tmp_path, monkeypatch):
+    import signal
+    real = rc._from_earlier_checks
+    report = tmp_path / "r.md"
+    for i, v in enumerate(("v1", "v2", "v3", "v4")):
+        _write(tmp_path / "version.txt", v + "\n")
+        if i == 1:
+            def interrupted(*a, **k):
+                raise rc.Interrupted(signal.SIGINT)
+            monkeypatch.setattr(rc, "_from_earlier_checks", interrupted)
+        code, res = _runs(tmp_path, VERSIONED, "--outputs", "results/", "--keep-last", "1", "--report", str(report))
+        monkeypatch.setattr(rc, "_from_earlier_checks", real)
+        if i == 1:
+            assert code == 2 and res["interrupted"] and res["keep_root"]["pruned"] == [] and len(_folders(tmp_path)) == 2
+            assert any("没有按 --keep-last 删除较早的检查副本" in m and "没有记录下来" in m for m in res["messages"])
+            assert (tmp_path / "results" / "t.csv").read_text(encoding="utf-8") == "v1\n"     # put back
+        else:
+            assert code == 0 and res["keep_root"]["kept"] == [], res["keep_root"]["kept"]
+            assert _folders(tmp_path) == [os.path.basename(res["keep_dir"])]
+    assert res["pre_existing_from_checks"] == 1
+
+
+# the status file is written atomically: a failed write leaves the old one, and no temporary file behind
+def test_status_files_are_written_atomically(tmp_path, monkeypatch):
+    target = _write(tmp_path / "f" / rc.MARKER, "old")
+    real_replace = os.replace
+
+    def failing(src, dst):
+        raise OSError("disk full")
+    monkeypatch.setattr(rc.os, "replace", failing)
+    with pytest.raises(OSError):
+        rc._atomic_write(target, "new")
+    monkeypatch.setattr(rc.os, "replace", real_replace)
+    assert target.read_text(encoding="utf-8") == "old" and os.listdir(tmp_path / "f") == [rc.MARKER]
+    rc._atomic_write(target, "new")
+    assert target.read_text(encoding="utf-8") == "new" and os.listdir(tmp_path / "f") == [rc.MARKER]
+    _write(tmp_path / "f" / rc.MARKER_TMP, "left by a crash")              # a leftover temporary file is the tool's own
+    assert rc._own_part(tmp_path / "f" / rc.MARKER_TMP)
+
+
+def test_a_check_whose_status_file_cannot_be_written_deletes_nothing(tmp_path, monkeypatch):
+    code, res = _runs(tmp_path, EST1, "--outputs", "results/")
+    first = os.path.basename(res["keep_dir"])
+    real_replace = os.replace
+
+    def no_final_status(src, dst):                                   # the final status file cannot be written
+        if '"finished"' in Path(src).read_text(encoding="utf-8"):
+            raise OSError("read-only")
+        return real_replace(src, dst)
+    monkeypatch.setattr(os, "replace", no_final_status)
+    code, res = _runs(tmp_path, EST1, "--outputs", "results/", "--keep-last", "1")
+    monkeypatch.setattr(os, "replace", real_replace)
+    assert code == 0 and first in _folders(tmp_path) and res["keep_root"]["pruned"] == []
+    assert any("状态文件没有写成功" in m for m in res["messages"])
+
+
+# when the evidence is gone (a damaged status file), the previous check's result is kept, and the reason says it may
+# be such a result -- not only "hand-made"
+def test_the_reason_covers_a_check_whose_records_are_gone(tmp_path):
+    names = []
+    for v in ("v1", "v2", "v3"):
+        _write(tmp_path / "version.txt", v + "\n")
+        code, res = _runs(tmp_path, VERSIONED, "--outputs", "results/", "--keep-last", "1")
+        names.append(os.path.basename(res["keep_dir"]))
+        if v == "v2":
+            marker = tmp_path / ".reproduce-check" / names[-1] / rc.MARKER
+            marker.write_text(marker.read_text(encoding="utf-8")[:40], encoding="utf-8")
+    kept = _kept(res)
+    assert set(kept) == {names[1]} and "没有可识别的本工具状态文件" in kept[names[1]]
+    code, res = _runs(tmp_path, VERSIONED, "--outputs", "results/", "--keep-last", "1")
+    why = _kept(res)[names[2]]                                        # holds v2, which it could not verify
+    assert "results/t.csv" in why and "也可能是某次检查的结果" in why and "读不出" in why and "手工做的" in why
+
+
+# the report does not claim that a version is only in this check's pre-existing/ (and that --keep-last keeps this
+# folder) when an older kept folder holds it too: it says where the copies are
+def test_the_report_says_where_the_copies_of_a_replaced_version_are(tmp_path):
+    _write(tmp_path / "results" / "t.csv", "hand H\n")
+    _write(tmp_path / "results" / "g.csv", "hand G\n")
+    code, res = _runs(tmp_path, EST1, "--outputs", "results/", "--keep-last", "1")
+    c1 = Path(res["keep_dir"])
+    assert res["pre_existing_replaced"] == ["results/t.csv"] and not res.get("pre_existing_elsewhere")
+    (tmp_path / "results" / "g.csv").unlink()                       # c1 now holds the only copy of G
+    _write(tmp_path / "results" / "t.csv", "hand H\n")              # the user puts H back in place
+    report = tmp_path / "r.md"
+    code, res = _runs(tmp_path, EST1, "--outputs", "results/", "--keep-last", "1", "--report", str(report))
+    c2 = Path(res["keep_dir"])
+    line = next(ln for ln in report.read_text(encoding="utf-8").splitlines() if "重新生成了" in ln)
+    assert "--keep-last 不会删除这个文件夹" not in line                # it does delete it, at the next check
+    assert f"{c1 / 'pre-existing'}/" in line and "至少留下其中一份，不一定是这个文件夹" in line
+    assert res["pre_existing_elsewhere"] == {"results/t.csv": [f"{c1 / 'pre-existing'}/"]}
+    code, res = _runs(tmp_path, EST1, "--outputs", "results/", "--keep-last", "1")
+    assert not c2.exists() and c1.is_dir() and (c1 / "pre-existing" / "results" / "t.csv").read_text("utf-8") == "hand H\n"
+
+
+# while a check runs its status file already lists the copies of the finished runs (a check killed outright still
+# says what its runs wrote) and which pre-existing files were earlier results
+def test_the_status_file_lists_each_run_as_soon_as_it_is_copied(tmp_path):
+    body = COUNTER + ("import glob, shutil\nos.makedirs('results', exist_ok=True)\n"
+                      "open('results/t.csv', 'w').write('est 1\\n')\n"
+                      "if n == 1:\n    m = sorted(glob.glob('.reproduce-check/*/' + MARKER))[-1]\n"
+                      "    shutil.copy(m, 'seen.json')\n").replace("MARKER", repr(rc.MARKER))
+    _runs(tmp_path, body, "--outputs", "results/")                 # count 0, 1: the second run saw the first
+    seen = json.loads((tmp_path / "seen.json").read_text(encoding="utf-8"))
+    assert seen["status"] == "running" and seen[rc.FROM_CHECKS] == {}
+    assert set(seen[rc.MANIFEST]) == {"run1", "logs"} and "results/t.csv" in seen[rc.MANIFEST]["run1"]

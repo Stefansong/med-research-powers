@@ -164,7 +164,8 @@ def _inflate(n, dropout):
 
 def _solve_n(power_at, target, n_min, too_small, too_large=None):
     """Smallest (continuous) n1 >= n_min with power_at(n1) = target; power_at increases with n1.
-    If power_at(n_min) already reaches the target, return n_min (or raise too_large if given)."""
+    If power_at(n_min) already reaches the target, return n_min (or raise too_large if given).
+    Refuses (too_small) only when the power at N_MAX itself is below the target."""
     def checked(n):
         p = power_at(n)
         if math.isnan(p):
@@ -176,12 +177,12 @@ def _solve_n(power_at, target, n_min, too_small, too_large=None):
         if too_large is not None:
             raise ValueError(too_large.format(n=n_min, p=p_min))
         return float(n_min)
-    hi = max(2 * n_min, 16.0)
+    lo, hi = n_min, max(2 * n_min, 16.0)
     while checked(hi) < target:
-        hi *= 4
-        if hi > N_MAX:
+        if hi >= N_MAX:                       # the power at N_MAX itself was checked: refuse only then
             raise ValueError(too_small)
-    return float(optimize.brentq(lambda n: checked(n) - target, n_min, hi, xtol=1e-10))
+        lo, hi = hi, min(hi * 4, N_MAX)
+    return float(optimize.brentq(lambda n: checked(n) - target, lo, hi, xtol=1e-10))
 
 
 def _per_group(n1, ratio, dropout, eps=0.0, min_n=1):
@@ -361,7 +362,9 @@ def proportion(p1, p2, alpha=None, power=0.80, ratio=1.0, dropout=None, continui
     higher_is_better=False) and equivalence (H0: |Δ| ≥ δ, two one-sided tests): Farrington &
     Manning (1990) score test, n1 = [z_{1-α}·√(q̃-variance under H0) + z_{power}·√(p1q1 + p2q2/r)]²
     / (distance from Δ to the margin)², with the H0 variance from the restricted MLEs; for
-    equivalence the power of the two one-sided tests is P_lower + P_upper − 1.
+    equivalence the power of the two one-sided tests is P_lower + P_upper − 1. With fewer than
+    30 per group, or fewer than 5 expected events or non-events in a group, 'warnings' says that
+    this normal approximation is unreliable (check the power by an exact method or simulation).
 
     Cohen's h (arcsine) is reported for reference only: sizing with it under-estimates n for
     rare or extreme proportions (0.01 vs 0.05: 250 instead of 285 per group).
@@ -427,6 +430,10 @@ def proportion(p1, p2, alpha=None, power=0.80, ratio=1.0, dropout=None, continui
             method = 'two one-sided Farrington-Manning score tests (TOST)'
     h = 2 * (math.asin(math.sqrt(p1)) - math.asin(math.sqrt(p2)))
     res = _per_group(n1, r, dropout, eps=1e-9)
+    if hypothesis != 'superiority':
+        small = _small_sample_note(res['n1'], res['n2'], p1, p2)
+        if small:
+            warn.append(small)
     return {
         'design': 'two_proportions',
         'hypothesis': hypothesis,
@@ -439,6 +446,25 @@ def proportion(p1, p2, alpha=None, power=0.80, ratio=1.0, dropout=None, continui
                    'margin': margin, 'higher_is_better': higher_is_better},
         'warnings': warn,
     }
+
+
+SMALL_N = 30           # proportion NI / equivalence: fewer per group than this, or
+SMALL_COUNT = 5        # fewer expected events (or non-events) in a group: the normal approximation is doubtful
+
+
+def _small_sample_note(n1, n2, p1, p2):
+    """One-line warning when the Farrington-Manning (normal approximation) sample size is so small that
+    its power is unreliable: fewer than SMALL_N per group, or fewer than SMALL_COUNT expected events or
+    non-events in a group (the usual n·p ≥ 5 condition). Simulated at such sizes the power of the two
+    one-sided score tests ranges from about 0.68 to 0.93 against a target of 0.80 (p1 = p2 = 0.02,
+    margin 0.4: 10 per group, simulated power 0.70)."""
+    counts = {'n1·p1': n1 * p1, 'n1·(1−p1)': n1 * (1 - p1), 'n2·p2': n2 * p2, 'n2·(1−p2)': n2 * (1 - p2)}
+    name, low = min(counts.items(), key=lambda kv: kv[1])
+    if min(n1, n2) >= SMALL_N and low >= SMALL_COUNT:
+        return None
+    return (f"样本量很小（n1 = {n1}、n2 = {n2}，预期例数最少的是 {name} = {low:.3g}）：每组不足 {SMALL_N} 例或预期事件数"
+            f"（或非事件数）不足 {SMALL_COUNT} 时，Farrington-Manning 得分检验的正态近似不可靠，实际检验效能可能明显低于"
+            "（或高于）目标；请用精确检验或模拟核对检验效能后再定样本量")
 
 
 def _wilson_half_width(n, p, z):
