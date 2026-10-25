@@ -8,7 +8,7 @@ Med-Research-Powers（MRP）是一个 [Claude Code](https://claude.ai/code) 插�
 
 灵感来自 [Superpowers](https://github.com/obra/superpowers)（软件工程方法论），针对临床与生物医学研究做了改造。
 
-> **版本 6.4.2** · 20 个 skill · 7 个斜杠命令 · MIT 许可 · 作者 BTCH Uro AI Lab
+> **版本 6.5.0** · 20 个 skill · 7 个斜杠命令 · MIT 许可 · 作者 BTCH Uro AI Lab
 
 ---
 
@@ -486,7 +486,7 @@ PubMed 通过 PubMed MCP 检索；Embase、Cochrane Library、Web of Science、S
 |------|------|------|
 | `assumption_tests.py` | `statistical-analysis/scripts/` | 前提诊断（Shapiro-Wilk / D'Agostino-Pearson、Levene、Mauchly + Greenhouse-Geisser ε）只作描述，不用来切换检验；给出按设计的默认方法（Welch；3 个及以上重复测量为混合模型或 Greenhouse-Geisser 校正的重复测量方差分析）和 SAP 预先规定时才用的秩检验备选；Cohen's d 含 CI |
 | `power_analysis.py` | `statistical-analysis/scripts/` | 先验样本量：两组均值、两组率（合并方差 Fleiss 公式，可选连续性校正）、生存、相关（双侧或单侧优效性）；两组均值和两组率的非劣效与等效（率用 Farrington-Manning）；诊断准确性（Buderer，可选 Wilson 区间）——含脱落率调整；覆盖范围见 --help |
-| `data_profile.py` | `statistical-analysis/scripts/` | 只读数据体检（CSV/XLSX，兼容 GBK）：伪装缺失、"<0.1" 这类截断值（与 "<60 / ≥60" 这类分组区间区分）、数值存成文本与检验单异常标记（"5.6↑"、"7.8 H"）、数值列里的文字（只列写法）、日期解析失败、把几行并进一格的引号错误、重复患者 ID、结局事件总数（同一患者多行时按患者计）、测量值被误判为 ID 时可用 `--not-id`、疑似隐私字段（按列名、身份证/手机号/邮箱样式、像姓名（含"张*"这类遮挡写法和拼音）/地址/病历号的取值、文字里出现的人名或"每名患者一个取值"识别，只报列名，不显示这些列的取值和含人名或编号的工作表名——是按样式识别的，报告外发前仍要人工看一遍）——不改数据，不计算任何与结局的关系；退出码 0 完成 / 2 参数或文件错误 |
+| `data_profile.py` | `statistical-analysis/scripts/` | 只读数据体检（CSV/XLSX，兼容 GBK）：伪装缺失、"<0.1" 这类截断值（与 "<60 / ≥60" 这类分组区间区分）、数值存成文本与检验单异常标记（"5.6↑"、"7.8 H"）、数值列里的文字（只列写法）、日期解析失败、把几行并进一格的引号错误、重复患者 ID、结局事件总数（同一患者多行时按患者计）、测量值被误判为 ID 时可用 `--not-id`、疑似隐私字段（按列名、身份证/手机号/邮箱样式、像姓名（含"张*"这类遮挡写法和拼音）/地址/病历号的取值、文字里出现的人名或"每名患者一个取值"识别，只报列名，不显示这些列的取值；分类取值只在能区分患者且至少 5 名患者共有时显示，所以总要给 `--id <患者ID列>`（每行一名患者、没有患者 ID 列时给 `--rows-are-patients`；脚本自己找患者 ID 列只是按列名的尽力猜测）；7 位以上的整数从不显示，看起来含人名或编号的文件名、工作表名和列名不显示——是按样式识别的，报告外发前仍要人工看一遍）——不改数据，不计算任何与结局的关系；退出码 0 完成 / 2 参数或文件错误 |
 | `reproduce_check.py` | `statistical-analysis/scripts/` | 在全新进程里把分析命令跑两次并逐个比较输出（表格逐单元格、xlsx 公式、DOCX/PPTX/SVG/.gz 按内容、屏幕输出，加 `--compare-stderr` 时还有错误输出）——退出码 0 一致 / 1 不一致 / 2 运行失败；中断时放回原有输出；移走后没有哪次运行重新生成的文件会放回原处；`--exclude`（shell 通配符）、`--keep-last`（只删本工具建的检查文件夹，按每次检查记下的内容清单判断，不删手工做的、改过的或在检查之外得到的版本的唯一副本；检查文件夹里的副本之后被改过的保留，检查被中断时不清理） |
 | `pub_style.py` | `figure-generation/scripts/` | 期刊图表样式（Nature、Lancet、JAMA、NEJM 配色；Nature / Lancet / JAMA 系列各刊用本系列栏宽，其他期刊用通用栏宽 + 色盲友好的 Okabe-Ito 配色并提示一行）、按期刊栏宽精确导出（RGB TIFF + PDF，≥300 DPI，重新出图逐字节相同）、显著性标注（含对数轴）；需要 matplotlib ≥3.6 |
 | `export_docx.py` | `manuscript-export/scripts/` | 由期刊模板库的 `limits` 驱动，Markdown → 符合期刊排版的 `.docx`（段落、1–6 级标题、嵌套列表、带对齐的表格、代码块、强调、链接；带页码和行号；综述等用 `--article-type`，期刊中立导出用 `--journal generic`）；生成 `export-report.md`（字数——汉字逐字计、图 / 表 / 参考文献数、占位符、未转换的引用键和原样保留的 Markdown）；查不了的限制不给 ✅（❓ / not checked，未核实条目标 ✅*）；退出码 0 成功 / 2 出错 |
@@ -509,6 +509,7 @@ print(f"Recommended test: {result['recommended_test']}")  # 只作描述；用�
 
 # 数据体检和重跑核对是命令行工具：
 #   python3 "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/data_profile.py" data.xlsx --id patient_id --outcome recurrence --report data-profile.md
+#   （每行一名患者、没有患者 ID 列时：用 --rows-are-patients 代替 --id patient_id）
 #   python3 "$CLAUDE_PLUGIN_ROOT/skills/statistical-analysis/scripts/reproduce_check.py" --cmd "Rscript analysis.R" --outputs results/ --compare-stdout --report reproduce-check.md
 
 from power_analysis import two_groups            # 样本量计算

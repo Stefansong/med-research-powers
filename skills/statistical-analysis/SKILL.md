@@ -29,7 +29,7 @@ description: Use when analysis-plan.md already exists and the analysis must now 
 
 | 脚本 | 用途 | 一行可运行示例 |
 |------|------|---------------|
-| `data_profile.py` | 数据体检（只读）：结构、缺失与伪装缺失、截断值、检验单异常标记、重复 ID/聚类、结局事件数、疑似隐私字段（只报列名）；不算变量与结局的关系（退出码 0 完成 / 2 参数或文件错误） | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/data_profile.py" data.csv --id patient_id --outcome recurrence --report data-profile.md` |
+| `data_profile.py` | 数据体检（只读）：结构、缺失与伪装缺失、截断值、检验单异常标记、重复 ID/聚类、结局事件数、疑似隐私字段（只报列名）；分类取值只在能区分患者（`--id`，或每行一名患者时 `--rows-are-patients`）且至少 5 名患者共有时显示，7 位以上的整数从不显示；不算变量与结局的关系（退出码 0 完成 / 2 参数或文件错误） | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/data_profile.py" data.csv --id patient_id --outcome recurrence --report data-profile.md` |
 | `assumption_tests.py` | 前提诊断（JSON）：正态性、方差齐性、配对差值、球形性（Mauchly、Greenhouse-Geisser ε）只作描述；默认推荐：两组 Welch t 检验，三个及以上重复测量为线性混合模型或 Greenhouse-Geisser 校正的重复测量方差分析；分组 / 受试者 ID 缺失的行剔除并记在 rows_excluded | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/assumption_tests.py" data_clean.csv --value outcome --group arm` |
 | `power_analysis.py` | 只复核 protocol 的先验样本量（two-groups / proportion / survival / diagnostic / correlation）；优效性默认双侧（--sides 1 单侧），两组均值和两组率另有非劣效 / 等效（--hypothesis … --margin …），诊断准确性接近 0 或 1 时用 --ci-method wilson；覆盖和不覆盖的设计见 --help | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/power_analysis.py" survival --hr 0.7 --event-rate 0.5` |
 | `reproduce_check.py` | 在全新子进程里把分析跑 N 次（每次运行前清空 `--outputs`；之外的缓存不清空，报告列出能认出的），比较输出文件（加 `--compare-stdout` / `--compare-stderr` 时也比较屏幕输出 / 错误输出）是否一致（退出码 0 一致 / 1 不一致 / 2 运行失败或参数有误） | `python3 "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/reproduce_check.py" --cmd "python3 analysis_script.py" --outputs results/ --compare-stdout` |
@@ -63,7 +63,7 @@ from assumption_tests import full_check, effect_size_cohens_d   # 项目根目�
    python3 "${CLAUDE_PLUGIN_ROOT}/skills/statistical-analysis/scripts/data_profile.py" data.csv \
      --id patient_id --outcome <主要结局列> --report data-profile.md
    ```
-   被当成 ID 的整数列其实是测量值（费用、计数）时加 `--not-id <列>` 重跑；列名里有换行的用空格代替。
+   被当成 ID 的整数列其实是测量值（费用、计数）时加 `--not-id <列>` 重跑；列名里有换行的用空格代替。`--id <患者ID列>` 每次都要给；数据每行一名患者、又没有患者 ID 列时，用 `--rows-are-patients` 代替。两者都不给时，脚本只按列名尽力自动认一列患者 ID（列名像患者 ID、取值在多行重复、10 个以上取值、不像就诊/随访序号，且只有一列符合；报告开头写明用了哪列）——这只是方便，可能认错或认不出；认不出时报告不显示任何分类取值，只给取值个数和分布形状，问题清单会提示要加哪一个。某个缺失码只适用于一列时写 `--missing-tokens 列名=取值`（如 `--missing-tokens age=0`）；对所有列追加的数字不会用在 0/1 编码列和该数字落在取值范围之内或紧挨着它的列（问题清单会写明没有用在哪些列）。
 2. 逐条核对 SAP 第 1 节的假设：样本量与患者数、结局事件数、关键变量的缺失比例与形式、聚类结构（每人几条记录、几个中心/术者）、变量名与编码、单位。前瞻性研究按 SAP 写好的预案核对。
 3. 不符合时：
 

@@ -213,7 +213,7 @@ def test_p_to_stars_thresholds_and_explicit_text_bypass():
     plt.close(fig)
 
 
-# ─── v6.4.3: reproducible files, journal families, colour-blind-safe fallback, matplotlib ≥ 3.6 ───
+# ─── release-6.5: reproducible files, journal families, colour-blind-safe fallback, matplotlib ≥ 3.6 ───
 
 FORMATS = ("tiff", "pdf", "svg", "eps", "png")
 
@@ -327,7 +327,7 @@ def test_figure_specs_yaml_mirrors_the_width_table():
     assert set(width["by_family"]) - {"other"} == set(pub_style._FAMILY_MEMBERS)
 
 
-# ─── v6.4.3 round 2: journal full names, metadata matched to each format ───
+# ─── release-6.5 round 2: journal full names, metadata matched to each format ───
 
 def _library_entries():
     yaml = pytest.importorskip("yaml")
@@ -398,7 +398,7 @@ def test_saving_twice_with_metadata_gives_identical_files(tmp_path, monkeypatch)
         assert (tmp_path / "a" / f"f.{fmt}").read_bytes() == (tmp_path / "b" / f"f.{fmt}").read_bytes(), fmt
 
 
-# ─── v6.4.3 cleanup: format names in any case ───
+# ─── release-6.5 cleanup: format names in any case ───
 
 def test_format_names_are_case_insensitive(tmp_path, monkeypatch):
     from PIL import Image

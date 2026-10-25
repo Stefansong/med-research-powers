@@ -52,7 +52,7 @@ def test_profile_list_values_are_stripped_and_follow_claude_config_dir(tmp_path)
     assert not (tmp_path / "home" / ".claude" / "mrp-user-profile.json").exists()
 
 
-# ─── v6.4.3: symlinks, sanitised show, wrong-typed fields, auto-create, journal ids ───
+# ─── release-6.5: symlinks, sanitised show, wrong-typed fields, auto-create, journal ids ───
 
 def state(tmp_path):
     return tmp_path / "proj" / ".mrp-state.json"
@@ -312,7 +312,7 @@ def test_journal_scan_matches_the_yaml_library():
     assert mrp_state.library_entries() == [(str(e["id"]), str(e["journal"])) for e in lib]
 
 
-# ─── v6.4.3 round 2: show whitelist + cap, invisible characters, overrides file, deep nesting ───
+# ─── release-6.5 round 2: show whitelist + cap, invisible characters, overrides file, deep nesting ───
 
 def test_show_prints_schema_fields_only_and_keeps_its_own_notice(tmp_path):
     (tmp_path / "proj").mkdir()
@@ -500,7 +500,7 @@ def test_deeply_nested_state_gives_one_line_not_a_traceback(tmp_path, depth):
     assert run(tmp_path, "done", "a").returncode == 0                       # ordinary nesting is fine
 
 
-# ─── v6.4.3 cleanup: huge integers, lone surrogates, non-UTF-8 argv, `note` ───
+# ─── release-6.5 cleanup: huge integers, lone surrogates, non-UTF-8 argv, `note` ───
 
 def no_tmp(tmp_path):
     return not (tmp_path / "proj" / ".mrp-state.json.tmp").exists()

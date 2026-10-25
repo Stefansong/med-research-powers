@@ -5,6 +5,7 @@ the copied guard on it. The test passes when the guard reports a new error of th
 expected kind. Errors already present in the untouched copy are subtracted, so the
 tests do not depend on the working tree being consistent at the moment they run.
 """
+import json
 import re
 import shutil
 import subprocess
@@ -193,6 +194,7 @@ def test_correct_claims_and_subsets_are_not_flagged(pristine, repo):
 
 def test_totals_ranges_and_selections_are_told_apart(pristine, repo):
     c = real_counts()
+    version = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))["version"]
     append(repo, "README.md", "\n".join([
         f"Of the {c['journals']} journals, {c['if_year']} have `IF_year`.",
         f"The {c['journals']} journals include {c['if_year']} with `IF_year`.",
@@ -201,7 +203,7 @@ def test_totals_ranges_and_selections_are_told_apart(pristine, repo):
         "The skill proposes 3 target journals and 2 backup journals.",
         "Pick from the top-5 journals; a study uses 1-2 reporting standards and 2 to 4 skills.",
         "Choose the figure style from 3 options.",                    # "options" without a standard is no total
-        f"Release {'.'.join(['6', '4', '2'])} – {c['skills']} skills.",
+        f"Release {version} – {c['skills']} skills.",           # the current version, not a count
     ]))
     append(repo, "README_CN.md", "每个梯队 1 到 2 本期刊；一次调用 20-30 个 skill；推荐 3 个目标期刊；10 个脚本的清单。")
     assert new_errors(pristine, repo) == set()
